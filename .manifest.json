@@ -308,6 +308,162 @@
    "title": "下取整和",
    "missing": false,
    "hidden": false
+  },
+  {
+   "key": "多项式/Berlekamp-Massey.cpp",
+   "title": "最短线性递推",
+   "missing": false,
+   "hidden": false
+  },
+  {
+   "key": "多项式/Bostan-Mori.cpp",
+   "title": "线性递推第 n 项",
+   "missing": false,
+   "hidden": false
+  },
+  {
+   "key": "多项式/FFT.cpp",
+   "title": "复数 FFT 卷积",
+   "missing": false,
+   "hidden": false
+  },
+  {
+   "key": "多项式/多点求值.cpp",
+   "title": "多点求值",
+   "missing": false,
+   "hidden": false
+  },
+  {
+   "key": "多项式/多项式exp.cpp",
+   "title": "多项式指数",
+   "missing": false,
+   "hidden": false
+  },
+  {
+   "key": "多项式/多项式ln.cpp",
+   "title": "多项式对数",
+   "missing": false,
+   "hidden": false
+  },
+  {
+   "key": "多项式/多项式开根.cpp",
+   "title": "多项式开根",
+   "missing": false,
+   "hidden": false
+  },
+  {
+   "key": "多项式/多项式求逆.cpp",
+   "title": "多项式求逆",
+   "missing": false,
+   "hidden": false
+  },
+  {
+   "key": "多项式/多项式除法.cpp",
+   "title": "带余除法",
+   "missing": false,
+   "hidden": false
+  },
+  {
+   "key": "多项式/快速插值.cpp",
+   "title": "快速插值",
+   "missing": false,
+   "hidden": false
+  },
+  {
+   "key": "计算几何/Delaunay.cpp",
+   "title": "Delaunay 三角剖分",
+   "missing": false,
+   "hidden": false
+  },
+  {
+   "key": "计算几何/Voronoi.cpp",
+   "title": "Voronoi 图",
+   "missing": false,
+   "hidden": false
+  },
+  {
+   "key": "计算几何/三维凸包.cpp",
+   "title": "三维凸包",
+   "missing": false,
+   "hidden": false
+  },
+  {
+   "key": "计算几何/三维向量.cpp",
+   "title": "三维向量",
+   "missing": false,
+   "hidden": false
+  },
+  {
+   "key": "计算几何/三维平面.cpp",
+   "title": "三维平面",
+   "missing": false,
+   "hidden": false
+  },
+  {
+   "key": "计算几何/三维旋转.cpp",
+   "title": "三维旋转",
+   "missing": false,
+   "hidden": false
+  },
+  {
+   "key": "计算几何/三维直线.cpp",
+   "title": "三维直线与线段",
+   "missing": false,
+   "hidden": false
+  },
+  {
+   "key": "计算几何/上凸壳.cpp",
+   "title": "上凸壳",
+   "missing": false,
+   "hidden": false
+  },
+  {
+   "key": "计算几何/凸包内点判定.cpp",
+   "title": "凸包内点判定",
+   "missing": false,
+   "hidden": false
+  },
+  {
+   "key": "计算几何/半平面交.cpp",
+   "title": "半平面交",
+   "missing": false,
+   "hidden": false
+  },
+  {
+   "key": "计算几何/图形交.cpp",
+   "title": "圆相关求交与面积交",
+   "missing": false,
+   "hidden": false
+  },
+  {
+   "key": "计算几何/多边形包含.cpp",
+   "title": "多边形包含",
+   "missing": false,
+   "hidden": false
+  },
+  {
+   "key": "计算几何/最小圆覆盖.cpp",
+   "title": "最小圆覆盖",
+   "missing": false,
+   "hidden": false
+  },
+  {
+   "key": "计算几何/最近点对.cpp",
+   "title": "最近点对",
+   "missing": false,
+   "hidden": false
+  },
+  {
+   "key": "计算几何/简单多边形三角剖分.cpp",
+   "title": "简单多边形三角剖分",
+   "missing": false,
+   "hidden": false
+  },
+  {
+   "key": "计算几何/多边形重心.cpp",
+   "title": "多边形重心",
+   "missing": false,
+   "hidden": false
   }
  ]
 }

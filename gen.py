@@ -59,12 +59,36 @@ def codelines(p: pathlib.Path) -> list[str]:
     return ls[i + 1:]
 
 
+def strip_trailing_parens(t: str) -> str:
+    """去掉标题尾部的括号备注,支持嵌套括号(如 "... (单调栈 O(n log n))")"""
+    t = t.rstrip()
+    while t.endswith(')') or t.endswith('）'):
+        close, open_ = (')', '(') if t.endswith(')') else ('）', '（')
+        depth = 0
+        k = len(t) - 1
+        while k >= 0:
+            if t[k] == close:
+                depth += 1
+            elif t[k] == open_:
+                depth -= 1
+                if depth == 0:
+                    break
+            k -= 1
+        if k <= 0 or depth != 0:
+            break          # 括号不配平,别硬剥
+        t = t[:k].rstrip()
+    return t
+
+
 def title_from_comment(p: pathlib.Path) -> str:
     """从首行注释取标题: // 符号: 章节 · 标题 (括号备注)"""
     for line in p.read_text().splitlines()[:1]:
-        m = re.match(r'^[#/]+\s*[^:]+:\s*[^·]*·\s*(.+)$', line)
+        # 注意:接口名后面常常直接跟一对空括号(如 `// poly_inv(): 多项式 · 求逆 (牛顿迭代)`),
+        # 所以冒号前允许为空;备注可能带嵌套括号(如 "(有向直线左侧求交 O(n log n))"),
+        # 所以剥离尾部括号要用配平而不是 [^)]*。
+        m = re.match(r'^[#/]+\s*[^:]*:\s*[^·]*·\s*(.+)$', line)
         if m:
-            t = re.sub(r'\s*\([^)]*\)\s*$', '', m.group(1)).strip()
+            t = strip_trailing_parens(m.group(1)).strip()
             if t:
                 return t
         break

@@ -8,15 +8,17 @@
 //   refHull:Andrew 单调链(独立实现),用凸包的每条逆时针边当半平面,结果必须回到凸包本身。
 //
 // 用例规模:
-//   1 基本性质(排序/去平行/任意输入都不崩)与解析用例:正方形、三角形、空交集、退化点/线段、
-//     重复直线、同向平行堆叠、反向重合直线……
-//   2 2000 组「极角均匀间隔带抖动」的 3~10 条直线 + B 方框,与暴力裁剪逐顶点(1e-9)+ 面积(1e-9 相对)对拍
-//   3 2000 组「完全随机方向」直线(跳过相邻极角差 < 0.05 的病态组)对拍
-//   4 1500 组随机凸包:用凸包的逆时针边求交,面积/顶点必须与凸包逐位一致
-//   5 2000 组「大量重复/平行/冗余直线」的随机对拍(检查去重逻辑)
-//   6 所有随机组顺带做性质级断言:顶点数 <= 直线数、逆时针(带号面积为正)、每个顶点都满足每条
-//     直线(容差内)、面积不超过方框面积、输出无重合点
-//   7 ±1e9 大坐标只做性质级断言!
+//   1 解析用例:hpi 的正方形/三角形、重复直线、同向更弱/更强的直线、互相矛盾 -> 空、
+//     四条直线只交于一点 -> 空(退化)、只交于一条线段 -> 空、空输入、B 方框本身、方框被对角线切一半
+//   2 2000 组「极角均匀间隔带抖动」的 3~9 条直线 + B 方框,与暴力裁剪逐顶点 + 面积对拍
+//   3 2000 组「完全随机方向」直线(跳过相邻极角差 < 0.05 的病态组,这些组只验证不崩)
+//   4 2000 组「大量重复/同向平移/反向重合直线」的冗余输入(专门盯去平行只留最强的逻辑)
+//   5 1500 组随机凸包:用凸包的逆时针边求交,面积/顶点必须与凸包逐位一致
+//   6 3000 组 ±1e9 大坐标只做性质级断言(面积非负、每个顶点满足每条直线)
+//   7 2000 组「加方框保证有界」的随机方向输入:顶点数 <= 直线数、无重合点、逆时针
+//   每组的容差:顶点用**相对** 1e-11(交点坐标可到 1e4,isll 的加权平均与参考的参数插值是两套公式,
+//   实测最大相对偏差 ~1e-16,留了 5 个数量级裕量),面积用相对 1e-9。
+//   参考侧退化成点/线段(带号面积 0)时,模板按约定必须返回空;两边都是「空」才算一致。
 #include "../_check_base.hpp"
 #include "geo.cpp"
 #include "半平面交.cpp"
@@ -25,7 +27,7 @@ static p2 P(db x, db y) { return {x, y}; }
 static db Abs(db x) { return x < 0 ? -x : x; }
 static bool eqd(db a, db b, db tol = 1e-9) { return Abs(a - b) < tol; }
 static bool eqp(p2 a, p2 b, db tol = 1e-9) { return eqd(a.x, b.x, tol) && eqd(a.y, b.y, tol); }
-static void pr(p2 a) { printf("(%g,%g)", (double) a.x, (double) a.y); }
+static void pr(p2 a) { printf("(%.21Lg,%.21Lg)", a.x, a.y); }
 static void prp(const char *s, const vector<p2> &v) {
     printf("      %s(%zu):", s, v.size());
     for(p2 x : v) printf(" "), pr(x);
@@ -96,7 +98,7 @@ static vector<p2> refHull(vector<p2> v) {  // Andrew 单调链:去重 + 去共�
 static db nearTol(const vector<p2> &v) {  // 与坐标规模相关的容差(仅用于规范化/比较)
     db s = 1;
     for(p2 x : v) s = max(s, max(Abs(x.x), Abs(x.y)));
-    return 1e-9 * s;
+    return 1e-11 * s;  // 相对 1e-11(交叉点坐标可到 1e4,long double 上 ~1e-12 的绝对差是两套公式的正常舍入差)
 }
 static vector<p2> canon(vector<p2> v) {
     db tol = nearTol(v);
@@ -104,13 +106,13 @@ static vector<p2> canon(vector<p2> v) {
     ForD(i, 0, (int) v.size()) if(r.empty() || !eqp(r.back(), v[i], tol)) r.push_back(v[i]);
     while(r.size() > 1 && eqp(r.front(), r.back(), tol)) r.pop_back();
     bool ch = 1;
-    while(ch && r.size() >= 3) {  // 去掉共线中间点
+    while(ch && r.size() >= 3) {  // 去掉共线中间点(用「转角」这个相对量:叉积 / 两边长)
         ch = 0;
-        db lim = 1e-7 * nearTol(r) * nearTol(r);
         vector<p2> t;
         ForD(i, 0, (int) r.size()) {
             p2 a = r[(i + r.size() - 1) % r.size()], b = r[i], c = r[(i + 1) % r.size()];
-            if(Abs((b - a).det(c - a)) < lim) {
+            db lb = dis(b - a), lc = dis(c - a);
+            if(lb > 0 && lc > 0 && Abs((b - a).det(c - a)) < 1e-9 * lb * lc) {
                 ch = 1;
                 continue;
             }
@@ -128,14 +130,38 @@ static vector<p2> canon(vector<p2> v) {
 // 把模板输出与参考输出比一遍;返回 false 表示不一致(并打印现场)
 static int cmpOut(const vector<seg> &inp, const vector<p2> &got, const vector<p2> &want, db boxArea) {
     vector<p2> A = canon(got), B = canon(want);
-    db tol = 1e-9;
+    if(B.size() < 3) {  // 参考退化成点/线段(带号面积 0):按模板的约定必须返回空
+        if(!A.empty()) {
+            printf("      参考交集退化成点/线段(%zu 个不同点),模板却返回了 %zu 个点\n", B.size(), A.size());
+            prp("模板输出", got), prp("参考输出", want), prl("输入直线", inp);
+            return 0;
+        }
+        return 1;
+    }
+    if(A.empty()) {
+        printf("      参考交集非退化(%zu 个顶点,面积 %.17Lg),模板却返回空\n", B.size(), polyArea(want));
+        prp("参考输出", want), prl("输入直线", inp);
+        return 0;
+    }
     if(A.size() != B.size()) {
         printf("      顶点数不一致(规范去共线后):模板 %zu,参考 %zu\n", A.size(), B.size());
         prp("模板输出", got), prp("参考输出", want), prl("输入直线", inp);
         return 0;
     }
-    ForD(i, 0, (int) A.size()) if(!eqp(A[i], B[i], tol)) {
-        printf("      第 %d 个顶点不一致(排序后):模板 ", i), pr(A[i]), printf(",参考 "), pr(B[i]), printf("\n");
+    db worst = 0;  // 顶点按「相对距离」做最小匹配(避免 x 或 y 相近时排序次序被舍入翻转)
+    vector<char> used(B.size(), 0);
+    ForD(i, 0, (int) A.size()) {
+        int best = -1;
+        db bd = 1e300L;
+        ForD(j, 0, (int) B.size()) if(!used[j]) {
+            db d = max(Abs(A[i].x - B[j].x) / (1 + Abs(B[j].x)), Abs(A[i].y - B[j].y) / (1 + Abs(B[j].y)));
+            if(d < bd) bd = d, best = j;
+        }
+        used[best] = 1;
+        if(bd > worst) worst = bd;
+    }
+    if(worst > 1e-11) {
+        printf("      顶点最大相对偏差 %.17Lg > 1e-11(模板与参考的顶点集不同)\n", worst);
         prp("模板输出", got), prp("参考输出", want), prl("输入直线", inp);
         return 0;
     }
@@ -204,6 +230,21 @@ static void analytic() {
         bx.push_back({P(-1, -1), P(1, 1)});  // 左下方 -> 切掉一半
         r = hpi(bx);
         CHECK(r.size() == 3 && eqd(polyArea(r), 2), "hpi:方框被对角线切掉一半 -> 三角形、面积 2");
+        {  // 交集退化成一条线段(4 个方框边 + y>=0 与 y<=0)
+            const db B = 1e4;
+            vector<seg> ls = boxLines(B);
+            ls.push_back({P(-B - 1, 0), P(B + 1, 0)});  // 保留 y >= 0
+            ls.push_back({P(B + 1, 0), P(-B - 1, 0)});  // 保留 y <= 0
+            vector<p2> rr = hpi(ls);
+            CHECK(rr.empty(), "hpi:交集退化成线段 y = 0 且 |x| <= 1e4 -> 返回空(退化面积守卫)");
+            vector<seg> ls2 = boxLines(B);
+            ls2.push_back({P(-B - 1, 0), P(B + 1, 0)});
+            ls2.push_back({P(B + 1, 0), P(-B - 1, 0)});
+            ls2.push_back({P(0, -B - 1), P(0, B + 1)});  // 保留 x <= 0
+            ls2.push_back({P(0, B + 1), P(0, -B - 1)});  // 保留 x >= 0
+            vector<p2> rp = hpi(ls2);
+            CHECK(rp.empty(), "hpi:交集退化成单点 (0,0)-> 返回空(退化面积守卫)");
+        }
     }
 }
 
@@ -281,9 +322,10 @@ static int runHull(int groups) {
     return bad;
 }
 
-// ---------- 用例 7:±1e9 大坐标只做性质断言 ----------
+// ---------- 用例 7:±1e9 大坐标只做性质断言 + 与「巨大方框裁剪」核对空/非空 ----------
 static int runBig(int groups) {
-    int bad = 0;
+    int bad = 0, nonempty = 0, empty = 0;
+    const db HB = 1e13;  // 参考裁剪用的巨大方框:直线偏移 ~1e9,真交集若存在必定落在 ±1e10 内
     For(t, 1, groups) {
         int k = (int) rnd(3, 8);
         vector<seg> ls;
@@ -295,11 +337,36 @@ static int runBig(int groups) {
             ls.push_back({o, o + P(cos(ang) * 1000, sin(ang) * 1000)});
         }
         vector<p2> got = hpi(ls);
+        vector<p2> want = refHPI(ls, HB);  // 逐半平面裁剪,天然能判「空交集」
+        if(want.size() >= 3) {
+            ++nonempty;
+            if(got.empty()) {  // 真交集非空,模板绝不允许把它判成空
+                printf("      参考交集非空(%zu 点)但模板返回空\n", want.size());
+                prl("输入", ls), prp("参考", want);
+                if(++bad >= 3) break;
+                continue;
+            }
+            db a0 = polyArea(got), a1 = polyArea(want);
+            if(!eqd(a0, a1, 1e-6 * (1 + Abs(a1)))) {  // 大坐标下参考自身精度有限,只要求 1e-6 相对
+                printf("      面积与巨大方框裁剪不一致:模板 %.17Lg,参考 %.17Lg\n", a0, a1);
+                prl("输入", ls), prp("模板", got), prp("参考", want);
+                if(++bad >= 3) break;
+                continue;
+            }
+        } else {
+            ++empty;
+            if(!got.empty()) {  // 真交集为空,模板必须也返回空(否则会给出违反输入直线的假多边形)
+                printf("      参考交集为空但模板返回了 %zu 个点\n", got.size());
+                prl("输入", ls), prp("模板", got);
+                if(++bad >= 3) break;
+                continue;
+            }
+        }
         if(got.empty()) continue;
         db a = polyArea(got);
-        // 大坐标下 eps = 1e-10 的绝对叉积容差很松,只做「面积非负 + 顶点满足直线(松容差)」两条
-        if(a < 0) {
-            printf("      大坐标下带号面积为负 %.17Lg\n", a);
+        // 大坐标下 eps = 1e-10 的绝对叉积容差很松,只做「面积正 + 顶点满足直线(松容差)」两条
+        if(a <= 0) {
+            printf("      大坐标下带号面积非正 %.17Lg\n", a);
             prl("输入", ls), prp("输出", got);
             if(++bad >= 3) break;
             continue;
@@ -332,10 +399,12 @@ int main() {
     CHECK(b4 == 0, "hpi:把随机凸包的每条逆时针边当半平面 -> 顶点/面积与原凸包逐位一致(1500 组,凸包 3~40 顶点)");
 
     int b7 = runBig(3000);
-    CHECK(b7 == 0, "hpi:±1e9 大坐标下性质成立(面积非负、顶点满足每条直线(松容差),3000 组)");
+    CHECK(b7 == 0, "hpi:±1e9 大坐标下与「巨大方框裁剪」核对空/非空 + 输出面积必为正 + 顶点必满足每条直线(3000 组)");
 
-    {  // 顶点数上界与「无重合点」:任意输入下输出顶点数不超过输入直线数
+    {  // 顶点数上界与「无重合点」:加上方框保证有界后,输出顶点数 <= 输入直线数、无重合点、逆时针
         int bad = 0;
+        const db B = 1e4;
+        vector<seg> box = boxLines(B);
         For(t, 1, 2000) {
             int k = (int) rnd(3, 12);
             vector<seg> ls;
@@ -344,12 +413,17 @@ int main() {
                 db ang = (db) rnd(-3141592, 3141592) / 1000000;
                 ls.push_back({o, o + P(cos(ang), sin(ang))});
             }
+            ForD(i, 0, 4) ls.push_back(box[i]);
             vector<p2> got = hpi(ls);
-            if((int) got.size() > k) ++bad;
-            ForD(i, 0, (int) got.size()) if(eqp(got[i], got[(i + 1) % got.size()], 1e-12)) ++bad;
-            if((int) got.size() >= 3 && polyArea(got) <= 0) ++bad;
+            auto bad_hit = [&](const char *what) {
+                if(bad < 3) printf("      [反例] %s:输出 %zu 个点(输入 %zu 条直线),面积 %.17Lg\n", what, got.size(), ls.size(), polyArea(got));
+                ++bad;
+            };
+            if((int) got.size() > (int) ls.size()) bad_hit("顶点数超过直线数");
+            ForD(i, 0, (int) got.size()) if(eqp(got[i], got[(i + 1) % got.size()], 1e-12)) bad_hit("输出有重合点");
+            if((int) got.size() >= 3 && polyArea(got) <= 0) bad_hit("输出不是逆时针(带号面积 <= 0)");
         }
-        CHECK(bad == 0, "hpi 性质:输出顶点数 <= 直线数、无重合点、逆时针(2000 组随机)");
+        CHECK(bad == 0, "hpi 性质:加方框后有界,输出顶点数 <= 直线数、无重合点、逆时针(2000 组随机方向)");
     }
     PASSED("半平面交");
 }

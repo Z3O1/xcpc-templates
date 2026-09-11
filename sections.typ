@@ -207,8 +207,112 @@
 
 #zebraw(lang: false)[#raw(readcode("templates/多项式/多项式复合逆.cpp"), lang: "cpp", block: true)]
 
+== 最短线性递推
+
+#zebraw(lang: false)[#raw(readcode("templates/多项式/Berlekamp-Massey.cpp"), lang: "cpp", block: true)]
+
+== 线性递推第 n 项
+
+#zebraw(lang: false)[#raw(readcode("templates/多项式/Bostan-Mori.cpp"), lang: "cpp", block: true)]
+
+== 复数 FFT 卷积
+
+#zebraw(lang: false)[#raw(readcode("templates/多项式/FFT.cpp"), lang: "cpp", block: true)]
+
+== 多点求值
+
+#zebraw(lang: false)[#raw(readcode("templates/多项式/多点求值.cpp"), lang: "cpp", block: true)]
+
+== 多项式指数
+
+#zebraw(lang: false)[#raw(readcode("templates/多项式/多项式exp.cpp"), lang: "cpp", block: true)]
+
+== 多项式对数
+
+#zebraw(lang: false)[#raw(readcode("templates/多项式/多项式ln.cpp"), lang: "cpp", block: true)]
+
+== 多项式开根
+
+#zebraw(lang: false)[#raw(readcode("templates/多项式/多项式开根.cpp"), lang: "cpp", block: true)]
+
+== 多项式求逆
+
+#zebraw(lang: false)[#raw(readcode("templates/多项式/多项式求逆.cpp"), lang: "cpp", block: true)]
+
+== 带余除法
+
+#zebraw(lang: false)[#raw(readcode("templates/多项式/多项式除法.cpp"), lang: "cpp", block: true)]
+
+== 快速插值
+
+#zebraw(lang: false)[#raw(readcode("templates/多项式/快速插值.cpp"), lang: "cpp", block: true)]
+
 = 计算几何
 
 #include "templates/计算几何/geo.typ"
 
 #zebraw(lang: false)[#raw(readcode("templates/计算几何/geo.cpp"), lang: "cpp", block: true)]
+
+== Delaunay 三角剖分
+
+#zebraw(lang: false)[#raw(readcode("templates/计算几何/Delaunay.cpp"), lang: "cpp", block: true)]
+
+== Voronoi 图
+
+#zebraw(lang: false)[#raw(readcode("templates/计算几何/Voronoi.cpp"), lang: "cpp", block: true)]
+
+== 三维凸包
+
+#zebraw(lang: false)[#raw(readcode("templates/计算几何/三维凸包.cpp"), lang: "cpp", block: true)]
+
+== 三维向量
+
+#zebraw(lang: false)[#raw(readcode("templates/计算几何/三维向量.cpp"), lang: "cpp", block: true)]
+
+== 三维平面
+
+#zebraw(lang: false)[#raw(readcode("templates/计算几何/三维平面.cpp"), lang: "cpp", block: true)]
+
+== 三维旋转
+
+#zebraw(lang: false)[#raw(readcode("templates/计算几何/三维旋转.cpp"), lang: "cpp", block: true)]
+
+== 三维直线与线段
+
+#zebraw(lang: false)[#raw(readcode("templates/计算几何/三维直线.cpp"), lang: "cpp", block: true)]
+
+== 上凸壳
+
+#zebraw(lang: false)[#raw(readcode("templates/计算几何/上凸壳.cpp"), lang: "cpp", block: true)]
+
+== 凸包内点判定
+
+#zebraw(lang: false)[#raw(readcode("templates/计算几何/凸包内点判定.cpp"), lang: "cpp", block: true)]
+
+== 半平面交
+
+#zebraw(lang: false)[#raw(readcode("templates/计算几何/半平面交.cpp"), lang: "cpp", block: true)]
+
+== 圆相关求交与面积交
+
+#zebraw(lang: false)[#raw(readcode("templates/计算几何/图形交.cpp"), lang: "cpp", block: true)]
+
+== 多边形包含
+
+#zebraw(lang: false)[#raw(readcode("templates/计算几何/多边形包含.cpp"), lang: "cpp", block: true)]
+
+== 最小圆覆盖
+
+#zebraw(lang: false)[#raw(readcode("templates/计算几何/最小圆覆盖.cpp"), lang: "cpp", block: true)]
+
+== 最近点对
+
+#zebraw(lang: false)[#raw(readcode("templates/计算几何/最近点对.cpp"), lang: "cpp", block: true)]
+
+== 简单多边形三角剖分
+
+#zebraw(lang: false)[#raw(readcode("templates/计算几何/简单多边形三角剖分.cpp"), lang: "cpp", block: true)]
+
+== 多边形重心
+
+#zebraw(lang: false)[#raw(readcode("templates/计算几何/多边形重心.cpp"), lang: "cpp", block: true)]

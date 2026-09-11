@@ -8,7 +8,9 @@
 //   det(a, b, c) = a · (b × c)                 混合积 = 平行六面体带号体积
 //   area2(a, b, c)   = |(b-a) × (c-a)|         三角形面积的 2 倍
 //   volume6(a, b, c, d) = det(b-a, c-a, d-a)   四面体带号体积的 6 倍
-//   单位化 / 判等 / 三点共线 / 四点共面       unit / == / < / colinear / coplanar
+//   单位化 / 判等 / 字典序 / 垂直向量           unit / == / != / < / perp
+//   夹角:cosang(a, b) 余弦、sinang(a, b) 正弦(>= 0)、angle(a, b) = atan2(sin, cos) ∈ [0, pi]
+//   退化判定:colinear(a, b, c) 三点共线、coplanar(a, b, c, d) 四点共面
 //
 // 前置条件:unit(a) 要求 a 非零(零向量会得到 inf/nan)。
 // eps 是绝对容差(geo.cpp 里 1e-10):colinear / coplanar 直接用叉积/混合积与 eps 比,
@@ -21,6 +23,7 @@ struct p3 {
     bool operator==(const p3 &b) const {
         return !cmp(x, b.x) && !cmp(y, b.y) && !cmp(z, b.z);
     }
+    bool operator!=(const p3 &b) const { return !(*this == b); }
     bool operator<(const p3 &b) const {
         int c = cmp(x, b.x);
         if(c) return !~c;
@@ -47,6 +50,9 @@ db det(p3 a, p3 b, p3 c) { return a * cross(b, c); }  // 混合积
 db dis2(p3 a) { return a.x * a.x + a.y * a.y + a.z * a.z; }
 db dis(p3 a) { return sqrt(dis2(a)); }
 p3 unit(p3 a) { return a / dis(a); }
+db cosang(p3 a, p3 b) { return (a * b) / (dis(a) * dis(b)); }          // 夹角余弦(要求都非零)
+db sinang(p3 a, p3 b) { return dis(cross(a, b)) / (dis(a) * dis(b)); }  // 夹角正弦,恒 >= 0
+db angle(p3 a, p3 b) { return atan2(sinang(a, b), cosang(a, b)); }      // 夹角,取值 [0, pi]
 db area2(p3 a, p3 b, p3 c) { return dis(cross(b - a, c - a)); }  // 三角形面积 * 2
 db volume6(p3 a, p3 b, p3 c, p3 d) { return det(b - a, c - a, d - a); }  // 四面体体积 * 6
 p3 perp(p3 a) {  // 与 a 垂直的向量(a 非零时结果也非零):取绝对值最小的那个分量来叉

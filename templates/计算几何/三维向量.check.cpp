@@ -222,12 +222,12 @@ int main() {
             p3 u = unit(a);
             if(!eq(dis(u), 1, 1e-14)) { if(!bad) msg = "unit 模长 != 1 a=" + ps(a); ++bad; }
             if(dis(cross(u, a)) > 1e-12 * dis(a)) { if(!bad) msg = "unit 与原向量不平行 a=" + ps(a); ++bad; }
-            if(!eq(dis(u * 3 - unit(a * 3)), 0, 1e-15)) { if(!bad) msg = "unit 对正数缩放不敏感 a=" + ps(a); ++bad; }
+            if(!eq(dis(u - unit(a * 13)), 0, 1e-15)) { if(!bad) msg = "unit 对正数缩放不敏感 a=" + ps(a); ++bad; }
             if(dis(perp(a)) <= 0) { if(!bad) msg = "perp 返回零向量 a=" + ps(a); ++bad; }
             if(!eq(perp(a) * a, 0, 1e-14 * dis2(a))) { if(!bad) msg = "perp 不与输入垂直 a=" + ps(a); ++bad; }
-            // perp 只用于「取一个垂直方向」,再验证它与 cross 平行(方向可以取反)
-            p3 q = perp(a), n = cross(a, P3(1, 2, 3));
-            if(dis(n) > 1e-9 && dis(cross(q, n)) > 1e-12 * dis(q) * dis(n)) { if(!bad) msg = "perp 与 a×(1,2,3) 不平行 a=" + ps(a); ++bad; }
+            // perp 只是「任取一个垂直方向」,不保证与别的垂直向量平行;这里只验它自身够用:
+            p3 q = perp(a);
+            if(!eq(dis2(cross(q, a)), dis2(q) * dis2(a), 1e-9 * dis2(q) * dis2(a))) { if(!bad) msg = "perp 的 |q×a|² != |q|²|a|² a=" + ps(a); ++bad; }
         }
         if(bad) printf("  [FAIL] 首个反例:%s\n", msg.c_str());
         CHECK(bad == 0, "unit 模长为 1 / 方向平行 / 缩放不变,perp 非零且垂直(2 万组)");
@@ -281,6 +281,30 @@ int main() {
         CHECK(coplanar(a, b, a + X, b + X) && coplanar(a, b, a + Z, b + Z), "coplanar:把一条直线沿任意方向平移得到的四点共面");
         CHECK(!coplanar(O, X, Y, Z), "coplanar:单位四面体不共面");
         CHECK(cross(O, b) == O && det(O, a, b) == 0 && volume6(a, a, b, a) == 0 && area2(a, a, b) == 0, "零向量/重复点:叉积、混合积、面积、体积全为 0");
+    }
+    {  // 夹角:cos/sin 的一致性、与手算值对照、范围与平移/缩放不变性
+        int bad = 0;
+        string msg;
+        CHECK(eq(angle(X, Y), acos((db) 0), 1e-15) && eq(angle(X, -X), acos((db) -1), 1e-15) && eq(angle(p3{2, 0, 0}, p3{5, 0, 0}), 0, 1e-15),
+              "angle 手算:x⊥y 为 pi/2、反向为 pi、同向为 0");
+        CHECK(eq(cosang(X, Y), 0, 1e-15) && eq(sinang(X, Y), 1, 1e-15) && eq(sinang(X, -X), 0, 1e-15), "cosang/sinang 手算:正交 (0,1)、反向 (0,-1) 对");
+        For(t, 1, 20000) {
+            p3 a{db(grnd(-100, 100)), db(grnd(-100, 100)), db(grnd(-100, 100))};
+            p3 b{db(grnd(-100, 100)), db(grnd(-100, 100)), db(grnd(-100, 100))};
+            if(dis2(a) < 1 || dis2(b) < 1) continue;
+            db ca = cosang(a, b), sa = sinang(a, b), an = angle(a, b);
+            if(!eq(ca * ca + sa * sa, 1, 1e-14)) { if(!bad) msg = "cos²+sin² != 1 a=" + ps(a) + " b=" + ps(b); ++bad; }
+            if(sa < 0) { if(!bad) msg = "sinang 为负 a=" + ps(a) + " b=" + ps(b); ++bad; }
+            if(!eq(an, acos(max((db) -1, min((db) 1, ca))), 1e-14)) { if(!bad) msg = "angle != acos(cosang) a=" + ps(a) + " b=" + ps(b); ++bad; }
+            if(!eq(angle(a, a), 0, 1e-13)) { if(!bad) msg = "angle(a,a) != 0 a=" + ps(a); ++bad; }
+            if(!eq(angle(b, a), an, 1e-14)) { if(!bad) msg = "angle 不对称 a=" + ps(a) + " b=" + ps(b); ++bad; }
+            if(!eq(ca, (a * b) / dis(a) / dis(b), 1e-15)) { if(!bad) msg = "cosang 定义不符 a=" + ps(a) + " b=" + ps(b); ++bad; }
+            db k1 = 3.5L, k2 = -2.25L;   // 正负缩放都不改变夹角(负缩放把角变成 pi - 角)
+            db an2 = angle(a * k1, b * k2);
+            if(!eq(abs(an2 + an - acos((db) -1)), 0, 1e-12) && !eq(an2, an, 1e-12)) { if(!bad) msg = "缩放后夹角不符 a=" + ps(a) + " b=" + ps(b); ++bad; }
+        }
+        if(bad) printf("  [FAIL] 首个反例:%s\n", msg.c_str());
+        CHECK(bad == 0, "cosang/sinang/angle:cos²+sin²=1、与 acos 一致、对称、sin 非负(2 万组)");
     }
     {
         // 大坐标:只做相对容差的性质断言(叉积量级 ~1e18,绝对 eps 判据不再适用)

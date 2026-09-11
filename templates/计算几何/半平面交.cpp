@@ -12,6 +12,7 @@
 //   依赖:geo.cpp 的 p2 / seg / eps / cmp / sign / crossop / isll / pi(用了 dir().alpha())。
 //   提示:直线用两点给出方向,点的先后顺序决定哪一侧是内侧;要写「ax + by + c <= 0」时把
 //   方向取成 (-b, a) 即可。
+
 vector<p2> hpi(vector<seg> vs) {
     if(vs.empty()) return {};
     sort(vs.begin(), vs.end(), [](const seg &a, const seg &b) {
@@ -21,7 +22,12 @@ vector<p2> hpi(vector<seg> vs) {
     });
     vector<seg> ls;  // 同向平行(角度差 < eps)只留更强的一条
     ForD(i, 0, (int) vs.size()) {
-        if(!ls.empty() && !cmp(ls.back().dir().alpha(), vs[i].dir().alpha())) continue;
+        if(!ls.empty() && !cmp(ls.back().dir().alpha(), vs[i].dir().alpha())) {
+            // 注意:近乎同向的两条直线极角可能只差 1 ulp,谁在前是随机的 —— 必须显式比「强弱」:
+            // crossop(ls.back(), vs[i].x) >= 0 表示 vs[i] 的限制更紧(或相同),用它替换
+            if(crossop(ls.back(), vs[i].x) >= 0) ls.back() = vs[i];
+            continue;
+        }
         ls.push_back(vs[i]);
     }
     if(ls.size() > 1 && !cmp(ls.front().dir().alpha() - ls.back().dir().alpha() + 2 * pi, 2 * pi)) {
@@ -51,5 +57,11 @@ vector<p2> hpi(vector<seg> vs) {
     if(qs.size() < 3) return {};
     db s = 0;
     ForD(i, 0, (int) qs.size()) s += qs[i].det(qs[(i + 1) % qs.size()]);
-    return sign(s) ? qs : vector<p2>();
+    // 交集为空时,双端队列会退化成一组「自相矛盾」的直线,交出来的多边形必然是**顺时针**的
+    // (真实的交集多边形一定逆时针:沿每条直线前进时内部在左)。所以面积 <= 0 一律按空处理 ——
+    // 这一条是「空交集」的唯一判别手段:不判的话空交集会返回一个既违反输入直线、面积又为负的
+    // 假多边形(实测:8 条方向大致均匀铺满圆周、偏移 ±1e9 的直线,真交集为空,队列却交出了
+    // 一个面积 -1.4e17 的三角形)。这也是教科书式哨兵写法的共同弱点,这里用 O(k) 的面积符号兜住。
+    if(sign(s) <= 0) return {};
+    return qs;
 }

@@ -14,7 +14,8 @@
 //   cir_cir(c1, c2)      两圆交点:0 / 1(相切)/ 2 个,按相对 c1.o 的极角 alpha() 排序。
 //                        内含、内离、同心一律返回空;r = 0 的点圆除非该点恰在另一圆上,否则空。
 //   cir_cir_area(c1, c2) 两圆「交」面积(解析法:S = r1^2*a1 + r2^2*a2 - d*h/2,扇形 - 三角形)。
-//                        内含/重合返回 pi * min(r1,r2)^2;外离返回 0;相切返回 0(容差 eps)。
+//                        内含/内切/重合返回 pi * min(r1,r2)^2(小圆整个被盖住);外离/外切返回 0。
+//                        两个形参没有半径大小要求,内部会自己按 r 大小归一。
 //   cir_poly_area(n, a, c) 逆时针简单多边形 a[0..n-1](凹也正确)与圆的交面积,>= 0。
 //                        做法是逐边求「三角形(圆心, a[i], a[i+1]) 与圆」的有向面积之和:
 //                        整边在圆内 -> 直接 a[i].det(a[i+1]);边与圆相交 -> 拆成一个扇形
@@ -45,9 +46,9 @@ int cir_line2(const circle &c, const seg &l, p2 *o) {
     db x = c.r * c.r - dis2(c.o - f);                         // 垂足的 |of|^2 与 r^2 之差
     if(sign(x) < 0) return 0;                                 // 相离
     db h = sign(x) > 0 ? sqrtl(x) : 0;                        // 半弦长,|x| <= eps 时按相切处理
-    p2 u = d / sqrtl(L2), w = r90(u);
+    p2 u = d / sqrtl(L2);                                     // 直线方向的单位向量
     int n = 0;
-    if(sign(h) > 0) o[n++] = f + w * h, o[n++] = f - w * h;   // 两个交点
+    if(sign(h) > 0) o[n++] = f + u * h, o[n++] = f - u * h;    // 两个交点:垂足沿直线方向偏移 ±h
     else o[n++] = f;                                          // 相切:1 个点
     return n;
 }
@@ -97,71 +98,105 @@ vector<p2> cir_cir(const circle &c1, const circle &c2) {
     return q;
 }
 
-// 两圆「交」面积:S = r1^2 * a1 + r2^2 * a2 - d * h / 2,其中 a_i = 2 * acos((r_i^2 + d^2 - r_j^2) / (2 r_i d))。
-// 内含/重合返回 pi * min(r1,r2)^2,外离/外切/内切返回 0(容差 eps)。O(1)
+// 两圆「交」面积(解析法:两个弓形之和)。设 d 为圆心距(0 < |r1 - r2| < d < r1 + r2),
+// x = (d^2 + r1^2 - r2^2) / (2d) 是公共弦到圆 1 圆心的距离,h = sqrt(r1^2 - x^2) 是公共弦的一半,
+// a_i = 2 * acos(...) 是交点在圆 i 里的圆心角;则 S = (r1^2 a1 / 2 - d h / 2) + (r2^2 a2 / 2 - d h / 2),
+// 即两个「扇形 - 三角形」弓形之和。内含/内切/重合返回 pi * min(r1,r2)^2(小圆整个被盖住),
+// 外离/外切返回 0(容差 eps)。形参无半径大小要求,内部按 r 归一。O(1)
 db cir_cir_area(const circle &c1, const circle &c2) {
     db r1 = c1.r, r2 = c2.r;
     if(r1 < r2) swap(r1, r2);                                 // 保证 r1 >= r2
     db d = dis(c1.o - c2.o);
-    if(d >= r1 + r2 - eps) return 0;                          // 外离 / 外切
-    if(d <= r1 - r2 + eps) return pi * r2 * r2;               // 内含 / 内切(小圆被完全盖住)
-    db a1 = 2 * acosl((r1 * r1 + d * d - r2 * r2) / (2 * r1 * d));   // 大圆里的扇形圆心角
-    db a2 = 2 * acosl((r2 * r2 + d * d - r1 * r1) / (2 * r2 * d));   // 小圆里的扇形圆心角
-    db s1 = r1 * r1 * a1, s2 = r2 * r2 * a2;                  // 两个扇形面积
-    db tri = 2 * (d * d * r1 * r1 - (d * d + r1 * r1 - r2 * r2) * (d * d + r1 * r1 - r2 * r2) / 4);  // 4 倍三角形面积
-    db sq = tri > 0 ? sqrtl(tri) : 0;
-    return max((db) 0, (s1 + s2 - d * sq / 2) / 2);           // 扇形减三角形,再除 2
+    if(d >= r1 + r2 - eps) return 0;                          // 外离 / 外切:交面积 0
+    if(d <= r1 - r2 + eps) return pi * r2 * r2;               // 内含 / 内切:小圆整个被盖住
+    db a1 = 2 * acosl((r1 * r1 + d * d - r2 * r2) / (2 * r1 * d));   // 交点在圆 1 里的圆心角
+    db a2 = 2 * acosl((r2 * r2 + d * d - r1 * r1) / (2 * r2 * d));   // 交点在圆 2 里的圆心角
+    db x = (d * d + r1 * r1 - r2 * r2) / (2 * d);             // 公共弦到圆 1 圆心的距离
+    db h = sqrtl(max((db) 0, r1 * r1 - x * x));               // 公共弦的一半
+    return max((db) 0, (r1 * r1 * a1 / 2 - d * h / 2) + (r2 * r2 * a2 / 2 - d * h / 2));
 }
 
-// 有向弓形(扇形 - 三角形)面积 * 2:把 b 相对 a 的角度差归一到 [0, 2pi),再乘 r^2 减去 a.det(b)
-db cseg_area2(db r2, const p2 &a, const p2 &b) {
-    db t = b.alpha() - a.alpha();
+// —— cir_poly_area 的三个零件:一律返回「有向面积 * 2」——
+// ① 有向扇形:沿逆时针从圆上点 u 走到 v 扫过的面积 * 2 = 角差(归一到 [0, 2pi)) * r^2
+db sector2(db r2, const p2 &u, const p2 &v) {
+    db t = v.alpha() - u.alpha();
     if(t < 0) t += 2 * pi;
-    return t * r2 - a.det(b);
+    return t * r2;
 }
-
-// 圆上两点之间的那条「与圆心同侧」的弧:(扇形 - 三角形)面积 * 2。
-// 两条候选弧里取弧中点落在直线 ab 同侧(含线上)的那条;异侧说明这条是绕远路的大弧,取负。
-// 注意必须用弧中点而不只是弦中点判侧:线段恰好过圆心时弦中点在圆上,是靠「A 与 B 在直线两侧」定的。
-db near_arc_area2(const circle &c, const p2 &x0, const p2 &x1) {
-    db s = cseg_area2(c.r * c.r, x0 - c.o, x1 - c.o);
-    if(!isMid(x0, (x0 + x1) / 2, x1)) return s;                   // 退化(两点重合):直接给全弧
-    p2 mid = c.o + (unit(x0 - c.o) + unit(x1 - c.o)) * c.r;       // 弧中点(沿两半径方向取平均)
-    int t0 = side_of(x0, x1, c.o), t1 = side_of(x0, x1, mid);
-    return s * (t0 * t1 < 0 ? -1 : 1);
-}
-
-// 边 (A, B)(相对圆心 c 的有向面积贡献)* 2,返回值就是「三角形(圆, A, B) ∩ 圆」的有向面积 * 2
-db edge_area2(const circle &c, const p2 &A, const p2 &B) {
-    p2 a = A - c.o, b = B - c.o, z = {0, 0};
-    db r2 = c.r * c.r;
-    int va = cmp(dis2(a), r2) <= 0, vb = cmp(dis2(b), r2) <= 0;   // 端点是否落在圆内(含圆上)
-    if(va && vb) return a.det(b);                                 // 整条边在圆里:整个三角形
-    p2 t2[2];
-    int m = cir_line2(c, seg{A, B}, t2);                          // 边所在直线与圆的交点
-    if(!m) return near_arc_area2(c, A, B);                        // 无交点:整条边在圆外,纯扇形
-    p2 x0 = t2[0], x1 = t2[1];
-    if(m == 2 && cmp(dis2(x0 - A), dis2(x1 - A)) > 0) swap(x0, x1);   // x0 是沿 A->B 先遇到的交点
-    if(va) {                                                      // A 在内,B 在外:x0 在边上,扇形 x0->B
-        z = x0 - c.o;
-        return a.det(z) + cseg_area2(r2, z, b);
+// ② 线段 (A,B) 与圆盘的交(在圆心为原点的坐标里,要求 A != B):0 无交 / 1 相切 / 2 两交点。
+//    返回的 x0 是按 A->B 参数先遇到的交点;内部用「A 到交点的参数 t」排序,不依赖极角。
+int seg_disk(const circle &c, const p2 &A, const p2 &B, p2 &x0, p2 &x1) {
+    p2 d = B - A;
+    db a = dis2(d);
+    if(!sign(a)) return 0;
+    db b2 = 2 * (d * A), c2 = dis2(A) - c.r * c.r;
+    db dis = b2 * b2 - 4 * a * c2;
+    if(sign(dis) < 0) return 0;
+    if(!sign(dis)) {
+        x0 = x1 = A + d * (-b2 / (2 * a));
+        return 1;
     }
-    if(vb) {                                                      // A 在外,B 在内:(A->x0 的扇形 - 三角形)
-        z = x0 - c.o;
-        return cseg_area2(r2, a, z) - z.det(b);
+    db sd = sqrtl(dis);
+    x0 = A + d * ((-b2 - sd) / (2 * a));
+    x1 = A + d * ((-b2 + sd) / (2 * a));
+    return 2;
+}
+// ③ 三角形 (P, A, B) 与圆盘的交的有向面积 * 2(三个点都平移到「圆心为原点」的坐标里)。
+//    P,A,B 逆时针时结果为正、顺时针为负 —— 这正是 cir_poly_area 需要的(凸扇 / 凹扇统一处理)。
+//    算法把边界拆成「弦 + 弧」两类,分别用有向弦面积和扇形累加;弧的扫过方向由三角形的
+//    取向决定(用 (A-P) × (B-P) 的符号判),所以凹多边形(360° 以上的扇形块)也对。
+db tri_disk_area2(const circle &c, const p2 &P, const p2 &A, const p2 &B) {
+    db r2 = c.r * c.r, sgn = sign((A - P).det(B - P)) ? sign((A - P).det(B - P)) : 1;
+    db res = 0;
+    // —— 弦:三条边各自落在圆盘内的部分 ——
+    struct E { p2 u, v; };
+    E e[3] = {{P, A}, {A, B}, {B, P}};
+    ForD(i, 0, 3) {
+        p2 u = e[i].u, v = e[i].v, x0, x1;
+        int m = seg_disk(c, u, v, x0, x1);
+        if(!m) continue;
+        db du = cmp(dis2(u), r2) <= 0, dv = cmp(dis2(v), r2) <= 0;
+        if(du && dv) res += u.det(v);                             // 整条边在圆内
+        else if(du) res += u.det(x0);                             // 只留 u -> x0
+        else if(dv) res += x1.det(v);                             // 只留 x1 -> v
+        else if(m == 2) res += x0.det(x1);                        // 中间段
     }
-    if(m == 1) return cseg_area2(r2, a, b);                       // 只擦到一个点:退化成纯扇形
-    if(cmp(dis2(x1 - A), dis2(x0 - A)) < 0) swap(x0, x1);
-    p2 w = (x0 + x1) / 2;
-    int sA = side_of(x0, x1, w), sB = side_of(x0, x1, B);
-    if(sA * sB < 0) swap(x0, x1);                                 // 让 B 与中点同侧,即 x0 在前
-    return x0.det(x1) + near_arc_area2(c, x1, x0);                 // 远弧(绕圆心那侧)+ 弦三角形
+    // —— 弧:圆盘边界上落在三角形内的那些段 ——
+    // 用「每条边与圆的交点」把圆按极角切成区间,逐个区间取弧中点判它是否在三角形内
+    vector<db> ang;
+    ForD(i, 0, 3) {
+        p2 u = e[i].u, v = e[i].v, x0, x1;
+        int m = seg_disk(c, u, v, x0, x1);
+        if(m >= 1) ang.push_back((m == 2 ? x0 : x1).alpha());
+        if(m == 2) ang.push_back(x1.alpha());
+    }
+    if(ang.empty()) {                                             // 三角形完全在圆内或完全在圆外
+        p2 M = (P + A + B) / 3;
+        if(cmp(dis2(M), r2) <= 0) res += sgn * 2 * pi * r2;       // 整个圆盘都在三角形里
+        return res;
+    }
+    sort(ang.begin(), ang.end());
+    ForD(i, 0, ang.size()) {
+        db t1 = ang[i], t2 = ang[(i + 1) % ang.size()];
+        db tm = t1 + (t2 > t1 ? (t2 - t1) : (t2 + 2 * pi - t1)) / 2;
+        p2 M = p2{cosl(tm), sinl(tm)} * c.r;
+        // 弧中点是否在三角形内(三个叉积同号,退化按 0 计入)
+        db d1 = (A - P).det(M - P), d2 = (B - A).det(M - A), d3 = (P - B).det(M - B);
+        bool inside = (d1 >= 0 && d2 >= 0 && d3 >= 0) || (d1 <= 0 && d2 <= 0 && d3 <= 0);
+        if(!inside) continue;
+        db sweep = t2 - t1;
+        if(sweep < 0) sweep += 2 * pi;
+        res += sgn * sweep * r2;                                  // 这段弧扫过的扇形
+    }
+    return res;
 }
 
-// 逆时针简单多边形(凹也对)与圆的交面积。逐边累加 edge_area2 再 / 2,结果取 max(0, ...)。O(n)
+// 逆时针简单多边形(凹也对)与圆的交面积。以 a[0] 为扇心做三角形扇(凹多边形的反向扇贡献为负,
+// 自动抵扣),每个三角形与圆盘求交再求和,最后取一半、并 max(0, ...)。O(n^2)
 db cir_poly_area(int n, p2 *a, const circle &c) {
-    if(n < 3) return 0;
+    if(n < 3 || !sign(c.r)) return 0;
     db ret = 0;
-    For(i, 0, n - 1) ret += edge_area2(c, a[i], a[(i + 1) % n]);
+    p2 P = a[0] - c.o;
+    ForD(i, 1, n - 1) ret += tri_disk_area2(c, P, a[i] - c.o, a[i + 1] - c.o);
     return max((db) 0, ret / 2);
 }
