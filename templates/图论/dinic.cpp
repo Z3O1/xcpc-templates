@@ -20,7 +20,10 @@ class Dinic_t {
         n = s = t = 0, tot = 1;
     }
     bool bfs() {
-        For(i, 1, n) d[i] = -(i == s), cur[i] = hd[i];
+        // d[s] = 0、其余 -1(未访问)。注意不能写成 d[i] = -(i == s):
+        // 那样邻居会拿到 0,而下面的判空条件 !~d[v] 只认 -1,于是 BFS 一个点都进不去。
+        For(i, 1, n) d[i] = -1, cur[i] = hd[i];
+        d[s] = 0;
         queue<int> q;
         q.push(s);
         while (q.size()) {
@@ -53,7 +56,7 @@ class Dinic_t {
         while (bfs()) ans += dfs(s, Z);
         return ans;
     }
-    void cut(auto *f) {
+    void cut(int *f) { // 原来写的是 auto *f:C++20 语法,C++17 下只有 GCC 扩展(告警)
         For(i, 1, n) f[i] = 1;
         queue<int> q;
         f[s] = 0;

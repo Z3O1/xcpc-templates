@@ -7,7 +7,7 @@ struct MCMF_t {
         int v, n, w;
         ll c;
     } e[N];
-    int n, hd[N], tot = 1, s, t, p[N];
+    int n, mx, hd[N], tot = 1, s, t, p[N];
     void _add(int u, int v, int w, ll c) {
         e[++tot] = {v, hd[u], w, c}, hd[u] = tot;
     }
@@ -15,8 +15,11 @@ struct MCMF_t {
         _add(u, v, w, c), _add(v, u, 0, -c);
     }
     void clear() {
-        For(i, 1, n) hd[i] = 0;
-        tot = 1, n = s = t = 0;
+        // 清到"用过的最大点数" mx:mcmf2() 的内层会用 _n + 2 个点跑,
+        // 只清到当前 n 的话,超级源/汇那几条残留 hd[] 会让下一次调用拿陈旧前驱、
+        // dijkstra 回退时在 e[] 里乱跳 → 死循环(实测 3 节点图也挂)。
+        For(i, 1, mx) hd[i] = 0;
+        tot = 1, s = t = 0;
     }
     ll h[N], d[N];
     void spfa() {
@@ -55,7 +58,7 @@ struct MCMF_t {
         return d[t] != Z;
     }
     pair<int, ll> mcmf(int _s, int _t, bool mcf = 0, int _n = 0) {
-        s = _s, t = _t, n = _n;
+        s = _s, t = _t, n = _n, cmax(mx, _n);
         spfa();
         int a1 = 0;
         ll a2 = 0;
@@ -68,7 +71,7 @@ struct MCMF_t {
         return {a1, a2};
     }
     pair<int, ll> mcmf2(int _s, int _t, bool mcf = 0, int _n = 0) {
-        s = _s, t = _t, n = _n;
+        s = _s, t = _t, n = _n, cmax(mx, _n + 2);
         static int d[N];
         int a1 = 0;
         ll a2 = 0;
@@ -82,10 +85,19 @@ struct MCMF_t {
             d[i] > 0 ? add(_n + 1, i, d[i], 0) : add(i, _n + 2, -d[i], 0);
         }
         add(_t, _s, FL, 0);
-        a1 += e[tot].w, a2 += mcmf(_n + 1, _n + 2).second;
-        tot -= 2 * (_n + 1);
-        For(i, 1, _n) while(hd[i] > tot) hd[i] = e[hd[i]].n;
-        auto [a3, a4] = mcmf(_s, _t, mcf);
+        int fake = tot, on = n; // 辅助边(_n+1 出入、_t -> _s)到此结束;记住原图的 n
+        // 这三处原来都有问题,是三个独立 bug:
+        //   1) 内层 mcmf 漏传 _n → 内层 n = 0,spfa/dij 的 For(i,1,n) 全空转 → 死循环
+        //   2) e[tot].w 原来在 mcmf 之前读:那时 _t -> _s 上的流量还是 0,而且增广会往 e[] 里
+        //      追加反向边、下标 tot 之后还会变,所以可行性阶段的循环流永远算不进来
+        //   3) tot -= 2 * (_n + 1) 与真实的辅助边条数对不上;另外内层跑完会把成员 n 改成
+        //      _n + 2(并留下 hd[_n+1]、hd[_n+2]),不还原的话外层 mcmf 会带着残留走错路
+        // 辅助边条数 = 出边 _n + 入边 _n + _t -> _s 一条 + 超级源/汇两条 = 2 * _n + 2。
+        a2 += mcmf(_n + 1, _n + 2, 0, _n + 2).second;
+        a1 += e[fake].w;
+        tot = fake - 2 * _n - 2, n = on;
+        For(i, 1, on) while(hd[i] > tot) hd[i] = e[hd[i]].n;
+        auto [a3, a4] = mcmf(_s, _t, mcf, _n);
         return {a1 + a3, a2 + a4};
     }
 };
