@@ -13,6 +13,9 @@ python3 gen.py               # 只看生成、不编译
 ```
 
 - 改模板后跑 `./build.sh`,Typst 直接报 `error: ... templates/xxx.typ:行号` 加文件路径,照报错修即可
+- **本环境 typst 是 snap 版且不在 PATH**:用 `/snap/bin/typst`,并且要先建可写的运行目录(否则报 `cannot create XDG_RUNTIME_DIR folder ... Read-only file system`):`mkdir -p tmp/xdg && XDG_RUNTIME_DIR=$PWD/tmp/xdg /snap/bin/typst compile xcpc.typ`;`./build.sh` 会因找不到 `typst` 在最后一步失败(gen.py 部分已跑完)
+- **标题必须 Typst 安全**:标题会原样进 `sections.typ` 的 `== 标题`,带 `(`/`)` 会被当函数调用报 `unclosed delimiter`,带 `*`/反引号会被当标记——标题写短名词,细节放注释
+- **改了首行注释但标题没变**:`gen.py` 只给新条目从注释取标题,已有条目以 manifest 为准 → 想换标题就先从 `.manifest.json` 里摘掉该条再 `python3 gen.py`
 - 调试单点 Typst 小样:写个 `_t.typ` 放到**项目目录**(snap 版 typst 读不到 /tmp!),`typst compile _t.typ`,用完删;要用 `#panic("...")` 把值打到 stderr——`pdftotext` 的页面折行会伪造换行字符,不能用来调试字符串
 - 没有任何测试/CI;编译通过 + 抽查 PDF 页(如 `pdftoppm -png -f N -l N xcpc.pdf /tmp/x`)就是验证
 
@@ -43,6 +46,8 @@ templates/<章目录>/<模板>.typ(介绍)  ─┼─→ gen.py ─→ sections.
 
 - `For(i, l, r)` / `rFor(i, r, l)` / `ForD` 代替 `for`;`vect<T>` 代替 `vector<T>`
 - `ll` = `long long`、`db` = 浮点(常用 `long double`)、`mint` = 模数类(带 `.inv()`)、`poly` = 多项式/`vector<mint>`、`ksm` = 快速幂
+- **`ksm` 的模数限制**:base header 的 `ksm` 内部按 `ll` 相乘,模数超过 2^32 时 `a * a` 会溢出算错 → 需要大模数(如 `u64` 素性检验、`p > 4e9` 的离散对数)时**自带模乘**,不要复用 `ksm`(见 `templates/数论/Miller-Rabin.cpp` 的 `MR::mul`)
+- **`vect<T>` 没有 `push_back`**:它是带 `+=` 的自定义容器(`p += x` 才是追加);标准容器用 `std::vector`。写模板要按"读者自己 header 里那套"来,别混用
 - 计算几何统一 `struct p2`(点),线段/直线用 `seg`;`eps`/`cmp`/`sgn`/`cross`/`det` 常规
 - 模板顶部的 `// 标题 · 标题 (备注)` 首行注释是选标题用的,不用改内容
 
@@ -68,10 +73,10 @@ templates/<章目录>/<模板>.typ(介绍)  ─┼─→ gen.py ─→ sections.
 
 ## 已知的模板原始 bug(读代码时注意,未修)
 
-- `templates/图论/dinic.cpp`:`bfs()` 首行 `d[i] = -(i == s)`,只有 s 得 -1,其余 0,而 `!~d[v]` 只认 -1 → **最大流恒 0**;应改 `d[i] = -1`(已实测)
-- `templates/数学/类欧.cpp`:结构版 `f(n,a,b,c)` 与单值版 `f(a,b,c,n)` 签名同为 `(int,int,int,int)`,C++ 不允许只按返回类型重载,**不能同时编译**,按需只留一个
+- `templates/图论/dinic.cpp`:`bfs()` 首行 `d[i] = -(i == s)` **不是 bug**(本条原先误记为"最大流恒 0",已推翻并订正):`d[s] = -1` 只当"源点已访问"的哨兵,其余为 0;判空条件 `!~d[v]`(即 `d[v] != -1`)只挡住源点,BFS 从 `d[s]+1 = 0` 开始给邻居定层、逐层递增,`d[v] == d[u] + 1` 照常成立。`-1` 在这份实现里统一表示"已访问/废弃",与 `dfs()` 末尾 `if (!out) d[u] = -1` 的剪枝一致
+- `templates/数学/类欧.cpp`:结构版 `f(n,a,b,c)` 与单值版 `f(a,b,c,n)` 签名同为 `(int,int,int,int)`,C++ 不允许只按返回类型重载,**不能同时编译**,按需只留一个(已实测:报 `ambiguating new declaration of 'mint f(int, int, int, int)'`)
 - `templates/计算几何/geo.cpp`:`operator-=` 与 `operator/=` 都实现成了 `x = x + y`
 
 ## 其它
 
-- 目录非 git 仓库;`a.cpp`、`chk3-02.png` 等为无关文件,不动;`skip2004-ICPC-Templates/` 是第三方仓库,只当参考来源(见「移植来源」),目录本身不要改
+- 目录已是 git 仓库(远端 `git@github.com:Z3O1/xcpc-templates.git`,private);`tmp/` 是本地编译夹具与调试产物,已进 `.gitignore`;`a.cpp` 等为无关文件,不动;`skip2004-ICPC-Templates/` 是第三方仓库,只当参考来源(见「移植来源」),目录本身不要改、也不入库

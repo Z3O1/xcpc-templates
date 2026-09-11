@@ -242,6 +242,72 @@
    "title": "一般图最大匹配",
    "missing": false,
    "hidden": false
+  },
+  {
+   "key": "数论/BSGS.cpp",
+   "title": "离散对数",
+   "missing": false,
+   "hidden": false
+  },
+  {
+   "key": "数论/CRT.cpp",
+   "title": "中国剩余定理",
+   "missing": false,
+   "hidden": false
+  },
+  {
+   "key": "数论/Miller-Rabin.cpp",
+   "title": "Miller-Rabin 素性检验",
+   "missing": false,
+   "hidden": false
+  },
+  {
+   "key": "数论/Pollard-Rho.cpp",
+   "title": "Pollard-Rho 分解质因数",
+   "missing": false,
+   "hidden": false
+  },
+  {
+   "key": "数论/exgcd.cpp",
+   "title": "扩展欧几里得",
+   "missing": false,
+   "hidden": false
+  },
+  {
+   "key": "数论/minmod.cpp",
+   "title": "最小模线性值",
+   "missing": false,
+   "hidden": false
+  },
+  {
+   "key": "数论/二次剩余.cpp",
+   "title": "二次剩余",
+   "missing": false,
+   "hidden": false
+  },
+  {
+   "key": "数论/原根.cpp",
+   "title": "原根与阶",
+   "missing": false,
+   "hidden": false
+  },
+  {
+   "key": "数论/杜教筛.cpp",
+   "title": "杜教筛",
+   "missing": false,
+   "hidden": false
+  },
+  {
+   "key": "数论/线性筛.cpp",
+   "title": "线性筛",
+   "missing": false,
+   "hidden": false
+  },
+  {
+   "key": "数论/floor_sum.cpp",
+   "title": "类欧几里得",
+   "missing": false,
+   "hidden": false
   }
  ]
 }

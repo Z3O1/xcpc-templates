@@ -43,8 +43,6 @@
 
 == 李超树
 
-#include "templates/数据结构/李超树.typ"
-
 #zebraw(lang: false)[#raw(readcode("templates/数据结构/李超树.cpp"), lang: "cpp", block: true)]
 
 == 全局平衡二叉树
@@ -60,8 +58,6 @@
 #zebraw(lang: false)[#raw(readcode("templates/数据结构/lct.cpp"), lang: "cpp", block: true)]
 
 == 广义串并联图
-
-#include "templates/数据结构/广义串并联图.typ"
 
 #zebraw(lang: false)[#raw(readcode("templates/数据结构/广义串并联图.cpp"), lang: "cpp", block: true)]
 
@@ -146,6 +142,50 @@
 == O(V)-O(1) GCD
 
 #zebraw(lang: false)[#raw(readcode("templates/数论/fgcd.cpp"), lang: "cpp", block: true)]
+
+== 离散对数
+
+#zebraw(lang: false)[#raw(readcode("templates/数论/BSGS.cpp"), lang: "cpp", block: true)]
+
+== 中国剩余定理
+
+#zebraw(lang: false)[#raw(readcode("templates/数论/CRT.cpp"), lang: "cpp", block: true)]
+
+== Miller-Rabin 素性检验
+
+#zebraw(lang: false)[#raw(readcode("templates/数论/Miller-Rabin.cpp"), lang: "cpp", block: true)]
+
+== Pollard-Rho 分解质因数
+
+#zebraw(lang: false)[#raw(readcode("templates/数论/Pollard-Rho.cpp"), lang: "cpp", block: true)]
+
+== 扩展欧几里得
+
+#zebraw(lang: false)[#raw(readcode("templates/数论/exgcd.cpp"), lang: "cpp", block: true)]
+
+== 最小模线性值
+
+#zebraw(lang: false)[#raw(readcode("templates/数论/minmod.cpp"), lang: "cpp", block: true)]
+
+== 二次剩余
+
+#zebraw(lang: false)[#raw(readcode("templates/数论/二次剩余.cpp"), lang: "cpp", block: true)]
+
+== 原根与阶
+
+#zebraw(lang: false)[#raw(readcode("templates/数论/原根.cpp"), lang: "cpp", block: true)]
+
+== 杜教筛
+
+#zebraw(lang: false)[#raw(readcode("templates/数论/杜教筛.cpp"), lang: "cpp", block: true)]
+
+== 线性筛
+
+#zebraw(lang: false)[#raw(readcode("templates/数论/线性筛.cpp"), lang: "cpp", block: true)]
+
+== 类欧几里得
+
+#zebraw(lang: false)[#raw(readcode("templates/数论/floor_sum.cpp"), lang: "cpp", block: true)]
 
 = 多项式
 

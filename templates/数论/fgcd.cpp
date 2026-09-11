@@ -1,4 +1,4 @@
-// fgcd_t: 数学 · O(V)-O(1) GCD
+// fgcd_t: 数论 · O(V)-O(1) GCD
 
 struct fgcd_t {
     static constexpr int n = 1e7, B = 3163;
