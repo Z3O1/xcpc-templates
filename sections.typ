@@ -183,9 +183,11 @@
 
 #zebraw(lang: false)[#raw(readcode("templates/数论/线性筛.cpp"), lang: "cpp", block: true)]
 
-== 类欧几里得
+== 下取整和
 
-#zebraw(lang: false)[#raw(readcode("templates/数论/floor_sum.cpp"), lang: "cpp", block: true)]
+#include "templates/数论/下取整和.typ"
+
+#zebraw(lang: false)[#raw(readcode("templates/数论/下取整和.cpp"), lang: "cpp", block: true)]
 
 = 多项式
 

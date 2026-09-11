@@ -1,6 +1,6 @@
-// floor_sum 自测:与暴力求和对照,覆盖各分支与大值
+// 下取整和(floor_sum)自测:与暴力求和对照,覆盖各分支与大值
 #include "../_check_base.hpp"
-#include "floor_sum.cpp"
+#include "下取整和.cpp"
 
 // 逐项暴力(i128 累加,避免答案本身溢出)
 u128 brute(u64 n, u64 m, u64 a, u64 b) {
@@ -76,19 +76,21 @@ int main() {
     if(big < 1000) return printf("  [FAIL] 大值用例太少(%d)\n", big), 1;
     printf("  [ok] %d 组大值(契约范围内)与 i128 版一致\n", big);
 
-    // 拆分恒等式(与实现无关的数学性质,顺便压一遍大参数路径)
+    // 拆分恒等式:与实现无关的数学性质。
+    // 参数压在"答案 < 2^64"里(n <= 1e5、m >= 10、a <= 1e9 → 答案 <= 5e14),否则校验本身会溢出。
     For(t, 1, 20000) {
         const u64 M = (u64) 1e18;
-        u64 n = rnd(0, (u64) 1e6), m = rnd(1, (u64) 1e9);
-        u64 a = rnd(0, (u64) 1e12), b = rnd(0, (u64) 1e12);
+        u64 n = rnd(0, (u64) 1e5), m = rnd(10, (u64) 1e9);
+        u64 a = rnd(0, (u64) 1e9), b = rnd(0, (u64) 1e9);
         u64 rest = floor_sum(n, m, a % m, b % m);
         u64 tri = (n % 2 ? n - 1 : n) / 2 * (n % 2 ? n : n - 1) % M; // 先除 2 再取模
         u64 want = (u64) (((u128) rest + (u128) tri * (a / m % M) + (u128) (n % M) * (b / m % M)) % M);
         if(floor_sum(n, m, a, b) % M != want)
-            return printf("  [FAIL] 拆分恒等式 n=%llu m=%llu\n",
-                          (unsigned long long) n, (unsigned long long) m), 1;
+            return printf("  [FAIL] 拆分恒等式 n=%llu m=%llu a=%llu b=%llu\n",
+                          (unsigned long long) n, (unsigned long long) m,
+                          (unsigned long long) a, (unsigned long long) b), 1;
     }
     ok("2 万组拆分恒等式");
 
-    PASSED("floor_sum");
+    PASSED("下取整和");
 }
