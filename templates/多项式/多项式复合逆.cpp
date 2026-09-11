@@ -174,12 +174,18 @@ poly pw_pj(poly F, int n) // [x^{n-1}]1/(1-yF)
 			}
 		}
 	}
+	F.c.resize(n); // 必须截到 n:否则调用方传进来的更长多项式会把高次项留在后面,
+	               // 接着 comp_inv 里的 reverse 会把它们倒到低次位置参与运算 → 静默算错
 	for(i = 0; i < n; i++)
 		F.c[i] = A[i][0];
 	return F;
 }
+// 要求 F.c.size() >= n(n == 1 时至少 2 个系数,内部会读 F.c[1])且 F[1] != 0;
+// 返回长度恰为 n 的复合逆。
 poly comp_inv(poly F, int n) // [x^n]F^k=k/n[x^{n-k}](G/x)^{-n}
 {
+	// 补齐系数:下面要读 F.c[1](n == 1 时也得有),pw_pj 也要求 size >= n
+	if((int) F.c.size() < std::max(n, 2)) F.c.resize(std::max(n, 2));
 	int i, r, p = qpow(F.c[1], mod - 2), c;
 	for(i = 0, c = 1; i < n; i++, c = (ll)c * p % mod)
 		F.c[i] = (ll)F.c[i] * c % mod;

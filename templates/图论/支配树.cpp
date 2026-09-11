@@ -24,13 +24,19 @@ pii que(int u) {
     return f[u];
 }
 void getdom(int _n) {
-    n = _n, dfs(1);
-    For(i, 1, n) fa[i] = i, f[i] = {dfn[i]};
+    n = _n;
+    // 只重置算法自身的状态,不动 t[]/t2[](图是调用方建的,清了就没边可跑了)。
+    // 不重置的话同一进程内第二次调用会带着上一张图的 dfn/pos/dt 算错。
+    For(i, 1, n) q1[i].clear(), fa[i] = f1[i] = dfn[i] = pos[i] = sd[i] = dm[i] = 0;
+    dt = 0;
+    dfs(1);
+    For(i, 1, n) fa[i] = i, f[i] = {dfn[i], 0};
     rFor(i, dt, 1) {
         int u = pos[i], s = i;
         for(auto x : q1[u]) dm[x] = que(x)[1];
         if(i == 1) break;
-        for(auto x : t2[u]) cmin(s, que(x)[0]);
+        for(auto x : t2[u])
+            if(dfn[x]) cmin(s, que(x)[0]); // 必须跳过从 1 不可达的前驱,否则 s 被拉成 0、dm[u] 算错
         sd[u] = pos[s];
         q1[sd[u]] += u;
         f[u] = {dfn[sd[u]], u};

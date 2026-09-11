@@ -162,6 +162,10 @@ poly comp(poly F, poly G, int n) // [x^0]G = 0
 	Gp[0].resize(n);
 	Gp[1].resize(n);
 	Gp[0][0] = 1;
+	// 调用方给的 G 可能不足 n 个系数:必须补齐,否则下面 G.c[i] 越界读(ASAN 实测
+	// heap-buffer-overflow)。F 侧也一样,补到 n。
+	if((int) G.c.size() < n) G.c.resize(n);
+	if((int) F.c.size() < n) F.c.resize(n);
 	for(i = 1; i < n; i++)
 		Gp[1][i] = mod - G.c[i];
 	auto P = solve(F.c, Gp, n, 1);

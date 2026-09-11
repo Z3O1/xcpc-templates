@@ -30,8 +30,8 @@ p2 operator*(p2 x, db y) { return {x.x * y, x.y * y}; }
 p2 operator*(db y, p2 x) { return {x.x * y, x.y * y}; }
 db operator*(p2 x, p2 y) { return x.x * y.x + x.y * y.y; }
 p2 operator+=(p2 &x, p2 y) { return x = x + y; }
-p2 operator-=(p2 &x, p2 y) { return x = x + y; }
-p2 operator/=(p2 &x, p2 y) { return x = x + y; }
+p2 operator-=(p2 &x, p2 y) { return x = x - y; }
+p2 operator/=(p2 &x, db y) { return x = x / y; } // 原来是 (p2&, p2) 且写成加法:连 a /= 2.0 都编译不过
 db dis2(p2 x) { return x.x * x.x + x.y * x.y; }
 db dis(p2 x) { return hypot(x.x, x.y); }
 p2 unit(p2 x) { return x / dis(x); }

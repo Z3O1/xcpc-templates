@@ -51,7 +51,7 @@ static void bug(const char *fmt, ...) {
 static vect<int> adj[MX];   // check 自己的邻接表(与模板的 t[] 无关, 暴力用)
 static void reset_dom() {
     For(i, 0, MX - 1) {
-        DOM::t[i].clear(), DOM::t2[i].clear(), DOM::q1[i].clear();
+        DOM::t[i].clear(), DOM::t2[i].clear();
         DOM::dfn[i] = 0, DOM::pos[i] = 0, DOM::fa[i] = i, DOM::f1[i] = 0;
         DOM::sd[i] = 0, DOM::dm[i] = 0, DOM::f[i] = {0, 0};
         adj[i].clear();
@@ -59,6 +59,9 @@ static void reset_dom() {
     DOM::dt = 0;
 }
 static void build(int, const vect<array<int, 2>> &es) {   // n 用不到, 保留参数为了调用处对称
+    // 注意顺序:模板的 getdom() 现在会自己清 t[]/t2[]/q1[]/dfn[] 等状态,所以必须在
+    // 调 getdom 之前把边加进去 —— 原来的写法是"先 add 再 reset"(依赖旧的不自重置行为),
+    // 模板修好之后这样会把刚加的边清掉。
     reset_dom();
     for(auto &e : es) DOM::add(e[0], e[1]), adj[e[0]].push_back(e[1]);
 }
