@@ -91,7 +91,8 @@ files = {}   # 目录名(章节) -> {文件名: Path}, 不含介绍 .typ
 intros = {}  # 目录名 -> {代码基底名: Path}: 同名 .typ 介绍(渲染在代码前)
 for d in sorted(p for p in TPL.iterdir() if p.is_dir()):
     fs = {p.name: p for p in sorted(d.iterdir())
-          if p.is_file() and not p.name.startswith('.')}
+          if p.is_file() and not p.name.startswith('.')
+          and not p.name.endswith('.check.cpp')}   # check 自测不入 PDF
     if not fs:
         continue
     base = {p.stem for n, p in fs.items() if not n.endswith('.typ')}

@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+# 编译并运行 templates/ 下所有 *.check.cpp 自测(类似 skip2004 的 check)
+# 用法: ./check.sh            # 跑全部
+#       ./check.sh 数论        # 只跑名字里含"数论"的
+#       ./check.sh -v 数论     # 顺便打印每个 check 的输出
+set -u
+cd "$(dirname "$0")"
+
+verbose=0
+[[ "${1:-}" == "-v" ]] && verbose=1 && shift
+filter="${1:-}"
+
+mapfile -t checks < <(find templates -name '*.check.cpp' | sort)
+[[ -n "$filter" ]] && mapfile -t checks < <(printf '%s\n' "${checks[@]}" | grep -- "$filter")
+
+if [[ ${#checks[@]} -eq 0 ]]; then
+    echo "没有匹配的 *.check.cpp(check 文件尚未创建?)"
+    exit 1
+fi
+
+tmpdir=$(mktemp -d)
+trap 'rm -rf "$tmpdir"' EXIT
+
+pass=0; fail=0; failed=()
+for src in "${checks[@]}"; do
+    bin="$tmpdir/$(echo "$src" | tr '/.' '__')"
+    if ! err=$(g++ -std=c++17 -O2 -o "$bin" "$src" 2>&1); then
+        printf 'COMPILE FAIL  %s\n' "$src"
+        printf '%s\n' "$err" | head -15
+        failed+=("$src"); ((fail++)); continue
+    fi
+    if out=$(cd "$(dirname "$src")" && "$bin" 2>&1); then
+        printf 'ok    %s\n' "$src"
+        ((pass++))
+        [[ $verbose -eq 1 ]] && printf '%s\n' "$out" | sed 's/^/      /'
+    else
+        printf 'FAIL  %s\n' "$src"
+        printf '%s\n' "$out" | tail -20 | sed 's/^/      /'
+        failed+=("$src"); ((fail++))
+    fi
+done
+
+echo
+echo "== $pass passed, $fail failed =="
+for f in "${failed[@]:-}"; do [[ -n "$f" ]] && echo "   $f"; done
+exit $((fail > 0))
