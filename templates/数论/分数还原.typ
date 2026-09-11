@@ -1,0 +1,1 @@
+$q equiv x / a (mod p)，x <= A$，$|a|$ 取到最小值

@@ -1,0 +1,247 @@
+{
+ "sections": [
+  "字符串",
+  "数据结构",
+  "图论",
+  "数学",
+  "数论",
+  "多项式",
+  "计算几何"
+ ],
+ "entries": [
+  {
+   "key": "通用/快读.cpp",
+   "title": "快读",
+   "missing": true,
+   "hidden": false
+  },
+  {
+   "key": "通用/随机.cpp",
+   "title": "随机",
+   "missing": true,
+   "hidden": false
+  },
+  {
+   "key": "通用/对拍.sh",
+   "title": "对拍",
+   "missing": true,
+   "hidden": false
+  },
+  {
+   "key": "字符串/manacher.cpp",
+   "title": "Manacher",
+   "missing": false,
+   "hidden": false
+  },
+  {
+   "key": "字符串/zfunc.cpp",
+   "title": "Z 函数",
+   "missing": false,
+   "hidden": false
+  },
+  {
+   "key": "字符串/最小表示法.cpp",
+   "title": "最小表示法",
+   "missing": false,
+   "hidden": false
+  },
+  {
+   "key": "字符串/sam.cpp",
+   "title": "SAM",
+   "missing": false,
+   "hidden": true
+  },
+  {
+   "key": "字符串/sa.cpp",
+   "title": "SA",
+   "missing": false,
+   "hidden": false
+  },
+  {
+   "key": "字符串/pam.cpp",
+   "title": "广义 PAM",
+   "missing": false,
+   "hidden": true
+  },
+  {
+   "key": "数学/modint.cpp",
+   "title": "ModInt",
+   "missing": true,
+   "hidden": false
+  },
+  {
+   "key": "数学/barrett.cpp",
+   "title": "Barret 约简",
+   "missing": false,
+   "hidden": false
+  },
+  {
+   "key": "数学/ntt.cpp",
+   "title": "任意模数 NTT",
+   "missing": true,
+   "hidden": false
+  },
+  {
+   "key": "数学/lagrange.cpp",
+   "title": "拉格朗日插值",
+   "missing": false,
+   "hidden": false
+  },
+  {
+   "key": "数学/pollard-rho.cpp",
+   "title": "Pollard Rho",
+   "missing": false,
+   "hidden": false
+  },
+  {
+   "key": "数学/min25.cpp",
+   "title": "min_25",
+   "missing": false,
+   "hidden": false
+  },
+  {
+   "key": "数学/类欧.cpp",
+   "title": "类欧",
+   "missing": false,
+   "hidden": false
+  },
+  {
+   "key": "数据结构/线段树.cpp",
+   "title": "线段树",
+   "missing": true,
+   "hidden": false
+  },
+  {
+   "key": "数据结构/李超树.cpp",
+   "title": "李超树",
+   "missing": false,
+   "hidden": false
+  },
+  {
+   "key": "数据结构/全局平衡二叉树.cpp",
+   "title": "全局平衡二叉树",
+   "missing": false,
+   "hidden": false
+  },
+  {
+   "key": "数据结构/lct.cpp",
+   "title": "LCT",
+   "missing": false,
+   "hidden": false
+  },
+  {
+   "key": "数据结构/广义串并联图.cpp",
+   "title": "广义串并联图",
+   "missing": false,
+   "hidden": false
+  },
+  {
+   "key": "数据结构/二分栈.cpp",
+   "title": "二分栈",
+   "missing": false,
+   "hidden": false
+  },
+  {
+   "key": "数据结构/wqs.cpp",
+   "title": "wqs 二分构造方案",
+   "missing": false,
+   "hidden": false
+  },
+  {
+   "key": "图论/dinic.cpp",
+   "title": "网络流",
+   "missing": false,
+   "hidden": false
+  },
+  {
+   "key": "图论/mcmf.cpp",
+   "title": "费用流",
+   "missing": false,
+   "hidden": false
+  },
+  {
+   "key": "图论/支配树.cpp",
+   "title": "支配树",
+   "missing": false,
+   "hidden": false
+  },
+  {
+   "key": "计算几何/geo.cpp",
+   "title": null,
+   "missing": false,
+   "hidden": false
+  },
+  {
+   "key": "数学/fgcd.cpp",
+   "title": "O(V)-O(1) GCD",
+   "missing": true,
+   "hidden": false
+  },
+  {
+   "key": "数据结构/rmq.cpp",
+   "title": "O(1) RMQ",
+   "missing": false,
+   "hidden": false
+  },
+  {
+   "key": "数学/多项式复合.cpp",
+   "title": "多项式复合",
+   "missing": true,
+   "hidden": false
+  },
+  {
+   "key": "数学/多项式复合逆.cpp",
+   "title": "多项式复合逆",
+   "missing": true,
+   "hidden": false
+  },
+  {
+   "key": "通用/typ演示.typ",
+   "title": "Typst 演示",
+   "missing": true,
+   "hidden": false
+  },
+  {
+   "key": "数学/类欧测试.cpp",
+   "title": "类欧测试",
+   "missing": true,
+   "hidden": false
+  },
+  {
+   "key": "数论/分数还原.cpp",
+   "title": "分数还原",
+   "missing": false,
+   "hidden": false
+  },
+  {
+   "key": "多项式/ntt.cpp",
+   "title": "任意模数 NTT",
+   "missing": false,
+   "hidden": false
+  },
+  {
+   "key": "多项式/多项式复合.cpp",
+   "title": "多项式复合",
+   "missing": false,
+   "hidden": false
+  },
+  {
+   "key": "多项式/多项式复合逆.cpp",
+   "title": "多项式复合逆",
+   "missing": false,
+   "hidden": false
+  },
+  {
+   "key": "数论/fgcd.cpp",
+   "title": "O(V)-O(1) GCD",
+   "missing": false,
+   "hidden": false
+  },
+  {
+   "key": "图论/一般图最大匹配.cpp",
+   "title": "一般图最大匹配",
+   "missing": false,
+   "hidden": false
+  }
+ ]
+}
