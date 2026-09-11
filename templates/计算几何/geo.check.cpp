@@ -742,7 +742,7 @@ int main() {
             int n = (int) rnd(1, 40);
             vector<p2> v;
             ForD(i, 0, n) v.push_back(P((db) rnd(-1000000, 1000000), (db) rnd(-1000000, 1000000)));
-            p2 a2[64], h[64];
+            p2 a2[64], h[64 * 2 + 2]; // 契约:输出缓冲要 >= 2n+2
             ForD(i, 0, n) a2[i] = v[i];
             int k = convex_hull(n, a2, h);
             if(k > n) { pb.hit("顶点数超过输入点数", k, n); continue; }
@@ -767,7 +767,7 @@ int main() {
         CHECK(hullCheckOne(line), "凸包:101 个共线点 -> 只有两个端点");
         {
             vector<p2> allsame(37, P(-8, 11));
-            p2 a2[64], h[64];
+            p2 a2[64], h[64 * 2 + 2]; // 契约:输出缓冲要 >= 2n+2
             ForD(i, 0, 37) a2[i] = allsame[i];
             int k = convex_hull(37, a2, h);
             CHECK(k == 2 && eqp(h[0], P(-8, 11)) && eqp(h[1], P(-8, 11)), "凸包:37 个完全相同的点 -> 返回 2 个重复的同一个点(k=2,不是 1)");
@@ -798,7 +798,7 @@ int main() {
                 db ang = 2 * pi * i / 40;
                 cir.push_back(P(1000 * cos(ang), 1000 * sin(ang)));
             }
-            p2 a2[64], h[64];
+            p2 a2[64], h[64 * 2 + 2]; // 契约:输出缓冲要 >= 2n+2
             ForD(i, 0, 40) a2[i] = cir[i];
             int k = convex_hull(40, a2, h);
             Probe pb;
@@ -822,7 +822,7 @@ int main() {
                 ForD(i, 0, kk) v.push_back(P(i, 0));
                 v.push_back(P(0, 0)), v.push_back(P(100, 0)), v.push_back(P(100, 100)), v.push_back(P(0, 100));
                 if(!hullCheckOne(v)) ++pb.bad;
-                p2 a2[64], h[64];
+                p2 a2[64], h[64 * 2 + 2]; // 契约:输出缓冲要 >= 2n+2
                 ForD(i, 0, (int) v.size()) a2[i] = v[i];
                 int got = convex_hull(v.size(), a2, h);
                 if(got != 4) pb.hit("共线点应被去掉,只剩 4 个角点", got, 4);
@@ -844,7 +844,7 @@ int main() {
                 int n = (int) rnd(4, 12);
                 vector<p2> v;
                 ForD(i, 0, n) v.push_back(P((db) rnd(-6, 6), (db) rnd(-6, 6)));
-                p2 a2[64], h[64];
+                p2 a2[64], h[64 * 2 + 2]; // 契约:输出缓冲要 >= 2n+2
                 ForD(i, 0, n) a2[i] = v[i];
                 int k = convex_hull(n, a2, h, 1);
                 vector<p2> H(h, h + k);
@@ -879,7 +879,7 @@ int main() {
             vector<p2> v;
             for(int i = 0; i < n; i++) v.push_back(P((db) rnd(-100, 100), (db) rnd(-100, 100)));
             vector<p2> R = refHull(v);
-            p2 a2[64], h[64];
+            p2 a2[64], h[64 * 2 + 2]; // 契约:输出缓冲要 >= 2n+2
             ForD(i, 0, n) a2[i] = v[i];
             int k = convex_hull(n, a2, h);
             if(k != (int) R.size()) { pb.hit("原始点数与参考不符", k, R.size()); continue; }
@@ -913,7 +913,7 @@ int main() {
             int n = (int) rnd(2, 12);
             vector<p2> v;
             ForD(i, 0, n) v.push_back(P((db) rnd(-70, 70), (db) rnd(-70, 70)));
-            p2 a2[64], h[64];
+            p2 a2[64], h[64 * 2 + 2]; // 契约:输出缓冲要 >= 2n+2
             ForD(i, 0, n) a2[i] = v[i];
             int k = convex_hull(n, a2, h);
             db bf = 0;
@@ -946,7 +946,7 @@ int main() {
             int n = (int) rnd(3, 10);
             vector<p2> v;
             ForD(i, 0, n) v.push_back(P((db) rnd(-30, 30), (db) rnd(-30, 30)));
-            p2 a2[64], h[64];
+            p2 a2[64], h[64 * 2 + 2]; // 契约:输出缓冲要 >= 2n+2
             ForD(i, 0, n) a2[i] = v[i];
             int k = convex_hull(n, a2, h);
             if(k < 3) continue;
@@ -967,7 +967,7 @@ int main() {
             int n = (int) rnd(3, 12);
             vector<p2> v;
             ForD(i, 0, n) v.push_back(P((db) rnd(-40, 40), (db) rnd(-40, 40)));
-            p2 a2[64], h[64];
+            p2 a2[64], h[64 * 2 + 2]; // 契约:输出缓冲要 >= 2n+2
             ForD(i, 0, n) a2[i] = v[i];
             int k = convex_hull(n, a2, h);
             if(k < 3) continue;
@@ -1037,7 +1037,7 @@ int main() {
             int n = (int) rnd(3, 10);
             vector<p2> v;
             ForD(i, 0, n) v.push_back(P((db) rnd(-50, 50), (db) rnd(-50, 50)));
-            p2 a2[64], h[64];
+            p2 a2[64], h[64 * 2 + 2]; // 契约:输出缓冲要 >= 2n+2
             ForD(i, 0, n) a2[i] = v[i];
             int k = convex_hull(n, a2, h);
             if(k < 3) continue;
@@ -1131,7 +1131,7 @@ int main() {
             int n = (int) rnd(3, 12);
             vector<p2> v;
             ForD(i, 0, n) v.push_back(P((db) rnd(-1000000000, 1000000000), (db) rnd(-1000000000, 1000000000)));
-            p2 a2[64], h[64];
+            p2 a2[64], h[64 * 2 + 2]; // 契约:输出缓冲要 >= 2n+2
             ForD(i, 0, n) a2[i] = v[i];
             int k = convex_hull(n, a2, h);
             if(k > n || k < 1) { pb.hit("hull 顶点数越界", k, n); continue; }
@@ -1203,7 +1203,7 @@ int main() {
             int n = (int) rnd(3, 8);
             vector<p2> v;
             ForD(i, 0, n) v.push_back(P((db) rnd(-1000000000, 1000000000), (db) rnd(-1000000000, 1000000000)));
-            p2 a2[64], h[64];
+            p2 a2[64], h[64 * 2 + 2]; // 契约:输出缓冲要 >= 2n+2
             ForD(i, 0, n) a2[i] = v[i];
             int k = convex_hull(n, a2, h);
             if(k < 3) continue;
@@ -1276,7 +1276,7 @@ int main() {
                 db ang = 2 * pi * i / n + (db) rnd(-1000, 1000) / 1000000.0;
                 v.push_back(O + P(R * cos(ang), R * sin(ang)));
             }
-            p2 a2[64], h[64];
+            p2 a2[64], h[64 * 2 + 2]; // 契约:输出缓冲要 >= 2n+2
             ForD(i, 0, n) a2[i] = v[i];
             int k = convex_hull(n, a2, h);
             if(k != n) pb.hit("圆上点凸包漏顶点", k, n);

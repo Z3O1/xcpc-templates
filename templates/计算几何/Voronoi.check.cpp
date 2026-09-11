@@ -56,7 +56,6 @@ static void nearest2(const vect<p2> &a, p2 q, db &d1, int &i1, db &d2) {
     }
 }
 // ---------------- 验证器:返回空串 = 通过 ----------------
-static bool gStrict = true;  // 是否做采样对照(变异自检时可关掉,只看结构)
 static int gSamples = 0;
 static string verifyCells(const vect<p2> &a, const vect<vect<p2>> &c, bool allowOverlap, bool sample = true) {
     char buf[512];

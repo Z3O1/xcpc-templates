@@ -244,7 +244,6 @@ static bool generalPosition(const vector<p2> &v) {
 
 int main() {
     printf("== Delaunay.check:空圆性质 + 剖分合法性 + 暴力 Delaunay 对照 + 退化输入 ==\n");
-    char buf[512];
 
     // ===== 1. 接口与退化输入(全同点 / 全共线 / n <= 3 / 重复点) =====
     {

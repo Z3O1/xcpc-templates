@@ -105,6 +105,10 @@ int contain(int n, p2 *a, const p2 &p) {  // 0: outside, 1: on seg, 2: inside
     }
     return ret * 2;
 }
+// 求凸包,返回点数,k 个顶点按逆时针存在 b[0..k-1]。nos=0 去掉共线点,nos=1 保留。
+// **前置条件:输出缓冲 b 至少要能放 2n + 2 个点**(不是 n 个!扫下凸壳时会先写满 n 个位置,
+// 之后上凸壳还会再写;实测 ASAN:p2 b[5] + 点 (i,i^2) 在写 b[5] 时 stack-buffer-overflow)。
+// 输入 a 会被原地排序;b 与 a 不能是同一块内存。
 int convex_hull(int n, p2 *a, p2 *b, bool nos = 0) {
     if(n <= 1) return 1;
     sort(a, a + n);
