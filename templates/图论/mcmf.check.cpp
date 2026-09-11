@@ -281,7 +281,8 @@ static bool run_child_mcmf(int which, MfRes &out, int ms) {
 }
 
 int main() {
-    long long ncase = 0, nbad = 0;
+    rng.seed(20240513);   // 固定种子: 每次跑同一批随机用例, 出问题可复现
+    long long ncase = 0;
 
     // ———— 0) mcmf2 的两个 bug: 只能静态判定(调用它必挂) ————
     puts("— mcmf2(): 静态判定(调用它会死循环, 本 check 不调用) —");
@@ -593,6 +594,12 @@ int main() {
         RefMCMF R;
         R.init(120);
         int s = 1, t = 120;
+        // 先铺一条 1->2->...->120 的链, 保证满流不为 0(否则这条用例是空跑)
+        For(u, 1, 119) {
+            int w = (int) rnd(1, 1000000);
+            ll c = rnd(0, 1000000);
+            mf.add(u, u + 1, w, c), R.add(u, u + 1, w, c);
+        }
         For(rep, 1, 300) {
             int u = (int) rnd(1, 120), v = (int) rnd(1, 120);
             if(u == v) continue;
@@ -606,7 +613,9 @@ int main() {
             return printf("  [FAIL] n=120 m≈300: (%d, %lld) != 独立实现 (%d, %lld)\n",
                           got.first, got.second, R.flow, R.cost),
                    1;
-        printf("  [ok] n=120, m≈300, 大容量大费用: 流 %d 费用 %lld 与独立实现一致\n", got.first, got.second);
+        if(got.first <= 0) return printf("  [FAIL] n=120 的规模用例满流为 %d, 这条用例没测到东西\n", got.first), 1;
+        printf("  [ok] n=120, m≈%d, 大容量大费用: 流 %d 费用 %lld 与独立实现一致\n",
+               (int) R.e.size() / 2 - 1, got.first, got.second);
         ncase += 1;
     }
 

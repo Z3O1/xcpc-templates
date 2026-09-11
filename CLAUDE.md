@@ -15,7 +15,10 @@ python3 gen.py               # 只看生成、不编译
 ```
 
 - 改模板后跑 `./build.sh`,Typst 直接报 `error: ... templates/xxx.typ:行号` 加文件路径,照报错修即可
-- **本环境 typst 是 snap 版且不在 PATH**:用 `/snap/bin/typst`,并且要先建可写的运行目录(否则报 `cannot create XDG_RUNTIME_DIR folder ... Read-only file system`):`mkdir -p tmp/xdg && XDG_RUNTIME_DIR=$PWD/tmp/xdg /snap/bin/typst compile xcpc.typ`;`./build.sh` 会因找不到 `typst` 在最后一步失败(gen.py 部分已跑完)
+- **本环境 typst 是 snap 版且不在 PATH**:直接跑 `./build.sh` 就行(已自动选对二进制并设好 `XDG_RUNTIME_DIR`)。要点与坑:
+  - **不要用 `/snap/bin/typst`**——它只是 snapd 启动器(→ `/usr/bin/snap`),在 DSH 沙箱里**必然启动失败**:snapd 要先经 D-Bus 向 systemd 申请 transient scope,而沙箱 PID 1 是 `bwrap --unshare-pid`,host 的 systemd/dbus 看不见命名空间里的 PID → `cannot create transient scope: DBus error ... UnixProcessIdUnknown`(PID 1 为 bwrap 时也可能报 `job .../job/N finished with result failed`),退出码 46。**这是 PID 命名空间隔离,与文件权限无关,放宽沙箱(danger-full-access)也修不好**;失败发生在 snapd 申请 scope 阶段,真二进制根本没被执行
+  - 绕法:直接跑 snap 载荷里的真二进制 `/snap/typst/current/bin/typst`(typst 0.15.1,classic confinement,能读仓库目录)。手动编译:`mkdir -p tmp/xdg && XDG_RUNTIME_DIR=$PWD/tmp/xdg /snap/typst/current/bin/typst compile xcpc.typ`;不设 `XDG_RUNTIME_DIR` 会报 `cannot create XDG_RUNTIME_DIR folder ... Read-only file system`
+  - 沙箱里也没有网络(`curl https://github.com` 报 `SSL_ERROR_SYSCALL`),所以别指望现下 non-snap 版 typst;主机终端里 `/snap/bin/typst` 是正常的
 - **标题必须 Typst 安全**:标题会原样进 `sections.typ` 的 `== 标题`,带 `(`/`)` 会被当函数调用报 `unclosed delimiter`,带 `*`/反引号会被当标记——标题写短名词,细节放注释
 - **改了首行注释但标题没变**:`gen.py` 只给新条目从注释取标题,已有条目以 manifest 为准 → 想换标题就先从 `.manifest.json` 里摘掉该条再 `python3 gen.py`
 - 调试单点 Typst 小样:写个 `_t.typ` 放到**项目目录**(snap 版 typst 读不到 /tmp!),`typst compile _t.typ`,用完删;要用 `#panic("...")` 把值打到 stderr——`pdftotext` 的页面折行会伪造换行字符,不能用来调试字符串
