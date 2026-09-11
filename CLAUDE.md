@@ -82,7 +82,7 @@ templates/<章目录>/<模板>.typ(介绍)  ─┼─→ gen.py ─→ sections.
 
 - `templates/图论/dinic.cpp`:`bfs()` 首行 `d[i] = -(i == s)` **是 bug(最大流恒 0)**:只有 s 得 -1、其余为 0,而判空条件 `!~d[v]` 只认 -1,邻居 `d[v] = 0` 被当"已访问"、BFS 一个点都进不去。实测(模板本体):`f.add(1,2,3); f.add(2,3,4); f.add(1,3,1); f.solve(1,3,3)` 返回 0(应 4)。**修法是 `d[i] = (i == s) - 1`(即 d[s] = 0、其余 -1),不是 `d[i] = -1`** —— 后者会把源点也当"未访问",残余图有边回 s 时 s 被重新定层入队,`while (bfs())` 恒真而 dfs 推不进流 → solve() 死循环(实测:6 条容量 2 的边 1-2/1-3/2-3/2-4/3-5/4-5、solve(1,5,5) 应 4 却挂死)。`dinic.typ` 的原记载("最大流恒 0")是对的,本条此前被我两次记反,现以实测为准
 - `templates/图论/dinic.cpp`:`cut(auto *f)` 的 `auto` 形参是 C++20 语法,C++17 下只是 GCC 扩展(告警),`-Werror`/clang 会挂
-
+- `templates/数据结构/全局平衡二叉树.cpp`:**模板是完整程序(自带 main)**,而 main 末尾原来没有 `return 0;` —— 这样单独编译运行没问题(C++ 规定 main 掉出末尾等价 return 0),但**一旦把 main 改名后 include 再调用**(写 check 时的常见做法),GCC 会把"非 main 的 non-void 函数掉出末尾"当 `__builtin_unreachable`,在 -O2 下**连循环退出判断和 ret 一起删掉** → 变成死循环。已补 `return 0;`(一行修复)。教训:驱动这类"自带 main 的模板"时,要么补 return,要么只 include 不调用它的 main。另外它依赖 base header 的 `using namespace std`(裸用 `max`),单独编译会报 `max was not declared`。其 5 参数版 `que(L,R,k,l,r)` 用 `(l+r)/2` 分界而 `build`/`upd` 用加权中位数 `k>>1`,权值不均时子区间查询会走到 `tr[0]`(模板自身调用点都传整链,所以当前不可达)
 - `templates/数学/类欧.cpp`:结构版 `f(n,a,b,c)` 与单值版 `f(a,b,c,n)` 签名同为 `(int,int,int,int)`,C++ 不允许只按返回类型重载,**不能同时编译**,按需只留一个(已实测:报 `ambiguating new declaration of 'mint f(int, int, int, int)'`)
 - `templates/计算几何/geo.cpp`:`operator-=` 与 `operator/=` 都实现成了 `x = x + y`
 

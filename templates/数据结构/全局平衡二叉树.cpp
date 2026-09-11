@@ -124,4 +124,5 @@ int main() {
         upd(p, y - a[p]), a[p] = y;
         ans = getans(), cout << ans << endl;
     }
+    return 0;
 }
