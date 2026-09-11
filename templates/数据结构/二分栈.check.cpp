@@ -192,19 +192,28 @@ int main() {
         work(-12345); // 单纯为了记录越界调用
         printf("  [note] 已知契约缺陷:work() 会以 r = %d 调用 calc(数据 n = %d),即在 [1,n] 之外求值\n", max_r_seen, n);
         if(max_r_seen > n) {
-            // 复现影响:让 calc 在 n 之外读到「残留值」(模拟上一组数据的残留),关掉夹值
+            // 复现影响:让 calc 在 n 之外读到「上一组数据的残留」(真实使用中最常见的情形)
             vector<int> probe{2, 19, 12, 4, 14, 7, 2, 15, 20, 1};
-            set_data(probe);
-            For(r, n + 1, n + 4) pre[r] = pre[n] + 12345; // n 之外的残留(真实场景里来自上一组数据)
-            CLAMP = false;
-            nd bad = work(-1000);
-            CLAMP = true;
-            nd want = naive_work(-1000);
-            printf("  [note] 影响复现:n=10、数据 %s、dt=-1000,calc 在 n 之外有残留时 work 得 {%lld,%d},"
-                   "朴素 DP(calc 夹到 n)得 {%lld,%d}\n",
-                   show(probe).c_str(), (ll) bad.x, bad.c, (ll) want.x, want.c);
-            if(bad.x == want.x && bad.c == want.c)
-                printf("  [note] 该缺陷似乎已被修复(不再产生非最优解)\n");
+            int bad = 0, tot = 0;
+            For(seed, 1, 20) {
+                rng.seed(seed);
+                set_data(probe);
+                For(r, n + 1, n + 8) pre[r] = rnd(-1000000, 1000000); // n 之外的残留
+                CLAMP = false;
+                nd got = work(-1000);
+                CLAMP = true;
+                nd want = naive_work(-1000);
+                ++tot;
+                if(got.x != want.x || got.c != want.c) {
+                    ++bad;
+                    if(bad == 1)
+                        printf("  [note]   其中一例(seed=%d):work(-1000) = {%lld,%d},朴素 DP/枚举最优 = {%lld,%d}\n", seed,
+                               (ll) got.x, got.c, (ll) want.x, want.c);
+                }
+            }
+            printf("  [note] 影响复现:n=10、数据 %s、dt=-1000,calc 在 n 之外有残留时,20 组里 %d 组给出非最优解\n",
+                   show(probe).c_str(), bad);
+            if(bad == 0) printf("  [note] 按上面的契约缺陷,本应能复现非最优解但没复现 —— 模板行为可能已变化,请复核\n");
         }
     }
 

@@ -9,6 +9,7 @@
 set -u
 cd "$(dirname "$0")"
 
+timeout_s="${XCPC_CHECK_TIMEOUT:-60}"   # 单个 check 的墙钟上限(卡死=FAIL,不再挂住整轮)
 verbose=0
 [[ "${1:-}" == "-v" ]] && verbose=1 && shift
 filter="${1:-}"
@@ -32,12 +33,17 @@ for src in "${checks[@]}"; do
         printf '%s\n' "$err" | head -15
         failed+=("$src"); ((fail++)); continue
     fi
-    if out=$(cd "$(dirname "$src")" && "$bin" 2>&1); then
+    if out=$(cd "$(dirname "$src")" && timeout "$timeout_s" "$bin" 2>&1); then
         printf 'ok    %s\n' "$src"
         ((pass++))
         [[ $verbose -eq 1 ]] && printf '%s\n' "$out" | sed 's/^/      /'
     else
-        printf 'FAIL  %s\n' "$src"
+        rc=$?
+        if [[ $rc -eq 124 ]]; then
+            printf 'FAIL  %s  (超时 %ss —— 很可能是 check 触发了模板的死循环用例)\n' "$src" "$timeout_s"
+        else
+            printf 'FAIL  %s\n' "$src"
+        fi
         printf '%s\n' "$out" | tail -20 | sed 's/^/      /'
         failed+=("$src"); ((fail++))
     fi

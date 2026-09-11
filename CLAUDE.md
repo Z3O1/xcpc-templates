@@ -10,6 +10,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ./build.sh                   # python3 gen.py && typst compile xcpc.typ → xcpc.pdf
 ./build.sh --watch           # 改 templates/ 后 typst 自动重编译
 python3 gen.py               # 只看生成、不编译
+./check.sh                   # 编译并运行 templates/**/*.check.cpp 自测(每个模板一份)
+./check.sh -v 数论           # 只跑某章并打印每条断言的输出
 ```
 
 - 改模板后跑 `./build.sh`,Typst 直接报 `error: ... templates/xxx.typ:行号` 加文件路径,照报错修即可
@@ -17,7 +19,12 @@ python3 gen.py               # 只看生成、不编译
 - **标题必须 Typst 安全**:标题会原样进 `sections.typ` 的 `== 标题`,带 `(`/`)` 会被当函数调用报 `unclosed delimiter`,带 `*`/反引号会被当标记——标题写短名词,细节放注释
 - **改了首行注释但标题没变**:`gen.py` 只给新条目从注释取标题,已有条目以 manifest 为准 → 想换标题就先从 `.manifest.json` 里摘掉该条再 `python3 gen.py`
 - 调试单点 Typst 小样:写个 `_t.typ` 放到**项目目录**(snap 版 typst 读不到 /tmp!),`typst compile _t.typ`,用完删;要用 `#panic("...")` 把值打到 stderr——`pdftotext` 的页面折行会伪造换行字符,不能用来调试字符串
-- 没有任何测试/CI;编译通过 + 抽查 PDF 页(如 `pdftoppm -png -f N -l N xcpc.pdf /tmp/x`)就是验证
+- **模板自测**:每个模板配一份 `X.check.cpp`(仿 skip2004 的 check),`./check.sh` 批量编译运行
+  - 写法:`#include "../_check_base.hpp"`(提供 house 宏 + `CHECK`/`PASSED`/`rnd`)再 `#include "X.cpp"`(被测模板本体),main 里做暴力对照/断言,末尾 `PASSED("名字")`
+  - `gen.py` 会跳过 `*.check.cpp`,所以 check 不会进 PDF
+  - 单个 check 有 60s 墙钟上限(`XCPC_CHECK_TIMEOUT` 可调);卡死会报成 FAIL
+  - `templates/计算几何/geo.check.cpp` 目前**故意 FAIL**(复现 geo.cpp 的 `-=`/`/=` bug),修好即转绿
+- 视觉验证:抽查 PDF 页(`pdftoppm -png -f N -l N xcpc.pdf /tmp/x`)
 
 ## 架构:生成链路
 
@@ -46,7 +53,7 @@ templates/<章目录>/<模板>.typ(介绍)  ─┼─→ gen.py ─→ sections.
 
 - `For(i, l, r)` / `rFor(i, r, l)` / `ForD` 代替 `for`;`vect<T>` 代替 `vector<T>`
 - `ll` = `long long`、`db` = 浮点(常用 `long double`)、`mint` = 模数类(带 `.inv()`)、`poly` = 多项式/`vector<mint>`、`ksm` = 快速幂
-- **`ksm` 的模数限制**:base header 的 `ksm` 内部按 `ll` 相乘,模数超过 2^32 时 `a * a` 会溢出算错 → 需要大模数(如 `u64` 素性检验、`p > 4e9` 的离散对数)时**自带模乘**,不要复用 `ksm`(见 `templates/数论/Miller-Rabin.cpp` 的 `MR::mul`)
+- **`ksm` 的模数限制**:base header 的 `ksm` 内部按 `ll` 相乘,模数超过 2^32 时 `a * a` 会溢出算错 → 需要大模数(如 `u64` 素性检验、`p > 4e9` 的离散对数)时**自带模乘**,不要复用 `ksm`(见 `templates/数论/Miller-Rabin.cpp` 的 `MR::mul`、`templates/数论/二次剩余.cpp` 的 `QR::mul`)
 - **`vect<T>` 没有 `push_back`**:它是带 `+=` 的自定义容器(`p += x` 才是追加);标准容器用 `std::vector`。写模板要按"读者自己 header 里那套"来,别混用
 - 计算几何统一 `struct p2`(点),线段/直线用 `seg`;`eps`/`cmp`/`sgn`/`cross`/`det` 常规
 - 模板顶部的 `// 标题 · 标题 (备注)` 首行注释是选标题用的,不用改内容
