@@ -239,7 +239,7 @@ static void earCase(const vector<p2> &poly0, const char *what, bool checkNo3col 
         }
     }
     // ---- A5: 采样: 覆盖(≥1 个三角形 <=> 在多边形内) 且 不重叠(个数 <= 1)----
-    int samples = n >= 30 ? 20 : 50, used = 0;
+    int samples = n >= 30 ? 20 : 50;
     ForD(it, 0, samples) {
         p2 q = bboxRand(poly0);
         db dq = refDistPolyOnly(n, poly0.data(), q);
@@ -250,16 +250,18 @@ static void earCase(const vector<p2> &poly0, const char *what, bool checkNo3col 
         bool onTriEdge = false;
         int cnt = 0;
         ForD(i, 0, (int) tri.size()) {
-            p2 x = poly0[tri[i][0]], y = poly0[tri[i][1]], z = poly0[tri[i][2]];
-            if(refNearest(x, y, q) <= 1e-12L * sc * sc || refNearest(y, z, q) <= 1e-12L * sc * sc || refNearest(z, x, q) <= 1e-12L * sc * sc) onTriEdge = true;
-            if(contain(3, (p2 *) &tri[i], q)) ++cnt;  // 模板的 contain
+            p2 te[3] = {poly0[tri[i][0]], poly0[tri[i][1]], poly0[tri[i][2]]};
+            if(refNearest(te[0], te[1], q) <= 1e-12L * sc * sc || refNearest(te[1], te[2], q) <= 1e-12L * sc * sc || refNearest(te[2], te[0], q) <= 1e-12L * sc * sc) onTriEdge = true;
+            if(contain(3, te, q)) ++cnt;  // 模板的 contain
         }
         if(onTriEdge) continue;  // 落在三角形边界上(计数可能 = 2), 跳过
-        ++used;
         if(cnt > 1) {
             diePoly();
             printf("    采样点 "), prP(q), printf(" 落在 %d 个三角形内(应 <= 1, 三角形重叠)\n", cnt);
-            ForD(i, 0, (int) tri.size()) if(contain(3, (p2 *) &tri[i], q)) prTri("命中的", i, poly0, tri[i]);
+            ForD(i, 0, (int) tri.size()) {
+                p2 te[3] = {poly0[tri[i][0]], poly0[tri[i][1]], poly0[tri[i][2]]};
+                if(contain(3, te, q)) prTri("命中的", i, poly0, tri[i]);
+            }
             exit(1);
         }
         if(pc == 2 && cnt < 1) {
@@ -270,11 +272,13 @@ static void earCase(const vector<p2> &poly0, const char *what, bool checkNo3col 
         if(pc == 0 && cnt >= 1) {
             diePoly();
             printf("    采样点 "), prP(q), printf(" 在多边形外(refContain=0)却落在 %d 个三角形内\n", cnt);
-            ForD(i, 0, (int) tri.size()) if(contain(3, (p2 *) &tri[i], q)) prTri("命中的", i, poly0, tri[i]);
+            ForD(i, 0, (int) tri.size()) {
+                p2 te[3] = {poly0[tri[i][0]], poly0[tri[i][1]], poly0[tri[i][2]]};
+                if(contain(3, te, q)) prTri("命中的", i, poly0, tri[i]);
+            }
             exit(1);
         }
     }
-    (void) used;
     // ---- A6: 每个顶点都被用到 ----
     vector<int> vis(n, 0);
     ForD(i, 0, (int) tri.size()) ForD(k, 0, 3) vis[tri[i][k]] = 1;
@@ -284,13 +288,11 @@ static void earCase(const vector<p2> &poly0, const char *what, bool checkNo3col 
         ForD(j, 0, (int) tri.size()) prTri("输出", j, poly0, tri[j]);
         exit(1);
     }
-    (void) tol;
 }
 
-// 小 n 的穷举: 对一组随机点集的所有 n 元组都跑一遍(用于把子规模都覆盖到)
+// 小规模子多边形: 只在「用例序号 % 4 == 0」时抽查, 控制总运行时间(见文件头的规模说明)
 static void subCases(const vector<p2> &poly, const char *what) {
     int n = poly.size();
-    if(n < 3) return;
     if(n >= 3) earCase(vector<p2>(poly.begin(), poly.begin() + 3), what);
     if(n >= 4) earCase(vector<p2>(poly.begin(), poly.begin() + 4), what);
     if(n >= 5) earCase(vector<p2>(poly.begin(), poly.begin() + 5), what);
@@ -349,7 +351,6 @@ int main() {
 
     // ===== 3. 共线点: 边上有额外顶点的矩形(前置条件不要求无共线, 耳切应变慢但不该错)=====
     {
-        Probe2:;
         vector<p2> rect = {{0, 0}, {2, 0}, {4, 0}, {4, 2}, {4, 4}, {0, 4}, {0, 2}};
         CHECK(polyCCW(rect) && refIsSimple(7, rect.data()), "边上带共线点的矩形: 逆时针简单");
         earCase(rect, "矩形四边各插一个共线点(共 7 顶点)", false);
@@ -358,27 +359,24 @@ int main() {
     // ===== 4. 随机凸多边形(用 geo.cpp 的 convex_hull)=====
     {
         int done = 0, skip = 0;
-        For(t, 1, 3000) {
+        For(t, 1, 3200) {
             if(done >= 2000) break;
             int n = (int) rnd(3, 60);
             int R = (t % 3 == 0) ? 1000000 : (t % 3 == 1 ? 1000 : 30);
             vector<p2> v(n);
             ForD(i, 0, n) v[i] = {(db) rnd(-R, R), (db) rnd(-R, R)};
-            vector<p2> h(v);
-            int k = convex_hull(n, h.data(), h.data());
-            h.resize(max(0, k));
+            vector<p2> src = v, h(n);  // convex_hull 会把输入排序, 输出另放一个数组
+            int k = convex_hull(n, src.data(), h.data());
             if(k < 3) {
                 ++skip;
                 continue;  // 共线/点太少, 不到 3 个顶点就不是多边形
             }
-            if((int) h.size() > 40) {  // 规模上限 40: 太长的用例只留少量(见下面的截断)
-                h.resize(40);
-            }
-            // 凸包已去共线(严格 crossop > 0), 但仍可能有「数值上共线」的: 用 polyNo3col 决定强断言
-            bool no3 = polyNo3col(h);
-            CHECK(polyCCW(h) && refIsSimple((int) h.size(), h.data()), "凸包输出逆时针且简单");
-            earCase(h, "随机凸包多边形", no3);
-            if((int) h.size() >= 5) subCases(h, "随机凸包多边形的子多边形");
+            vector<p2> H(h.begin(), h.begin() + min((size_t) 40, (size_t) k));  // 规模上限 40
+            // 凸包已严格去共线(crossop > 0), 但仍可能有「数值上共线」的: 用 polyNo3col 决定强断言
+            bool no3 = polyNo3col(H);
+            CHECK(polyCCW(H) && refIsSimple((int) H.size(), H.data()), "凸包输出逆时针且简单");
+            earCase(H, "随机凸包多边形", no3);
+            if(done % 4 == 0) subCases(H, "随机凸包多边形的子多边形");
             ++done;
         }
         printf("  [info] 凸多边形用例 %d 组(跳过 %d 组退化点集)\n", done, skip);
@@ -388,7 +386,7 @@ int main() {
     // ===== 5. 随机星形(凹)多边形 =====
     {
         int done = 0, skip = 0;
-        For(t, 1, 4000) {
+        For(t, 1, 4200) {
             if(done >= 2000) break;
             int n = (int) rnd(3, 30);
             vector<db> ang(n), rr(n);
@@ -397,16 +395,16 @@ int main() {
                 ang[i] = 2 * pi * i / n + (db) rnd(-300, 300) / 1000.0L;
                 rr[i] = rmin + (rmax - rmin) * (db) rnd(0, 1000) / 1000.0L;
             }
-            sort(ang.begin(), ang.end());    // 按角度排序 => 绕原点(星心)一圈
-            vector<p2> poly(n);
+            sort(ang.begin(), ang.end());                               // 按角度排序 => 绕原点(星心)一圈
             db cx = (db) rnd(-1000, 1000), cy = (db) rnd(-1000, 1000);  // 星心(保证该点看见所有顶点)
+            vector<p2> poly(n);
             ForD(i, 0, n) poly[i] = {cx + rr[i] * cos(ang[i]), cy + rr[i] * sin(ang[i])};
             if(!polyCCW(poly) || !refIsSimple(n, poly.data())) {
                 ++skip;
                 continue;  // 半径抖动过大时会自交, 只对合法输入剖分
             }
             earCase(poly, "随机星形(凹)多边形", polyNo3col(poly));
-            if(n >= 5) subCases(poly, "随机星形多边形的子多边形");
+            if(done % 4 == 0) subCases(poly, "随机星形多边形的子多边形");
             ++done;
         }
         printf("  [info] 星形(凹)多边形用例 %d 组(跳过 %d 组自交/退化)\n", done, skip);
