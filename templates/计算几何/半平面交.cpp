@@ -33,7 +33,7 @@ vector<p2> hpi(vector<seg> vs) {
     int n = ls.size();
     if(n < 3) return {};
     vector<int> q(n + 1);
-    int h = 0, t = 1;
+    int h = 0, t = 2;  // 队列里是 q[h..t-1],先放前两条
     q[0] = 0, q[1] = 1;
     ForD(i, 2, n) {
         while(t - h >= 2 && crossop(ls[i], isll(ls[q[t - 2]], ls[q[t - 1]])) < 0) --t;

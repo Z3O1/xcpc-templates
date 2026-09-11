@@ -62,7 +62,7 @@ static vector<seg> boxLines(db B) {  // 逆时针正方形 4 条有向边:左侧
     ForD(i, 0, 4) r.push_back({c[i], c[(i + 1) % 4]});
     return r;
 }
-static vector<p2> refHPI(const vector<p2> &ls, db B) {  // 只裁剪 B 方框(调用方自己把方框边并入 ls)
+static vector<p2> refHPI(const vector<seg> &ls, db B) {  // 只裁剪 B 方框(调用方自己把方框边并入 ls)
     vector<p2> cur = {P(-B, -B), P(B, -B), P(B, B), P(-B, B)};
     ForD(i, 0, (int) ls.size()) cur = refClip(cur, ls[i]);
     if(cur.size() < 3) return {};
@@ -135,7 +135,7 @@ static int cmpOut(const vector<seg> &inp, const vector<p2> &got, const vector<p2
         return 0;
     }
     ForD(i, 0, (int) A.size()) if(!eqp(A[i], B[i], tol)) {
-        printf("      第 %zu 个顶点不一致(排序后):模板 ", i), pr(A[i]), printf(",参考 "), pr(B[i]), printf("\n");
+        printf("      第 %d 个顶点不一致(排序后):模板 ", i), pr(A[i]), printf(",参考 "), pr(B[i]), printf("\n");
         prp("模板输出", got), prp("参考输出", want), prl("输入直线", inp);
         return 0;
     }
@@ -182,7 +182,7 @@ static void analytic() {
         r = hpi(red);
         CHECK(r.size() == 4 && eqd(polyArea(r), 16), "hpi:重复直线 + 同向更弱直线 -> 结果不变(去平行只留最强)");
         vector<seg> str = sq;
-        str.push_back({P(1, 0), P(1, 8)});  // x >= 1 的加强版
+        str.push_back({P(1, 8), P(1, 0)});  // 与左边 {P(0,4),P(0,0)} 同向的加强版:x >= 1
         r = hpi(str);
         CHECK(r.size() == 4 && eqd(polyArea(r), 12), "hpi:同向更强直线把正方形切掉一条 -> 面积 12");
         vector<seg> emp = sq;

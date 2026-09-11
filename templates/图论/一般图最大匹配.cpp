@@ -1,4 +1,5 @@
 // n: 点数，t: 无向边
+
 int n, fa[N];
 vect<int> t[N];
 int fd(int u) { return fa[u] == u ? u : fa[u] = fd(fa[u]); }

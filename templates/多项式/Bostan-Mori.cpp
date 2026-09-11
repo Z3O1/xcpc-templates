@@ -2,6 +2,7 @@
 // 求 [x^n] P(x) / Q(x)(P/Q 展开成幂级数后的第 n 项系数)。要求 Q[0] != 0。
 // 递推 a_n = Σ_{i=1..k} c_i a_{n-i} 时:Q(x) = 1 - Σ c_i x^i,P(x) = Σ_{i<k} a_i x^i。
 // 复杂度 O(k log k log n)。依赖:mul(poly, poly)(本目录 ntt.cpp 的卷积)。
+
 using poly = vector<mint>;
 mint bostan_mori(poly P, poly Q, ll n) {
     // 平凡情形:Q 是常数(deg Q = 0)时 P/Q 只有第 0 项非零。

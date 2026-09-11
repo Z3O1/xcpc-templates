@@ -302,6 +302,20 @@ int main() {
     printf("== 简单多边形三角剖分.check: 耳切法性质级断言 + 独立参考判定 ==\n");
     auto t0 = chrono::steady_clock::now();
 
+    // ===== 0. 先自检本文件自己的参考实现(独立参考也要先对, 否则断言没意义)=====
+    {
+        p2 sq[4] = {{0, 0}, {4, 0}, {4, 4}, {0, 4}};
+        CHECK(refArea(vector<p2>(sq, sq + 4)) == 16 && refArea(vector<p2>(sq, sq + 2)) == 0, "参考 shoelace: 逆时针正方形 = 16, n=2 = 0");
+        CHECK(refContain(4, sq, {2, 2}) == 2 && refContain(4, sq, {5, 2}) == 0 && refContain(4, sq, {0, 2}) == 1, "参考 contain: 内 2 / 外 0 / 边上 1");
+        CHECK(refContain(4, sq, {4, 4}) == 1 && refContain(4, sq, {-1e-12L, 2}) == 1, "参考 contain: 顶点算边界、贴边 1e-12 也算边界");
+        CHECK(refProperCross({0, 0}, {4, 4}, {0, 4}, {4, 0}) && !refProperCross({0, 0}, {4, 0}, {2, 0}, {6, 0}), "参考规范相交: 十字为真、共线重叠为假");
+        CHECK(refIsSimple(4, sq), "参考简单性: 正方形判定为简单");
+        p2 bow[4] = {{0, 0}, {4, 4}, {4, 0}, {0, 4}};  // 蝴蝶结
+        CHECK(!refIsSimple(4, bow) && !refProperCross(bow[0], bow[2], bow[3], bow[1]), "参考简单性: 蝴蝶结判定为自交");
+        vector<p2> dup = {{0, 0}, {0, 0}, {1, 1}};
+        CHECK(!polyDistinct(dup) && polyDistinct(vector<p2>(sq, sq + 4)), "polyDistinct 能识别重复点");
+    }
+
     // ===== 1. 接口边界: n < 3 ====
     {
         p2 a[4] = {{0, 0}, {1, 0}, {0, 1}, {1, 1}};

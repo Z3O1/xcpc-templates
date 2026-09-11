@@ -1,0 +1,30 @@
+// BM(): 多项式 · 最短线性递推 (Berlekamp-Massey)
+// 契约:a 是 mod P(998244353)下的序列,长度任意(含空)。返回**最短**递推系数 c:
+//         a[i] = Σ_{j=1..|c|} c[j-1] * a[i-j]  对一切 i >= |c| 成立;
+//       全零序列 / 空序列返回空向量(零阶递推)。
+//       算法只保证"给定 a 的最短递推",用 c 外推更远的项需要 |a| >= 2|c|(标准结论)。
+// 复杂度:O(n²)。依赖:base header 的 For/mint/poly(只用到 mint 的 inv 与四则运算)。
+
+using poly = vector<mint>;
+poly BM(const poly &a) {
+    int n = a.size();
+    if(!n) return poly();
+    int len = 0, off = 0;      // len: 当前递推阶数;off: 距上次更新阶数的项数
+    mint s = 1;                // s: 上次更新时的偏差
+    poly res(n), lst(n), c;
+    res[0] = 1;
+    For(i, 0, n - 1) {
+        mint d = 0;                          // 偏差 d = Σ res[j]*a[i-j]
+        For(j, 0, len) d += res[j] * a[i - j];
+        ++off;
+        if(d.val() == 0) continue;
+        poly tmp = res;
+        mint k = d * s.inv();                // res ← res - (d/s) * lst * x^off
+        For(j, off, n - 1) res[j] -= k * lst[j - off];
+        if(len * 2 > i) continue;
+        len = i - len + 1, lst = tmp, s = d, off = 0;
+    }
+    c.resize(len);
+    For(i, 0, len - 1) c[i] = -res[i + 1];   // res[0]=1 且 d=0 ⇒ a[i] = -Σ_{j>=1} res[j]a[i-j]
+    return c;
+}
