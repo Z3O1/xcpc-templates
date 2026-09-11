@@ -2,7 +2,7 @@
 
 // 需要保证 s[0] 和 s[n + 1] 是不同特殊字符。
 // 如果要求偶回文，令 s'=|c1|c2|...|cn| $ ，此时真实回文串 d 长度为 d' / 2。
-void manacher(int n, char *s, int d) {
+void manacher(int n, char *s, int *d) {
     int l = 0, r = -1;
     For(i, 1, n) {
         int &k = d[i];

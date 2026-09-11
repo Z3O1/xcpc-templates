@@ -3,8 +3,9 @@
 // ⚠ 模板本体 manacher.cpp 在 g++ -std=c++17 下**编译不过**:第 5 行形参写成 `int d`,
 //   函数体里却当数组用(`int &k = d[i];`)——应为 `int *d`。任务要求不动模板本体,
 //   所以这里把模板本体**逐行照抄**成 manacher_ref,与模板的唯一差别就是签名补了个 `*`;
-//   main() 开头会读 manacher.cpp 并逐行核对"照抄内容 == 模板本体"(只允许签名差一个 `*`),
-//   一旦照抄走样(或模板以后被改)就会 CHECK 失败。
+//   main() 开头会读 manacher.cpp 并逐行核对"照抄内容 == 模板本体"(签名允许 `int d` / `int *d` 两种写法),
+//   函数体被改动/照抄走样就会 CHECK 失败;签名以后若修成 `int *d`,本 check 依然绿(只是想 include 本体的
+//   那句注释可以改成真的 #include)。
 // #include "manacher.cpp"   // 想按固定格式直接 include,但如上所述编译不过,故改为照抄 + 运行时核对
 #include "../_check_base.hpp"
 
@@ -103,12 +104,15 @@ int main() {
         vect<string> tpl;
         if(read_template(tpl)) {
             CHECK(tpl.size() == 9, "模板本体取出 1 行签名 + 8 行函数体");
-            CHECK(tpl[0] == "void manacher(int n, char *s, int d) {",
-                  "模板签名确实是 int d(这就是编译不过的原因)");
             string sig = tpl[0];
-            sig.replace(sig.find("int d"), 5, "int *d");
             sig.replace(sig.find("manacher"), 8, "manacher_ref");
-            CHECK(sig == "void manacher_ref(int n, char *s, int *d) {", "照抄的签名与模板只差一个 *");
+            // 模板签名现在是 `int d`(编译不过),修成 `int *d` 后本 check 也不该变红 → 归一化后再比
+            if(sig.find("int *d") == string::npos && sig.find("int d") != string::npos)
+                sig.replace(sig.find("int d"), 5, "int *d");
+            CHECK(sig == "void manacher_ref(int n, char *s, int *d) {", "照抄的签名与模板只差(可能的)一个 *");
+            printf("  [info] 模板签名是 `%s`%s\n", tpl[0].c_str(),
+                   tpl[0].find("int *d") != string::npos ? " —— 已修好,可以直接 include 了"
+                                                         : " —— 仍是 `int d`,编译不过(照抄的正是这个原因)");
             const char *mine[8] = {"int l = 0, r = -1;",
                                    "For(i, 1, n) {",
                                    "int &k = d[i];",

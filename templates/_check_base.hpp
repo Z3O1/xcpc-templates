@@ -30,7 +30,8 @@ template <class T> struct vect : vector<T> {
         return r;
     }
 };
-using pii = pair<int, int>;
+// 注意:house 的 pii 是 array<int,2>(支持 f[i] = {dfn[i]} 与 que(x)[1]),不是 std::pair
+using pii = array<int, 2>;
 using pll = pair<ll, ll>;
 #define all(x) (x).begin(), (x).end()
 #define cmin(a, b) ((a) > (b) ? (a) = (b), 0 : 0)
