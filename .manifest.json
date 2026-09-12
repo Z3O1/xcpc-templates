@@ -6,7 +6,8 @@
   "数学",
   "数论",
   "多项式",
-  "计算几何"
+  "计算几何",
+  "通用"
  ],
  "entries": [
   {
@@ -162,12 +163,6 @@
   {
    "key": "图论/支配树.cpp",
    "title": "支配树",
-   "missing": false,
-   "hidden": false
-  },
-  {
-   "key": "计算几何/geo.cpp",
-   "title": null,
    "missing": false,
    "hidden": false
   },
@@ -370,6 +365,12 @@
    "hidden": false
   },
   {
+   "key": "计算几何/geo.cpp",
+   "title": "基础几何库",
+   "missing": false,
+   "hidden": false
+  },
+  {
    "key": "计算几何/Delaunay.cpp",
    "title": "Delaunay 三角剖分",
    "missing": false,
@@ -462,6 +463,24 @@
   {
    "key": "计算几何/多边形重心.cpp",
    "title": "多边形重心",
+   "missing": false,
+   "hidden": false
+  },
+  {
+   "key": "通用/常数表.cpp",
+   "title": "常用素数与大整数",
+   "missing": false,
+   "hidden": false
+  },
+  {
+   "key": "通用/高合成数表.typ",
+   "title": "高合成数表",
+   "missing": true,
+   "hidden": false
+  },
+  {
+   "key": "通用/常数速查表.typ",
+   "title": "常数速查表",
    "missing": false,
    "hidden": false
   }

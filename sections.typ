@@ -249,6 +249,8 @@
 
 = 计算几何
 
+== 基础几何库
+
 #include "templates/计算几何/geo.typ"
 
 #zebraw(lang: false)[#raw(readcode("templates/计算几何/geo.cpp"), lang: "cpp", block: true)]
@@ -316,3 +318,13 @@
 == 多边形重心
 
 #zebraw(lang: false)[#raw(readcode("templates/计算几何/多边形重心.cpp"), lang: "cpp", block: true)]
+
+= 通用
+
+== 常用素数与大整数
+
+#zebraw(lang: false)[#raw(readcode("templates/通用/常数表.cpp"), lang: "cpp", block: true)]
+
+== 常数速查表
+
+#include "templates/通用/常数速查表.typ"
