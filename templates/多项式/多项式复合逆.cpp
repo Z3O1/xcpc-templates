@@ -1,7 +1,8 @@
+// comp_inv(): 多项式 · 多项式复合逆 (复合逆, O(n log n))
+// 接口:comp_inv(F, n) 求 G 使 F(G(x)) ≡ x (mod x^n),返回 n 个系数;要求 F[1] != 0。
+// 使用前必须先调用一次 prep(22)(初始化 NTT 的 rev/omg;长度上界按 2^22 准备),
+// 否则内部 NTT 用的是未初始化的单位根 —— 原来这一步写在模板自带的 main 里。
 
-#include <bits/stdc++.h>
-
-using namespace std;
 typedef vector<int> vi;
 typedef vector<vi> vv;
 typedef long long ll;
@@ -212,19 +213,4 @@ poly comp_inv(poly F, int n) // [x^n]F^k=k/n[x^{n-k}](G/x)^{-n}
 		G.c[i] = (ll)G.c[i - 1] * p % mod;
 	G.c[0] = 0;
 	return G;
-}
-int main()
-{
-	prep(22);
-	int n, i;
-	scanf("%d", &n);
-	poly F;
-	F.c.resize(n);
-	for(i = 0; i < n; i++)
-		scanf("%d", &F.c[i]);
-	F = comp_inv(F, n);
-	for(i = 0; i < n; i++)
-		printf("%d ", F.c[i]);
-	printf("\n");
-	return 0;
 }

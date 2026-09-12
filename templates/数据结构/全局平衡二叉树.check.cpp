@@ -71,6 +71,8 @@ struct gbt_pll {
 #define pll gbt_pll
 #define main gbt_main // 只为避免与本文件的 main 冲突;本 check 绝不调用 gbt_main(见文件头)
 #include "全局平衡二叉树.cpp"
+// 模板现在已去掉 main(不再自带输入输出与 `int a[N];`),check 自己补上驱动需要的点权数组
+static int a[N];
 #undef main
 #undef pll
 

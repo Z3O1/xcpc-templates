@@ -1,7 +1,8 @@
+// comp(): 多项式 · 多项式复合 (G(F(x)) mod x^n, O(n log n))
+// 接口:comp(F, G, n) 返回 G(F(x)) 在 mod x^n 下的结果(F、G 均按 n 个系数给出)。
+// 使用前必须先调用一次 prep(22)(初始化 NTT 的 rev/omg;长度上界按 2^22 准备),
+// 否则内部 NTT 用的是未初始化的单位根 —— 原来这一步写在模板自带的 main 里。
 
-#include <bits/stdc++.h>
-
-using namespace std;
 typedef vector<int> vi;
 typedef vector<vi> vv;
 typedef long long ll;
@@ -170,22 +171,4 @@ poly comp(poly F, poly G, int n) // [x^0]G = 0
 		Gp[1][i] = mod - G.c[i];
 	auto P = solve(F.c, Gp, n, 1);
 	return poly(P[0]);
-}
-int main()
-{
-	prep(22);
-	int n, i;
-	poly F, G;
-	scanf("%d", &n);
-	F.c.resize(n);
-	G.c.resize(n);
-	for(i = 0; i < n; i++)
-		scanf("%d", &F.c[i]);
-	for(i = 0; i < n; i++)
-		scanf("%d", &G.c[i]);
-	auto H = comp(F, G, n);
-	for(i = 0; i < n; i++)
-		printf("%d ", H.c[i]);
-	printf("\n");
-	return 0;
 }

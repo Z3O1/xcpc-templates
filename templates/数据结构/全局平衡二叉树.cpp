@@ -1,3 +1,13 @@
+// 全局平衡二叉树:数据结构 · 全局平衡二叉树 (树上带权最大独立集模板)
+// 支持:单点改权 upd(p, d)、全树查询 getans()(返回最大权独立集大小)。
+// 使用者需要自己提供:全局 n、点的邻接表 t[]、点权 a[]。
+// 初始化顺序(在 main 里、读完输入点权与边之后调一次即可):
+//   For(i, 1, n) f[i][1] = a[i];                       // 把点权塞进矩阵
+//   dfs0(1), dfs1(1);                                  // 两遍 DFS 求 dfn/tp/dw
+//   For(i, 1, n) if(tp[i] == i) rt[i] = build(dfn[tp[i]], dfn[dw[tp[i]]]);
+//   For(i, 1, n) apply(i);                             // 沿祖先链合并
+// 之后每次 upd(p, y - a[p]), a[p] = y; 再 getans() 即可。
+
 
 const int N = 1e6 + 10;
 const int INF = 1e9;
@@ -101,28 +111,4 @@ void upd(int p, int dt) {
 int getans() {
     auto [x, y] = que(1);
     return max(x, y);
-}
-int a[N];
-int main() {
-    int m;
-    cin >> n >> m;
-    For(i, 1, n) cin >> a[i], f[i][1] = a[i];
-    For(i, 1, n - 1) {
-        int u, v;
-        cin >> u >> v;
-        t[u].push_back(v);
-        t[v].push_back(u);
-    }
-    dfs0(1), dfs1(1);
-    For(i, 1, n) if(tp[i] == i) rt[i] = build(dfn[tp[i]], dfn[dw[tp[i]]]);
-    For(i, 1, n) apply(i);
-    int ans = 0;
-    For(i, 1, m) {
-        int p, y;
-        cin >> p >> y;
-        p ^= ans;
-        upd(p, y - a[p]), a[p] = y;
-        ans = getans(), cout << ans << endl;
-    }
-    return 0;
 }
