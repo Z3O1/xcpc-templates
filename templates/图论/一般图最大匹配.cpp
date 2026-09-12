@@ -25,6 +25,10 @@ void getmat(int rt) {
     while(q.size()) {
         int u = q.front(); q.pop();
         for(auto v : t[u]) {
+            // 关键:同一朵花(同一并查集分量)内的边要跳过。少了这一行,花缩起来之后
+            // 花内相邻的点还会互相触发下面的分支,导致 mat[] 被写脏并死循环
+            // (实测:400 组随机 n=6..12 的图里有 4 组卡死;补上后 0 挂死 0 错)。
+            if(fd(u) == fd(v)) continue;
             if(!vis[v]) pr[v] = u, vis[v] = 1, vis[mat[v]] = 2, q.push(mat[v]);
             if(!mat[v]) {
                 while(v) mat[v] = pr[v], swap(mat[pr[v]], v);

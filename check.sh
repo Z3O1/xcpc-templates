@@ -3,9 +3,6 @@
 # 用法: ./check.sh            # 跑全部
 #       ./check.sh 数论        # 只跑名字里含"数论"的
 #       ./check.sh -v 数论     # 顺便打印每个 check 的输出
-#
-# 注意:templates/计算几何/geo.check.cpp 目前**故意失败** —— 它复现了 geo.cpp:33-34
-# 的两个真 bug(`-=` 与 `/=` 都写成了 `x = x + y`)。修好那两行它就自动转绿。
 set -u
 cd "$(dirname "$0")"
 
