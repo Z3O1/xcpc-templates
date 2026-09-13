@@ -108,7 +108,7 @@ pdftoppm -png -r 150 -f N -l N xcpc.pdf tmp/x    # 出图判断排版(别用 pdf
 | `fgcd.cpp` | O(V)-O(1) GCD | 与 `std::gcd` 全量 + 随机对照 |
 | `minmod.cpp` | 最小模线性值 | 与暴力对照 `min_{0<=i<n} (a*i+b) mod m` |
 | `下取整和.cpp` | 下取整和 | 与暴力求和对照,覆盖各分支与大值 |
-| `分数还原.cpp` | 分数还原 | `approx(p,q,A)` 求 `x/a ≡ q (mod p)`,`|x| <= A` 且 `|a|` 最小 |
+| `分数还原.cpp` | 分数还原 | `approx(p,q,A)` 求 `x/a ≡ q (mod p)`,要求 `abs(x) <= A` 且分母绝对值最小 |
 
 ### 多项式(13)
 
@@ -323,7 +323,7 @@ int main() { /* 断言 + 暴力对照 */; PASSED("X"); }
 | `数论/二次剩余.cpp` | 复用 base header 的 `ksm`,模数 > 2^32 时溢出 → `quadres/sqrtp` 在大素数上全错 | 自带 `QR::mul/QR::pw`(u128);Cipolla 的 `F_p[√w]` 乘法一并改用;返回类型 `int → ll` | `ksm(4000000000,2,4294967291)` 得负数;2000 组"y² 构造"的二次剩余全被判 −1 |
 | `数论/分数还原.cpp` | 移植时把连分数的 `x %= y` 抄成 `x *= y` → 对几乎所有输入溢出返回垃圾 | 改回 `%=`;参数顺序对齐 skip2004 的 `(p, q, A)` | `approx(5,2,1)` 曾返回 −1000 万级垃圾值 |
 | `数论/Miller-Rabin.cpp` | 复用 `ksm` 做模乘,`p > 2^32` 时溢出 | 自带 `MR::mul`(用 **unsigned** `__int128`) | `4294967291`、`2^64-59` 被误判合数 |
-| `多项式/多项式复合逆.cpp` | `pw_pj` 只写前 n 项却不 `resize(n)`,随后 `comp_inv` `reverse` 整个向量 → `[n,|F|)` 的高次项倒到低次,**静默算错** | `pw_pj` 末尾 `F.c.resize(n)`;`comp_inv` 入口补 F 的系数 | n=2、F={0,1,0} → g={0,0}(应 {0,1}) |
+| `多项式/多项式复合逆.cpp` | `pw_pj` 只写前 n 项却不 `resize(n)`,随后 `comp_inv` `reverse` 整个向量 → 下标 `[n, F.size())` 的高次项倒到低次,**静默算错** | `pw_pj` 末尾 `F.c.resize(n)`;`comp_inv` 入口补 F 的系数 | n=2、F={0,1,0} → g={0,0}(应 {0,1}) |
 | `多项式/多项式复合.cpp` | `Gp[1][i] = mod - G.c[i]` 越界读(调用方给的 G 不足 n 个系数) | 入口把 `G`/`F` 补到 n 个系数 | ASAN 实测 heap-buffer-overflow |
 | `多项式/多项式复合逆.cpp` | 同上,且 `n == 1` 时也要至少 2 个系数(内部读 `F.c[1]`) | 同上 | ASAN 实测 |
 | `字符串/manacher.cpp` | 签名 `void manacher(int n, char *s, int d)` **少个 `*`**,函数体里 `d[i]` → 编译不过 | 改 `int *d` | 字符串章 check 实测 |
