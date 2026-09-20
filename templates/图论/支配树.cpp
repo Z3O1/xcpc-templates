@@ -12,10 +12,7 @@ void add(int u, int v) {
 }
 void dfs(int u) {
     pos[dfn[u] = ++dt] = u;
-    for(auto v : t[u])
-        if(!dfn[v]) {
-            dfs(v), f1[v] = u;
-        }
+    for(auto v : t[u]) if(!dfn[v]) dfs(v), f1[v] = u;
 }
 pii que(int u) {
     if(fa[u] == u) return f[u];
@@ -25,8 +22,7 @@ pii que(int u) {
 }
 void getdom(int _n) {
     n = _n;
-    // 只重置算法自身的状态,不动 t[]/t2[](图是调用方建的,清了就没边可跑了)。
-    // 不重置的话同一进程内第二次调用会带着上一张图的 dfn/pos/dt 算错。
+    // 只重置算法自身的状态,不动 t[]/t2[]。
     For(i, 1, n) q1[i].clear(), fa[i] = f1[i] = dfn[i] = pos[i] = sd[i] = dm[i] = 0;
     dt = 0;
     dfs(1);
@@ -35,20 +31,15 @@ void getdom(int _n) {
         int u = pos[i], s = i;
         for(auto x : q1[u]) dm[x] = que(x)[1];
         if(i == 1) break;
-        for(auto x : t2[u])
-            if(dfn[x]) cmin(s, que(x)[0]); // 必须跳过从 1 不可达的前驱,否则 s 被拉成 0、dm[u] 算错
+        for(auto x : t2[u]) if(dfn[x]) cmin(s, que(x)[0]);
         sd[u] = pos[s];
         q1[sd[u]] += u;
         f[u] = {dfn[sd[u]], u};
-        for(auto v : t[u])
-            if(f1[v] == u) fa[v] = u;
+        for(auto v : t[u]) if(f1[v] == u) fa[v] = u;
     }
     For(i, 2, dt) {
         int u = pos[i];
-        if(sd[dm[u]] == sd[u])
-            dm[u] = sd[u];
-        else
-            dm[u] = dm[dm[u]];
+        dm[u] = sd[dm[u]] == sd[u] ? sd[u] : dm[dm[u]];
     }
 }
 

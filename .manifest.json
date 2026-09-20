@@ -97,7 +97,7 @@
   {
    "key": "数学/min25.cpp",
    "title": "min_25",
-   "missing": false,
+   "missing": true,
    "hidden": false
   },
   {
@@ -311,15 +311,39 @@
    "hidden": false
   },
   {
-   "key": "数论/杜教筛.cpp",
+   "key": "数论/积性函数/积性函数.typ",
+   "title": "积性函数",
+   "missing": false,
+   "hidden": false
+  },
+  {
+   "key": "数论/积性函数/线性筛.cpp",
+   "title": "线性筛",
+   "missing": false,
+   "hidden": false
+  },
+  {
+   "key": "数论/积性函数/杜教筛.cpp",
    "title": "杜教筛",
    "missing": false,
    "hidden": false
   },
   {
+   "key": "数论/积性函数/min25.cpp",
+   "title": "min_25",
+   "missing": false,
+   "hidden": false
+  },
+  {
+   "key": "数论/杜教筛.cpp",
+   "title": "杜教筛",
+   "missing": true,
+   "hidden": false
+  },
+  {
    "key": "数论/线性筛.cpp",
    "title": "线性筛",
-   "missing": false,
+   "missing": true,
    "hidden": false
   },
   {
@@ -493,13 +517,19 @@
   {
    "key": "通用/常数表.cpp",
    "title": "常用素数与大整数",
-   "missing": false,
+   "missing": true,
    "hidden": false
   },
   {
    "key": "通用/高合成数表.typ",
    "title": "高合成数表",
    "missing": true,
+   "hidden": false
+  },
+  {
+   "key": "通用/大质数表.typ",
+   "title": "大质数表",
+   "missing": false,
    "hidden": false
   },
   {

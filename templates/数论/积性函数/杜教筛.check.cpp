@@ -1,5 +1,5 @@
 // 杜教筛 自测:与线性筛前缀和对照,并验证大 n 的已知值
-#include "../_check_base.hpp"
+#include "../../_check_base.hpp"
 constexpr int N = 1000000;   // 线性筛按项目级常量 N 开数组;杜教筛用它作阈值
 #include "线性筛.cpp"
 

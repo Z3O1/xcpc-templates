@@ -1,11 +1,14 @@
 // 由 gen.py 自动生成 —— 请勿手动修改; 改动 templates/ 后运行: ./build.sh
-// 读取模板文件: 去掉文件头的说明注释(第一个空行之前)与末尾空行
+// 读取模板文件: 只丢掉第 1 个非空行(标题行), 其余内容含说明注释一律渲染
 #import "@preview/zebraw:0.6.3": zebraw
 #let readcode(path) = {
   let lines = read(path).split("\n")
   let i = 0
-  // 跳过头部注释行(// 开头)与空行; 无注释的文件从第一行代码开始
-  while i < lines.len() and (lines.at(i) == "" or lines.at(i).starts-with("//")) {
+  // 第 1 个非空行是元数据行(标题), 不渲染; 其后原样输出
+  while i < lines.len() and lines.at(i) == "" {
+    i += 1
+  }
+  if i < lines.len() and lines.at(i).starts-with("//") {
     i += 1
   }
   while i < lines.len() and lines.at(i) == "" {
@@ -103,13 +106,9 @@
 
 == 网络流
 
-#include "templates/图论/dinic.typ"
-
 #zebraw(lang: false)[#raw(readcode("templates/图论/dinic.cpp"), lang: "cpp", block: true)]
 
 == 费用流
-
-#include "templates/图论/mcmf.typ"
 
 #zebraw(lang: false)[#raw(readcode("templates/图论/mcmf.cpp"), lang: "cpp", block: true)]
 
@@ -138,12 +137,6 @@
 == Pollard Rho
 
 #zebraw(lang: false)[#raw(readcode("templates/数学/pollard-rho.cpp"), lang: "cpp", block: true)]
-
-== min_25
-
-#include "templates/数学/min25.typ"
-
-#zebraw(lang: false)[#raw(readcode("templates/数学/min25.cpp"), lang: "cpp", block: true)]
 
 == 类欧
 
@@ -195,13 +188,23 @@
 
 #zebraw(lang: false)[#raw(readcode("templates/数论/原根.cpp"), lang: "cpp", block: true)]
 
-== 杜教筛
+== 积性函数
 
-#zebraw(lang: false)[#raw(readcode("templates/数论/杜教筛.cpp"), lang: "cpp", block: true)]
+#include "templates/数论/积性函数/积性函数.typ"
 
-== 线性筛
+=== 线性筛
 
-#zebraw(lang: false)[#raw(readcode("templates/数论/线性筛.cpp"), lang: "cpp", block: true)]
+#zebraw(lang: false)[#raw(readcode("templates/数论/积性函数/线性筛.cpp"), lang: "cpp", block: true)]
+
+=== 杜教筛
+
+#zebraw(lang: false)[#raw(readcode("templates/数论/积性函数/杜教筛.cpp"), lang: "cpp", block: true)]
+
+=== min_25
+
+#include "templates/数论/积性函数/min25.typ"
+
+#zebraw(lang: false)[#raw(readcode("templates/数论/积性函数/min25.cpp"), lang: "cpp", block: true)]
 
 == 下取整和
 
@@ -347,9 +350,9 @@
 
 = 通用
 
-== 常用素数与大整数
+== 大质数表
 
-#zebraw(lang: false)[#raw(readcode("templates/通用/常数表.cpp"), lang: "cpp", block: true)]
+#include "templates/通用/大质数表.typ"
 
 == 常数速查表
 

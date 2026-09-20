@@ -1,4 +1,4 @@
-// init()/solveg()/f()/solve(): 数学 · Min_25 筛
+// init()/solveg()/f()/solve(): 数论 · Min_25 筛
 
 const int M = 1e9 + 7;
 constexpr int i2 = M + 1 >> 2, i6 = (M + 1) / 6;

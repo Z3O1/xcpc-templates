@@ -1,5 +1,5 @@
 // 线性筛 自测:与暴力/独立筛法对照,五个函数(素数/φ/μ/d/s)全覆盖
-#include "../_check_base.hpp"
+#include "../../_check_base.hpp"
 constexpr int N = 1000000;   // 模板按项目级常量 N 开数组
 #include "线性筛.cpp"
 

@@ -1,4 +1,4 @@
-// f(a,b,c,n): 数学 · 类欧几里得 (f/g/h 结构版 + 单值版)
+// f(n,a,b,c): 数学 · 类欧几里得 (一次递归求出 f/g/h)
 
 const mint i2 = mint(2).inv(), i6 = mint(6).inv();
 struct nd {
@@ -16,17 +16,4 @@ nd f(int n_, int a, int b, int c) {
     nd rs = f(m - 1, c, c - b - 1, a);
     mint f = rs.f, g = rs.g, h = rs.h;
     return {n * m - f, n * m * m - h * 2 - f, i2 * (n * n * m + n * m - g - f)};
-}
-mint f(int a, int b, int c, int n) {
-    if(!a) return mint(b / c) * (n + 1);
-    if(a >= c || b >= c) {
-        mint x;
-        if(n & 1)
-            x = mint(n + 1 >> 1) * n * (a / c);
-        else
-            x = mint(n >> 1) * (n + 1) * (a / c);
-        return f(a % c, b % c, c, n) + x + mint(n + 1) * (b / c);
-    }
-    int m = (1ll * a * n + b) / c;
-    return mint(n) * m - f(c, c - b - 1, a, m - 1);
 }

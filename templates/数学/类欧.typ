@@ -1,9 +1,9 @@
-// 介绍: 类欧几里得(结构版 + 单值版)
-O(log n) 求 `Σ_{i=0}^{n} ⌊(a·i + b)/c⌋` 及其平方、带权。
+// 介绍: 类欧几里得
+$O(op("log") n)$ 求 $f = sum_(i=0)^n floor((a i + b)/c)$ 及其平方、带权。
 
-- 结构版 `nd f(int n, int a, int b, int c)`: _参数顺序 (n, a, b, c)_,一次递归同时得到 `{f, g, h}`:
-  - `f` = Σ⌊(ai+b)/c⌋;`g` = Σ⌊·⌋²;`h` = Σ i·⌊(ai+b)/c⌋
-- 单值版 `f(int a, int b, int c, int n)`: _参数顺序 (a, b, c, n)_,只求 `f`
+- `nd f(int n, int a, int b, int c)`: _参数顺序 (n, a, b, c)_,一次递归同时得到 `{f, g, h}`:
+  - $f = sum_i floor((a i + b)/c)$;$g = sum_i floor((a i + b)/c)^2$;$h = sum_i i floor((a i + b)/c)$
 - 依赖: `mint`(带 `inv` 等)、全局 `i2`/`i6`
+- 只要那个裸下取整和(无 `mint`、无平方带权),用数论章的 `下取整和`
 
-*坑*: 两个 `f` 重载签名都是 `(int, int, int, int)`,C++ 按返回类型不计入签名, _不能同时编译_——实际用哪版复制哪版,并留心两版参数顺序相反;递归深度 O(log n),无栈风险。
+*坑*: 递归深度 $O(op("log") n)$,无栈风险。
