@@ -14,9 +14,9 @@
 | 项目 | 值 |
 |---|---|
 | 章节 | **8 章**:字符串 / 数据结构 / 图论 / 数学 / 数论 / 多项式 / 计算几何 / 通用(顺序见 `.manifest.json`) |
-| 模板 | **66** 个代码文件,其中 2 个标了 `// hide`(只留档不进 PDF) |
-| PDF | `xcpc.pdf` **36 页**(含 3 栏目录),66 个代码块 = 64 个模板 + 2 个独立 typ 页(`通用/常数速查表.typ`、`数论/高斯整数.typ`);另有 17 份 `.typ` 介绍(渲染在对应代码前,不占条目) |
-| 自测 | **65** 份 `X.check.cpp`,全跑 = 65 passed / 0 failed;改一个模板只跑 `./check.sh -x <模板名>` |
+| 模板 | **67** 个代码文件,其中 2 个标了 `// hide`(只留档不进 PDF) |
+| PDF | `xcpc.pdf` **36 页**(含 3 栏目录),66 个代码块 = 65 个模板 + 1 个独立 typ 页(`通用/常数速查表.typ`);另有 18 份 `.typ` 介绍(渲染在对应代码前,不占条目) |
+| 自测 | **66** 份 `X.check.cpp`,全跑 = 66 passed / 0 failed;改一个模板只跑 `./check.sh -x <模板名>` |
 | 未完成 | 见 §11 → `TODO.md` |
 
 ## 1. 五分钟上手
@@ -54,14 +54,14 @@ pdftoppm -png -r 150 -f N -l N xcpc.pdf tmp/x    # 出图判断排版(别用 pdf
 | 数据结构(7) | `lct` `rmq` `wqs` `二分栈` `全局平衡二叉树` `广义串并联图` `李超树` |
 | 图论(4) | `dinic` `mcmf` `一般图最大匹配` `支配树` |
 | 数学(5) | `barrett` `lagrange` `min25` `pollard-rho` `类欧` |
-| 数论(14) | `线性筛` `杜教筛` `exgcd` `CRT` `BSGS` `原根` `Miller-Rabin` `Pollard-Rho` `二次剩余` `fgcd` `minmod` `下取整和` `分数还原` + 独立页 `高斯整数.typ` |
+| 数论(14) | `线性筛` `杜教筛` `exgcd` `CRT` `BSGS` `原根` `Miller-Rabin` `Pollard-Rho` `二次剩余` `fgcd` `minmod` `下取整和` `分数还原` `高斯整数`(自配介绍页) |
 | 多项式(13) | `ntt` `FFT` `多项式求逆` `多项式ln` `多项式exp` `多项式开根` `多项式除法` `Berlekamp-Massey` `Bostan-Mori` `多点求值` `快速插值` `多项式复合` `多项式复合逆` |
 | 计算几何(17) | `geo` `半平面交` `上凸壳` `凸包内点判定` `多边形包含` `多边形重心` `最近点对` `最小圆覆盖` `图形交` `简单多边形三角剖分` `Delaunay` `Voronoi` `三维向量` `三维直线` `三维平面` `三维凸包` `三维旋转` |
 | 通用(2) | `常数表`(无 check:纯常数清单,没法对拍)+ 独立页 `常数速查表.typ` |
 
 - `sam`(用户不用 SAM)与 `pam` 不进 PDF,它们的介绍 `.typ` 一并被跳过。
 - 有已知缺陷的模板:`sa` / `zfunc` / `类欧` / `全局平衡二叉树` / `geo` → 见 §8。
-- `高斯整数.typ` 是纯资料页(没有同名 `.cpp`,也不配 check),行文口味见 §4。
+- `高斯整数`(数论)配了介绍页 `高斯整数.typ`:那份资料页现在渲染在 `高斯整数.cpp` 前面,行文口味见 §4。
 
 ## 3. 生成链路与状态文件
 
@@ -102,8 +102,7 @@ templates/<章>/<模板>.check.cpp  ─┘(gen.py 直接跳过,只给 check.sh �
   **不写 `#include` / `using namespace std;`**:片段默认读者有 base header。
 - **隐藏**:头注释区含 `// hide` 或 `// 隐藏` → 整块不进 PDF(去掉标记即恢复),用于"留档但不上书"。
 - **介绍 `.typ`(推荐写)**:同名 `.typ` 渲染在该代码前面,**不进 manifest、不占条目**。
-  判断规则 = "**存在同基底名的非 `.typ` 文件**";没有同名代码的 `.typ` 才是独立渲染页
-  (`常数速查表.typ`、`高斯整数.typ`)。首行习惯 `// 介绍: <标题>`(Typst 注释,不渲染);
+  判断规则 = "**存在同基底名的非 `.typ` 文件**";没有同名代码的 `.typ` 才是独立渲染页(`常数速查表.typ`)。首行习惯 `// 介绍: <标题>`(Typst 注释,不渲染);
   介绍里**不要再写与 `== 标题` 同级的标题**;加粗用单 `*`/`_`,Typst **不认 `**双星粗体**`**。
 - **资料页/介绍的行文(用户口味)**:同余条件别写成 `$a equiv b mod m$`,说人话 ——
   "4k+1 型素数""模 4 余 1 的因子个数";别用"有序/无序解数"这类术语(用户原话"根本不是人话"),
@@ -178,7 +177,7 @@ int main() { /* 断言 + 暴力对照 */; PASSED("X"); }
 - `$...$` 数学模式里**不要用带反斜杠的多字母符号**:`\log`、`\sqrt`、`\alpha` 报 `unknown variable`;
   多字母标识符(`len`、`mcf`)会被拆成变量序列 → 复杂度等写成反引号文本或 Unicode 文本,数学里只留单字母与基本运算。
 - **相邻变量必须留空格**:`$N(a+bi)$` 报 `unknown variable: bi`,要写 `$N(a + b i)$`;`$2^k u v^2$` 里的 `u v` 同理。
-  `\pm` 不存在(`$\pm 1$` 排版成"pm1"),正负号直接写文本 `±`。
+  `\pm` 不存在(`$\pm 1$` 排版成"pm1"),正负号写 `$plus.minus$`(`$plus.minus 1$` → ±1),别写文本 `±`。
 - **数学函数名要带括号或装进 `op(...)`**:`$O(sqrt n)$` 排版成斜体"sqrt 𝑛",必须写 `$O(sqrt(n))$`;
   `gcd` 这类同理写 `$op("gcd")(a,b)$`。
 - 共轭用 `macron(pi)`(渲染成 π̄);**`bar(pi)` 是错的** —— 那是模长的竖线,会渲染成 |π|。
@@ -206,10 +205,18 @@ int main() { /* 断言 + 暴力对照 */; PASSED("X"); }
   - 绕法:跑 snap 载荷里的真二进制 `/snap/typst/current/bin/typst`,并给一个可写的 `XDG_RUNTIME_DIR`
     (`mkdir -p tmp/xdg && XDG_RUNTIME_DIR=$PWD/tmp/xdg …`),否则报 `cannot create XDG_RUNTIME_DIR folder ... Read-only file system`。
   - snap 版 typst **读不到 /tmp**,调试小样要写在项目目录里。
-- **沙箱里没有网络**:`curl https://github.com` 报 `SSL_ERROR_SYSCALL`。git 推送若报
-  `Connection closed by ... port 22`,是网络层断 SSH,改用 gh token 走 HTTPS:
+- **不是"沙箱没网",是 22 端口不稳**:`curl https://github.com` 与 `gh api rate_limit` 都通(200、配额满额)。
+  SSH 报 `Connection closed by <ip> port 22` 是 TCP 建得起来、客户端 banner 发完约 5s 后被断(收不到服务端 banner),
+  **与权限/仓库无关**(git 那句 "check access rights" 是误导);实测时好时坏,别依赖。走 **443** 可以继续用 SSH key、命令不变:
   ```bash
-  TOK=$(grep oauth_token ~/.config/gh/hosts.yml | awk '{print $2}')
+  git ls-remote ssh://git@ssh.github.com:443/Z3O1/xcpc-templates.git HEAD   # 首次报 Host key verification failed
+  ssh-keyscan -p 443 ssh.github.com >> ~/.ssh/known_hosts                    # 先把 443 的 host key 加进去
+  # 长期写法:~/.ssh/config 里 Host github.com / HostName ssh.github.com / Port 443 / User git
+  ```
+- **或 gh token 走 HTTPS**(`head -1` 不能省:hosts.yml 里 `oauth_token` 有两行,不截会报
+  `url contains a newline in its password component`):
+  ```bash
+  TOK=$(grep oauth_token ~/.config/gh/hosts.yml | awk '{print $2}' | head -1)
   git push https://x-access-token:$TOK@github.com/Z3O1/xcpc-templates.git main:main
   ```
 - 远端是 `git@github.com:Z3O1/xcpc-templates.git`(**private**);SSH 拉取失败时本地 `origin/main`
