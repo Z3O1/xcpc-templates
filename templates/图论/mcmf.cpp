@@ -73,6 +73,8 @@ struct MCMF_t {
     pair<int, ll> mcmf2(int _s, int _t, bool mcf = 0, int _n = 0) {
         s = _s, t = _t, n = _n, cmax(mx, _n + 2);
         static int d[N];
+        // d 是 static:不清的话上一次调用留下的差额会被当成这次的初始差额(多测时会算错)
+        For(i, 1, _n) d[i] = 0;
         int a1 = 0;
         ll a2 = 0;
         For(i, 2, tot) if(i % 2 == 0 && e[i].c < 0) {

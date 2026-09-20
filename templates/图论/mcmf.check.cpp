@@ -8,7 +8,8 @@
 //   2) mcf = true 的"任意流中最小费用"语义(与独立实现的负费用增广前缀费用比对)。
 //   3) 边界: 无路可走 / 零容量 / 平行边 / 自环(非负费用) / 大容量 / 断连点 / 反复复用同一实例。
 //   4) mcmf2() 的历史 bug(A/B)做**静态**判定(见 scan_mcmf2())。
-//   5) clear() 的残留后果(结构化 + 子进程看门狗复现, 见 clear_consequence())。
+//   5) mcmf2() 本体做**动态**对拍(第 9 节, 与 mcmf() 用同一份独立 SPFA 费用流)。
+//   6) clear() 的残留后果(结构化 + 子进程看门狗复现, 见 clear_consequence())。
 //
 // 两个历史 bug(A/B)在当前模板里**都已修好**, 静态判定是回归守卫:
 //   (A) mcmf2() 内层两次调用 mcmf() 若漏传第 4 个实参 _n → 内层 n = 0 → 死循环/算错。
@@ -17,14 +18,14 @@
 //   命中任一条: 打印 [BUG], XCPC_CHECK_STRICT=1 时判失败。
 //   (C) clear() 只清到 hd[mx], 而 mx 只在 mcmf()/mcmf2() 里被抬高: 建完图没跑过 mcmf()
 //       就 clear(), 邻接表会残留 → 之后的图带上幽灵边(hd[u] 指向旧边, 甚至指向奇数下标),
-//       再调 mcmf() 时路径回退 e[p[u]^1] 踩到 e[0]/自环 → 死循环。这一条当前**未修**,
-//       check 用子进程看门狗如实复现。
+//       再调 mcmf() 时路径回退 e[p[u]^1] 踩到 e[0]/自环 → 死循环。这一条当前**未修**。
+//       注意本 check 对 (C) 的复现目前不可靠: 结构化那段跑之前 mx 早被上面的 mcmf() 抬高了
+//       (所以 clear() 反而清得掉), 子进程那 3 组里 which==1 的期望值也写错了(那张图里
+//       1→3 有路, 本来就有流), 于是 [BUG] 是被误报出来的 —— 待重做。
 //
-// mcmf2() 只做静态判定, 不做动态调用 —— 不是因为它死循环(它现在能跑), 而是因为
-// `static int d[N]` 从不重置: 上次调用写下的差额会被这次当成初始差额继续算。最小复现(同进程):
-//   mf.add(1, 2, 1, -5); mf.mcmf2(1, 2, 0, 2);        // (1, -5) 对
-//   复位后 mf.add(1, 2, 5, 3); mf.mcmf2(1, 2, 0, 2);  // (6, 15), 流量超过容量, 正确是 (5, 15)
-// 上一次没写过 d[](比如图里没有负费用边)或只调一次时, 结果是对的; 这条缺陷已记在 CLAUDE.md §8。
+// mcmf2() 在第 9 节做动态对拍。它原先不能连续调用: `static int d[N]` 从不重置, 上次调用
+// 写下的差额会被当成这次的初始差额(最小复现: 先 add(1,2,1,-5)+mcmf2, 复位后 add(1,2,5,3)
+// +mcmf2 → 流量 6 > 容量 5)。模板已在入口清 d[1 .. _n], 第 9 节留了一条回归守卫。
 //
 // 想让 (C) 直接判失败: XCPC_CHECK_STRICT=1 ./check.sh -v 图论
 #include "../_check_base.hpp"
@@ -307,7 +308,7 @@ int main() {
     rng.seed(20240513);   // 固定种子: 每次跑同一批随机用例, 出问题可复现
     long long ncase = 0;
 
-    // ———— 0) mcmf2 的历史 bug(A/B): 静态判定(它能跑, 但同进程重复调用会错, 所以不动态调) ————
+    // ———— 0) mcmf2 的历史 bug(A/B): 静态判定(动态对拍在第 9 节) ————
     puts("— mcmf2(): 静态判定(A/B 两个历史 bug 的回归守卫) —");
     scan_mcmf2();
 
@@ -642,11 +643,116 @@ int main() {
         ncase += 1;
     }
 
+    // ———— 9) mcmf2() 本体: 动态对拍(模板入口清了 static d[] 之后, 可以同进程反复调用) ————
+    puts("— mcmf2() 本体: 与独立 SPFA 费用流动态对拍 —");
+    {
+        // 手算: 1->2->3 每单位 3 元、能走 3 单位; 剩下 5 单位走直连(每单位 9) → 满流 8, 费用 54
+        reset();
+        mf.add(1, 2, 3, 2), mf.add(2, 3, 4, 1), mf.add(1, 3, 5, 9);
+        {
+            auto r = mf.mcmf2(1, 3, 0, 3);
+            CHECK(r.first == 8 && r.second == 9 + 45, "mcmf2 手算: 流 8 费用 54");
+        }
+        // 只有一条负费用边(无负环): 应当在这条边上推满
+        reset();
+        mf.add(1, 2, 1, -5);
+        {
+            auto r = mf.mcmf2(1, 2, 0, 2);
+            CHECK(r.first == 1 && r.second == -5, "mcmf2 单条负费用边: 流 1 费用 -5");
+        }
+        // 回归守卫: 上一行那次调用写过 static d[](d[1] = -1, d[2] = 1), 不清的话这一次会
+        // 多出平衡边, 算出流量 6 > 容量 5
+        reset();
+        mf.add(1, 2, 5, 3);
+        {
+            auto r = mf.mcmf2(1, 2, 0, 2);
+            CHECK(r.first == 5 && r.second == 15, "mcmf2 复用同一实例: 上一次的 d[] 不影响这一次");
+        }
+    }
+    {
+        typedef array<int, 3> E3;   // u, v, w
+        int bad = 0, cnt = 0, skipped = 0;
+        const int M = 9;            // 1..3 之间所有有向边对(含自环)
+        vect<E3> all;
+        For(u, 1, 3) For(v, 1, 3) all.push_back({u, v, (int) rnd(0, 3)});
+        ForD(mask, 0, 1 << M) {
+            vect<E3> es;
+            ForD(i, 0, M) if(mask >> i & 1) es.push_back(all[i]);
+            bool neg = rnd(0, 1);
+            vect<ll> cs;
+            ForD(i, 0, es.size()) cs.push_back(neg ? rnd(-4, 4) : rnd(0, 6));
+            if(has_neg_cycle(3, es, cs)) {   // 负环下最小费用无定义, 剔除
+                ++skipped;
+                continue;
+            }
+            reset();
+            RefMCMF R;
+            R.init(3);
+            ForD(i, 0, es.size()) {
+                mf.add(es[i][0], es[i][1], es[i][2], cs[i]);
+                R.add(es[i][0], es[i][1], es[i][2], cs[i]);
+            }
+            auto got = mf.mcmf2(1, 3, 0, 3);
+            R.run(1, 3, 0);
+            ++cnt;
+            if(got.first != R.flow || got.second != R.cost) {
+                if(++bad <= 5) {
+                    printf("  [FAIL] mcmf2 穷举: 得到 (%d, %lld) != 独立实现 (%d, %lld)  边:", got.first, got.second,
+                           R.flow, R.cost);
+                    ForD(i, 0, es.size()) printf(" %d-%d/%d/%lld", es[i][0], es[i][1], es[i][2], cs[i]);
+                    printf("\n");
+                }
+            }
+        }
+        if(bad) return printf("  [FAIL] mcmf2 穷举 n=3: %d/%d 组与独立实现不符\n", bad, cnt), 1;
+        printf("  [ok] mcmf2 穷举 n=3 全部边子集: %d 组 (流量, 费用) 全等(负环剔除 %d 组)\n", cnt, skipped);
+        ncase += cnt;
+
+        bad = cnt = skipped = 0;
+        For(rep, 1, 1000) {
+            int n = (int) rnd(2, 8), m = (int) rnd(0, 14);
+            int s = (int) rnd(1, n), t = (int) rnd(1, n);
+            while(t == s) t = (int) rnd(1, n);
+            bool neg = rnd(0, 1);
+            vect<array<int, 3>> es;
+            vect<ll> cs;
+            For(e, 1, m) {
+                int u = (int) rnd(1, n), v = (int) rnd(1, n);
+                int w = (int) rnd(0, 6);                     // 含零容量
+                ll c = neg ? rnd(-5, 5) : rnd(0, 8);
+                if(u == v && c < 0) c = -c;                  // 负自环 = 负环, 会挂 spfa(), 直接翻正
+                es.push_back({u, v, w}), cs.push_back(c);
+            }
+            if(has_neg_cycle(n, es, cs)) {
+                ++skipped;
+                continue;
+            }
+            reset();
+            RefMCMF R;
+            R.init(n);
+            ForD(i, 0, es.size()) {
+                mf.add(es[i][0], es[i][1], es[i][2], cs[i]);
+                R.add(es[i][0], es[i][1], es[i][2], cs[i]);
+            }
+            auto got = mf.mcmf2(s, t, 0, n);
+            R.run(s, t, 0);
+            ++cnt;
+            if(got.first != R.flow || got.second != R.cost) {
+                if(++bad <= 5)
+                    printf("  [FAIL] mcmf2 随机: n=%d s=%d t=%d 得到 (%d, %lld) != 独立实现 (%d, %lld)\n", n, s, t,
+                           got.first, got.second, R.flow, R.cost);
+            }
+        }
+        if(bad) return printf("  [FAIL] mcmf2 随机: %d/%d 组与独立实现不符\n", bad, cnt), 1;
+        printf("  [ok] mcmf2 随机 %d 组 (流量, 费用) 全等(负环剔除 %d 组; 每组都复用同一实例)\n", cnt, skipped);
+        ncase += cnt;
+    }
+
     if(clear_bug && STRICT) {
         printf("  [FAIL] XCPC_CHECK_STRICT=1: 已知模板 bug 直接判失败\n");
         return 1;
     }
-    printf("  小结: 用例 %lld 组(mcmf() 动态对拍; mcmf2 只做静态判定 —— static d[] 不重置,\n"
-           "        同进程重复调用会错, 见文件头注释与 CLAUDE.md §8)\n", ncase);
+    printf("  小结: 用例 %lld 组(mcmf() 与 mcmf2() 都与独立 SPFA 费用流对拍; mcmf2 的 static d[] 已修)\n",
+           ncase);
     PASSED("mcmf");
 }
