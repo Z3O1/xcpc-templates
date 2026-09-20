@@ -189,6 +189,10 @@
 
 #zebraw(lang: false)[#raw(readcode("templates/数论/下取整和.cpp"), lang: "cpp", block: true)]
 
+== 高斯整数
+
+#include "templates/数论/高斯整数.typ"
+
 = 多项式
 
 == 任意模数 NTT

@@ -483,6 +483,24 @@
    "title": "常数速查表",
    "missing": false,
    "hidden": false
+  },
+  {
+   "key": "数论/高斯整数.cpp",
+   "title": "高斯整数",
+   "missing": true,
+   "hidden": false
+  },
+  {
+   "key": "数论/两平方和.typ",
+   "title": "两平方和",
+   "missing": true,
+   "hidden": false
+  },
+  {
+   "key": "数论/高斯整数.typ",
+   "title": "高斯整数",
+   "missing": false,
+   "hidden": false
   }
  ]
 }
