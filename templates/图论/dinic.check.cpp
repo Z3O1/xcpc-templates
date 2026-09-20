@@ -1,15 +1,11 @@
 // Dinic_t 自测:小图枚举割/随机图与暴力最大流对照 + cut() 割集自洽性(割容量 == 最大流)
 //
-// 已知模板 bug(见运行时 [BUG] 输出,本 check 不修模板):
-//   bfs() 首行 `d[i] = -(i == s)` 让 s 以外全部 d[i] = 0,而层数判据 `!~d[v]` 只认 -1,
-//   于是 BFS 进不了任何点 → 最大流恒为 0。
-//   最小复现:add(1,2,3) add(2,3,4) add(1,3,1); solve(1,3,3) 返回 0,应为 4。
-// 命中该已知 bug 时:打印 [BUG] 并继续跑剩下的结构性检查(其余任何偏差一律 FAIL);
-// 想让已知 bug 直接判失败: XCPC_CHECK_STRICT=1 ./check.sh -v 图论
+// 模板状态:「最大流恒为 0」的旧 bug **已修** —— bfs() 现在是先 `d[i] = -1` 再 `d[s] = 0`。
+//   zero_bug 探测保留作**回归守卫**:一旦有人改回 `d[i] = -(i == s)`,基础用例会返回 0 而不是 4,
+//   check 立刻判失败(当前模板没有这个缺陷,所以不再按「已知 bug 容忍」)。
+//   旧 bug 的最小复现:add(1,2,3) add(2,3,4) add(1,3,1); solve(1,3,3) → 0(应为 4)。
 #include "../_check_base.hpp"
 #include "dinic.cpp"
-
-static const bool STRICT = getenv("XCPC_CHECK_STRICT") != nullptr;
 static void bug(const char *fmt, ...) {
     va_list ap;
     va_start(ap, fmt);
@@ -90,7 +86,7 @@ static void cut_checks(int n, int s, int t, ll flow, const vect<array<int, 3>> &
         for(int i = f.hd[u]; i; i = f.e[i].n)
             if(f.e[i].w > 0 && cut[f.e[i].v] != 0)
                 return (void) printf("  [FAIL] %s 残余边 %d->%d 跨过割集\n", tag, u, f.e[i].v), exit(1);
-    // 割容量(原图)与流值:正确实现必须相等;已知 bug 下也必然 >=
+    // 割容量(原图)与流值:正确实现必须相等;旧 bug(恒 0)下也必然 >=
     ll cap = 0;
     bool inS[64] = {};
     For(v, 1, n) inS[v] = (cut[v] == 0);
@@ -100,7 +96,7 @@ static void cut_checks(int n, int s, int t, ll flow, const vect<array<int, 3>> &
 }
 
 int main() {
-    // ———— 0) 已知 bug 探测 + 基础用例 ————
+    // ———— 0) 旧 bug(「最大流恒为 0」)回归探测 + 基础用例 ————
     f.clear();
     f.add(1, 2, 3), f.add(2, 3, 4), f.add(1, 3, 1);
     ll base = f.solve(1, 3, 3);
@@ -109,7 +105,7 @@ int main() {
         ok("基础最大流用例 4");
     } else if(base == 0) {
         zero_bug = true;
-        bug("dinic.cpp 最大流恒为 0:bfs() 首行 `d[i] = -(i == s)` 让非源点 d=0,"
+        bug("dinic.cpp 最大流恒为 0(旧 bug 复发):bfs() 首行 `d[i] = -(i == s)` 让非源点 d=0,"
             "而 `!~d[v]` 只认 -1,BFS 进不了任何点\n");
         bug("  最小复现: f.add(1,2,3); f.add(2,3,4); f.add(1,3,1); f.solve(1,3,3) → 0 (应为 4)\n");
     } else {
@@ -146,7 +142,7 @@ int main() {
     }
     if(nbad_other) return printf("  [FAIL] 穷举 n<=4:有 %lld 组与暴力不符(且不是已知的恒 0)\n", nbad_other), 1;
     if(nbad) {
-        bug("穷举 n<=4 全图: %lld/%lld 组与最小割不符(全部是「返回 0」的已知 bug)\n", nbad, ncase);
+        bug("穷举 n<=4 全图: %lld/%lld 组与最小割不符(全部是「返回 0」的旧 bug 复发)\n", nbad, ncase);
     } else {
         ok("穷举 n<=4 全部子图: 最大流 == 枚举最小割");
     }
@@ -179,7 +175,7 @@ int main() {
         }
     }
     if(nbad2_other) return printf("  [FAIL] 随机 n<=30 m<=60:有 %lld 组与 EK 不符(且不是已知的恒 0)\n", nbad2_other), 1;
-    if(nbad2) bug("随机 n<=30 m<=60: %lld/%lld 组与 EK 不符(全部是「返回 0」的已知 bug)\n", nbad2, ncase2);
+    if(nbad2) bug("随机 n<=30 m<=60: %lld/%lld 组与 EK 不符(全部是「返回 0」的旧 bug 复发)\n", nbad2, ncase2);
     else ok("随机 n<=30 m<=60: 最大流 == EK,且割容量 == 最大流");
     printf("  [ok] 随机 %lld 组(每组前都调 clear() 复用同一实例)\n", ncase2);
 
@@ -207,7 +203,7 @@ int main() {
         }
         if(res[0] != want) {
             if(!(zero_bug && res[0] == 0)) return printf("  [FAIL] 复用实例结果 %lld != EK %lld\n", res[0], want), 1;
-            bug("复用实例 50 次结果恒为 %lld(EK 应为 %lld),仍是恒 0 bug\n", res[0], want);
+            bug("复用实例 50 次结果恒为 %lld(EK 应为 %lld),仍是恒 0 的旧 bug\n", res[0], want);
         } else {
             ok("clear() 后同图连跑 50 次结果一致且等于 EK");
         }
@@ -236,11 +232,9 @@ int main() {
     }
 
     if(zero_bug) {
-        bug("结论:本模板最大流恒为 0(已知 bug,未修);上面所有与暴力不符的用例都由此而来。\n");
-        if(STRICT) {
-            printf("  [FAIL] XCPC_CHECK_STRICT=1:已知模板 bug 直接判失败\n");
-            return 1;
-        }
+        printf("  [FAIL] 命中「最大流恒为 0」的旧 bug:bfs() 首行又写成 `d[i] = -(i == s)` 了\n");
+        printf("         当前模板已修(必须 `d[i] = -1` 之后再设 `d[s] = 0`)——这是回归,不是已知缺陷\n");
+        return 1;
     }
     PASSED("dinic");
 }

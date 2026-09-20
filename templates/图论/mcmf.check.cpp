@@ -7,22 +7,26 @@
 //      比对 (流量, 费用); 另与矩阵 EK 再核一次最大流值。
 //   2) mcf = true 的"任意流中最小费用"语义(与独立实现的负费用增广前缀费用比对)。
 //   3) 边界: 无路可走 / 零容量 / 平行边 / 自环(非负费用) / 大容量 / 断连点 / 反复复用同一实例。
-//   4) 三个**已知模板 bug** 的复现(见下), 全部以响亮 [BUG] 打印, 不让 check 挂死。
+//   4) mcmf2() 的历史 bug(A/B)做**静态**判定(见 scan_mcmf2())。
+//   5) clear() 的残留后果(结构化 + 子进程看门狗复现, 见 clear_consequence())。
 //
-// 已知模板 bug(本 check 不修模板, 只如实反映):
-//   (A) mcmf2() 内层两次调用 mcmf() 都漏传第 4 个实参 _n: `mcmf(_n + 1, _n + 2)` 与
-//       `mcmf(_s, _t, mcf)` → 内层 n = 0 → dij()/路径回退用陈旧距离 → **对任何输入死循环**。
-//       最小复现: MCMF_t mf; mf.add(1,2,1,-5); mf.mcmf2(1,2,0,2);
-//       因为必然挂死, 本 check **不调用 mcmf2()**, 改为读源码做静态判定(见 scan_mcmf2())。
-//   (B) mcmf2() 里 `a1 += e[tot].w`(取 t→s 辅助边上的流量) 写在可行性阶段 mcmf() 之前,
-//       那时该边还没推流 → 可行性阶段的流量算不进返回值。同样是静态判定。
-//   (C) clear() 用成员 n 决定清哪些 hd[](而 n 只在 mcmf() 里被赋值):
-//       没调用过 mcmf() 时 clear() 是空操作 → 邻接表残留 → 之后 add() 建的新图会带上
-//       幽灵边(hd[u] 指向旧边, 甚至指向奇数下标), 再调 mcmf() 时路径回退 e[p[u]^1] 会踩到
-//       e[0]/自环 → **死循环**。结构化复现(不挂): clear() 后断言 hd[1..n] 均为 0;
-//       后果复现(子进程 + 看门狗, 250ms 上限)见 clear_consequence()。
+// 两个历史 bug(A/B)在当前模板里**都已修好**, 静态判定是回归守卫:
+//   (A) mcmf2() 内层两次调用 mcmf() 若漏传第 4 个实参 _n → 内层 n = 0 → 死循环/算错。
+//   (B) 取辅助边(t→s)流量的 `a1 += e[...].w` 必须写在可行性阶段 mcmf() **之后**:
+//       写在之前读到的是 0, 可行性阶段推过的流量算不进返回值。
+//   命中任一条: 打印 [BUG], XCPC_CHECK_STRICT=1 时判失败。
+//   (C) clear() 只清到 hd[mx], 而 mx 只在 mcmf()/mcmf2() 里被抬高: 建完图没跑过 mcmf()
+//       就 clear(), 邻接表会残留 → 之后的图带上幽灵边(hd[u] 指向旧边, 甚至指向奇数下标),
+//       再调 mcmf() 时路径回退 e[p[u]^1] 踩到 e[0]/自环 → 死循环。这一条当前**未修**,
+//       check 用子进程看门狗如实复现。
 //
-// 想让已知 bug 直接判失败: XCPC_CHECK_STRICT=1 ./check.sh -v 图论
+// mcmf2() 只做静态判定, 不做动态调用 —— 不是因为它死循环(它现在能跑), 而是因为
+// `static int d[N]` 从不重置: 上次调用写下的差额会被这次当成初始差额继续算。最小复现(同进程):
+//   mf.add(1, 2, 1, -5); mf.mcmf2(1, 2, 0, 2);        // (1, -5) 对
+//   复位后 mf.add(1, 2, 5, 3); mf.mcmf2(1, 2, 0, 2);  // (6, 15), 流量超过容量, 正确是 (5, 15)
+// 上一次没写过 d[](比如图里没有负费用边)或只调一次时, 结果是对的; 这条缺陷已记在 CLAUDE.md §8。
+//
+// 想让 (C) 直接判失败: XCPC_CHECK_STRICT=1 ./check.sh -v 图论
 #include "../_check_base.hpp"
 #include "mcmf.cpp"
 
@@ -148,7 +152,23 @@ static bool has_neg_cycle(int n, const vect<array<int, 3>> &es, const vect<ll> &
     return true;
 }
 
-// ———— 静态扫描 mcmf.cpp 源码, 判定 mcmf2() 的两个 bug ————
+// ———— 静态扫描 mcmf.cpp 源码, 判定 mcmf2() 的两个历史 bug(A/B)有没有复发 ————
+// 扫描前先剥掉 // 行注释: mcmf.cpp 的注释里也写着 "mcmf2()" / "mcmf(" / "e[...].w",
+// 带着注释扫的话断点会落到注释上(实测: mcmf2 的函数体被截成 spfa() 的, 两条判定全变 WARN,
+// 等于没有牙)。源码里没有字符串字面量, 所以简单按 "//" 切就够。
+static string strip_line_comments(const string &s) {
+    string out;
+    out.reserve(s.size());
+    for(size_t i = 0; i < s.size(); i++) {
+        if(s[i] == '/' && i + 1 < s.size() && s[i + 1] == '/') {
+            while(i < s.size() && s[i] != '\n') ++i;
+            if(i < s.size()) out += '\n';
+        } else {
+            out += s[i];
+        }
+    }
+    return out;
+}
 static int line_of(const string &s, size_t pos) {
     int ln = 1;
     ForD(i, 0, pos) if(s[i] == '\n') ++ln;
@@ -184,10 +204,11 @@ static void scan_mcmf2() {
         warn("读不到 mcmf.cpp 源码(执行目录不是 templates/图论?), 跳过 mcmf2 的静态判定\n");
         return;
     }
-    // 定位 mcmf2 的函数体
-    size_t p = src.find("mcmf2(");
+    src = strip_line_comments(src);
+    // 定位 mcmf2 的**定义**: 形参表以 `int` 开头; 调用点长这样 `mcmf2(1, 2, 0, 2)`, 不会误命中
+    size_t p = src.find("mcmf2(int");
     if(p == string::npos) {
-        warn("源码里找不到 mcmf2(...) 定义, 静态扫描器可能失效\n");
+        warn("源码里找不到 `mcmf2(int ...)` 定义, 静态扫描器可能失效\n");
         return;
     }
     size_t b = src.find('{', p);
@@ -228,20 +249,22 @@ static void scan_mcmf2() {
         ok("mcmf2() 内层 mcmf() 调用都带齐了 4 个实参");
     }
 
-    // (B) a1 += e[tot].w 与可行性阶段 mcmf() 的先后
-    size_t pos_w = body.find("e[tot].w");
+    // (B) `a1 += e[...].w`(取辅助边 t→s 上的流量)与可行性阶段 mcmf() 的先后
+    // 断点用 `a1 += e[` 而不是死盯 `e[tot].w`: 这个下标变量历史上有 tot / fake 两个名字,
+    // 盯变量名的话改一次名扫描器就静默失效(实测踩过)
+    size_t pos_w = body.find("a1 += e[");
     size_t pos_c = body.find("mcmf(");
     if(pos_w != string::npos && pos_c != string::npos && pos_w < pos_c) {
         int lw = line_of(src, b) + line_of(body, pos_w) - 1;
         int lc = line_of(src, b) + line_of(body, pos_c) - 1;
-        bug("mcmf2() 里 `a1 += e[tot].w`(%d 行) 出现在可行性阶段 `mcmf(...)`(%d 行) 之前%s:\n",
-            lw, lc, lw == lc ? "(同一行的逗号表达式, 求值顺序仍是先取 e[tot].w)" : "");
-        bug("  → 读 e[tot].w(辅助边 t→s 的反向边)时它还是 0, 可行性阶段推过 t→s 的流量没算进返回值\n");
-        bug("     应当先 `a2 += mcmf(_n + 1, _n + 2).second;` 再取 e[tot].w\n");
+        bug("mcmf2() 里取辅助边流量的 `a1 += e[...].w`(%d 行) 出现在可行性阶段 `mcmf(...)`(%d 行) 之前%s:\n",
+            lw, lc, lw == lc ? "(同一行的逗号表达式, 求值顺序仍是先取 e[...].w)" : "");
+        bug("  → 那时辅助边 t→s 上还没推过流, 读到的是 0, 可行性阶段推的流量没算进返回值\n");
+        bug("     应当先 `a2 += mcmf(_n + 1, _n + 2, 0, _n + 2).second;` 再取那个 e[...].w\n");
     } else if(pos_w == string::npos) {
-        warn("mcmf2() 里没扫到 `e[tot].w`, 静态扫描器可能失效\n");
+        warn("mcmf2() 里没扫到 `a1 += e[...].w`, 静态扫描器可能失效\n");
     } else {
-        ok("mcmf2() 里 e[tot].w 的读取顺序看着对(在可行性 mcmf() 之后)");
+        ok("mcmf2() 里辅助边流量的读取顺序看着对(在可行性 mcmf() 之后)");
     }
 }
 
@@ -284,8 +307,8 @@ int main() {
     rng.seed(20240513);   // 固定种子: 每次跑同一批随机用例, 出问题可复现
     long long ncase = 0;
 
-    // ———— 0) mcmf2 的两个 bug: 只能静态判定(调用它必挂) ————
-    puts("— mcmf2(): 静态判定(调用它会死循环, 本 check 不调用) —");
+    // ———— 0) mcmf2 的历史 bug(A/B): 静态判定(它能跑, 但同进程重复调用会错, 所以不动态调) ————
+    puts("— mcmf2(): 静态判定(A/B 两个历史 bug 的回归守卫) —");
     scan_mcmf2();
 
     // ———— 1) 基础用例(手算) ————
@@ -623,6 +646,7 @@ int main() {
         printf("  [FAIL] XCPC_CHECK_STRICT=1: 已知模板 bug 直接判失败\n");
         return 1;
     }
-    printf("  小结: 用例 %lld 组(不含 mcmf2 —— 对任何输入死循环, 只能静态判定)\n", ncase);
+    printf("  小结: 用例 %lld 组(mcmf() 动态对拍; mcmf2 只做静态判定 —— static d[] 不重置,\n"
+           "        同进程重复调用会错, 见文件头注释与 CLAUDE.md §8)\n", ncase);
     PASSED("mcmf");
 }
