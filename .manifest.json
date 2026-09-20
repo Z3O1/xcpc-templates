@@ -137,7 +137,31 @@
    "hidden": false
   },
   {
-   "key": "数据结构/二分栈.cpp",
+   "key": "数据结构/四边形不等式/四边形不等式.typ",
+   "title": "四边形不等式",
+   "missing": false,
+   "hidden": false
+  },
+  {
+   "key": "数据结构/四边形不等式/分治.cpp",
+   "title": "决策单调性分治",
+   "missing": false,
+   "hidden": false
+  },
+  {
+   "key": "数据结构/四边形不等式/SMAWK.cpp",
+   "title": "SMAWK",
+   "missing": false,
+   "hidden": false
+  },
+  {
+   "key": "数据结构/四边形不等式/Wilber.cpp",
+   "title": "Wilber",
+   "missing": false,
+   "hidden": false
+  },
+  {
+   "key": "数据结构/四边形不等式/二分栈.cpp",
    "title": "二分栈",
    "missing": false,
    "hidden": false

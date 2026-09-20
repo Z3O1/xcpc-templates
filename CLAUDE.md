@@ -14,9 +14,9 @@
 | 项目 | 值 |
 |---|---|
 | 章节 | **8 章**:字符串 / 数据结构 / 图论 / 数学 / 数论 / 多项式 / 计算几何 / 通用(顺序见 `.manifest.json`) |
-| 模板 | **67** 个代码文件,其中 2 个标了 `// hide`(只留档不进 PDF) |
-| PDF | `xcpc.pdf` **36 页**(含 3 栏目录),66 个代码块 = 65 个模板 + 1 个独立 typ 页(`通用/常数速查表.typ`);另有 18 份 `.typ` 介绍(渲染在对应代码前,不占条目) |
-| 自测 | **66** 份 `X.check.cpp`,全跑 = 66 passed / 0 failed;改一个模板只跑 `./check.sh -x <模板名>` |
+| 模板 | **70** 个代码文件,其中 2 个标了 `// hide`(只留档不进 PDF) |
+| PDF | `xcpc.pdf` **37 页**(含 3 栏目录),70 个代码块 = 68 个模板 + 2 个独立 typ 页(`通用/常数速查表.typ`、`数据结构/四边形不等式/四边形不等式.typ`);另有 20 份 `.typ` 介绍(渲染在对应代码前,不占条目) |
+| 自测 | **69** 份 `X.check.cpp`,全跑 = 69 passed / 0 failed;改一个模板只跑 `./check.sh -x <模板名>` |
 | 未完成 | 见 §11 → `TODO.md` |
 
 ## 1. 五分钟上手
@@ -51,7 +51,7 @@ pdftoppm -png -r 150 -f N -l N xcpc.pdf tmp/x    # 出图判断排版(别用 pdf
 | 章 | 模板 |
 |---|---|
 | 字符串(6) | `manacher` `sa` `zfunc` `最小表示法` `sam`⚠ `pam`⚠ |
-| 数据结构(7) | `lct` `rmq` `wqs` `二分栈` `全局平衡二叉树` `广义串并联图` `李超树` |
+| 数据结构(11) | `lct` `rmq` `wqs` `四边形不等式`(独立页) `决策单调性分治` `SMAWK` `Wilber` `二分栈` `全局平衡二叉树` `广义串并联图` `李超树` |
 | 图论(4) | `dinic` `mcmf` `一般图最大匹配` `支配树` |
 | 数学(5) | `barrett` `lagrange` `min25` `pollard-rho` `类欧` |
 | 数论(14) | `线性筛` `杜教筛` `exgcd` `CRT` `BSGS` `原根` `Miller-Rabin` `Pollard-Rho` `二次剩余` `fgcd` `minmod` `下取整和` `分数还原` `高斯整数`(自配介绍页) |
@@ -66,21 +66,25 @@ pdftoppm -png -r 150 -f N -l N xcpc.pdf tmp/x    # 出图判断排版(别用 pdf
 ## 3. 生成链路与状态文件
 
 ```
-templates/<章>/<模板>.cpp|sh|py  ─┐
-templates/<章>/<模板>.typ(介绍)  ─┼─→ gen.py ─→ sections.typ ─→ #include 进 xcpc.typ ─→ xcpc.pdf
-templates/<章>/<模板>.check.cpp  ─┘(gen.py 直接跳过,只给 check.sh 用)
+templates/<章>/<模板>.cpp|sh|py       ─┐
+templates/<章>/<模板>.typ(介绍)       ─┼─→ gen.py ─→ sections.typ ─→ #include 进 xcpc.typ ─→ xcpc.pdf
+templates/<章>/<小节>/<模板>.cpp      ─┤(子目录 = 二级小节,里面的文件是它的三级子条)
+templates/<章>/<模板>.check.cpp       ─┘(gen.py 直接跳过,只给 check.sh 用)
 ```
 
 - Typst 的 `read()` 不能遍历目录 → "扫描"全由 `gen.py` 承担:扫磁盘 → 与 `.manifest.json` 对账
   (记忆章节顺序 + 标题,增删改都是增量) → 输出 `sections.typ` → 确保 `xcpc.typ` 正文是 `#include "sections.typ"`。
 - **`sections.typ` 是生成物,不要手改**;`.manifest.json` 是状态文件,调顺序/标题**只手工改它**。
-- `.manifest.json` 结构:`{"sections": [章名…], "entries": [{key,title,missing,hidden}, …]}`(现 81 条)。
+- `.manifest.json` 结构:`{"sections": [章名…], "entries": [{key,title,missing,hidden}, …]}`(现 85 条)。
   - `missing: true` = 曾存在、后来删除/改名的条目(**记忆保留**,同名文件回来会原位复原),现有 13 条
     (如 `数学/ntt.cpp`→`多项式/`、`数论/两平方和.typ`→`高斯整数.typ`、`数据结构/线段树.cpp`)。**不进 PDF,别管也别清**。
   - `hidden: true` = 文件头有 `// hide`(当前 SAM、广义 PAM)。
   - 注意 `数学/pollard-rho.cpp` 与 `数论/Pollard-Rho.cpp` 是**两个都还在**的独立模板,不是同一份。
 - **改标题**:`gen.py` 只给*新*条目从首行注释取标题,已有条目一律以 manifest 为准 →
   想换标题先从 `.manifest.json` 删掉该条,再 `python3 gen.py` 重取。
+- **三级标题(靠目录,不用标记)**:章内的子目录 = 一个二级小节,子目录里的文件 = 它的三级子条(编号如 `2.5.1`);
+  子目录里与目录同名的 `.typ`(如 `数据结构/四边形不等式/四边形不等式.typ`)是小节正文,不算子条。
+  当前 `数据结构/四边形不等式/` 里挂 2.5.1 分治 / 2.5.2 SMAWK / 2.5.3 Wilber / 2.5.4 二分栈。
 - 外部依赖:`sections.typ` 首行 `#import "@preview/zebraw:0.6.3": zebraw`。
   报"包找不到"先看 `~/.cache/typst`;离线环境可换成空壳 `#let zebraw(..a) = ..`。
 - `old_versions/xcpc.typ.bak` 是**迁移前的原始内联版,别删**:manifest 丢失时 `gen.py`
@@ -127,7 +131,7 @@ templates/<章>/<模板>.check.cpp  ─┘(gen.py 直接跳过,只给 check.sh �
 
 ## 6. 自测(check)约定
 
-每个模板配一份同目录 `X.check.cpp`,骨架固定:
+每个模板配一份同目录 `X.check.cpp`,骨架固定(模板在小节子目录里时,base 头写 `#include "../../_check_base.hpp"`):
 
 ```cpp
 // X 自测:<测什么>            (首行注释写清测什么;不渲染进 PDF,但 §2 靠它)

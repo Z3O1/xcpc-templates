@@ -61,11 +61,33 @@
 
 #zebraw(lang: false)[#raw(readcode("templates/数据结构/广义串并联图.cpp"), lang: "cpp", block: true)]
 
-== 二分栈
+== 四边形不等式
 
-#include "templates/数据结构/二分栈.typ"
+#include "templates/数据结构/四边形不等式/四边形不等式.typ"
 
-#zebraw(lang: false)[#raw(readcode("templates/数据结构/二分栈.cpp"), lang: "cpp", block: true)]
+=== 决策单调性分治
+
+#include "templates/数据结构/四边形不等式/分治.typ"
+
+#zebraw(lang: false)[#raw(readcode("templates/数据结构/四边形不等式/分治.cpp"), lang: "cpp", block: true)]
+
+=== SMAWK
+
+#include "templates/数据结构/四边形不等式/SMAWK.typ"
+
+#zebraw(lang: false)[#raw(readcode("templates/数据结构/四边形不等式/SMAWK.cpp"), lang: "cpp", block: true)]
+
+=== Wilber
+
+#include "templates/数据结构/四边形不等式/Wilber.typ"
+
+#zebraw(lang: false)[#raw(readcode("templates/数据结构/四边形不等式/Wilber.cpp"), lang: "cpp", block: true)]
+
+=== 二分栈
+
+#include "templates/数据结构/四边形不等式/二分栈.typ"
+
+#zebraw(lang: false)[#raw(readcode("templates/数据结构/四边形不等式/二分栈.cpp"), lang: "cpp", block: true)]
 
 == wqs 二分构造方案
 
@@ -74,8 +96,6 @@
 #zebraw(lang: false)[#raw(readcode("templates/数据结构/wqs.cpp"), lang: "cpp", block: true)]
 
 == O(1) RMQ
-
-#include "templates/数据结构/rmq.typ"
 
 #zebraw(lang: false)[#raw(readcode("templates/数据结构/rmq.cpp"), lang: "cpp", block: true)]
 

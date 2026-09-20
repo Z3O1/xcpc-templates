@@ -8,7 +8,7 @@
 //   因此本 check 的 calc 采用自然延拓(把 r 夹到 n),并在末尾打印「走出 [1,n] 的调用」证据。
 //
 // 说明:模板用的是 house header 的 pii(带 [0]/[1] 下标,见 q.front()[0]),这里就地补局部类型。
-#include "../_check_base.hpp"
+#include "../../_check_base.hpp"
 
 struct pii2 {
     int first, second;

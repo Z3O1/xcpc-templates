@@ -23,6 +23,10 @@ Typst 的 read() 只能按显式路径读单文件(无 glob/目录遍历), 所�
 份代码的介绍——不单独成块、不进 manifest, 渲染在标题/简介之后、代
 码之前; 介绍了同名代码后 .typ 自动退回"独立可渲染模板"的语义。
 
+标题层级(靠目录结构): 章内文件是二级条目(==);章内的子目录是一个二级小节,
+子目录里的文件是它的三级子条(===, 编号如 2.5.1)。子目录里与目录同名的 .typ
+(如 四边形不等式/四边形不等式.typ)是该小节的正文, 不算子条。
+
 顺序/标题第一次生成时取自 xcpc.typ.bak(原始内联版), 之后以 manifest 为准。
 
 用法: python3 gen.py && typst compile xcpc.typ   (或直接 ./build.sh)
@@ -111,19 +115,22 @@ def hidden_from_header(p: pathlib.Path) -> bool:
 
 
 # ---------- 1) 扫描磁盘 ----------
-files = {}   # 目录名(章节) -> {文件名: Path}, 不含介绍 .typ
-intros = {}  # 目录名 -> {代码基底名: Path}: 同名 .typ 介绍(渲染在代码前)
+# 章 = templates/ 下的一级目录; 章内文件 = 二级条目; 章内的子目录 = 一个二级小节,
+# 子目录里的文件 = 它的三级子条。子目录里与目录同名的 .typ(如 四边形不等式/四边形不等式.typ)
+# 是这个小节的正文, 不算子条。
+files = {}   # 章名 -> {相对路径(可含子目录): Path}, 不含介绍 .typ
+intros = {}  # 章名 -> {相对路径去扩展名: Path}: 同名 .typ 介绍(渲染在代码前)
 for d in sorted(p for p in TPL.iterdir() if p.is_dir()):
-    fs = {p.name: p for p in sorted(d.iterdir())
+    fs = {p.relative_to(d).as_posix(): p for p in sorted(d.rglob('*'))
           if p.is_file() and not p.name.startswith('.')
           and not p.name.endswith('.check.cpp')}   # check 自测不入 PDF
     if not fs:
         continue
-    base = {p.stem for n, p in fs.items() if not n.endswith('.typ')}
+    code = {n[:-4] for n in fs if not n.endswith('.typ')}   # 有同名代码的基底路径
     files[d.name], intros[d.name] = {}, {}
     for n, p in fs.items():
-        if n.endswith('.typ') and p.stem in base:
-            intros[d.name][p.stem] = p   # 同名 .typ = 代码介绍
+        if n.endswith('.typ') and n[:-4] in code:
+            intros[d.name][n[:-4]] = n   # 同目录同名 .typ = 代码介绍
         else:
             files[d.name][n] = p
 
@@ -187,7 +194,7 @@ def parse_state() -> dict:
         if m and cur_sec:
             name = m.group(1)
             # 同名 .typ 是代码的介绍, 不单独成条目(标题随代码块)
-            if name.endswith('.typ') and intros.get(cur_sec, {}).get(pathlib.Path(name).stem):
+            if name.endswith('.typ') and intros.get(cur_sec, {}).get(name[:-4]):
                 continue
             secs[f'{cur_sec}/{name}'] = (cur_sec, cur_title)
     return secs
@@ -305,20 +312,51 @@ for d in data['sections']:
              and e['key'].startswith(d + '/')]
     if not items:
         continue
-    out.append(f'= {d}')
+    # <小节>/<小节>.typ 是小节正文, 其余 <小节>/xxx 是它的子条
+    def group_body(rel):
+        parts = rel.split('/')
+        return len(parts) == 2 and parts[1] == parts[0] + '.typ'
+
+    groups = {}
     for e in items:
+        rel = e['key'].split('/', 1)[1]
+        if '/' in rel and not group_body(rel):
+            groups.setdefault(rel.split('/', 1)[0], []).append(e)
+
+    def emit(e, lvl):
         if e['title'] is not None:
-            out += ['', f'== {e["title"]}']
+            out.append('')
+            out.append(f'{"=" * lvl} {e["title"]}')
         name = e['key'].split('/', 1)[1]
         path = files[d][name]
-        # 同名 .typ 介绍: 排在正文代码前面
-        intro = intros.get(d, {}).get(path.stem)
+        # 同目录同名 .typ 介绍: 排在正文代码前面
+        intro = intros.get(d, {}).get(name.rsplit('.', 1)[0])
         if intro:
-            out += ['', f'#include "templates/{d}/{intro.name}"']
+            out.append('')
+            out.append(f'#include "templates/{d}/{intro}"')
+        out.append('')
         if path.suffix == '.typ':
-            out += ['', f'#include "templates/{e["key"]}"']
+            out.append(f'#include "templates/{e["key"]}"')
         else:
-            out += ['', f'#zebraw(lang: false)[#raw(readcode("templates/{e["key"]}"), lang: "{lang_of(path)}", block: true)]']
+            out.append(f'#zebraw(lang: false)[#raw(readcode("templates/{e["key"]}"), lang: "{lang_of(path)}", block: true)]')
+
+    out.append(f'= {d}')
+    done = set()
+    for e in items:
+        rel = e['key'].split('/', 1)[1]
+        if '/' in rel and not group_body(rel):
+            continue                       # 子条, 跟着小节正文一起出
+        emit(e, 2)
+        g = rel.split('/', 1)[0] if '/' in rel else rel.rsplit('.', 1)[0]
+        if g in groups and g not in done:  # 小节正文后紧跟它的三级子条
+            for ce in groups[g]:
+                emit(ce, 3)
+            done.add(g)
+    for g, ces in groups.items():          # 没有正文的小节: 兜底只出标题
+        if g not in done:
+            out += ['', f'== {g}']
+            for ce in ces:
+                emit(ce, 3)
     out.append('')
     total += len(items)
 SEC.write_text('\n'.join(out).rstrip('\n') + '\n')
