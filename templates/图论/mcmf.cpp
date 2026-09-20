@@ -12,6 +12,8 @@ struct MCMF_t {
         e[++tot] = {v, hd[u], w, c}, hd[u] = tot;
     }
     void add(int u, int v, int w, ll c) {
+        // mx 是 clear() 的清零点,add() 就得抬它(只靠 mcmf() 抬的话,建完图没跑过就 clear() 会残留)
+        cmax(mx, u), cmax(mx, v);
         _add(u, v, w, c), _add(v, u, 0, -c);
     }
     void clear() {

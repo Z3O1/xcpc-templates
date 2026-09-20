@@ -9,25 +9,22 @@
 //   3) 边界: 无路可走 / 零容量 / 平行边 / 自环(非负费用) / 大容量 / 断连点 / 反复复用同一实例。
 //   4) mcmf2() 的历史 bug(A/B)做**静态**判定(见 scan_mcmf2())。
 //   5) mcmf2() 本体做**动态**对拍(第 9 节, 与 mcmf() 用同一份独立 SPFA 费用流)。
-//   6) clear() 的残留后果(结构化 + 子进程看门狗复现, 见 clear_consequence())。
+//   6) clear() 的 mx 清零点(全新实例 + 子进程看门狗, 见第 7 节)。
 //
 // 两个历史 bug(A/B)在当前模板里**都已修好**, 静态判定是回归守卫:
 //   (A) mcmf2() 内层两次调用 mcmf() 若漏传第 4 个实参 _n → 内层 n = 0 → 死循环/算错。
 //   (B) 取辅助边(t→s)流量的 `a1 += e[...].w` 必须写在可行性阶段 mcmf() **之后**:
 //       写在之前读到的是 0, 可行性阶段推过的流量算不进返回值。
-//   命中任一条: 打印 [BUG], XCPC_CHECK_STRICT=1 时判失败。
-//   (C) clear() 只清到 hd[mx], 而 mx 只在 mcmf()/mcmf2() 里被抬高: 建完图没跑过 mcmf()
+//   命中任一条: 打印 [BUG] 并直接判失败(A/B 现在都已修好, 出现即回归)。
+//   (C) clear() 只清到 hd[mx], 而 mx 原先只在 mcmf()/mcmf2() 里被抬高: 建完图没跑过 mcmf()
 //       就 clear(), 邻接表会残留 → 之后的图带上幽灵边(hd[u] 指向旧边, 甚至指向奇数下标),
-//       再调 mcmf() 时路径回退 e[p[u]^1] 踩到 e[0]/自环 → 死循环。这一条当前**未修**。
-//       注意本 check 对 (C) 的复现目前不可靠: 结构化那段跑之前 mx 早被上面的 mcmf() 抬高了
-//       (所以 clear() 反而清得掉), 子进程那 3 组里 which==1 的期望值也写错了(那张图里
-//       1→3 有路, 本来就有流), 于是 [BUG] 是被误报出来的 —— 待重做。
+//       再调 mcmf() 时路径回退 e[p[u]^1] 踩到 e[0]/自环 → 死循环。现已修: add() 自己
+//       `cmax(mx, u), cmax(mx, v)`; 第 7 节用「全新实例」(mx = 0)+ 子进程看门狗守着它。
 //
 // mcmf2() 在第 9 节做动态对拍。它原先不能连续调用: `static int d[N]` 从不重置, 上次调用
 // 写下的差额会被当成这次的初始差额(最小复现: 先 add(1,2,1,-5)+mcmf2, 复位后 add(1,2,5,3)
 // +mcmf2 → 流量 6 > 容量 5)。模板已在入口清 d[1 .. _n], 第 9 节留了一条回归守卫。
 //
-// 想让 (C) 直接判失败: XCPC_CHECK_STRICT=1 ./check.sh -v 图论
 #include "../_check_base.hpp"
 #include "mcmf.cpp"
 
@@ -37,7 +34,6 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
-static const bool STRICT = getenv("XCPC_CHECK_STRICT") != nullptr;
 static void bug(const char *fmt, ...) {
     va_list ap;
     va_start(ap, fmt);
@@ -60,11 +56,11 @@ static MCMF_t mf;
 static const int MAXV = 200;   // check 里用到的最大点数(足以覆盖所有用例)
 
 // ———— 复位到"全新实例"的状态 ————
-// 注意: 不能直接用 mf.clear() —— 它依赖成员 n, 本身就是要复现的 bug(C)。
-// 这里手工复位, 保证后面与暴力对拍测的确实是 mcmf() 本体。
+// 注意: 不能直接用 mf.clear() —— 它靠 mx 决定清哪些 hd[](第 7 节守的就是这个)。
+// 这里手工复位, 并把 mx 也归零: 全新实例的 mx 本来就是 0(没调用过 mcmf()/mcmf2())。
 static void reset() {
     For(i, 0, MAXV + 2) mf.hd[i] = 0, mf.h[i] = 0, mf.d[i] = 0, mf.p[i] = 0;
-    mf.tot = 1, mf.n = mf.s = mf.t = 0;
+    mf.tot = 1, mf.n = mf.s = mf.t = 0, mf.mx = 0;
 }
 
 // ———— 独立参考实现 1: SPFA 版最小费用流(不用势函数, 与模板实现无关) ————
@@ -189,7 +185,7 @@ static int count_args(const string &s, size_t lp) {
     }
     return -1;
 }
-static void scan_mcmf2() {
+static bool scan_mcmf2() {
     static const char *paths[] = {"mcmf.cpp", "../图论/mcmf.cpp", "templates/图论/mcmf.cpp"};
     string src;
     for(const char *p : paths) {
@@ -203,19 +199,19 @@ static void scan_mcmf2() {
     }
     if(src.empty()) {
         warn("读不到 mcmf.cpp 源码(执行目录不是 templates/图论?), 跳过 mcmf2 的静态判定\n");
-        return;
+        return false;
     }
     src = strip_line_comments(src);
     // 定位 mcmf2 的**定义**: 形参表以 `int` 开头; 调用点长这样 `mcmf2(1, 2, 0, 2)`, 不会误命中
     size_t p = src.find("mcmf2(int");
     if(p == string::npos) {
         warn("源码里找不到 `mcmf2(int ...)` 定义, 静态扫描器可能失效\n");
-        return;
+        return false;
     }
     size_t b = src.find('{', p);
     if(b == string::npos) {
         warn("解析 mcmf2 函数体失败\n");
-        return;
+        return false;
     }
     int dep = 0;
     size_t e = b;
@@ -224,6 +220,7 @@ static void scan_mcmf2() {
         else if(src[e] == '}' && --dep == 0) break;
     }
     string body = src.substr(b, e - b);
+    bool found = false;   // 命中 A/B 任一历史 bug 就置位, 让调用方直接判失败
 
     // (A) 内层 mcmf() 调用的实参个数
     int n_call = 0, n_short = 0;
@@ -232,7 +229,7 @@ static void scan_mcmf2() {
         int args = count_args(body, lp);
         ++n_call;
         if(args < 4) {
-            ++n_short;
+            ++n_short, found = true;
             size_t ls = body.rfind('\n', i);
             string call = body.substr(ls == string::npos ? 0 : ls + 1, body.find('\n', i) - (ls == string::npos ? 0 : ls + 1));
             while(call.size() && isspace((unsigned char) call.front())) call.erase(call.begin());
@@ -256,6 +253,7 @@ static void scan_mcmf2() {
     size_t pos_w = body.find("a1 += e[");
     size_t pos_c = body.find("mcmf(");
     if(pos_w != string::npos && pos_c != string::npos && pos_w < pos_c) {
+        found = true;
         int lw = line_of(src, b) + line_of(body, pos_w) - 1;
         int lc = line_of(src, b) + line_of(body, pos_c) - 1;
         bug("mcmf2() 里取辅助边流量的 `a1 += e[...].w`(%d 行) 出现在可行性阶段 `mcmf(...)`(%d 行) 之前%s:\n",
@@ -267,6 +265,7 @@ static void scan_mcmf2() {
     } else {
         ok("mcmf2() 里辅助边流量的读取顺序看着对(在可行性 mcmf() 之后)");
     }
+    return found;
 }
 
 // ———— clear() 的后果复现: 子进程 + 看门狗(不挂住 check) ————
@@ -277,15 +276,16 @@ static bool run_child_mcmf(int which, MfRes &out, int ms) {
     pid_t pid = fork();
     if(pid == 0) {
         close(fd[0]);
-        // 图 A: 1->2->3, 1->3 都在 1..3 上有边
+        // 图 A: 1->2->3, 1->3 都在 1..3 上有边。reset() 之后 mx = 0(全新实例),
+        // clear() 能清多少全看 add() 有没有抬 mx —— 没抬就残留, 污染下面的图 B。
         reset();
         mf.add(1, 2, 5, 1), mf.add(2, 3, 5, 1), mf.add(1, 3, 5, 1);
-        mf.clear();   // ← 没调用过 mcmf(), n 还是 0 → 邻接表没被清掉
-        if(which == 0) mf.add(2, 3, 1, 0);
-        else if(which == 1) mf.add(2, 3, 1, 0), mf.add(1, 2, 1, 0);
-        else mf.add(3, 2, 1, 0);
+        mf.clear();
+        if(which == 0) mf.add(2, 3, 1, 0);                            // 2->3: 1 到 3 无路
+        else if(which == 1) mf.add(2, 3, 1, 0), mf.add(1, 2, 1, 0);   // 1->2->3: 满流 1
+        else mf.add(3, 2, 1, 0);                                      // 3->2: 1 到 3 无路
         MfRes r{};
-        auto g = mf.mcmf(1, 3, 0, 3);   // 图 B 里 1 到 3 无路, 正确结果应为 {0, 0}
+        auto g = mf.mcmf(1, 3, 0, 3);   // 正确答案见调用方的 want[]:(0,0) / (1,0) / (0,0)
         r.f = g.first, r.c = g.second;
         ssize_t w = write(fd[1], &r, sizeof r);
         (void) w;
@@ -310,7 +310,10 @@ int main() {
 
     // ———— 0) mcmf2 的历史 bug(A/B): 静态判定(动态对拍在第 9 节) ————
     puts("— mcmf2(): 静态判定(A/B 两个历史 bug 的回归守卫) —");
-    scan_mcmf2();
+    if(scan_mcmf2()) {
+        printf("  [FAIL] mcmf2() 的两个历史 bug(A/B)复发了 —— 当前模板上应当恒为假\n");
+        return 1;
+    }
 
     // ———— 1) 基础用例(手算) ————
     puts("— mcmf() 本体: 基础用例 —");
@@ -569,10 +572,12 @@ int main() {
         ok("手工复位后同图连跑 50 次结果一致, 且等于独立实现");
     }
 
-    // ———— 7) 已知 bug (C): clear() 清不掉邻接表 ————
-    puts("— clear(): 已知 bug 复现(结构化 + 子进程看门狗) —");
+    // ———— 7) 回归守卫 (C): clear() 只清到 mx, 所以 add() 必须自己抬 mx ————
+    puts("— clear(): add() 抬不抬 mx 的回归守卫(全新实例语义 + 子进程看门狗) —");
     bool clear_bug = false;
     {
+        // reset() 把实例退化成"全新实例"(mx = 0, 等价于还没调用过 mcmf()): 此时 clear()
+        // 能清多少全看 add() 有没有把 mx 抬到用到的点数。
         reset();
         mf.add(1, 2, 5, 1), mf.add(2, 3, 5, 1);
         int hd_before[4] = {0, mf.hd[1], mf.hd[2], mf.hd[3]};
@@ -581,29 +586,30 @@ int main() {
         For(i, 1, 3) left += (mf.hd[i] != 0);
         if(left) {
             clear_bug = true;
-            bug("clear() 没清空邻接表: clear() 前 hd[1..3] = %d %d %d, clear() 后仍是 %d %d %d (应为 0 0 0)\n",
+            bug("全新实例里 add() 之后 clear() 没清空邻接表: clear() 前 hd[1..3] = %d %d %d, 之后仍是 %d %d %d\n",
                 hd_before[1], hd_before[2], hd_before[3], mf.hd[1], mf.hd[2], mf.hd[3]);
-            bug("  原因: clear() 的 `For(i, 1, n) hd[i] = 0` 依赖成员 n, 而 n 只在 mcmf() 里赋值;\n");
-            bug("  没调用过 mcmf() 时 n = 0 → 循环不执行 → 旧邻接表残留(旧边还会被后续 add() 覆盖成幽灵边)\n");
+            bug("  原因: clear() 的 `For(i, 1, mx) hd[i] = 0` 只看 mx, 而 mx 若只在 mcmf()/mcmf2() 里抬,\n");
+            bug("        没调用过它们时 mx = 0 → 循环不执行 → 旧邻接表残留(旧边还会被后续 add() 覆盖成幽灵边)\n");
             bug("  最小复现: MCMF_t mf; mf.add(1,2,5,1); mf.add(2,3,5,1); mf.clear();\n");
-            bug("            mf.add(2,3,1,0); mf.mcmf(1,3,0,3);   // 见下: 死循环\n");
+            bug("            mf.add(2,3,1,0); mf.mcmf(1,3,0,3);   // 见下: 可能死循环\n");
         } else {
-            ok("clear() 后邻接表已清空");
+            ok("全新实例 add() 之后 clear(): 邻接表已清空(hd[1..3] = 0)");
         }
-        // 后果: 子进程里跑, 250ms 看门狗
+        // 后果: clear() 之后重建图再跑 mcmf(), 结果必须等于全新实例(子进程 + 250ms 看门狗)
+        static const MfRes want[3] = {{0, 0}, {1, 0}, {0, 0}};   // 三张图 B 各自的正确 (流, 费用)
         int hangs = 0, wrong = 0;
         ForD(which, 0, 3) {
             MfRes r{};
             bool done = run_child_mcmf(which, r, 250);
             if(!done) ++hangs;
-            else if(r.f != 0 || r.c != 0) ++wrong;
+            else if(r.f != want[which].f || r.c != want[which].c) ++wrong;
         }
         if(hangs || wrong) {
             clear_bug = true;
             if(hangs)
                 bug("clear() 残留邻接表的后果: 3 组用例里有 %d 组让 mcmf() 死循环(子进程 250ms 看门狗判定)\n", hangs);
             if(wrong)
-                bug("clear() 残留邻接表的后果: %d 组给出了错误结果(图里 1 到 3 无路, 应为流 0 费用 0)\n", wrong);
+                bug("clear() 残留邻接表的后果: %d 组结果被幽灵边带偏(三张图应分别为 (0,0)/(1,0)/(0,0))\n", wrong);
             bug("  机制: hd[u] 残留 → 走到旧边/奇数下标边 → dijkstra 里 p[v] 取到奇数下标,\n");
             bug("        回退 `e[p[u] ^ 1]` 于是踩到 e[0] 或自环 → 在 u 与 0 之间来回跳\n");
         } else if(!clear_bug) {
@@ -748,8 +754,8 @@ int main() {
         ncase += cnt;
     }
 
-    if(clear_bug && STRICT) {
-        printf("  [FAIL] XCPC_CHECK_STRICT=1: 已知模板 bug 直接判失败\n");
+    if(clear_bug) {
+        printf("  [FAIL] 命中 clear() 的旧 bug(mx 没被 add() 抬高)—— 这是回归, 不是已知缺陷\n");
         return 1;
     }
     printf("  小结: 用例 %lld 组(mcmf() 与 mcmf2() 都与独立 SPFA 费用流对拍; mcmf2 的 static d[] 已修)\n",
