@@ -1,4 +1,4 @@
-# CLAUDE.md —— XCPC 模板集 · 交接文档
+# AGENTS.md —— XCPC 模板集 · 交接文档
 
 **这是什么**:一套**算法竞赛纸质模板**(XCPC 板子书)。`templates/` 下按章放代码片段,
 `gen.py` 扫描目录生成 `sections.typ`,再用 Typst 编译成 `xcpc.pdf`(A4 横向、正文双栏),
@@ -239,4 +239,4 @@ int main() { /* 断言 + 暴力对照 */; PASSED("X"); }
 - `skip2004-ICPC-Templates/` 是参考用的第三方模板集,**已 gitignore,不进仓库**。
 - 仓库内容:`templates/`(模板 + check + 介绍)、`gen.py`、`build.sh`、`check.sh`、`xcpc.typ`(主文件)、
   `sections.typ`(生成物)、`.manifest.json`(顺序/标题状态)、`xcpc.pdf`(产物)、`old_versions/xcpc.typ.bak`(别删)、
-  `CLAUDE.md`(交接文档)、`TODO.md`(待办)。
+  `AGENTS.md`(交接文档)、`TODO.md`(待办)。
