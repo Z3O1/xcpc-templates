@@ -5,11 +5,7 @@
 //   而 solve(n) = 1 + Σ_{i=2}^{n} F(i)(Min_25 惯例:i=1 记作 1)。
 //   注意不能拿 Σ i(i−1) 当参考 —— x(x−1) 只在素数点等于 F,合数处不是乘性延拓。
 //
-// 范围/限制说明(详见报告):
-//   * init() 非幂等:第二次调用会把质数表与 s1/s2 继续累加,于是「再调一次 solve」会算错
-//     (实测 solve(10) 连调两次得到 263 与 867808834);min25.typ 的「坑」已写明这点。
-//     本 check 因此只调一次 init(),其余 n 走 solveg(n) + f(n,0)(这条路径可重复调用)。
-//   * 模板里那个全局 i2 = `M + 1 >> 2` 其实是 1/4(且全文件未使用),本 check 自带正确逆元,不借它。
+// 范围:1 <= n <= 1e10;既测 solveg + f 路径,也用公开 solve 接口回归重复调用与大小交替。
 #include "../../_check_base.hpp"
 #include "min25.cpp"
 
@@ -86,7 +82,7 @@ int main() {
                 case 2: n = (ll) rnd(2, 1414) * rnd(2, 1414); break;
                 case 3: n = (ll) rnd(2, 3000) * rnd(2, 3000) + rnd(-3, 3); break;
                 case 4: n = rnd(1, 100000); break;
-                default: n = ref_primes[rnd(0, (ll) ref_primes.size() - 1) - 1] + rnd(-2, 2); break; // 素数附近
+                default: n = ref_primes[rnd(0, (ll) ref_primes.size() - 1)] + rnd(-2, 2); break; // 素数附近
             }
             if(n < 1) n = 1;
             if(n > REFN) n = REFN;
@@ -156,11 +152,19 @@ int main() {
         printf("  [ok] 内部筛表 p/p2/s1/s2/s(%d 个质数)\n", pc);
     }
 
-    // 6) 记录已知缺陷:init() 非幂等 → 重复 solve 会错(只打印证据,不影响上面结论)
+    // 6) 公开入口回归:重复初始化、重复 solve、大小交替
     {
-        ll a = solve(10), b = solve(10);
-        printf("  [note] 已知缺陷:init() 非幂等,solve(10) 连调两次 = %lld、%lld(应相等;min25.typ 却写着可重复 solve)\n",
-               a, b);
+        int old_pc = pc;
+        init();
+        CHECK(pc == old_pc, "init 幂等,质数表不累加");
+        CHECK(solve(10) == ref_pre[10] && solve(10) == ref_pre[10], "重复 solve(10) 均与独立参考一致");
+        For(t, 1, 300) {
+            int n = t % 3 == 0 ? 1 : rnd(1, REFN);
+            ll got = solve(n);
+            if(got != ref_pre[n])
+                return printf("  [FAIL] 重复 solve n=%d got=%lld want=%d\n", n, got, ref_pre[n]), 1;
+        }
+        ok("公开 solve 入口大小交替 300 次与独立参考一致");
     }
 
     PASSED("min25");

@@ -1,4 +1,5 @@
 // 多边形包含(): 计算几何 · 多边形包含 (缠绕数非零判定 O(n) 返回 0 外 1 边界 2 内)
+
 //
 // int wn_contain(int n, p2 *a, const p2 &p): 用**缠绕数**(nonzero winding rule)判定 p 与
 //   多边形 a[0..n-1] 的关系,返回 0:外;1:在边界上(边或顶点);2:缠绕数非零(内部)。
@@ -14,11 +15,11 @@ int wn_contain(int n, p2 *a, const p2 &p) {
     int wn = 0;
     ForD(i, 0, n) {
         p2 u = a[i], v = a[(i + 1) % n];
-        if(u == v) continue;  // 退化边(相邻重复点):跳过,否则 ons 会认为任意点都在它上面
+        if(u == v) continue; // 退化边(相邻重复点):跳过,否则 ons 会认为任意点都在它上面
         if(ons({u, v}, p)) return 1;
         int su = sign(u.y - p.y), sv = sign(v.y - p.y);
-        if(su <= 0 && sv > 0 && crossop({u, v}, p) > 0) ++wn;       // 向上穿过 p 所在水平线且 p 在左
-        else if(su > 0 && sv <= 0 && crossop({u, v}, p) < 0) --wn;  // 向下穿过且 p 在右
+        if(su <= 0 && sv > 0 && crossop({u, v}, p) > 0) ++wn; // 向上穿过 p 所在水平线且 p 在左
+        else if(su > 0 && sv <= 0 && crossop({u, v}, p) < 0) --wn; // 向下穿过且 p 在右
     }
     return wn ? 2 : 0;
 }

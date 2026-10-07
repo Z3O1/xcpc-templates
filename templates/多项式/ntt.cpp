@@ -1,4 +1,5 @@
-// Mul::mul(): 数学 · 任意模数 NTT (三模 CRT)
+// Mul::mul(): 多项式 · 任意模数 NTT (三模 CRT)
+
 // 契约:① 变换长度 l = 2^ceil(lg(n + m - 1)) 必须 <= 2^20(三模里 M1 = 1004535809 = 479·2^21+1 最小);
 //       超限结果错,但 P 恰为 998244353 / 469762049 时 CRT 退化成单模、反而看着对,别拿它们试上限;
 //       ② 系数请先归一到 [0, P):传负数(`{-1}`)结果不保证(非负但 >= P 的未归一系数是安全的)。
@@ -6,7 +7,12 @@
 namespace Mul {
 using poly = vector<int>;
 template <int M, int G> static void NTT(poly &a, const int k) {
-    auto ksm = [&](ll a, int b) {ll ans=1;for(;b;b>>=1,a=a*a%M)if(b&1)ans=ans*a%M;return ans; };
+    auto ksm = [&](ll a, int b) {
+        ll ans = 1;
+        for(; b; b >>= 1, a = a * a % M)
+            if(b & 1) ans = ans * a % M;
+        return ans;
+    };
     static poly r, w;
     int n = a.size();
     if(n != r.size()) {
@@ -14,7 +20,8 @@ template <int M, int G> static void NTT(poly &a, const int k) {
         r.resize(n);
         For(i, 0, n - 1) r[i] = (r[i >> 1] >> 1) | ((i & 1) << (l - 1));
     }
-    For(i, 0, n - 1) if(i < r[i]) swap(a[r[i]], a[i]);
+    For(i, 0, n - 1)
+        if(i < r[i]) swap(a[r[i]], a[i]);
     ll wi = ksm(G, (M - 1 >> 1) / n * k + M - 1);
     w.resize(n), w[0] = 1;
     For(i, 1, n - 1) w[i] = w[i - 1] * wi % M;
@@ -36,12 +43,12 @@ poly mul(poly a, poly b, int P) {
     int l = 1 << __lg(n + m - 2) + 1;
     a.resize(l), b.resize(l);
     static constexpr int M[3]{998244353, 1004535809, 469762049}, G = 3;
-#define g(p)                                              \
-    [&](poly a, poly b) {                                 \
-        NTT<M[p], G>(a, 1), NTT<M[p], G>(b, 1);           \
-        For(i, 0, l - 1) a[i] = 1ll * a[i] * b[i] % M[p]; \
-        NTT<M[p], G>(a, -1);                              \
-        return a;                                         \
+#define g(p)                                                                                                 \
+    [&](poly a, poly b) {                                                                                    \
+        NTT<M[p], G>(a, 1), NTT<M[p], G>(b, 1);                                                              \
+        For(i, 0, l - 1) a[i] = 1ll * a[i] * b[i] % M[p];                                                    \
+        NTT<M[p], G>(a, -1);                                                                                 \
+        return a;                                                                                            \
     }(a, b)
     poly c[3]{g(0), g(1), g(2)}, d;
     d.reserve(n + m - 1);
@@ -55,7 +62,7 @@ poly mul(poly a, poly b, int P) {
     }
     return d;
 }
-}  // namespace Mul
+} // namespace Mul
 using poly = vector<mint>;
 int M;
 poly mul(poly a, const poly &b) {

@@ -19,7 +19,7 @@
 namespace Geo {
 
 struct line3 {
-    p3 o, d;  // 参数式 o + t·d
+    p3 o, d; // 参数式 o + t·d
     line3() {}
     line3(p3 a, p3 b) : o(a), d(b - a) {}
     p3 at(db t) const { return o + d * t; }
@@ -35,7 +35,7 @@ p3 reflect(const line3 &l, p3 p) { return proj(l, p) * 2 - p; }
 db dis(const line3 &l, p3 p) { return dis(p - proj(l, p)); }
 bool ons(const line3 &l, p3 p) { return !sign(dis(l, p)); }
 bool ispara(const line3 &a, const line3 &b) { return !sign(sinang(a.d, b.d)); }
-bool ispara(const seg3 &a, const seg3 &b) {  // 线段方向:某条退化成点时约定为「平行」
+bool ispara(const seg3 &a, const seg3 &b) { // 线段方向:某条退化成点时约定为「平行」
     return !sign(dis(a.dir())) || !sign(dis(b.dir())) || !sign(sinang(a.dir(), b.dir()));
 }
 bool isperp(const line3 &a, const line3 &b) { return !sign(cosang(a.d, b.d)); }
@@ -51,15 +51,21 @@ db dis(const line3 &a, const line3 &b, p3 &pa, p3 &pb) {
     pb = b.o + b.d * ((A * E - B * D) / den);
     return dis(pa - pb);
 }
-db dis(const line3 &a, const line3 &b) { p3 pa, pb; return dis(a, b, pa, pb); }
-p3 closest_on(const line3 &a, const line3 &b) { p3 pa, pb; return dis(a, b, pa, pb), pa; }
+db dis(const line3 &a, const line3 &b) {
+    p3 pa, pb;
+    return dis(a, b, pa, pb);
+}
+p3 closest_on(const line3 &a, const line3 &b) {
+    p3 pa, pb;
+    return dis(a, b, pa, pb), pa;
+}
 
 // ---------- 点与线段 ----------
 p3 proj(const seg3 &s, p3 p) {
     p3 d = s.dir();
-    if(!sign(dis2(d))) return s.x;  // 退化成点
+    if(!sign(dis2(d))) return s.x; // 退化成点
     db t = (d * (p - s.x)) / dis2(d);
-    return s.x + d * max((db) 0, min((db) 1, t));
+    return s.x + d * max((db)0, min((db)1, t));
 }
 db dis(const seg3 &s, p3 p) { return dis(proj(s, p) - p); }
 bool ons(const seg3 &s, p3 p) { return !sign(dis(s, p)); }
@@ -70,29 +76,32 @@ bool ons_s(const seg3 &s, p3 p) { return ons(s, p) && sign((p - s.x) * (p - s.y)
 db dis(const seg3 &a, const seg3 &b, p3 &pa, p3 &pb) {
     p3 u = a.dir(), v = b.dir();
     db la = dis(u), lb = dis(v);
-    if(!sign(la) || !sign(lb)) {  // 至少一条退化成点
+    if(!sign(la) || !sign(lb)) { // 至少一条退化成点
         if(!sign(la) && !sign(lb)) return pa = a.x, pb = b.x, dis(pa - pb);
         if(!sign(la)) return pa = a.x, pb = proj(b, pa), dis(pa - pb);
         return pb = b.x, pa = proj(a, pb), dis(pa - pb);
     }
     p3 e = u / la, f = v / lb, w = a.x - b.x;
     db c = e * f, k = 1 - c * c, p = e * w, q = f * w, s, t;
-    if(ispara(a, b)) {  // 平行:最近点对不唯一,s = 0 起步,后面照样投影夹取
+    if(ispara(a, b)) { // 平行:最近点对不唯一,s = 0 起步,后面照样投影夹取
         s = 0, t = q / lb;
     } else {
         s = (c * q - p) / (la * k), t = (q - c * p) / (lb * k);
     }
-    s = max((db) 0, min((db) 1, s)), t = max((db) 0, min((db) 1, t));
+    s = max((db)0, min((db)1, s)), t = max((db)0, min((db)1, t));
     // |w + s·u - t·v|² 是 (s, t) 上的凸二次函数:盒约束下逐坐标做「一维精确最优 + 夹取」,
     // 每步都让距离不增,几轮就收敛(平行时的平坦方向也在其中)
     For(_, 1, 12) {
-        t = max((db) 0, min((db) 1, (q + s * la * c) / lb));
-        s = max((db) 0, min((db) 1, (t * lb * c - p) / la));
+        t = max((db)0, min((db)1, (q + s * la * c) / lb));
+        s = max((db)0, min((db)1, (t * lb * c - p) / la));
     }
     pa = a.x + u * s, pb = b.x + v * t;
     return dis(pa - pb);
 }
-db dis(const seg3 &a, const seg3 &b) { p3 pa, pb; return dis(a, b, pa, pb); }
+db dis(const seg3 &a, const seg3 &b) {
+    p3 pa, pb;
+    return dis(a, b, pa, pb);
+}
 
 // 两线段是否相交(公共点存在即真,含端点相接、共线重叠)。
 bool chkss(const seg3 &a, const seg3 &b) { return !sign(dis(a, b)); }
@@ -109,5 +118,5 @@ bool isss(const seg3 &a, const seg3 &b, p3 &p) {
     return !sign(dis(a, b, pa, pb)) ? (p = pa, true) : false;
 }
 
-}  // namespace Geo
+} // namespace Geo
 using namespace Geo;

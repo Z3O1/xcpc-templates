@@ -1,7 +1,8 @@
 // init()/solveg()/f()/solve(): 数论 · Min_25 筛
 
+// 1 <= n <= 1e10;solve 可重复调用,init 只筛一次;func 是素数幂处的函数值。
 const int M = 1e9 + 7;
-constexpr int i2 = M + 1 >> 2, i6 = (M + 1) / 6;
+constexpr int i6 = (M + 1) / 6;
 void add(int &a, int b) {
     a += b;
     a >= M && (a -= M);
@@ -14,15 +15,16 @@ const int N = 1e5 + 10;
 int p[N], pc, p2[N];
 int s1[N], s2[N], s[N];
 void init() {
+    if(pc) return;
     static const int n = 1e5;
     static int b[N];
     For(i, 2, n) {
         if(!b[i]) p[++pc] = i;
-        For(j, 1, pc) if(i * p[j] <= n) {
-            b[i * p[j]] = 1;
-            if(i % p[j] == 0) break;
-        }
-        else break;
+        For(j, 1, pc)
+            if(i * p[j] <= n) {
+                b[i * p[j]] = 1;
+                if(i % p[j] == 0) break;
+            } else break;
     }
     p[pc + 1] = n + 1;
     For(i, 1, pc) {
@@ -34,9 +36,7 @@ void init() {
 }
 ll lim, n0;
 int g1[N * 2], g2[N * 2];
-int id(ll n) {
-    return n <= lim ? n : n0 / n + lim;
-}
+int id(ll n) { return n <= lim ? n : n0 / n + lim; }
 void solveg(ll _n0) {
     n0 = _n0;
     lim = sqrt(n0);
@@ -69,9 +69,7 @@ int f(ll n, int m) {
     For(j, m + 1, pc) {
         int p = ::p[j];
         if(1ll * p * p > n) break;
-        for(ll s = p; s * p <= n; s *= p) {
-            ans += func(s) * f(n / s, j) % M + func(s * p);
-        }
+        for(ll s = p; s * p <= n; s *= p) { ans += func(s) * f(n / s, j) % M + func(s * p); }
     }
     return ans % M;
 }

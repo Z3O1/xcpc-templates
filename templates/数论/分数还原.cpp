@@ -5,9 +5,7 @@
 // 且 b, a 都不大,approx(p, v, A) 就还原出 (b, a)。
 // 实现是连分数的辗转相除,O(log p)。
 pii approx(int p, int q, int A) {
-	int x = q, y = p, a = 1, b = 0;
-	while(x > A) {
-        swap(x, y), swap(a, b), a -= x / y * b, x %= y;
-    }
-	return {x, a};
+    int x = q, y = p, a = 1, b = 0;
+    while(x > A) { swap(x, y), swap(a, b), a -= x / y * b, x %= y; }
+    return {x, a};
 }

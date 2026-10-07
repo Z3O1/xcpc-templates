@@ -1,4 +1,5 @@
 // 多边形重心(): 计算几何 · 多边形重心 (带号面积加权 O(n))
+
 //
 // p2 centroid(int n, p2 *a): 简单多边形 a[0..n-1] 的**面积重心**(形心)。
 //   公式:x = Σ(x_i + x_{i+1})(x_i y_{i+1} - x_{i+1} y_i) / (6A),y 同理,A 是带号面积;
@@ -24,10 +25,10 @@ p2 centroid(int n, p2 *a) {
         s += c;
         ret = ret + (u + v) * c;
     }
-    if(!sign(s)) {  // 退化:退回顶点平均
+    if(!sign(s)) { // 退化:退回顶点平均
         p2 av = {0, 0};
         ForD(i, 0, n) av = av + a[i];
-        return av / (db) n;
+        return av / (db)n;
     }
     return ret / (3 * s);
 }

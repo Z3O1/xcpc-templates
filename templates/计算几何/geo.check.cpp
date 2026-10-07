@@ -39,7 +39,7 @@
 //
 // 另:第 6/7/9/10/11 段末尾有几条 [note](不计入失败),是本轮新发现的「退化输入」行为,已单独记为发现项
 //   (详见段内说明),不需要改模板就能复现,不影响本 check 的 FAIL/PASS 判定。要点:
-//     · ons/isMid 在零长线段上退化为「任意点都在区间内」;nearest/proj 在零长线段上返回 NaN
+//     · proj/reflect 要求非零长直线;ons/isMid/nearest/disss 的零长线段现有失败断言守住
 //       (proj 里 dis2(dir) == 0 -> 0/0);disss 同样被带成 NaN
 //     · chkss 把退化成点的线段当作「与投影重叠的线段相交」,不看 crossop 的真实值
 //     · convex_hull(n <= 1) 返回 1 但不写 b;输入点全部重合时返回 k = 2 且两个顶点相同
@@ -437,7 +437,7 @@ int main() {
     CHECK(isMid(0.0L, 0.5L, 1.0L) && isMid(1.0L, 0.5L, 0.0L), "isMid 区间内(两端顺序无关)");
     CHECK(isMid(0.0L, 0.0L, 1.0L) && isMid(0.0L, 1.0L, 1.0L) && isMid(2.0L, 2.0L, 2.0L), "isMid 端点算在区间内");
     CHECK(!isMid(0.0L, 1.5L, 1.0L) && !isMid(0.0L, -0.5L, 1.0L), "isMid 区间外为假");
-    CHECK(isMid(0.0L, 5.0L, 0.0L), "isMid a==b 时任意 m 都为真(退化区间的约定)");
+    CHECK(!isMid(0.0L, 5.0L, 0.0L), "isMid 零长区间只包含端点");
     CHECK(isMid(P(0, 0), P(1, 1), P(2, 2)) && isMid(P(0, 0), P(1, 2), P(2, 2)), "isMid 点版:逐坐标落在区间内(即落在包围盒里)");
     CHECK(!isMid(P(0, 0), P(3, 2), P(2, 2)) && !isMid(P(0, 0), P(-1, 1), P(2, 2)), "isMid 点版:任一坐标出界即为假");
     CHECK(ons(L, P(1, 0)) && ons(L, P(0, 0)) && ons(L, P(2, 0)), "ons 线段内部与端点");
@@ -450,16 +450,14 @@ int main() {
         For(t, 1, 30000) {
             p2 u = P((db) rnd(-20, 20), (db) rnd(-20, 20)), v = P((db) rnd(-20, 20), (db) rnd(-20, 20));
             p2 q = P((db) rnd(-25, 25), (db) rnd(-25, 25));
-            if(refCmpP(u, v) == 0) continue;  // 零长线段是退化输入,单独观察(见下面 [note])
             int got = ons({u, v}, q);
             int want = (sign(cross({u, v}, q)) == 0) && min(u.x, v.x) <= q.x && q.x <= max(u.x, v.x) && min(u.y, v.y) <= q.y && q.y <= max(u.y, v.y);
             if(got != want) pb.hit("ons 与整数参考不一致", got, want);
             if(ons_s({u, v}, q) != (want && refCmpP(u, q) != 0 && refCmpP(v, q) != 0)) pb.hit("ons_s 与整数参考不一致", ons_s({u, v}, q), 1);
         }
         CHECK(pb.bad == 0, "ons/ons_s 与独立参考一致(3 万组整数坐标,含端点是否计入的严格语义)");
-        printf("  [note] ons 依赖的 isMid(p.x, q, p.y) 在零长线段(p.x == p.y)上退化为「任意 q 都在区间内」(不计入失败):"
-               "ons({(3,4),(3,4)}, (100,100)) 实测 %d(期望 0);调用方需自行保证线段非退化。\n",
-               (int) ons({P(3, 4), P(3, 4)}, P(100, 100)));
+        CHECK(ons({P(3, 4), P(3, 4)}, P(3, 4)) && !ons({P(3, 4), P(3, 4)}, P(100, 100)),
+              "零长线段只包含自身端点");
     }
 
     // ===== 6. proj / reflect / nearest(返回平方距离) =====
@@ -509,12 +507,12 @@ int main() {
         }
         CHECK(pb.bad == 0, "proj/reflect:解析解一致、垂距最短、reflect 对合保距(3 万组)");
     }
-    {  // 退化:零长线段 —— 目前 nearest 返回 NaN(见下面 [note])
-        printf("  [note] nearest/proj 在零长线段上返回 NaN(不计入失败):nearest({(3,4),(3,4)}, (0,0)) 实测 %Lg,"
-               "此处 proj 的 dis2(dir) == 0 会先算出 0/0。模板调用方请自行保证线段非退化。\n",
-               nearest({P(3, 4), P(3, 4)}, P(0, 0)));
-        printf("  [note] disss 同样受零长线段影响:disss({(3,4),(3,4)}, {(0,0),(5,12)}) 实测 %Lg(参考值 25 —— 点 (3,4) 到线段的最近距离平方)。\n",
-               disss({P(3, 4), P(3, 4)}, {P(0, 0), P(5, 12)}));
+    {  // 退化线段按点处理;参考值用独立解析实现,不口算
+        seg point{P(3, 4), P(3, 4)}, line{P(0, 0), P(5, 12)};
+        CHECK(eqd(nearest(point, P(0, 0)), dd(P(3, 4), P(0, 0))), "零长线段点线距有限且正确");
+        CHECK(eqd(disss(point, line), refNearest(line.x, line.y, point.x)), "退化点与线段的距离");
+        CHECK(eqd(disss(line, point), disss(point, line)), "退化点线距离对称");
+        CHECK(eqd(disss(point, {P(0, 0), P(0, 0)}), dd(P(3, 4), P(0, 0))), "两条零长线段的距离");
     }
 
     // ===== 7. 线段相交 / 直线交点 =====
@@ -648,6 +646,15 @@ int main() {
         CHECK(bad == 0, "contain 正方形网格 0(外)/1(边界)/2(内)全部正确(9×9 网格,含顶点/边上点/角外)");
     }
     CHECK(contain(4, sqr, P(1, 1)) == 2 && contain(4, sqr, P(5, 5)) == 0 && contain(4, sqr, P(0, 1)) == 1, "contain 对顺时针多边形同样正确(只看几何不看旋向)");
+    {
+        vector<p2> repeated{P(0, 0), P(0, 0), P(4, 0), P(4, 4), P(0, 4), P(0, 0)};
+        For(x, -2, 10) For(y, -2, 10) {
+            p2 q = P(db(x) / 2, db(y) / 2);
+            if(contain(repeated.size(), repeated.data(), q) != refContain(repeated, q))
+                return printf("  [FAIL] contain 重复顶点 q=(%d/2,%d/2)\n", x, y), 1;
+        }
+        ok("contain 相邻重复顶点与独立参考一致");
+    }
     {
         // 凹多边形(梳子形)+ 边界点:与独立射线法对照,网格逐点扫
         vector<p2> comb = {P(0, 0), P(6, 0), P(6, 1), P(5, 1), P(5, 5), P(4, 5), P(4, 1), P(3, 1), P(3, 5), P(2, 5), P(2, 1), P(1, 1), P(1, 5), P(0, 5)};

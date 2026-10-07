@@ -7,7 +7,7 @@ void manacher(int n, char *s, int *d) {
     For(i, 1, n) {
         int &k = d[i];
         k = i > r ? 1 : min(d[l + r - i], r - i + 1);
-        while (s[i - k] == s[i + k]) k++;
-        if (i + k - 1 > r) r = i + k - 1, l = i - k + 1;
+        while(s[i - k] == s[i + k]) k++;
+        if(i + k - 1 > r) r = i + k - 1, l = i - k + 1;
     }
 }

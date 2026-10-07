@@ -59,10 +59,14 @@ struct mint {
     mint(ll x = 0) : v(int((x % P + P) % P)) {}
     int val() const { return v; }
     static constexpr int getM() { return P; }
-    static mint raw(int x) { mint s; s.v = x; return s; }
+    static mint raw(int x) {
+        mint s;
+        s.v = x;
+        return s;
+    }
     mint operator+(mint b) const { return v + b.v; }
     mint operator-(mint b) const { return v - b.v; }
-    mint operator*(mint b) const { return (ll) v * b.v; }
+    mint operator*(mint b) const { return (ll)v * b.v; }
     mint operator/(mint b) const { return *this * b.inv(); }
     mint operator-() const { return v ? P - v : 0; }
     mint &operator+=(mint b) { return *this = *this + b; }
@@ -74,25 +78,28 @@ struct mint {
     explicit operator bool() const { return v; }
     mint inv() const {
         ll a = v, b = P, x = 1, y = 0;
-        while (b) { ll q = a / b; swap(a -= q * b, b), swap(x -= q * y, y); }
+        while(b) {
+            ll q = a / b;
+            swap(a -= q * b, b), swap(x -= q * y, y);
+        }
         return x;
     }
 };
 
 // —— check 通用小工具 ——
 mt19937_64 rng(chrono::steady_clock::now().time_since_epoch().count());
-inline ll rnd(ll l, ll r) { return l + (ll) (rng() % (u64) (r - l + 1)); }
+inline ll rnd(ll l, ll r) { return l + (ll)(rng() % (u64)(r - l + 1)); }
 inline void ok(const char *what) { printf("  [ok] %s\n", what); }
-#define CHECK(cond, name)                                                      \
-    do {                                                                       \
-        if(!(cond)) {                                                          \
-            printf("  [FAIL] %s (%s:%d)\n", name, __FILE__, __LINE__);         \
-            exit(1);                                                           \
-        }                                                                      \
-        ok(name);                                                              \
-    } while (0)
-#define PASSED(name)                                                           \
-    do {                                                                       \
-        printf("PASSED %s\n", name);                                           \
-        return 0;                                                              \
-    } while (0)
+#define CHECK(cond, name)                                                                                    \
+    do {                                                                                                     \
+        if(!(cond)) {                                                                                        \
+            printf("  [FAIL] %s (%s:%d)\n", name, __FILE__, __LINE__);                                       \
+            exit(1);                                                                                         \
+        }                                                                                                    \
+        ok(name);                                                                                            \
+    } while(0)
+#define PASSED(name)                                                                                         \
+    do {                                                                                                     \
+        printf("PASSED %s\n", name);                                                                         \
+        return 0;                                                                                            \
+    } while(0)

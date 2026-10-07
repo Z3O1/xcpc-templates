@@ -7,8 +7,7 @@ constexpr bool chkp(ll n) {
         for(; b; b >>= 1, a = a * a % n) b & 1 && (s = s * a % n, 0);
         return s;
     };
-    if(n <= 40)
-        return binary_search(p, p + sizeof(p), n);
+    if(n <= 40) return binary_search(p, p + sizeof(p), n);
     else {
         if(n % 2 == 0) return 0;
         int t = __builtin_ctzll(n - 1), i = 0;
@@ -22,7 +21,7 @@ constexpr bool chkp(ll n) {
     }
 }
 ll PR(ll n) {
-	mt19937_64 rng(114514);
+    mt19937_64 rng(114514);
     if(n % 2 == 0) return 2;
     static constexpr int S = 127;
     uniform_int_distribution<> rnd(1, n - 1);

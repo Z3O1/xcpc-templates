@@ -1,15 +1,15 @@
 // 介绍: 大质数表 —— $10^k$ 以上的前 10 个素数,写成 $10^k + x$
 
+#import "../_table.typ": ref-table
 #set text(size: 6.5pt)
 #set par(leading: 0.35em)
 
 #block(breakable: false)[
-每个数量级取 $10^k$ 以上最小的 10 个素数横着排,表里只写偏移 $x$(读作 $10^k + x$);
-数据来源 #link("https://www.cnblogs.com/ljxtt/p/13514346.html")[https://www.cnblogs.com/ljxtt/p/13514346.html]（前 10 个已逐个核对）。
+每个数量级取 $10^k$ 以上最小的 10 个素数横着排,表里只写偏移 $x$(读作 $10^k + x$)。
 
-#table(
-  columns: 11, align: (left, right, right, right, right, right, right, right, right, right, right), stroke: 0.4pt,
-  inset: 1.5pt, row-gutter: 0pt, column-gutter: 3pt,
+#ref-table(
+  columns: (auto, ..range(10).map(_ => 1fr)),
+  align: (left, ..range(10).map(_ => right)),
   [*$10^k$*], [*1*], [*2*], [*3*], [*4*], [*5*], [*6*], [*7*], [*8*], [*9*], [*10*],
   [$10^2$], [+1], [+3], [+7], [+9], [+13], [+27], [+31], [+37], [+39], [+49],
   [$10^3$], [+9], [+13], [+19], [+21], [+31], [+33], [+39], [+49], [+51], [+61],

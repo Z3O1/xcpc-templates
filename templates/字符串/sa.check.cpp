@@ -1,18 +1,8 @@
 // SA 自测:后缀数组与 sort 暴力对照 + sa 是合法排列 + rk 与 sa 互逆 + lcp(x,y) 与暴力 LCP 对照(含 1e6 极端)
 //
-// ⚠ 实测到的模板限制/已知 bug(本 check 在"契约内"运行,不会因此变红;细节见文件末尾 KNOWN BUG 区):
-//   (1) n = 1 且字符值 ≥ 2 时,**段错误**(rk[1] 停在字符值上,重排名循环 t<n 没跑,lcp 段用 rk[1]-1
-//       索引 sa 时拿到 sa[1]=1 自比自身 → k 无限增长越界)。
-//   (2) lcp() 结果依赖调用方数组的 a[0]:模板用 sa[rk[i]-1] 取前驱,rk[i]==1 时取到 sa[0](全局为 0),
-//       比较 a[i+k] 与 a[0+k];若 a[0] 恰好等于字符值,lcp 会算错(最小复现:n=3、a={1,2,1,2} → lcp(1,2)=1,应为 0)。
-//   (3) 字符值必须 ≥ 1:'0' 被当成"空后缀"哨兵(rk[n+1..2n]=0),0-based 映射(如 a[i]=s[i]-'a')会让 rk 失效
-//       (最小复现:n=2、a={0,0} → rk={1,1},应为 {2,1}),更长的 0-based 串会崩。
-//   本 check 统一用:字符值 ∈ [1,4]、a[0] = 0(不在字符集里)、n ≥ 2。
+// 回归覆盖:任意单字符、0-based 字符值、a[0] 与字符相同、自身 LCP、只读输入与多次构建。
 #include "../_check_base.hpp"
 #include "sa.cpp"
-#include <sys/wait.h>
-#include <sys/resource.h>
-#include <unistd.h>
 
 const int AN = 1000000 + 10;
 static int A[AN + 8];
@@ -81,25 +71,6 @@ static bool check_struct(int n, const int *a, bool verbose) {    vect<int> seen(
         }
     }
     return true;
-}
-
-// n=1 的崩溃只在子进程里复现(父进程存活,check 不会因此变红)
-static bool probe_n1_crash() {
-    struct rlimit rl;
-    rl.rlim_cur = rl.rlim_max = 0;
-    setrlimit(RLIMIT_CORE, &rl);   // 别在仓库里留下 core 文件
-    fflush(stdout);
-    pid_t pid = fork();
-    if(pid == 0) {
-        alarm(3);                  // 万一不崩也不会挂住
-        int b[8] = {0, 2, 0, 0, 0, 0, 0, 0};
-        SA(1, b);                  // n = 1、a[1] = 2
-        _exit(0);
-    }
-    if(pid < 0) return false;
-    int stt = 0;
-    waitpid(pid, &stt, 0);
-    return !WIFEXITED(stt) || WEXITSTATUS(stt) != 0;
 }
 
 int main() {
@@ -253,13 +224,12 @@ int main() {
         printf("  [ok] 特殊结构对照 %lld 组(全同/交替/周期/a..ab)\n", cnt);
     }
 
-    // ---------- 4) 极端:n=1(契约内)、1e6 全同、1e6 随机、1e6 a..ab ----------
+    // ---------- 4) 极端:任意单字符、1e6 全同、1e6 随机、1e6 a..ab ----------
     {
-        // n=1:只有字符值 == 1 时模板才正常(rk 不会被重排名),字符值 ≥ 2 会崩,见文件末尾 KNOWN BUG
-        {
-            A[0] = 0, A[1] = 1, A[2] = 0;
-            SA(1, A);
-            CHECK(sa[1] == 1 && rk[1] == 1, "n=1 单字符(字符值 1):sa={1}, rk={1}");
+        for(int c : {0, 1, 2, 26, N - 2}) {
+            const int a[] = {c, c};
+            SA(1, a);
+            CHECK(sa[1] == 1 && rk[1] == 1 && lcp(1, 1) == 1, "任意单字符:sa/rk/自身 LCP");
         }
         // 1e6 全同串:闭式
         {
@@ -322,36 +292,40 @@ int main() {
         }
     }
 
-    // ---------- 5) 已知 bug 现状记录(只打印,不判失败)----------
+    // ---------- 5) 历史缺陷回归:不依赖哨兵与旧状态 ----------
     {
-        // n=1 且字符值 ≥ 2:rk[1] 停在字符值(重排名循环 for(t=1;t<n;t+=t) 没跑),
-        // lcp 段 `sa[rk[i]-1]` 于是取到 sa[1] = 1 = i,自己跟自己比 → k 无限增长 → 越界读/段错误
-        if(probe_n1_crash())
-            printf("  [KNOWN BUG] n=1 且 a[1]=2:子进程里 SA(1,a) 崩溃 ← 已复现\n");
-        else
-            printf("  [KNOWN BUG] n=1 且 a[1]=2:子进程里跑通了 ← 本环境未复现(模板已修?)\n");
-        // a[0] 落在字符集里 → lcp 算错(模板从不设置 a[0],调用方留 0 才行)
-        {
-            int b[8] = {1, 2, 1, 2, 0, 0, 0, 0};
-            SA(3, b);
-            int got = lcp(1, 2);
-            printf("  [KNOWN BUG] a[0]=1 落在字符集 {1,2} 里时 lcp(1,2)=%d,正确值 0%s\n", got,
-                   got == 0 ? "  ← 本环境未复现" : "  ← 已复现");
+        const int a[] = {1, 2, 1, 2};
+        SA(3, a);
+        CHECK(lcp(1, 2) == 0 && lcp(1, 3) == 1, "a[0] 落在字符集内不影响 LCP");
+        const int b[] = {0, 0, 0};
+        SA(2, b);
+        CHECK(rk[1] == 2 && rk[2] == 1 && lcp(1, 2) == 1, "0-based 全同串");
+        For(t, 1, 1000) {
+            int n = rnd(1, 30);
+            vect<int> a(n + 1);
+            For(i, 0, n) a[i] = rnd(0, 5);
+            const vect<int> saved = a;
+            auto want = brute_sa(n, a.data());
+            SA(n, a.data());
+            if(a != saved) return printf("  [FAIL] SA 修改输入 n=%d\n", n), 1;
+            For(i, 1, n) if(sa[i] != want[i]) {
+                printf("  [FAIL] 0-based 随机 n=%d i=%d sa=%d want=%d\n", n, i, sa[i], want[i]);
+                return 1;
+            }
+            For(x, 1, n) For(y, 1, n) if(lcp(x, y) != brute_lcp(n, a.data(), x, y)) {
+                printf("  [FAIL] 0-based 随机 n=%d lcp(%d,%d)=%d\n", n, x, y, lcp(x, y));
+                return 1;
+            }
         }
-        // 0-based 字符值:'0' 与"空后缀"哨兵冲突
-        {
-            int b[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-            SA(2, b);
-            printf("  [KNOWN BUG] 0-based 字符值 a={0,0}:rk={%d,%d}(正确 {2,1})%s\n", rk[1], rk[2],
-                   (rk[1] == 2 && rk[2] == 1) ? "  ← 本环境未复现" : "  ← 已复现");
-        }
+        SA(0, static_cast<const int *>(nullptr));
+        ok("0-based 随机、自身 LCP、只读输入、大小交替构建、空串回归");
     }
 
     PASSED("SA");
 }
 
-/* ============================ KNOWN BUG 最小复现 ============================
-   都在契约外触发(见文件头说明),任务要求不动模板本体,故只记录不修:
+/* ============================ 历史缺陷原因备忘 ============================
+   以下是旧实现的最小复现与原因,已修复并由第 4/5 组回归断言守住:
 
    (1) n = 1、字符值 ≥ 2 —— 段错误
        int a[8] = {0, 2, 0, 0, 0, 0, 0, 0};   // a[0]=0 哨兵,a[1..1]="b"

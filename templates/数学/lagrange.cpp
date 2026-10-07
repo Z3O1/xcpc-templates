@@ -11,10 +11,13 @@ vector<mint> lag(vector<pair<mint, mint>> a) {
     For(i, 1, n) {
         auto [x, y] = a[i - 1];
         mint w = 1, inv = !x ? 0 : -x.inv(), z = 0;
-        For(j, 1, n) if(i != j) w *= x - a[j - 1].first;
+        For(j, 1, n)
+            if(i != j) w *= x - a[j - 1].first;
         w = w.inv() * y;
-        if(!x) For(j, 1, n) ans[j - 1] += f[j] * w;
-        else For(j, 0, n) z = (f[j] - z) * inv, ans[j] += z * w;
+        if(!x)
+            For(j, 1, n) ans[j - 1] += f[j] * w;
+        else
+            For(j, 0, n) z = (f[j] - z) * inv, ans[j] += z * w;
     }
     return ans;
 }
@@ -23,9 +26,11 @@ vector<mint> lag(vector<pair<mint, mint>> a) {
 void lag_i(int n, mint *a) {
     vector<mint> f(n + 1, 0), g(n, 0);
     f[0] = 1;
-    For(i, 1, n) rFor(j, i - 1, 0) f[j + 1] += f[j], f[j] *= mint::raw(mint::getM() - i);
+    For(i, 1, n)
+        rFor(j, i - 1, 0) f[j + 1] += f[j], f[j] *= mint::raw(mint::getM() - i);
     For(i, 1, n) {
-        mint inv = -ifac(i) * fac(i - 1), w = a[i] * ifac(n - i) * ifac(i - 1) * ((i ^ n) & 1 ? -1 : 1), s = 0;
+        mint inv = -ifac(i) * fac(i - 1), w = a[i] * ifac(n - i) * ifac(i - 1) * ((i ^ n) & 1 ? -1 : 1),
+             s = 0;
         For(j, 0, n - 1) s = (f[j] - s) * inv, g[j] += s * w;
     }
     For(i, 0, n - 1) a[i] = g[i];

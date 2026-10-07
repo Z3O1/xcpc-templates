@@ -14,8 +14,14 @@ int p[N];
 struct wcur {
     W &w;
     int l, r;
-    void ml(int x) { while(l > x) w.add(l--); while(l < x) w.del(++l); }
-    void mr(int x) { while(r < x) w.add(++r); while(r > x) w.del(r--); }
+    void ml(int x) {
+        while(l > x) w.add(l--);
+        while(l < x) w.del(++l);
+    }
+    void mr(int x) {
+        while(r < x) w.add(++r);
+        while(r > x) w.del(r--);
+    }
     void rs() { w.clear(), l = r = 0; }
 };
 W Wa, Wb;
@@ -46,7 +52,7 @@ void work(int n) {
     s.rs(), t.rs();
     f[0] = 0, p[0] = 0;
     if(!n) return;
-    For(i, 1, n) f[i] = (ll) 4e18, p[i] = 0;
+    For(i, 1, n) f[i] = (ll)4e18, p[i] = 0;
     s.mr(n), s.ml(0), relax(Wa.w, n, 0), s.ml(0), s.mr(0);
     dnc(0, n);
 }

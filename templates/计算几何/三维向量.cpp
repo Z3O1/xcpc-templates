@@ -20,9 +20,7 @@ namespace Geo {
 
 struct p3 {
     db x, y, z;
-    bool operator==(const p3 &b) const {
-        return !cmp(x, b.x) && !cmp(y, b.y) && !cmp(z, b.z);
-    }
+    bool operator==(const p3 &b) const { return !cmp(x, b.x) && !cmp(y, b.y) && !cmp(z, b.z); }
     bool operator!=(const p3 &b) const { return !(*this == b); }
     bool operator<(const p3 &b) const {
         int c = cmp(x, b.x);
@@ -42,24 +40,22 @@ p3 operator+=(p3 &a, p3 b) { return a = a + b; }
 p3 operator-=(p3 &a, p3 b) { return a = a - b; }
 p3 operator*=(p3 &a, db k) { return a = a * k; }
 p3 operator/=(p3 &a, db k) { return a = a / k; }
-db operator*(p3 a, p3 b) { return a.x * b.x + a.y * b.y + a.z * b.z; }  // 点积
-p3 cross(p3 a, p3 b) {
-    return {a.y * b.z - a.z * b.y, a.z * b.x - a.x * b.z, a.x * b.y - a.y * b.x};
-}
-db det(p3 a, p3 b, p3 c) { return a * cross(b, c); }  // 混合积
+db operator*(p3 a, p3 b) { return a.x * b.x + a.y * b.y + a.z * b.z; } // 点积
+p3 cross(p3 a, p3 b) { return {a.y * b.z - a.z * b.y, a.z * b.x - a.x * b.z, a.x * b.y - a.y * b.x}; }
+db det(p3 a, p3 b, p3 c) { return a * cross(b, c); } // 混合积
 db dis2(p3 a) { return a.x * a.x + a.y * a.y + a.z * a.z; }
 db dis(p3 a) { return sqrt(dis2(a)); }
 p3 unit(p3 a) { return a / dis(a); }
-db cosang(p3 a, p3 b) { return (a * b) / (dis(a) * dis(b)); }          // 夹角余弦(要求都非零)
+db cosang(p3 a, p3 b) { return (a * b) / (dis(a) * dis(b)); }           // 夹角余弦(要求都非零)
 db sinang(p3 a, p3 b) { return dis(cross(a, b)) / (dis(a) * dis(b)); }  // 夹角正弦,恒 >= 0
 db angle(p3 a, p3 b) { return atan2(sinang(a, b), cosang(a, b)); }      // 夹角,取值 [0, pi]
-db area2(p3 a, p3 b, p3 c) { return dis(cross(b - a, c - a)); }  // 三角形面积 * 2
-db volume6(p3 a, p3 b, p3 c, p3 d) { return det(b - a, c - a, d - a); }  // 四面体体积 * 6
-p3 perp(p3 a) {  // 与 a 垂直的向量(a 非零时结果也非零):取绝对值最小的那个分量来叉
+db area2(p3 a, p3 b, p3 c) { return dis(cross(b - a, c - a)); }         // 三角形面积 * 2
+db volume6(p3 a, p3 b, p3 c, p3 d) { return det(b - a, c - a, d - a); } // 四面体体积 * 6
+p3 perp(p3 a) { // 与 a 垂直的向量(a 非零时结果也非零):取绝对值最小的那个分量来叉
     return abs(a.x) > abs(a.z) ? p3{a.y, -a.x, 0} : p3{0, -a.z, a.y};
 }
 bool colinear(p3 a, p3 b, p3 c) { return cmp(dis(cross(b - a, c - a)), 0) == 0; }
 bool coplanar(p3 a, p3 b, p3 c, p3 d) { return sign(abs(det(b - a, c - a, d - a))) == 0; }
 
-}  // namespace Geo
+} // namespace Geo
 using namespace Geo;

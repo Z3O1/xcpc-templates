@@ -8,16 +8,14 @@ ll DJS_mu(ll n) { // f = mu,取 g = 1,则 H(n) = 1
     if(n <= N) return smu[n];
     if(smu_big.count(n)) return smu_big[n];
     ll ans = 1;
-    for(ll l = 2, r; l <= n; l = r + 1)
-        r = n / (n / l), ans -= (r - l + 1) * DJS_mu(n / l);
+    for(ll l = 2, r; l <= n; l = r + 1) r = n / (n / l), ans -= (r - l + 1) * DJS_mu(n / l);
     return smu_big[n] = ans;
 }
 ll DJS_phi(ll n) { // f = phi,取 g = 1,则 H(n) = n * (n + 1) / 2
     if(n <= N) return sphi[n];
     if(sphi_big.count(n)) return sphi_big[n];
-    ll ans = (ll) n * (n + 1) / 2; // 先把 n 转成 ll,否则 n 到 1e6 就溢出
-    for(ll l = 2, r; l <= n; l = r + 1)
-        r = n / (n / l), ans -= (r - l + 1) * DJS_phi(n / l);
+    ll ans = (ll)n * (n + 1) / 2; // 先把 n 转成 ll,否则 n 到 1e6 就溢出
+    for(ll l = 2, r; l <= n; l = r + 1) r = n / (n / l), ans -= (r - l + 1) * DJS_phi(n / l);
     return sphi_big[n] = ans;
 }
 // 通用形式:只需实现 f 与 g,其余照抄上面两个函数的结构

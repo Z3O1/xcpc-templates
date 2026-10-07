@@ -10,7 +10,8 @@ nd f(int n_, int a, int b, int c) {
     if(a >= c || b >= c) {
         nd rs = f(n_, a % c, b % c, c);
         mint f = rs.f, g = rs.g, h = rs.h;
-        return {f + s1 * x + s0 * y, g + s2 * x * x + s0 * y * y + (x * h + y * f + s1 * x * y) * 2, h + s2 * x + s1 * y};
+        return {f + s1 * x + s0 * y, g + s2 * x * x + s0 * y * y + (x * h + y * f + s1 * x * y) * 2,
+                h + s2 * x + s1 * y};
     }
     int m = (1ll * a * n_ + b) / c;
     nd rs = f(m - 1, c, c - b - 1, a);

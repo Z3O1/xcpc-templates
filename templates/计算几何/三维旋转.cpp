@@ -19,23 +19,24 @@ namespace Geo {
 struct mat3 {
     db a[3][3];
     p3 operator*(p3 v) const {
-        return {a[0][0] * v.x + a[0][1] * v.y + a[0][2] * v.z,
-                a[1][0] * v.x + a[1][1] * v.y + a[1][2] * v.z,
+        return {a[0][0] * v.x + a[0][1] * v.y + a[0][2] * v.z, a[1][0] * v.x + a[1][1] * v.y + a[1][2] * v.z,
                 a[2][0] * v.x + a[2][1] * v.y + a[2][2] * v.z};
     }
 };
 mat3 operator*(const mat3 &x, const mat3 &y) {
     mat3 r{};
-    ForD(i, 0, 3) ForD(j, 0, 3) {
-        db s = 0;
-        ForD(k, 0, 3) s += x.a[i][k] * y.a[k][j];
-        r.a[i][j] = s;
-    }
+    ForD(i, 0, 3)
+        ForD(j, 0, 3) {
+            db s = 0;
+            ForD(k, 0, 3) s += x.a[i][k] * y.a[k][j];
+            r.a[i][j] = s;
+        }
     return r;
 }
 mat3 transpose(const mat3 &m) {
     mat3 r{};
-    ForD(i, 0, 3) ForD(j, 0, 3) r.a[i][j] = m.a[j][i];
+    ForD(i, 0, 3)
+        ForD(j, 0, 3) r.a[i][j] = m.a[j][i];
     return r;
 }
 // 罗德里格斯:v' = v·cos + (k×v)·sin + k·(k·v)·(1-cos)
@@ -54,14 +55,12 @@ mat3 rotmat(p3 axis, db ang) {
     return m;
 }
 // 以 n 为第三个基向量造右手正交基(u, v, w 两两垂直、都是单位向量、det(u,v,w) = 1)
-void basis(p3 n, p3 &u, p3 &v, p3 &w) {
-    w = unit(n), u = unit(perp(w)), v = cross(w, u);
-}
+void basis(p3 n, p3 &u, p3 &v, p3 &w) { w = unit(n), u = unit(perp(w)), v = cross(w, u); }
 p3 tolocal(p3 x, p3 o, p3 u, p3 v, p3 w) {
     p3 d = x - o;
     return {u * d, v * d, w * d};
 }
 p3 toworld(p3 l, p3 o, p3 u, p3 v, p3 w) { return o + u * l.x + v * l.y + w * l.z; }
 
-}  // namespace Geo
+} // namespace Geo
 using namespace Geo;

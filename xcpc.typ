@@ -20,7 +20,9 @@
   ],
 )
 
-#set text(size: 9pt)
+// 固定原版字体,避免系统新增字体改变中文 fallback。
+#set text(font: ("Libertinus Serif", "Noto Sans CJK JP"), size: 9pt)
+#show raw: set text(font: ("DejaVu Sans Mono", "Noto Sans CJK JP"))
 
 // 标题编号: 大点 (Level 1) = 1, 小点 (Level 2) = 1.1
 #set heading(numbering: "1.1")

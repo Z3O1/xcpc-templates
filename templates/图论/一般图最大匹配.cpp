@@ -1,4 +1,5 @@
 // getmat(): 图论 · 一般图最大匹配
+
 // n: 点数，t: 无向边
 
 int n, fa[N];
@@ -9,7 +10,8 @@ void getmat(int rt) {
     For(i, 1, n) vis[i] = pr[i] = 0, fa[i] = i;
     queue<int> q;
     auto lca = [](int x, int y) {
-        static int vis[N], t; ++t;
+        static int vis[N], t;
+        ++t;
         while(1) {
             if(x && exchange(vis[x = fd(x)], t) == t) return x;
             x = pr[mat[x]], swap(x, y);
@@ -24,7 +26,8 @@ void getmat(int rt) {
     };
     vis[rt] = 2, q.push(rt);
     while(q.size()) {
-        int u = q.front(); q.pop();
+        int u = q.front();
+        q.pop();
         for(auto v : t[u]) {
             if(fd(u) == fd(v)) continue;
             if(!vis[v]) pr[v] = u, vis[v] = 1, vis[mat[v]] = 2, q.push(mat[v]);

@@ -6,9 +6,7 @@ namespace LCT {
 int ch[N][2], fa[N];
 bool lz[N];
 int tr[N];
-inline void pu(int k) {
-    tr[k] = tr[ls(k)] ^ tr[rs(k)] ^ a[k];
-}
+inline void pu(int k) { tr[k] = tr[ls(k)] ^ tr[rs(k)] ^ a[k]; }
 inline void pl(int k) {
     if(k) lz[k] ^= 1, swap(ls(k), rs(k));
 }
@@ -32,9 +30,7 @@ void rot(int u) {
 }
 void splay(int u) {
     for(pda(u); !ir(u); rot(u))
-        if(!ir(fa[u])) {
-            rot(gc(u) == gc(fa[u]) ? fa[u] : u);
-        }
+        if(!ir(fa[u])) { rot(gc(u) == gc(fa[u]) ? fa[u] : u); }
     pu(u);
 }
 void access(int u0) {
@@ -42,12 +38,11 @@ void access(int u0) {
     splay(u0);
 }
 int fd(int u) {
-    for(access(u); ls(u); u = ls(u), pd(u)) ;
+    for(access(u); ls(u); u = ls(u), pd(u))
+        ;
     return splay(u), u;
 }
-void mkr(int u) {
-    access(u), pl(u);
-}
+void mkr(int u) { access(u), pl(u); }
 void init() {
     For(i, 1, n) pu(i);
 }
@@ -59,11 +54,9 @@ void cut(int u, int v) {
     mkr(u), access(v), access(u);
     if(fa[v] == u) fa[v] = 0;
 }
-void upd(int u, int x) {
-    a[u] = x, splay(u);
-}
+void upd(int u, int x) { a[u] = x, splay(u); }
 int que(int u, int v) {
     mkr(u), access(v);
     return tr[v];
 }
-}  // namespace LCT
+} // namespace LCT

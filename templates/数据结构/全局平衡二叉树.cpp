@@ -1,5 +1,7 @@
-// 全局平衡二叉树:数据结构 · 全局平衡二叉树 (树上带权最大独立集模板)
+// 全局平衡二叉树: 数据结构 · 全局平衡二叉树 (树上带权最大独立集模板)
+
 // 支持:单点改权 upd(p, d)、全树查询 getans()(返回最大权独立集大小)。
+// 单进程只建一次;点权非负且中间和须在 int 内;递归 DFS 需要足够栈空间。
 // 使用者需要自己提供:全局 n、点的邻接表 t[]、点权 a[]。
 // 初始化顺序(在 main 里、读完输入点权与边之后调一次即可):
 //   For(i, 1, n) f[i][1] = a[i];                       // 把点权塞进矩阵
@@ -8,7 +10,6 @@
 //   For(i, 1, n) apply(i);                             // 沿祖先链合并
 // 之后每次 upd(p, y - a[p]), a[p] = y; 再 getans() 即可。
 
-
 const int N = 1e6 + 10;
 const int INF = 1e9;
 struct mat {
@@ -16,11 +17,8 @@ struct mat {
     int *operator[](int k) { return a[k]; }
     const int *operator[](int k) const { return a[k]; }
     mat operator*(const mat &b) const {
-        return {
-            max(a[0][0] + b[0][0], a[0][1] + b[1][0]),
-            max(a[0][0] + b[0][1], a[0][1] + b[1][1]),
-            max(a[1][0] + b[0][0], a[1][1] + b[1][0]),
-            max(a[1][0] + b[0][1], a[1][1] + b[1][1])};
+        return {max(a[0][0] + b[0][0], a[0][1] + b[1][0]), max(a[0][0] + b[0][1], a[0][1] + b[1][1]),
+                max(a[1][0] + b[0][0], a[1][1] + b[1][0]), max(a[1][0] + b[0][1], a[1][1] + b[1][1])};
     }
 };
 int n;
@@ -64,10 +62,11 @@ int build(int l, int r) {
     if(l == r) return l << 1;
     int m, s1 = 0, s2 = 0;
     For(i, l, r) s1 += wt[i];
-    For(i, l, r) if((s2 += wt[i]) * 2 > s1) {
-        m = i;
-        break;
-    }
+    For(i, l, r)
+        if((s2 += wt[i]) * 2 > s1) {
+            m = i;
+            break;
+        }
     m -= m == r;
     return tr[m << 1 | 1] = {build(l, m), build(m + 1, r)}, m << 1 | 1;
 }
@@ -80,16 +79,14 @@ void upd(int p, mat x, int k, int l, int r) {
 }
 mat que(int L, int R, int k, int l, int r) {
     if(L <= l && r <= R) return tr[k].x;
-    int m = l + r >> 1;
+    int m = k >> 1;
     if(R <= m) return que(L, R, ls, l, m);
     if(m < L) return que(L, R, rs, m + 1, r);
     return que(L, R, rs, m + 1, r) * que(L, R, ls, l, m);
 }
 #undef ls
 #undef rs
-void apply(int p) {
-    upd(dfn[p], {f[p][0], f[p][1], f[p][0], -INF}, rt[tp[p]], dfn[tp[p]], dfn[dw[tp[p]]]);
-}
+void apply(int p) { upd(dfn[p], {f[p][0], f[p][1], f[p][0], -INF}, rt[tp[p]], dfn[tp[p]], dfn[dw[tp[p]]]); }
 pll que(int p) {
     auto res = que(dfn[p], dfn[dw[tp[p]]], rt[tp[p]], dfn[tp[p]], dfn[dw[tp[p]]]);
     return {max(res[0][0], res[1][0]), max(res[0][1], res[1][1])};

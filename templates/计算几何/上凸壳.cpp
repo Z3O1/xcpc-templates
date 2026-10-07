@@ -1,4 +1,5 @@
 // 上凸壳(): 计算几何 · 上凸壳 (单调栈 O(n log n) 只求上半凸链)
+
 //
 // int upper_hull(int n, p2 *a, p2 *b, bool nos = 0): 求点集 a[0..n-1] 的**上凸壳**(上半条凸链),
 //   结果按 x 递增写进 b,返回点数。上凸壳 = 「从最左上角的点到最右上角的点」那段边界,链上相邻
@@ -16,8 +17,8 @@ int upper_hull(int n, p2 *a, p2 *b, bool nos = 0) {
     sort(a, a + n, [](const p2 &u, const p2 &v) { return u.x != v.x ? u.x < v.x : u.y > v.y; });
     int k = 0;
     ForD(i, 0, n) {
-        if(k && b[k - 1].x == a[i].x) continue;  // 同一个 x(精确相等)只留最高的那个
-        while(k > 1 && crossop({b[k - 2], b[k - 1]}, a[i]) >= (int) nos) --k;  // nos=0:只留右转;nos=1:共线也留
+        if(k && b[k - 1].x == a[i].x) continue; // 同一个 x(精确相等)只留最高的那个
+        while(k > 1 && crossop({b[k - 2], b[k - 1]}, a[i]) >= (int)nos) --k; // nos=0:只留右转;nos=1:共线也留
         b[k++] = a[i];
     }
     return k;

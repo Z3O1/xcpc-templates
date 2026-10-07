@@ -1,4 +1,5 @@
 // 半平面交(): 计算几何 · 半平面交 (有向直线左侧求交 O(n log n))
+
 //
 // hpi(vector<seg> vs): 交所有「有向直线 vs[i] 的**左侧**半平面」(左侧 = cross(vs[i], p) >= 0)。
 //   返回交集的边界多边形顶点,**逆时针**(沿每条直线的前进方向走时内部在左)。
@@ -18,12 +19,12 @@
 vector<p2> hpi(vector<seg> vs) {
     if(vs.empty()) return {};
     sort(vs.begin(), vs.end(), [](const seg &a, const seg &b) {
-        db x = a.dir().alpha(), y = b.dir().alpha();  // 按精确极角排序,保证严格弱序
+        db x = a.dir().alpha(), y = b.dir().alpha(); // 按精确极角排序,保证严格弱序
         if(x != y) return x < y;
-        return crossop(a, b.x) < 0;  // 同向时 b 在 a 右侧 -> a 的左侧半平面更小,排前面
+        return crossop(a, b.x) < 0; // 同向时 b 在 a 右侧 -> a 的左侧半平面更小,排前面
     });
-    vector<seg> ls;  // 同向平行(角度差 < eps)只留更强的一条
-    ForD(i, 0, (int) vs.size()) {
+    vector<seg> ls; // 同向平行(角度差 < eps)只留更强的一条
+    ForD(i, 0, (int)vs.size()) {
         if(!ls.empty() && !cmp(ls.back().dir().alpha(), vs[i].dir().alpha())) {
             // 注意:近乎同向的两条直线极角可能只差 1 ulp,谁在前是随机的 —— 必须显式比「强弱」:
             // crossop(ls.back(), vs[i].x) >= 0 表示 vs[i] 的限制更紧(或相同),用它替换
@@ -33,15 +34,13 @@ vector<p2> hpi(vector<seg> vs) {
         ls.push_back(vs[i]);
     }
     if(ls.size() > 1 && !cmp(ls.front().dir().alpha() - ls.back().dir().alpha() + 2 * pi, 2 * pi)) {
-        if(crossop(ls.front(), ls.back().x) >= 0)
-            ls.erase(ls.begin());
-        else
-            ls.pop_back();
+        if(crossop(ls.front(), ls.back().x) >= 0) ls.erase(ls.begin());
+        else ls.pop_back();
     }
     int n = ls.size();
     if(n < 3) return {};
     vector<int> q(n + 1);
-    int h = 0, t = 2;  // 队列里是 q[h..t-1],先放前两条
+    int h = 0, t = 2; // 队列里是 q[h..t-1],先放前两条
     q[0] = 0, q[1] = 1;
     ForD(i, 2, n) {
         while(t - h >= 2 && crossop(ls[i], isll(ls[q[t - 2]], ls[q[t - 1]])) < 0) --t;
@@ -51,19 +50,19 @@ vector<p2> hpi(vector<seg> vs) {
     while(t - h >= 2 && crossop(ls[q[h]], isll(ls[q[t - 2]], ls[q[t - 1]])) < 0) --t;
     while(t - h >= 2 && crossop(ls[q[t - 1]], isll(ls[q[h]], ls[q[h + 1]])) < 0) ++h;
     if(t - h < 3) return {};
-    vector<p2> ret;  // 相邻两条直线的交点,按环形顺序:逆时针
+    vector<p2> ret; // 相邻两条直线的交点,按环形顺序:逆时针
     ForD(i, h, t) ret.push_back(isll(ls[q[i]], ls[q[i + 1 < t ? i + 1 : h]]));
     vector<p2> qs;
-    ForD(i, 0, (int) ret.size()) if(qs.empty() || !(qs.back() == ret[i])) qs.push_back(ret[i]);  // 合并重合点
+    ForD(i, 0, (int)ret.size())
+        if(qs.empty() || !(qs.back() == ret[i])) qs.push_back(ret[i]); // 合并重合点
     while(qs.size() > 1 && qs.front() == qs.back()) qs.pop_back();
     if(qs.size() < 3) return {};
     db s = 0;
-    ForD(i, 0, (int) qs.size()) s += qs[i].det(qs[(i + 1) % qs.size()]);
+    ForD(i, 0, (int)qs.size()) s += qs[i].det(qs[(i + 1) % qs.size()]);
     // 交集为空时,双端队列会退化成一组「自相矛盾」的直线,交出来的多边形必然是**顺时针**的
     // (真实的交集多边形一定逆时针:沿每条直线前进时内部在左)。所以面积 <= 0 一律按空处理 ——
     // 这一条是「空交集」的唯一判别手段:不判的话空交集会返回一个既违反输入直线、面积又为负的
-    // 假多边形(实测:8 条方向大致均匀铺满圆周、偏移 ±1e9 的直线,真交集为空,队列却交出了
-    // 一个面积 -1.4e17 的三角形)。这也是教科书式哨兵写法的共同弱点,这里用 O(k) 的面积符号兜住。
+    // 假多边形。这也是教科书式哨兵写法的共同弱点,这里用 O(k) 的面积符号兜住。
     if(sign(s) <= 0) return {};
     return qs;
 }

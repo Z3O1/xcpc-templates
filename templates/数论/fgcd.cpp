@@ -11,13 +11,15 @@ struct fgcd_t {
         For(i, 2, n) {
             if(!b[i]) i <= B && (p += i, 0), a[i] = {i, 1, 1};
             for(auto z : p) {
-                int x = i * z; if(x > n) break;
+                int x = i * z;
+                if(x > n) break;
                 b[x] = 1, a[x] = a[i];
                 *min_element(all(a[x])) *= z;
                 if(i % z == 0) break;
             }
         }
-        For(i, 0, B) For(j, 0, i) s[i][j] = !j ? i : s[j][i % j];
+        For(i, 0, B)
+            For(j, 0, i) s[i][j] = !j ? i : s[j][i % j];
     }
     int operator()(int x, int y) const {
         if(!x || !y) return x | y;

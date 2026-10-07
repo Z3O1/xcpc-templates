@@ -10,8 +10,8 @@ struct sieve_t {
         tot = 0, phi[1] = mu[1] = d[1] = s[1] = 1;
         For(i, 2, N) {
             if(!mn[i])
-                p[++tot] = i, mn[i] = i, phi[i] = i - 1, mu[i] = -1,
-                d[i] = 2, cnt[i] = 1, s[i] = i + 1, lpf[i] = i + 1;
+                p[++tot] = i, mn[i] = i, phi[i] = i - 1, mu[i] = -1, d[i] = 2, cnt[i] = 1, s[i] = i + 1,
+                lpf[i] = i + 1;
             for(int j = 1, x; j <= tot && (x = i * p[j]) <= N; ++j) {
                 mn[x] = p[j], cnt[x] = 1, lpf[x] = p[j] + 1;
                 if(i % p[j] == 0) {

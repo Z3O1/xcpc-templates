@@ -19,7 +19,7 @@
 //   「Delaunay 三角剖分的对偶」那种 O(n log n) 做法。
 namespace Voronoi {
 
-array<p2, 2> box;  // 裁剪用的包围盒:box[0] 左下、box[1] 右上
+array<p2, 2> box; // 裁剪用的包围盒:box[0] 左下、box[1] 右上
 
 // 到 a 比到 b 近的半平面:以 ab 的中垂线为界,方向取 r90(b - a),这样 a 在它的左侧
 // (convex_cut 保留 cross(q, ·) >= 0 的一侧,正好是 a 这一侧)。
@@ -29,7 +29,7 @@ seg bisector(p2 a, p2 b) {
 }
 
 vect<vect<p2>> voronoi(vect<p2> a) {
-    int n = (int) a.size();
+    int n = (int)a.size();
     vect<vect<p2>> res;
     if(!n) return res;
     db x1 = a[0].x, x2 = a[0].x, y1 = a[0].y, y2 = a[0].y;
@@ -38,17 +38,17 @@ vect<vect<p2>> voronoi(vect<p2> a) {
     box = {p2{x1 - r, y1 - r}, p2{x2 + r, y2 + r}};
     vect<p2> ini;
     ini += p2{box[0].x, box[0].y}, ini += p2{box[1].x, box[0].y};
-    ini += p2{box[1].x, box[1].y}, ini += p2{box[0].x, box[1].y};  // 逆时针
+    ini += p2{box[1].x, box[1].y}, ini += p2{box[0].x, box[1].y}; // 逆时针
     ForD(i, 0, n) {
         vect<p2> cur = ini;
         ForD(j, 0, n) {
             if(j == i || a[i] == a[j] || cur.size() < 3) continue;
-            cur = convex_cut((int) cur.size(), cur.data(), bisector(a[i], a[j]));
+            cur = convex_cut((int)cur.size(), cur.data(), bisector(a[i], a[j]));
         }
         res += cur;
     }
     return res;
 }
 
-}  // namespace Voronoi
+} // namespace Voronoi
 using namespace Voronoi;

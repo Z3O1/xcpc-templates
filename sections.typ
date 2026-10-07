@@ -8,7 +8,7 @@
   while i < lines.len() and lines.at(i) == "" {
     i += 1
   }
-  if i < lines.len() and lines.at(i).starts-with("//") {
+  if i < lines.len() and (lines.at(i).starts-with("//") or lines.at(i).starts-with("#")) {
     i += 1
   }
   while i < lines.len() and lines.at(i) == "" {

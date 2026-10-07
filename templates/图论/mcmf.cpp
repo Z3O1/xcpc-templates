@@ -8,9 +8,7 @@ struct MCMF_t {
         ll c;
     } e[N];
     int n, mx, hd[N], tot = 1, s, t, p[N];
-    void _add(int u, int v, int w, ll c) {
-        e[++tot] = {v, hd[u], w, c}, hd[u] = tot;
-    }
+    void _add(int u, int v, int w, ll c) { e[++tot] = {v, hd[u], w, c}, hd[u] = tot; }
     void add(int u, int v, int w, ll c) {
         // mx 是 clear() 的清零点,add() 就得抬它(只靠 mcmf() 抬的话,建完图没跑过就 clear() 会残留)
         cmax(mx, u), cmax(mx, v);
@@ -19,7 +17,7 @@ struct MCMF_t {
     void clear() {
         // 清到"用过的最大点数" mx:mcmf2() 的内层会用 _n + 2 个点跑,
         // 只清到当前 n 的话,超级源/汇那几条残留 hd[] 会让下一次调用拿陈旧前驱、
-        // dijkstra 回退时在 e[] 里乱跳 → 死循环(实测 3 节点图也挂)。
+        // dijkstra 回退时在 e[] 里乱跳 → 死循环。
         For(i, 1, mx) hd[i] = 0;
         tot = 1, s = t = 0;
     }
@@ -56,7 +54,8 @@ struct MCMF_t {
                     if(w < d[v]) d[v] = w, p[v] = i, q.emplace(-w, v);
                 }
         }
-        For(i, 1, n) if(d[i] != Z) h[i] = d[i] += h[i];
+        For(i, 1, n)
+            if(d[i] != Z) h[i] = d[i] += h[i];
         return d[t] != Z;
     }
     pair<int, ll> mcmf(int _s, int _t, bool mcf = 0, int _n = 0) {
@@ -79,21 +78,21 @@ struct MCMF_t {
         For(i, 1, _n) d[i] = 0;
         int a1 = 0;
         ll a2 = 0;
-        For(i, 2, tot) if(i % 2 == 0 && e[i].c < 0) {
-            int u = e[i ^ 1].v, v = e[i].v;
-            swap(e[i].w, e[i ^ 1].w);
-            d[u] -= e[i ^ 1].w, d[v] += e[i ^ 1].w;
-            a2 += e[i ^ 1].w * e[i].c;
-        }
-        For(i, 1, _n) {
-            d[i] > 0 ? add(_n + 1, i, d[i], 0) : add(i, _n + 2, -d[i], 0);
-        }
+        For(i, 2, tot)
+            if(i % 2 == 0 && e[i].c < 0) {
+                int u = e[i ^ 1].v, v = e[i].v;
+                swap(e[i].w, e[i ^ 1].w);
+                d[u] -= e[i ^ 1].w, d[v] += e[i ^ 1].w;
+                a2 += e[i ^ 1].w * e[i].c;
+            }
+        For(i, 1, _n) { d[i] > 0 ? add(_n + 1, i, d[i], 0) : add(i, _n + 2, -d[i], 0); }
         add(_t, _s, FL, 0);
         int fake = tot, on = n;
         a2 += mcmf(_n + 1, _n + 2, 0, _n + 2).second;
         a1 += e[fake].w;
         tot = fake - 2 * _n - 2, n = on;
-        For(i, 1, on) while(hd[i] > tot) hd[i] = e[hd[i]].n;
+        For(i, 1, on)
+            while(hd[i] > tot) hd[i] = e[hd[i]].n;
         auto [a3, a4] = mcmf(_s, _t, mcf, _n);
         return {a1 + a3, a2 + a4};
     }

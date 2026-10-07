@@ -1,41 +1,7 @@
 // 全局平衡二叉树.cpp 自测:与朴素「树上带权最大独立集」树 DP 对拍。
 //
-// 模板形态(先读这个):这是一份**完整程序**(自带 main:从 cin 读 n m、点权、n-1 条边、
-//   m 个「单点改权」操作,每次操作后输出整棵树的带权最大独立集答案),不是可 include 的片段,
-//   而且它的 main **末尾没有 return**。这两点决定了本 check 的接法:
-//
-//   * 若按常见套路把 main 改名后 include 再调用(#define main gbt_main ... gbt_main()),
-//     g++ -O2 会告警 "no return statement in function returning non-void";GCC 把「非 void
-//     函数掉出末尾」当 UB(__builtin_unreachable),于是**直接删掉 For(i,1,m) 的退出判断和函数的
-//     ret** —— 整个操作循环变成真正的死循环(cin 到 EOF 后 p/y 保持旧值,于是疯狂打印同一个答案)。
-//     实测:三行输入的用例永不退出(3 秒就打了 370 万行,一直刷到 check.sh 的 60s 上限)。
-//     上一版 check 挂住就是这个原因,不是模板的算法死循环。
-//     (函数名保持 main 时不会发生:C++ 规定 main 掉出末尾等价 return 0,GCC 也照办 ——
-//      单独把这份模板编译成程序跑同一个用例,输出 3 行、正常退出;反汇编里 main 有 ret,
-//      而改名后的 gbt_main 里连循环计数比较和 ret 都没有。)
-//     最小复现(不动物模板,只复制一份、在 main 收尾的 } 前补一句 return):
-//        cp 全局平衡二叉树.cpp gbt_ret.cpp && sed -i '$s/^}$/    return 0;\n}/' gbt_ret.cpp
-//        再对 gbt_ret.cpp 做 #define main gbt_main + include,并用三行输入的用例调用 gbt_main():
-//        * 不补 return 的版本:死循环,进程一直打印同一个答案(实测 3s 打 3.7M 行),永不退出;
-//        * 补了 return 的版本:输出 3 行 9/9/7 后正常返回。
-//     更小的等价复现(与模板无关的纯 UB 敏感性,7 行,-O2 下同样死循环):
-//        #include <bits/stdc++.h>
-//        using namespace std;
-//        #define For(i, l, r) for(int i = l, i##_e = r; i <= i##_e; ++i)
-//        int work() { int n, m; cin >> n >> m;
-//                     For(i, 1, m) { int p, y; cin >> p >> y; cout << (p + y) << endl; } }  // 无 return
-//        int main() { work(); return 0; }
-//
-//   * 因此本 check 只做「改名 + include」(只为避免与本文件的 main 冲突),
-//     **绝不调用 gbt_main**;模板 main 里那 10 行调度(读点权 -> 建树 -> dfs0/dfs1 -> 每条重链
-//     build -> 全部 apply -> 逐操作 upd/getans)在下面 tmpl_answers() 里照抄一遍,
-//     用到的全是模板自己的 dfs0/dfs1/build/apply/upd/que/getans 与全局数组。
-//     被对拍的是模板的算法本体,唯一被抄的只是「怎么驱动它」。
-//
-// 模板的接口(决定了能测什么):n 个点的树 + 点权 a[i];操作 (p, y):把 a[p] 改成 y(p 在输入里
-//   要 ^ 上一次答案);询问 = 全树的带权最大独立集(= 根上 DP 的 max(f[1][0], f[1][1]))。
-//   模板没有区间加/区间和/区间最值,所以对拍的是「单点改权 + 全树查询」。
-//   模板每次查询都走 que(整条链) 的快路径(L<=l && r<=R);点更新走的是与 build 一致的 k>>1 分界。
+// 模板是可 include 的片段,没有 main;tmpl_answers() 按头注释的初始化顺序驱动真实实现。
+// 对拍单点改权 + 全树带权最大独立集,并独立验证加权分界树的任意子区间矩阵积。
 //
 // 覆盖:
 //   1) n=1(无边的退化树)、点权全 0、点权 0 与 1e6 交替(INF 哨兵边界)、单点/整树查询;
@@ -44,7 +10,8 @@
 //   4) 大量操作:64 点随机树上 5000 次改权,逐次对拍(共 5000 次);
 //   5) 操作后重复查询一致性:跑完 300 次操作后反复 getans() 200 次、其间插入 upd(p,0)(同值更新),
 //      答案必须始终不变;
-//   6) 每个用例都验「整条答案序列」一致,不是只看最后一个答案。
+//   6) 每个用例都验「整条答案序列」一致,不是只看最后一个答案;
+//   7) 200 组非均匀权重建树,枚举全部子区间,与朴素 max-plus 矩阵积对照。
 //
 // 进程模型:模板的 dfs1() 里有 `static int dt`(静态局部计数,进程内无法重置),所以「一组数据一个
 //   进程」是模板的隐含契约 —— 每个用例都在 fork 出的子进程里跑(父进程不碰模板的全局数组,
@@ -55,7 +22,6 @@
 // 未覆盖(文件末的 [note] 里也写了):
 //   * 负数点权(模板用 -1e9 当「不选 u 却选子」的哨兵,负数下空集语义未验证);
 //   * n 很大(远大于 2000,递归 dfs0/dfs1 会爆栈)与答案接近 int 上限的溢出边界;
-//   * 5 参数版 que(L,R,k,l,r) 的**子区间**路径(模板自身调用全是整链快路径,见文件末说明)。
 #include "../_check_base.hpp"
 #include <signal.h>
 #include <sys/wait.h>
@@ -69,11 +35,8 @@ struct gbt_pll {
     const ll &operator[](int i) const { return i ? second : first; }
 };
 #define pll gbt_pll
-#define main gbt_main // 只为避免与本文件的 main 冲突;本 check 绝不调用 gbt_main(见文件头)
 #include "全局平衡二叉树.cpp"
-// 模板现在已去掉 main(不再自带输入输出与 `int a[N];`),check 自己补上驱动需要的点权数组
 static int a[N];
-#undef main
 #undef pll
 
 // ———————— 固定种子的随机数(_check_base 的 rnd 用 steady_clock 播种,不可复现)————————
@@ -307,12 +270,39 @@ static int run_fn(const char *name, void (*fn)()) {
     return 1;
 }
 
+static void case_subranges() {
+    For(t, 1, 200) {
+        int n = frnd(2, 30);
+        vect<mat> a(n + 1);
+        For(i, 1, n) {
+            wt[i] = i == 1 ? 1000 : frnd(1, 20);
+            For(x, 0, 1) For(y, 0, 1) a[i][x][y] = frnd(-20, 20);
+        }
+        int root = build(1, n);
+        For(i, 1, n) upd(i, a[i], root, 1, n);
+        For(l, 1, n) For(r, l, n) {
+            mat want = a[l];
+            For(i, l + 1, r) {
+                mat next;
+                For(x, 0, 1) For(y, 0, 1) {
+                    next[x][y] = -INF;
+                    For(z, 0, 1) cmax(next[x][y], a[i][x][z] + want[z][y]);
+                }
+                want = next;
+            }
+            mat got = que(l, r, root, 1, n);
+            For(x, 0, 1) For(y, 0, 1) if(got[x][y] != want[x][y]) {
+                printf("  [FAIL] 子区间 n=%d l=%d r=%d cell=(%d,%d) got=%d want=%d\n",
+                       n, l, r, x, y, got[x][y], want[x][y]);
+                exit(1);
+            }
+        }
+    }
+}
+
 int main() {
     int bad = 0;
     char name[128];
-
-    printf("  [note] 模板是完整程序且 main 无 return:本 check 只改名 include、不调用 gbt_main,\n");
-    printf("         改由 tmpl_answers() 照抄 main 的调度来驱动(详见文件头注释)\n");
 
     // 跑一个用例;若子进程被信号杀死(看门狗超时/崩溃),后面不再跑(免得每个用例都再等一次看门狗、
     // 把整轮 check 拖到 60s 上限)。
@@ -377,13 +367,13 @@ int main() {
     // 5) 操作后重复查询一致性
     if(!bad) go_fn("跑完 300 次操作后重复 getans()/同值 upd 共 200 轮,答案恒定", case_stable);
 
+    if(!bad) go_fn("非均匀加权树的全部子区间矩阵积,200 组", case_subranges);
+
     if(bad) {
         printf("== 用例未全过(见上面的 [FAIL]/[BUG])%s\n",
                g_killed ? ";有用例被信号杀死,已跳过剩余用例" : "");
         return 1;
     }
-    printf("  [note] 未覆盖:负数点权、n>2000(递归建树会爆栈)、5 参数 que() 的子区间路径\n");
-    printf("         (后者用 (l+r)/2 分界、而 build/upd 用加权中位数 k>>1;模板自身调用全是整链\n");
-    printf("          快路径 L<=l&&r<=R,所以该分支不可达,本 check 不对它下断言)\n");
+    printf("  [note] 未覆盖:负数点权、n>2000 的递归栈与 int 溢出边界\n");
     PASSED("全局平衡二叉树");
 }

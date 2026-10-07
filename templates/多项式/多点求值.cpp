@@ -1,4 +1,5 @@
 // poly_eval(): 多项式 · 多点求值 (分治取模)
+
 // 契约:f 任意(可为空向量,视作零多项式),xs 是求值点(可为空、可重复)。
 //       返回长度 = |xs| 的向量,第 i 项是 f(xs[i])。空 xs 返回空向量。
 // 做法:分治建出每段的乘积多项式 Π(x - xs[i]);从根往下令 f ← f mod 该段乘积
@@ -9,7 +10,7 @@
 
 using poly = vector<mint>;
 static void _eval_build(poly *t, int k, int l, int r, const poly &xs) {
-    if(l == r) return void(t[k] = poly{-xs[l], mint(1)});  // x - xs[l]
+    if(l == r) return void(t[k] = poly{-xs[l], mint(1)}); // x - xs[l]
     int mid = (l + r) >> 1;
     _eval_build(t, k + k, l, mid, xs), _eval_build(t, k + k + 1, mid + 1, r, xs);
     t[k] = mul(t[k + k], t[k + k + 1]);

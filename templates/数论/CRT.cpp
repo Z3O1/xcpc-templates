@@ -8,7 +8,7 @@ ll CRT(ll a1, ll p1, ll a2, ll p2) {
     ll m1 = p1 / g, m2 = p2 / g;
     // p1 * t ≡ a2 - a1 (mod p2) 约去 g 后:p1 / g * t ≡ (a2 - a1) / g (mod m2)
     ll k = (a2 - a1) / g % m2 * (x % m2 + m2) % m2;
-    ll ans = ((i128) k * p1 + a1) % (m1 * p2); // mod lcm 得到 [0, lcm) 内的解
+    ll ans = ((i128)k * p1 + a1) % (m1 * p2); // mod lcm 得到 [0, lcm) 内的解
     return (ans + m1 * p2) % (m1 * p2);
 }
 // 多方程:ans = 0, mod = 1;

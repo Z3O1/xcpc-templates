@@ -1,0 +1,15 @@
+# 紧凑的纸质竞赛片段;识别 house 循环宏,不改标题/说明或 include 顺序。
+BasedOnStyle: LLVM
+IndentWidth: 4
+ColumnLimit: 110
+UseTab: Never
+SpaceBeforeParens: Never
+AllowShortFunctionsOnASingleLine: All
+AllowShortBlocksOnASingleLine: Always
+AllowShortIfStatementsOnASingleLine: AllIfsAndElse
+AllowShortLoopsOnASingleLine: true
+BreakBeforeBraces: Attach
+NamespaceIndentation: None
+SortIncludes: Never
+ReflowComments: false
+ForEachMacros: [For, rFor, ForD]

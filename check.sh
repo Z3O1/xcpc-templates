@@ -2,7 +2,7 @@
 # 编译并运行 templates/ 下的 *.check.cpp 自测(类似 skip2004 的 check)
 #
 # 用法:
-#   ./check.sh                          # 跑全部(慢:66 个 check 要几分钟,只在收尾/推送前跑)
+#   ./check.sh                          # 跑全部(慢:全部 check 要几分钟,只在收尾/推送前跑)
 #   ./check.sh 高斯整数                  # 只跑路径里含该子串的 check(可给多个子串,OR 匹配)
 #   ./check.sh -x 高斯整数               # 精确匹配单个 check(给模板名/文件名/路径都行,忽略后缀)
 #   ./check.sh -f templates/数论/高斯整数.check.cpp   # 直接指定 check 文件(可给多个)
@@ -12,8 +12,8 @@
 #   ./check.sh -h                       # 帮助
 #
 # 改一个模板时只跑它那一个:./check.sh -x <模板名> —— 别每次都跑全局,全量编译+运行太慢。
-set -u
-cd "$(dirname "$0")"
+set -uo pipefail
+cd "$(dirname "$0")" || exit 1
 
 timeout_s="${XCPC_CHECK_TIMEOUT:-60}"   # 单个 check 的墙钟上限(卡死=FAIL,不再挂住整轮)
 
@@ -59,7 +59,12 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-mapfile -t all < <(find templates -name '*.check.cpp' | sort)
+[[ "$timeout_s" =~ ^([0-9]+([.][0-9]+)?|[.][0-9]+)$ ]] &&
+    awk -v t="$timeout_s" 'BEGIN{exit !(t > 0)}' || {
+        echo "XCPC_CHECK_TIMEOUT 需要正数秒(收到:'$timeout_s')" >&2; exit 2;
+    }
+
+mapfile -t all < <(find templates -type f -name '*.check.cpp' | LC_ALL=C sort)
 if [[ ${#all[@]} -eq 0 ]]; then
     echo "没找到任何 *.check.cpp(check 文件尚未创建?)"
     exit 1
@@ -67,15 +72,24 @@ fi
 
 # 按名字精确解析成 check 路径:接受 模板名 / xxx.check.cpp / 章/模板名 等写法
 resolve_exact() {
-    local name=$1 base sb src
-    if [[ -f "$name" ]]; then printf '%s\n' "$name"; return 0; fi
-    base=$(basename "$name"); base=${base%.check.cpp}; base=${base%.cpp}
-    local hit=0
+    local name=$1 target src candidate
+    if [[ -f "$name" && "$name" == *.check.cpp ]]; then
+        realpath --relative-to="$PWD" -- "$name"; return
+    fi
+    target=${name#"$PWD"/}; target=${target#./}; target=${target#templates/}
+    target=${target%.check.cpp}; target=${target%.cpp}
+    local matches=()
     for src in "${all[@]}"; do
-        sb=$(basename "$src"); sb=${sb%.check.cpp}
-        if [[ "$sb" == "$base" ]]; then printf '%s\n' "$src"; hit=1; fi
+        if [[ "$target" == */* ]]; then candidate=${src#templates/}; else candidate=${src##*/}; fi
+        [[ "$candidate" == "$target.check.cpp" ]] && matches+=("$src")
     done
-    [[ $hit -eq 1 ]]
+    if [[ ${#matches[@]} -gt 1 ]]; then
+        printf '名字有歧义,请指定章/模板名: %s\n' "$name" >&2
+        printf '  %s\n' "${matches[@]}" >&2
+        return 1
+    fi
+    [[ ${#matches[@]} -eq 1 ]] || return 1
+    printf '%s\n' "${matches[0]}"
 }
 
 # —— 选定要跑的 check 列表(保持 find 的顺序,去重) ——
@@ -117,42 +131,49 @@ if [[ $list_only -eq 1 ]]; then
     exit 0
 fi
 
-tmpdir=$(mktemp -d)
+mkdir -p tmp || exit 1
+tmpdir=$(mktemp -d "$PWD/tmp/check.XXXXXX") || exit 1
 trap 'rm -rf "$tmpdir"' EXIT
 
-now() { if [[ -n "${EPOCHREALTIME:-}" ]]; then echo "$EPOCHREALTIME"; else date +%s.%N; fi; }
+# /proc/uptime 不受系统校时影响,避免 WSL 时钟回拨使耗时出现负数。
+now() {
+    local uptime rest
+    if [[ -r /proc/uptime ]]; then read -r uptime rest < /proc/uptime; echo "$uptime";
+    else date +%s.%N; fi
+}
 elapsed() { awk -v a="$1" -v b="$2" 'BEGIN{printf "%.1f", b - a}'; }
 
 # run_check <src> <log>:编译并运行一个 check,把结果写进 <log>
 # 退出码:0 = ok,1 = FAIL(含超时),2 = 编译失败
 run_check() {
-    local src=$1 log=$2 bin t0 t1 rc r line body=''
-    bin="$tmpdir/$(echo "$src" | tr '/.' '__')"
+    local src=$1 log=$2 bin t0 t1 rc r line output="$2.out" body=''
+    bin="$log.bin"
     t0=$(now)
-    if ! err=$(g++ -std=c++17 -O2 -o "$bin" "$src" 2>&1); then
-        t1=$(now)
+    if ! "${CXX:-g++}" -std=c++17 -O2 -o "$bin" "$src" > "$output" 2>&1; then
         line="COMPILE FAIL  $src"
-        body=$(printf '%s\n' "$err" | head -15)
+        body=$(head -15 "$output")
         rc=2
-    elif out=$(cd "$(dirname "$src")" && timeout "$timeout_s" "$bin" 2>&1); then
-        t1=$(now)
+    elif (cd "$(dirname "$src")" && timeout --kill-after=2s "$timeout_s" "$bin") > "$output" 2>&1; then
         line="ok    $src"
         rc=0
-        [[ $verbose -eq 1 ]] && body="$out"
     else
         r=$?
-        t1=$(now)
-        if [[ $r -eq 124 ]]; then
+        if [[ $r -eq 124 || $r -eq 137 ]]; then
             line="FAIL  $src  (超时 ${timeout_s}s —— 很可能是 check 触发了模板的死循环用例)"
         else
             line="FAIL  $src"
         fi
-        body=$(printf '%s\n' "$out" | tail -20)
+        body=$(tail -20 "$output")
         rc=1
     fi
+    t1=$(now)
     {
         printf '%s  (%ss)\n' "$line" "$(elapsed "$t0" "$t1")"
-        [[ -n "$body" ]] && printf '%s\n' "$body" | sed 's/^/      /'
+        if [[ $rc -eq 0 && $verbose -eq 1 ]]; then
+            sed 's/^/      /' "$output"
+        elif [[ -n "$body" ]]; then
+            printf '%s\n' "$body" | sed 's/^/      /'
+        fi
     } > "$log"
     return $rc
 }
@@ -174,9 +195,9 @@ else
         done
         for ((k = i, j = 0; k < i + jobs && k < n; ++k, ++j)); do
             if wait "${pids[$j]}"; then status[k]=0; else status[k]=$?; fi
+            cat "$tmpdir/log_$k"   # 并行时也即时报告,按选定顺序输出
         done
     done
-    for ((k = 0; k < n; ++k)); do cat "$tmpdir/log_$k"; done
 fi
 
 pass=0; fail=0; failed=()

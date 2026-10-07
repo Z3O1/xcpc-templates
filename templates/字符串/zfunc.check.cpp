@@ -1,7 +1,6 @@
 // zfunc 自测:z 数组与暴力 LCP 逐位对照(O(n^2) 朴素),覆盖全同/交替/周期/Fibonacci 串与 1e6 极端
 //
-// 约定(实测):串放在 s[1..n],s[n+1] 必须是区别于所有字符的哨兵(模板注释写成 s[n],实际读的是 s[n+1]);
-// z 必须是零初始化数组(模板里 `int l = 0`,第一次判断会用到 z[0],全局/static 数组天然为 0)。
+// 契约:串放在 s[1..n],无需哨兵或 z 零初始化;额外回归空串、脏缓冲和恰好 n+1 个元素的输入。
 #include "../_check_base.hpp"
 #include "zfunc.cpp"
 
@@ -50,6 +49,21 @@ struct RH {
 };
 
 int main() {
+    zfunc(0, nullptr, nullptr);
+    For(t, 1, 2000) {
+        int n = rnd(1, 40);
+        vect<int> s(n + 1), z(n + 2, 12345);
+        For(i, 0, n) s[i] = rnd(0, 3);
+        const vect<int> saved = s;
+        zfunc(n, s.data(), z.data());
+        auto want = brute_z(n, s.data());
+        if(s != saved || z[0] != 12345 || z[n + 1] != 12345)
+            return printf("  [FAIL] Z 改写输入或越界 n=%d\n", n), 1;
+        For(i, 1, n) if(z[i] != want[i])
+            return printf("  [FAIL] 无哨兵脏缓冲 n=%d i=%d z=%d want=%d\n", n, i, z[i], want[i]), 1;
+    }
+    ok("Z 空串、无哨兵、脏缓冲、多次调用回归");
+
     // ---------- 1) 小规模穷举:2 字母长 1..16 ----------
     {
         long long cnt = 0;

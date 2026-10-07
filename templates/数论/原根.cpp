@@ -10,7 +10,7 @@ int root(int p) {
     for(int i = 2; i * i <= x; ++i)
         if(x % i == 0) {
             fac.push_back(i);
-            while (x % i == 0) x /= i;
+            while(x % i == 0) x /= i;
         }
     if(x > 1) fac.push_back(x);
     For(g, 2, p - 1) {
@@ -32,10 +32,10 @@ int ord(int a, int p) {
     for(int i = 2; i * i <= y; ++i)
         if(y % i == 0) {
             fac.push_back(i);
-            while (y % i == 0) y /= i;
+            while(y % i == 0) y /= i;
         }
     if(y > 1) fac.push_back(y);
     for(auto q : fac)
-        while (x % q == 0 && ksm(a, x / q, p) == 1) x /= q;
+        while(x % q == 0 && ksm(a, x / q, p) == 1) x /= q;
     return x;
 }

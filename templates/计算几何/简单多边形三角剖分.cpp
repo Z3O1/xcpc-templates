@@ -1,4 +1,5 @@
 // 简单多边形三角剖分(): 计算几何 · 简单多边形三角剖分 (耳切法 O(n^2),要求逆时针简单多边形)
+
 //
 // 参数: n 顶点数, a 顶点数组(逆时针顺序, 只读, 剖分中不改写)
 // 返回: vector<array<int, 3>>, 每项是一个三角形的顶点下标三元组 (i, j, k), 按逆时针排列。
@@ -32,9 +33,9 @@ vector<array<int, 3>> ear_clip(int n, p2 *a) {
     // 环上的前驱、后继: 用下标数组维护双向链表, 不真的删点, 避免下标错位
     // cnt 是环上剩下的点数, 不能拿 n 当计数器 —— n 还是数组的大小
     vector<int> prv(n), nxt(n);
-    ForD(i, 0, n) prv[i] = (i + n - 1) % n, nxt[i] = (i + 1) % n;  // ForD(i,l,r) 即 i = l..r-1
+    ForD(i, 0, n) prv[i] = (i + n - 1) % n, nxt[i] = (i + 1) % n; // ForD(i,l,r) 即 i = l..r-1
     int cnt = n;
-    auto live = [&](int x) { return prv[nxt[x]] == x && nxt[prv[x]] == x; };  // 还在环上
+    auto live = [&](int x) { return prv[nxt[x]] == x && nxt[prv[x]] == x; }; // 还在环上
     auto drop = [&](int x) {
         int p = prv[x], q = nxt[x];
         nxt[p] = q, prv[q] = p;
@@ -55,14 +56,14 @@ vector<array<int, 3>> ear_clip(int n, p2 *a) {
         for(int x = 0; x < n; ++x)
             if(live(x) && cnt > 3 && colin(x)) drop(x), ch = 1;
     }
-    if(cnt < 3) return ret;  // 全是共线点: 面积 0, 没有合法三角形
+    if(cnt < 3) return ret; // 全是共线点: 面积 0, 没有合法三角形
     for(; cnt > 2;) {
         int ear = -1;
         for(int cur = 0; cur < n; ++cur) {
             if(!live(cur)) continue;
             int p = prv[cur], q = nxt[cur];
             if(p == cur || q == cur || p == q) continue;
-            if((a[cur] - a[p]).det(a[q] - a[cur]) <= 0) continue;  // 该顶点不是严格凸的
+            if((a[cur] - a[p]).det(a[q] - a[cur]) <= 0) continue; // 该顶点不是严格凸的
             bool ok = 1;
             for(int i = nxt[q]; i != p && ok; i = nxt[i])
                 if(inside(a[i], a[p], a[cur], a[q])) ok = 0;
@@ -71,9 +72,9 @@ vector<array<int, 3>> ear_clip(int n, p2 *a) {
                 break;
             }
         }
-        if(ear < 0) break;  // 一个耳都没有(输入不满足前置条件): 剩下的切不动, 直接停
+        if(ear < 0) break; // 一个耳都没有(输入不满足前置条件): 剩下的切不动, 直接停
         int p = prv[ear], q = nxt[ear];
-        ret.push_back({p, ear, q});  // (prev, cur, next) 左转, 按逆时针输出
+        ret.push_back({p, ear, q}); // (prev, cur, next) 左转, 按逆时针输出
         drop(ear);
     }
     // 只剩 3 个点时上面那个循环不再进入: 若这三点共线(整个多边形面积 0), 没有合法三角形

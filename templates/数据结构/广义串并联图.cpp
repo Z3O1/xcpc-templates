@@ -18,7 +18,9 @@ struct SPQR_tree {
     }
     void build(int n) {
         queue<int> q;
-        auto ins = [&](int u) { if (!vis[u] && t[u].size() <= 2) vis[u] = 1, q.push(u); };
+        auto ins = [&](int u) {
+            if(!vis[u] && t[u].size() <= 2) vis[u] = 1, q.push(u);
+        };
         For(i, 1, n) ins(i);
         while(q.size()) {
             int u = q.front();

@@ -21,14 +21,14 @@
 namespace Geo {
 
 struct plane {
-    p3 n;  // 单位法向量
-    db d;  // n · x = d
+    p3 n; // 单位法向量
+    db d; // n · x = d
     plane() {}
     plane(p3 a, p3 b, p3 c) {
         p3 t = cross(b - a, c - a);
-        db l = sqrt(t * t);  // 注意:这里不能写 dis(t) —— 会被解析成成员 dis(p3)(遮蔽自由函数)
+        db l = sqrt(t * t); // 注意:这里不能写 dis(t) —— 会被解析成成员 dis(p3)(遮蔽自由函数)
         if(!sign(l)) {
-            n = {0, 0, 0}, d = 0;  // 三点共线:退化(整个平面无意义)
+            n = {0, 0, 0}, d = 0; // 三点共线:退化(整个平面无意义)
         } else {
             n = t / l, d = n * a;
         }
@@ -38,23 +38,23 @@ struct plane {
         r.n = unit(nor), r.d = r.n * o;
         return r;
     }
-    db side(p3 p) const { return n * p - d; }        // 带号距离(n 单位)
-    db dis(p3 p) const { return abs(side(p)); }      // 点到平面距离
-    p3 proj(p3 p) const { return p - n * side(p); }  // 投影到平面
+    db side(p3 p) const { return n * p - d; }       // 带号距离(n 单位)
+    db dis(p3 p) const { return abs(side(p)); }     // 点到平面距离
+    p3 proj(p3 p) const { return p - n * side(p); } // 投影到平面
     p3 reflect(p3 p) const { return p - n * (2 * side(p)); }
     bool ons(p3 p) const { return !sign(side(p)); }
 };
 bool ispara(const plane &a, const plane &b) { return !sign(sinang(a.n, b.n)); }
 bool isperp(const plane &a, const plane &b) { return !sign(cosang(a.n, b.n)); }
 // 两平面夹角:法向量夹角的锐角部分,取值 [0, pi/2]
-db angle(const plane &a, const plane &b) { return acos(max((db) -1, min((db) 1, abs(a.n * b.n)))); }
+db angle(const plane &a, const plane &b) { return acos(max((db)-1, min((db)1, abs(a.n * b.n)))); }
 // 两平面的交线:方向 n1×n2,过点 (d1·(n2×w) + d2·(w×n1)) / |w|²(w = n1×n2)
 // 平行(含重合)时没有唯一的交线:返回方向为零向量的退化直线,调用方用 dis(l.d) == 0 判退化
 line3 ispl(const plane &a, const plane &b) {
     p3 w = cross(a.n, b.n);
     if(!sign(sinang(a.n, b.n))) return line3(a.proj(b.n * b.d), a.proj(b.n * b.d));
     p3 o = (cross(b.n, w) * a.d + cross(w, a.n) * b.d) / dis2(w);
-    return line3(o, o + w);  // 传两点(o, o+w),d 就是 w
+    return line3(o, o + w); // 传两点(o, o+w),d 就是 w
 }
 // 直线与平面的交点:解 n·(o + t·d) = d 得 t = (d - n·o) / (n·d)
 p3 islp(const plane &p, const line3 &l) { return l.o + l.d * ((p.d - p.n * l.o) / (p.n * l.d)); }
@@ -65,5 +65,5 @@ bool ons(const plane &p, const line3 &l) { return !sign(p.side(l.o)) && !sign(p.
 db dis(const plane &p, p3 x) { return p.dis(x); }
 p3 proj(const plane &p, p3 x) { return p.proj(x); }
 
-}  // namespace Geo
+} // namespace Geo
 using namespace Geo;

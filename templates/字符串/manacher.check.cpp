@@ -1,24 +1,8 @@
 // manacher 自测:每个中心的奇/偶回文半径与 O(n^2) 暴力逐中心对照,覆盖全同串/单字符/交替串/哨兵/1e6 极端
 //
-// ⚠ 模板本体 manacher.cpp 在 g++ -std=c++17 下**编译不过**:第 5 行形参写成 `int d`,
-//   函数体里却当数组用(`int &k = d[i];`)——应为 `int *d`。任务要求不动模板本体,
-//   所以这里把模板本体**逐行照抄**成 manacher_ref,与模板的唯一差别就是签名补了个 `*`;
-//   main() 开头会读 manacher.cpp 并逐行核对"照抄内容 == 模板本体"(签名允许 `int d` / `int *d` 两种写法),
-//   函数体被改动/照抄走样就会 CHECK 失败;签名以后若修成 `int *d`,本 check 依然绿(只是想 include 本体的
-//   那句注释可以改成真的 #include)。
-// #include "manacher.cpp"   // 想按固定格式直接 include,但如上所述编译不过,故改为照抄 + 运行时核对
+// 直接 include 模板本体,参考侧只保留独立暴力,不再维护手抄副本或按行核对格式。
 #include "../_check_base.hpp"
-
-// ===== 函数体 8 行与 templates/字符串/manacher.cpp 第 6..13 行逐字相同 =====
-void manacher_ref(int n, char *s, int *d) {
-    int l = 0, r = -1;
-    For(i, 1, n) {
-        int &k = d[i];
-        k = i > r ? 1 : min(d[l + r - i], r - i + 1);
-        while (s[i - k] == s[i + k]) k++;
-        if (i + k - 1 > r) r = i + k - 1, l = i - k + 1;
-    }
-}
+#include "manacher.cpp"
 
 const int MAXN = 1000000 + 5;
 static char SBUF[MAXN + 8];         // 奇数回文:s[1..n] 放串,s[0]/s[n+1] 放不同哨兵
@@ -48,7 +32,7 @@ static void run_odd(int n, const string &t, int *d) {
     SBUF[0] = '$';
     For(i, 1, n) SBUF[i] = t[i];
     SBUF[n + 1] = '#', SBUF[n + 2] = '%';   // s[n+1] 与 s[0] 不同,且都不在字符集里
-    manacher_ref(n, SBUF, d);
+    manacher(n, SBUF, d);
 }
 // 偶回文:按注释造 s' = |c1|c2|...|cn| ,两端哨兵 '$' 与 '#'
 static int build_interleaved(int n, const string &t, char *s) {
@@ -79,56 +63,7 @@ static bool verify_radii(int n, const char *s, const int *d, bool verbose) {
     return true;
 }
 
-// 读模板本体代码行(去掉注释/空行),用来核对照抄
-static bool read_template(vect<string> &out) {
-    const char *cands[] = {"manacher.cpp", "templates/字符串/manacher.cpp", "../字符串/manacher.cpp"};
-    FILE *fp = nullptr;
-    for(auto c : cands) if((fp = fopen(c, "r"))) break;
-    if(!fp) return false;
-    char line[1024];
-    while(fgets(line, sizeof line, fp)) {
-        string s(line);
-        size_t a = s.find_first_not_of(" \t\r\n"), b = s.find_last_not_of(" \t\r\n");
-        if(a == string::npos) continue;
-        s = s.substr(a, b - a + 1);
-        if(s.rfind("//", 0) == 0) continue;
-        out.push_back(s);
-    }
-    fclose(fp);
-    return true;
-}
-
 int main() {
-    // ---------- 0) 核对"照抄的模板本体"没抄错 ----------
-    {
-        vect<string> tpl;
-        if(read_template(tpl)) {
-            CHECK(tpl.size() == 9, "模板本体取出 1 行签名 + 8 行函数体");
-            string sig = tpl[0];
-            sig.replace(sig.find("manacher"), 8, "manacher_ref");
-            // 模板签名现在是 `int d`(编译不过),修成 `int *d` 后本 check 也不该变红 → 归一化后再比
-            if(sig.find("int *d") == string::npos && sig.find("int d") != string::npos)
-                sig.replace(sig.find("int d"), 5, "int *d");
-            CHECK(sig == "void manacher_ref(int n, char *s, int *d) {", "照抄的签名与模板只差(可能的)一个 *");
-            printf("  [info] 模板签名是 `%s`%s\n", tpl[0].c_str(),
-                   tpl[0].find("int *d") != string::npos ? " —— 已修好,可以直接 include 了"
-                                                         : " —— 仍是 `int d`,编译不过(照抄的正是这个原因)");
-            const char *mine[8] = {"int l = 0, r = -1;",
-                                   "For(i, 1, n) {",
-                                   "int &k = d[i];",
-                                   "k = i > r ? 1 : min(d[l + r - i], r - i + 1);",
-                                   "while (s[i - k] == s[i + k]) k++;",
-                                   "if (i + k - 1 > r) r = i + k - 1, l = i - k + 1;",
-                                   "}",
-                                   "}"};
-            bool same = true;
-            For(i, 1, 8) same &= (tpl[i] == mine[i - 1]);
-            CHECK(same, "照抄的 8 行函数体与模板逐行一致");
-        } else {
-            printf("  [warn] 没找到 manacher.cpp,跳过照抄核对(请在 check 目录下运行)\n");
-        }
-    }
-
     // ---------- 1) 小规模穷举:{a,b} 长 1..12、{a,b,c} 长 1..9 ----------
     {
         long long cnt = 0, centers = 0;
@@ -283,7 +218,7 @@ int main() {
         auto check_even = [&](int n, const string &t) {
             vect<int> od = brute_odd(n, t);
             int m = build_interleaved(n, t, S2BUF);
-            manacher_ref(m, S2BUF, D2BUF);
+            manacher(m, S2BUF, D2BUF);
             For(i, 1, n) {   // s' 的奇数中心 2i 对应原串奇回文中心 i
                 if(D2BUF[2 * i] != 2 * od[i] + 2) {
                     printf("  [FAIL] s' 奇中心 n=%d i=%d:d=%d 暴力半径 %d\n", n, i, D2BUF[2 * i], od[i]);
@@ -324,7 +259,7 @@ int main() {
             string s(n + 1, ' ');
             For(i, 1, n) s[i] = 'a';
             int m = build_interleaved(n, s, S2BUF);
-            manacher_ref(m, S2BUF, D2BUF);
+            manacher(m, S2BUF, D2BUF);
             For(i, 1, n - 1) if(D2BUF[2 * i + 1] != 2 * min(i, n - i) + 1) {
                 printf("  [FAIL] 全同串偶回文 i=%d d=%d\n", i, D2BUF[2 * i + 1]);
                 return 1;
@@ -364,7 +299,7 @@ int main() {
         For(i, 1, n) s[i] = 'a';
         int m = build_interleaved(n, s, S2BUF);
         t0 = chrono::steady_clock::now();
-        manacher_ref(m, S2BUF, D2BUF);
+        manacher(m, S2BUF, D2BUF);
         ms = chrono::duration<double, milli>(chrono::steady_clock::now() - t0).count();
         CHECK(D2BUF[2] == 2 && D2BUF[3] == 3, "s' 两端的中心:半径 0 / 半长 1");
         For(i, 1, n) {
