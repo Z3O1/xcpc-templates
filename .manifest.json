@@ -549,6 +549,12 @@
    "title": "两平方和",
    "missing": true,
    "hidden": false
+  },
+  {
+   "key": "数学/反射容斥.typ",
+   "title": "反射容斥",
+   "missing": false,
+   "hidden": false
   }
  ]
 }

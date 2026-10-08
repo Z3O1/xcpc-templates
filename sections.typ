@@ -144,6 +144,10 @@
 
 #zebraw(lang: false)[#raw(readcode("templates/数学/类欧.cpp"), lang: "cpp", block: true)]
 
+== 反射容斥
+
+#include "templates/数学/反射容斥.typ"
+
 = 数论
 
 == 分数还原
