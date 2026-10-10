@@ -20,11 +20,12 @@ void init() {
     static int b[N];
     For(i, 2, n) {
         if(!b[i]) p[++pc] = i;
-        For(j, 1, pc)
-            if(i * p[j] <= n) {
-                b[i * p[j]] = 1;
-                if(i % p[j] == 0) break;
-            } else break;
+        For(j, 1, pc) {
+            int x = i * p[j];
+            if(x > n) break;
+            b[x] = 1;
+            if(i % p[j] == 0) break;
+        }
     }
     p[pc + 1] = n + 1;
     For(i, 1, pc) {
@@ -40,18 +41,18 @@ int id(ll n) { return n <= lim ? n : n0 / n + lim; }
 void solveg(ll _n0) {
     n0 = _n0;
     lim = sqrt(n0);
-    ll fl = n0 / lim == lim;
-    auto init = [&](ll n, int _id) {
-        n %= M;
-        sub(g1[_id] = n * (n + 1) / 2 % M, 1);
-        sub(g2[_id] = n * (n + 1) % M * (n + n + 1) % M * i6 % M, 1);
+    bool fl = n0 / lim == lim;
+    auto put = [&](ll k, int slot) {
+        k %= M;
+        sub(g1[slot] = k * (k + 1) / 2 % M, 1);
+        sub(g2[slot] = k * (k + 1) % M * (k + k + 1) % M * i6 % M, 1);
     };
     auto doit = [&](ll n, int m, int i1, int i2) {
         sub(g1[i1], 1ll * (g1[i2] - s1[m - 1] + M) * p[m] % M);
         sub(g2[i1], 1ll * (g2[i2] - s2[m - 1] + M) * p2[m] % M);
     };
-    For(i, 1, lim) init(i, i);
-    For(i, 1, lim - fl) init(n0 / i, i + lim);
+    For(i, 1, lim) put(i, i);
+    For(i, 1, lim - fl) put(n0 / i, i + lim);
     For(i, 1, pc) {
         ll x = p[i], y = x * x, z = n0 / x;
         For(j, 1, min(lim - fl, n0 / y)) doit(n0 / j, i, j + lim, id(z / j));
@@ -67,13 +68,14 @@ int f(ll n, int m) {
     if(p[m] > n) return 0;
     ll ans = g(n) - s[m] + M;
     For(j, m + 1, pc) {
-        int p = ::p[j];
-        if(1ll * p * p > n) break;
-        for(ll s = p; s * p <= n; s *= p) { ans += func(s) * f(n / s, j) % M + func(s * p); }
+        int q = p[j];
+        if(1ll * q * q > n) break;
+        for(ll w = q; w * q <= n; w *= q) ans += func(w) * f(n / w, j) % M + func(w * q);
     }
     return ans % M;
 }
 ll solve(ll n) {
-    init(), solveg(n);
+    init();
+    solveg(n);
     return (f(n, 0) + 1) % M;
 }

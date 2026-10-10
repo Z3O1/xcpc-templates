@@ -111,6 +111,18 @@ static int cmp_fg(const char *what, const vi &F, int n, bool check_other_way) {
 int main() {
     prep(18);
 
+    // ——— 0) 公开缓冲符号回归:F 是模板对外公开的 int[N] 缓冲,老代码按原用法
+    //        F[0]=0; F[1]=1; poly input(vector<int>(F, F+2)); 直接构造输入,
+    //        删掉这个符号就编译不过 —— 固定在这里不让它退回去 ———
+    {
+        static_assert(std::is_same<decltype(F[0]), int &>::value, "F 应是公开的 int[N] 缓冲");
+        F[0] = 0, F[1] = 1;  // F(x) = x,它的复合逆还是 x
+        poly input(vector<int>(F, F + 2));
+        vi want = CIV(vi{0, 1}, 2), got = comp_inv(input, 2).c;
+        if(!same(want, got)) return bad("公开缓冲 F 构造的 poly 参与 comp_inv", vi{0, 1}, got, 2, want, got);
+        ok("公开缓冲 F 存在且类型为 int[N];poly input(vector<int>(F,F+2)) 可直接喂给 comp_inv");
+    }
+
     // ——— 1) 参考实现自检(手算 + 两种写法互校) ———
     {
         vi f{0, 1, 1}, g{0, 1, mod - 1, 2};  // (x+x²)∘(x-x²+2x³) = x-x²+2x³ + (x-x²+2x³)² mod x⁴

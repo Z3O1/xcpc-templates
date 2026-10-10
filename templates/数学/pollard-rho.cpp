@@ -7,7 +7,8 @@ constexpr bool chkp(ll n) {
     constexpr int p[] = {2, 325, 9375, 28178, 450775, 9780504, 1795265022}; // {2, 7, 61} for 32-bits
     auto ksm = [&](i128 a, ll b) {
         i128 s = 1;
-        for(; b; b >>= 1, a = a * a % n) b & 1 && (s = s * a % n, 0);
+        for(; b; b >>= 1, a = a * a % n)
+            if(b & 1) s = s * a % n;
         return s;
     };
     int t = __builtin_ctzll(n - 1), i = 0;
@@ -25,30 +26,38 @@ ll PR(ll n) {
     if(n % 2 == 0) return 2;
     static constexpr int S = 127;
     uniform_int_distribution<ll> rnd(1, n - 1);
-    ll x = 0, y = 0, c = rnd(rng), w = 1, g;
+    ll x = 0, y = 0, c = rnd(rng), w = 1;
     auto f = [&](ll x) { return (i128(x) * x + c) % n; };
-    for(int t = 1;; ++t) {
+    for(;;) {
         x = f(x), y = f(f(y));
         if(x == y) {
             x = y = 0, c = rnd(rng);
             continue;
         }
-        w = i128(w) * abs(x - y) % n;
-        if(!w) return __gcd(abs(x - y), n);
-        if(!(y & S) && (g = __gcd(w, n)) > 1) return g;
+        ll d = abs(x - y);
+        w = i128(w) * d % n;
+        if(!w) return __gcd(d, n);
+        if(!(y & S)) {
+            ll g = __gcd(w, n);
+            if(g > 1) return g;
+        }
     }
 }
 vect<ll> fact(ll n) {
     if(n == 1) return {};
     vect<ll> f;
     auto S = [&](ll n, auto &&S) {
-        if(chkp(n)) return f += n, void();
+        if(chkp(n)) {
+            f += n;
+            return;
+        }
         ll x = PR(n);
         while(n % x == 0) n /= x;
         S(x, S);
         if(n > 1) S(n, S);
     };
     S(n, S);
-    sort(all(f)), f.erase(unique(all(f)), f.end());
+    sort(all(f));
+    f.erase(unique(all(f)), f.end());
     return f;
 }

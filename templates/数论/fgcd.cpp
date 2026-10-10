@@ -9,7 +9,10 @@ struct fgcd_t {
         vect<int> p;
         a[1] = {1, 1, 1};
         For(i, 2, n) {
-            if(!b[i]) i <= B && (p += i, 0), a[i] = {i, 1, 1};
+            if(!b[i]) {
+                if(i <= B) p += i;
+                a[i] = {i, 1, 1};
+            }
             for(auto z : p) {
                 int x = i * z;
                 if(x > n) break;
@@ -24,12 +27,14 @@ struct fgcd_t {
     int operator()(int x, int y) const {
         if(!x || !y) return x | y;
         if(x == 1 || y == 1) return 1;
-        auto g1 = [&](int x, int y) {
-            int t;
-            if(y == 1 || (t = x % y) == 0) return y;
-            return y > B ? 1 : s[y][t];
+        auto g1 = [&](int u, int v) { // u 中可被 v 整除的那部分
+            if(v == 1) return 1;
+            int t = u % v;
+            return t == 0 ? v : (v > B ? 1 : s[v][t]);
         };
-        int a0 = g1(x, a[y][0]), a1 = g1(x /= a0, a[y][1]), a2 = g1(x /= a1, a[y][2]);
+        int a0 = g1(x, a[y][0]);
+        int a1 = g1(x /= a0, a[y][1]);
+        int a2 = g1(x /= a1, a[y][2]);
         return a0 * a1 * a2;
     }
 };

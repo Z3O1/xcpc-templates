@@ -8,7 +8,9 @@ template <class T> int minrep(const T &a) {
             ++k;
         } else {
             if(a[(i + k) % n] > a[(j + k) % n]) swap(i, j);
-            j += k + 1, j += i == j, k = 0;
+            j += k + 1;
+            if(j == i) ++j;
+            k = 0;
         }
     }
     return i;

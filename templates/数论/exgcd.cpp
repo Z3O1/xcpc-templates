@@ -5,7 +5,8 @@
 ll exgcd(ll a, ll b, ll &x, ll &y) {
     if(!b) return x = 1, y = 0, a;
     ll g = exgcd(b, a % b, y, x);
-    return y -= a / b * x, g;
+    y -= a / b * x;
+    return g;
 }
 // 求 a 在模 p 下的逆元(要求 gcd(a, p) = 1):
 //   ll x, y; exgcd(a, p, x, y); x = (x % p + p) % p;

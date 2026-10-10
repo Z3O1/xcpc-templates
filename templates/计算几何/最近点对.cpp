@@ -20,7 +20,9 @@ db dis_closest(vector<p2> a) {
         db mx = a[mid].x;
         self(self, l, mid), self(self, mid, r);
         int i = l, j = mid, k = l; // 归并两半(都按 y 有序)
-        while(i < mid || j < r) b[k++] = (j >= r || (i < mid && a[i].y <= a[j].y)) ? a[i++] : a[j++];
+        while(i < mid && j < r) b[k++] = a[i].y <= a[j].y ? a[i++] : a[j++];
+        while(i < mid) b[k++] = a[i++];
+        while(j < r) b[k++] = a[j++];
         ForD(t, l, r) a[t] = b[t];
         int m = 0; // 只留下横坐标距分界线 < ans 的点(按 y 递增)
         ForD(t, l, r)

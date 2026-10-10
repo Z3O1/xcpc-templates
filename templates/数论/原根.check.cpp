@@ -84,5 +84,28 @@ int main() {
     CHECK(root(2) == 1, "root(2) = 1");
     ok("ord(1)=1 / ord(p-1)=2 / root(2)=1");
 
+    // 4) fac_of 的大值回归:独立 64 位试除对照 + INT_MAX 明确上界
+    {
+        auto ref = [](int x) {
+            vect<int> f;
+            for(ll i = 2; i * i <= x; ++i)
+                if(x % i == 0) {
+                    f += (int) i;
+                    while(x % i == 0) x /= i;
+                }
+            if(x > 1) f += x;
+            return f;
+        };
+        // INT_MAX = 2^31 - 1 是素数;旧 int 比较条件会在 i = 46341 处触发有符号溢出
+        vect<int> mx = fac_of(2147483647);
+        if(mx.size() != 1 || mx[0] != 2147483647)
+            return printf("  [FAIL] fac_of(INT_MAX) 应只有因子 2147483647,实得 %zu 个\n", mx.size()), 1;
+        for(int x : {2147483647, 2147483629, 2147483587, 2147483646, 2147483645, 2147483643,
+                     2147483621, 2147117569, 2147483578})
+            if(fac_of(x) != ref(x))
+                return printf("  [FAIL] fac_of(%d) 与独立 64 位试除不符\n", x), 1;
+        ok("fac_of 大值回归:INT_MAX / 近 INT_MAX 素数 / 46337^2 / 大素因子,与独立试除一致");
+    }
+
     PASSED("原根与阶");
 }

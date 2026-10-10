@@ -28,21 +28,23 @@ struct MCMF_t {
         queue<int> q;
         q.push(s), h[s] = 0, vis[s] = 1;
         while(q.size()) {
-            int u = q.front(), v;
+            int u = q.front();
             q.pop();
             vis[u] = 0;
-            for(int i = hd[u]; i; i = e[i].n)
-                if(e[i].w && h[u] + e[i].c < h[v = e[i].v]) {
+            for(int i = hd[u]; i; i = e[i].n) {
+                int v = e[i].v;
+                if(e[i].w && h[u] + e[i].c < h[v]) {
                     h[v] = h[u] + e[i].c;
                     if(!vis[v]) q.push(v), vis[v] = 1;
                 }
+            }
         }
     }
     bool dij() {
         For(i, 1, n) d[i] = Z;
         priority_queue<pair<ll, int>> q;
-        q.emplace(d[s] = 0, s);
-        int u;
+        d[s] = 0;
+        q.emplace(0, s);
         while(q.size()) {
             auto [tmp, u] = q.top();
             q.pop();
@@ -50,12 +52,12 @@ struct MCMF_t {
             for(int i = hd[u]; i; i = e[i].n)
                 if(e[i].w) {
                     int v = e[i].v;
-                    auto w = d[u] + h[u] - h[v] + e[i].c;
-                    if(w < d[v]) d[v] = w, p[v] = i, q.emplace(-w, v);
+                    auto nd = d[u] + h[u] - h[v] + e[i].c;
+                    if(nd < d[v]) d[v] = nd, p[v] = i, q.emplace(-nd, v);
                 }
         }
         For(i, 1, n)
-            if(d[i] != Z) h[i] = d[i] += h[i];
+            if(d[i] != Z) d[i] += h[i], h[i] = d[i];
         return d[t] != Z;
     }
     pair<int, ll> mcmf(int _s, int _t, bool mcf = 0, int _n = 0) {
@@ -73,25 +75,25 @@ struct MCMF_t {
     }
     pair<int, ll> mcmf2(int _s, int _t, bool mcf = 0, int _n = 0) {
         s = _s, t = _t, n = _n, cmax(mx, _n + 2);
-        static int d[N];
-        // d 是 static:不清的话上一次调用留下的差额会被当成这次的初始差额(多测时会算错)
-        For(i, 1, _n) d[i] = 0;
+        static int ex[N];
+        // ex(可行流差额)是 static:不清的话上一次调用留下的差额会被当成这次的初始差额(多测时会算错)
+        For(i, 1, _n) ex[i] = 0;
         int a1 = 0;
         ll a2 = 0;
         For(i, 2, tot)
             if(i % 2 == 0 && e[i].c < 0) {
                 int u = e[i ^ 1].v, v = e[i].v;
                 swap(e[i].w, e[i ^ 1].w);
-                d[u] -= e[i ^ 1].w, d[v] += e[i ^ 1].w;
+                ex[u] -= e[i ^ 1].w, ex[v] += e[i ^ 1].w;
                 a2 += e[i ^ 1].w * e[i].c;
             }
-        For(i, 1, _n) { d[i] > 0 ? add(_n + 1, i, d[i], 0) : add(i, _n + 2, -d[i], 0); }
+        For(i, 1, _n) { ex[i] > 0 ? add(_n + 1, i, ex[i], 0) : add(i, _n + 2, -ex[i], 0); }
         add(_t, _s, FL, 0);
-        int fake = tot, on = n;
+        int aux = tot, oldn = n;
         a2 += mcmf(_n + 1, _n + 2, 0, _n + 2).second;
-        a1 += e[fake].w;
-        tot = fake - 2 * _n - 2, n = on;
-        For(i, 1, on)
+        a1 += e[aux].w;
+        tot = aux - 2 * _n - 2, n = oldn;
+        For(i, 1, oldn)
             while(hd[i] > tot) hd[i] = e[hd[i]].n;
         auto [a3, a4] = mcmf(_s, _t, mcf, _n);
         return {a1 + a3, a2 + a4};

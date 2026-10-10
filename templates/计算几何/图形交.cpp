@@ -52,8 +52,10 @@ int cir_line2(const circle &c, const seg &l, p2 *o) {
     db h = sign(sc) > 0 ? sqrtl(x) : 0; // 半弦长,相切时只有垂足一个点
     p2 u = d / sqrtl(L2);               // 直线方向的单位向量
     int n = 0;
-    if(sign(h) > 0) o[n++] = f + u * h, o[n++] = f - u * h; // 两个交点:垂足沿直线方向偏移 ±h
-    else o[n++] = f;                                        // 相切:1 个点
+    if(sign(h) > 0) { // 两个交点:垂足沿直线方向偏移 ±h
+        o[n++] = f + u * h;
+        o[n++] = f - u * h;
+    } else o[n++] = f; // 相切:1 个点
     return n;
 }
 vector<p2> cir_line(const circle &c, const seg &l) {
@@ -89,7 +91,8 @@ vector<p2> cir_cir(const circle &c1, const circle &c2) {
     if(sign(sc2) > 0) {
         db h = sqrtl(h2);
         p2 w = r90(u) * h;
-        r.push_back(base + w), r.push_back(base - w);
+        r.push_back(base + w);
+        r.push_back(base - w);
     } else r.push_back(base); // 相切:两处解重合,只留 1 个
     auto good = [&](const p2 &p) {
         db t1 = dis(p - c1.o) - c1.r, t2 = dis(p - c2.o) - c2.r;

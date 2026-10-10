@@ -21,7 +21,11 @@ u64 rho(u64 x) {
     for(; !chkp(x);) {
         u64 c = 1 + rand() % x, t = 0, r = 0, p = 1;
         auto f = [&](u64 v) { return ((unsigned __int128)v * v + c) % x; };
-        for(; p == 1; p = gcd(t > r ? t - r : r - t, x)) t = f(t), r = f(f(r));
+        while(p == 1) {
+            t = f(t);
+            r = f(f(r));
+            p = gcd(t > r ? t - r : r - t, x);
+        }
         if(p != x) return p; // 平凡因子:换个 c 重来
     }
     return x;

@@ -70,8 +70,8 @@ vi pv(vi F, int n, bool t) {
 }
 struct poly {
     vector<int> c;
-    poly() { c.clear(); }
-    poly(vector<int> d) { c = d; }
+    poly() = default;
+    poly(vector<int> d) : c(move(d)) {}
     friend poly operator*(poly f, poly g) {
         if(f.c.empty() || g.c.empty()) return poly();
         poly h;

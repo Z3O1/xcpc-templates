@@ -8,11 +8,19 @@
 u64 floor_sum(u64 n, u64 m, u64 a, u64 b) {
     u64 ans = 0;
     for(;;) {
-        if(a >= m) ans += n * (n - 1) / 2 * (a / m), a %= m;
-        if(b >= m) ans += n * (b / m), b %= m;
+        if(a >= m) {
+            ans += n * (n - 1) / 2 * (a / m);
+            a %= m;
+        }
+        if(b >= m) {
+            ans += n * (b / m);
+            b %= m;
+        }
         u64 y = (i128)a * n + b;
         if(y < m) break;
-        n = y / m, b = y % m, swap(m, a);
+        n = y / m;
+        b = y % m;
+        swap(m, a);
     }
     return ans;
 }

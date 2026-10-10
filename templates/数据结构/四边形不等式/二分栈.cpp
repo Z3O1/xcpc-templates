@@ -22,8 +22,9 @@ nd work(ll dt) {
             if(!(get(p, L) < get(i, L))) continue;
             int l = L, r = R + 1;
             while(l + 1 < r) {
-                int m = l + r >> 1;
-                get(p, m) < get(i, m) ? l = m : r = m;
+                int m = (l + r) >> 1;
+                if(get(p, m) < get(i, m)) l = m;
+                else r = m;
             }
             q.push_back({l, p});
             break;

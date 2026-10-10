@@ -54,7 +54,10 @@ vector<array<int, 3>> ear_clip(int n, p2 *a) {
     for(bool ch = 1; ch && cnt >= 3;) {
         ch = 0;
         for(int x = 0; x < n; ++x)
-            if(live(x) && cnt > 3 && colin(x)) drop(x), ch = 1;
+            if(live(x) && cnt > 3 && colin(x)) {
+                drop(x);
+                ch = 1;
+            }
     }
     if(cnt < 3) return ret; // 全是共线点: 面积 0, 没有合法三角形
     for(; cnt > 2;) {

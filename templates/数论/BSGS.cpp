@@ -14,7 +14,7 @@ ll BSGS(ll a, ll b, ll p) {
     for(ll q = 2; q * q <= l; ++q)
         for(; l % q == 0 && ksm(a, l / q, p) == 1; l /= q)
             ;
-    for(; l > 1 && ksm(a, l - 1, p) == 1;) l = 1; // 剩下的大素因子最多一个
+    if(l > 1 && ksm(a, l - 1, p) == 1) l = 1; // 此时阶只能是 1(a ≡ 1)
     // m = ceil(sqrt(l)),保证 m * m >= l;大解落在 (m, m * m) 里
     ll m = (ll)sqrt((db)l);
     while(m * m < l) ++m;

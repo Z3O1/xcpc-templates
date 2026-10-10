@@ -12,9 +12,9 @@ using poly = vector<int>;
 poly BM(const poly &a) {
     int n = a.size();
     if(!n) return poly();
-    int len = 0, off = 0;           // len: 当前递推阶数;off: 距上次更新阶数的项数
-    int s = 1;                      // s: 上次更新时的偏差
-    poly res(n + 1), lst(n + 1), c; // 开 n+1:len 最多到 n,末尾要用 res[len]
+    int len = 0, off = 0;        // len: 当前递推阶数;off: 距上次更新阶数的项数
+    int s = 1;                   // s: 上次更新时的偏差
+    poly res(n + 1), lst(n + 1); // 开 n+1:len 最多到 n,末尾要用 res[len]
     res[0] = 1;
     For(i, 0, n - 1) {
         int d = 0; // 偏差 d = Σ res[j]*a[i-j](j <= len <= i)
@@ -27,7 +27,7 @@ poly BM(const poly &a) {
         if(len * 2 > i) continue;
         len = i - len + 1, lst = tmp, s = d, off = 0;
     }
-    c.resize(len);
+    poly c(len);
     For(i, 0, len - 1) c[i] = (MOD - res[i + 1]) % MOD; // res[0]=1 且 d=0 ⇒ a[i] = -Σ_{j>=1} res[j]a[i-j]
     return c;
 }

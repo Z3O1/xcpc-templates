@@ -32,7 +32,7 @@ void relax(ll w, int i, int k) {
 }
 void dnc(int l, int r) {
     if(r - l == 1) return;
-    int m = l + r >> 1;
+    int m = (l + r) >> 1;
     s.mr(m), s.ml(p[l]);
     For(k, p[l], p[r]) {
         relax(Wa.w, m, k);

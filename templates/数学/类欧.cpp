@@ -15,15 +15,14 @@ nd f(int n_, int a, int b, int c) {
     if(a >= c || b >= c) {
         nd rs = f(n_, a % c, b % c, c);
         ll F = rs.f, G = rs.g, H = rs.h;
-        return {int((F + s1 * x % MOD + s0 * y % MOD) % MOD),
-                int((G + s2 * x % MOD * x % MOD + s0 * y % MOD * y % MOD +
-                     (x * H % MOD + y * F % MOD + s1 * x % MOD * y % MOD) * 2) %
-                    MOD),
-                int((H + s2 * x % MOD + s1 * y % MOD) % MOD)};
+        ll cross = (x * H + y * F + s1 * x % MOD * y % MOD) % MOD;
+        ll g = (G + s2 * x % MOD * x % MOD + s0 * y % MOD * y % MOD + 2 * cross) % MOD;
+        return {int((F + s1 * x + s0 * y) % MOD), int(g), int((H + s2 * x + s1 * y) % MOD)};
     }
     int m = (1ll * a * n_ + b) / c; // 下取整不能先按 MOD 化简
     nd rs = f(m - 1, c, c - b - 1, a);
-    ll F = rs.f, G = rs.g, H = rs.h, z = m % MOD;
-    return {int((n * z % MOD - F + MOD) % MOD), int((n * z % MOD * z % MOD - H * 2 - F + 3ll * MOD) % MOD),
-            int(i2 * ((n * n % MOD * z % MOD + n * z % MOD - G - F + 2ll * MOD) % MOD) % MOD)};
+    ll F = rs.f, G = rs.g, H = rs.h, z = m % MOD, nz = n * z % MOD;
+    ll g = (nz * z - H * 2 - F + 3ll * MOD) % MOD;
+    ll h = i2 * ((n * nz % MOD + nz - G - F + 2ll * MOD) % MOD) % MOD;
+    return {int((nz - F + MOD) % MOD), int(g), int(h)};
 }

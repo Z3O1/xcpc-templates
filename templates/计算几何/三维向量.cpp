@@ -24,10 +24,10 @@ struct p3 {
     bool operator!=(const p3 &b) const { return !(*this == b); }
     bool operator<(const p3 &b) const {
         int c = cmp(x, b.x);
-        if(c) return !~c;
+        if(c) return c < 0;
         c = cmp(y, b.y);
-        if(c) return !~c;
-        return !~cmp(z, b.z);
+        if(c) return c < 0;
+        return cmp(z, b.z) < 0;
     }
 };
 p3 operator+(p3 a, p3 b) { return {a.x + b.x, a.y + b.y, a.z + b.z}; }

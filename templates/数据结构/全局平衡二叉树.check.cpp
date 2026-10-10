@@ -12,6 +12,8 @@
 //      答案必须始终不变;
 //   6) 每个用例都验「整条答案序列」一致,不是只看最后一个答案;
 //   7) 200 组非均匀权重建树,枚举全部子区间,与朴素 max-plus 矩阵积对照。
+//   8) 公开 helper que(p) 的子树语义:n=2 权 5/1 最小反例 + 60 组小树逐点与朴素子树 DP 对照
+//      (getans 只看根、upd 只看链头,必须单独测链头之外的 p)。
 //
 // 进程模型:模板的 dfs1() 里有 `static int dt`(静态局部计数,进程内无法重置),所以「一组数据一个
 //   进程」是模板的隐含契约 —— 每个用例都在 fork 出的子进程里跑(父进程不碰模板的全局数组,
@@ -78,7 +80,7 @@ struct Naive {
 };
 
 // ———————— 驱动:照抄模板 main 的调度(模板 main 不能调用,原因见文件头)————————
-static void tmpl_answers(const Case &c, vector<int> &out) {
+static void setup_tree(const Case &c) {
     n = c.n;
     For(i, 1, n) t[i].clear();
     For(i, 1, n) a[i] = c.w[i], f[i][1] = a[i];
@@ -86,12 +88,59 @@ static void tmpl_answers(const Case &c, vector<int> &out) {
     dfs0(1), dfs1(1);
     For(i, 1, n) if(tp[i] == i) rt[i] = build(dfn[tp[i]], dfn[dw[tp[i]]]);
     For(i, 1, n) apply(i);
+}
+static void tmpl_answers(const Case &c, vector<int> &out) {
+    setup_tree(c);
     int ans = 0;
     for(auto &[praw, y] : c.ops) {
         int p = praw ^ ans;
         upd(p, y - a[p]), a[p] = y;
         ans = getans();
         out.push_back(ans);
+    }
+}
+
+// ———————— que(p) 的子树语义(公开 helper,链头之外的点也必须只查自己的后缀)————————
+// 模板的 que(p) 是「p 到所在重链链尾」的矩阵积,应当等于 p 的子树 DP(p 不选/选)。
+// 若把查询区间起点写成链头 dfn[tp[p]],非链头 p 会被放大成整条重链的答案,而 getans()(只查根)
+// 与 upd()(只查链头)都看不出来 —— 所以这里对每个点单独对照朴素子树 DP。
+static void compare_que(const Case &c) {
+    setup_tree(c);
+    Naive Nv(c.n, c.es);
+    vector<ll> g0(c.n + 1, 0), g1(c.n + 1, 0);
+    for(int k = (int) Nv.ord.size() - 1; k >= 0; --k) { // 逆前序 = 孩子先算
+        int u = Nv.ord[k];
+        g1[u] = c.w[u];
+        for(int v : Nv.g[u]) if(v != Nv.par[u]) g0[u] += max(g0[v], g1[v]), g1[u] += g0[v];
+    }
+    For(p, 1, c.n) {
+        auto [x0, x1] = que(p);
+        if(x0 != g0[p] || x1 != g1[p]) {
+            printf("  [FAIL] n=%d que(%d) 返回 (%lld,%lld),子树 DP 应为 (%lld,%lld);tp[%d]=%d,dw[%d]=%d\n",
+                   c.n, p, (ll) x0, (ll) x1, (ll) g0[p], (ll) g1[p], p, tp[p], tp[p], dw[tp[p]]);
+            exit(1);
+        }
+    }
+}
+
+// n=2 最小反例:权 5/1、边 1-2;旧实现 que(2) 会返回整条重链的 (1,5) 而不是子树 {2} 的 (0,1)
+static void case_que_n2() {
+    Case c;
+    c.n = 2, c.w = {0, 5, 1}, c.es = {{1, 2}}, c.ops = {};
+    setup_tree(c);
+    auto [x0, x1] = que(2);
+    if(x0 != 0 || x1 != 1) {
+        printf("  [FAIL] n=2 权 5/1:que(2) 应为子树 {2} 的 (0,1),实际 (%lld,%lld)\n", (ll) x0, (ll) x1);
+        exit(1);
+    }
+    auto [y0, y1] = que(1);
+    if(y0 != 1 || y1 != 5) {
+        printf("  [FAIL] n=2 权 5/1:que(1) 应为 (1,5),实际 (%lld,%lld)\n", (ll) y0, (ll) y1);
+        exit(1);
+    }
+    if(getans() != 5) {
+        printf("  [FAIL] n=2 权 5/1:getans() 应为 5,实际 %d\n", getans());
+        exit(1);
     }
 }
 
@@ -229,12 +278,12 @@ static void case_stable() {
 static const int WATCHDOG = 10; // 秒;单用例正常 <= 0.2s,真死循环就让它在这一行炸出来
 static int g_killed = 0;        // 有子进程被信号杀死 -> 立刻收工,别让整轮 check 逼近 60s 上限
 
-static int run_case(const char *name, const Case &c) {
+static int run_case(const char *name, const Case &c, void (*fn)(const Case &) = compare_case) {
     fflush(stdout);
     pid_t pid = fork();
     if(pid == 0) {
         alarm(WATCHDOG);
-        compare_case(c);
+        fn(c);
         _exit(0);
     }
     int st = 0;
@@ -318,6 +367,21 @@ int main() {
     go_case(name, case_n1());
     snprintf(name, sizeof name, "点权全 0(答案恒 0)150 次操作 + 50 次正权更新");
     go_case(name, case_all_zero());
+
+    // 1b) que(p) 公开 helper:最小反例 + 每个点与朴素子树 DP 对照(覆盖链头之外的点)
+    go_fn("n=2 权 5/1 最小反例:que(2)=(0,1)、que(1)=(1,5)、getans()=5", case_que_n2);
+    {
+        int nq = 0;
+        For(r, 1, 60) {
+            Case c = gen_case((int) frnd(1, 20), 0, (int) frnd(0, 4), r % 3 == 0 ? 0 : 20);
+            snprintf(name, sizeof name, "que(p) 全点对照 #%d (n=%d)", r, c.n);
+            int before = bad;
+            bad += run_case(name, c, compare_que); // 每个点都比朴素子树 DP,链头之外的 p 才算数
+            if(bad != before) break;
+            ++nq;
+        }
+        if(!bad) printf("  [ok] %d 组小树(n<=20,五种树形)每个点的 que(p) 都等于子树 DP\n", nq);
+    }
 
     // 2) 200 轮小规模随机(n=1..12,m=1..15,五种树形,每步都比暴力)
     {

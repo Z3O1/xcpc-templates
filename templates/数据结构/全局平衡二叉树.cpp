@@ -18,8 +18,10 @@ struct mat {
     int *operator[](int k) { return a[k]; }
     const int *operator[](int k) const { return a[k]; }
     mat operator*(const mat &b) const {
-        return {max(a[0][0] + b[0][0], a[0][1] + b[1][0]), max(a[0][0] + b[0][1], a[0][1] + b[1][1]),
-                max(a[1][0] + b[0][0], a[1][1] + b[1][0]), max(a[1][0] + b[0][1], a[1][1] + b[1][1])};
+        mat c;
+        For(i, 0, 1)
+            For(j, 0, 1) c[i][j] = max(a[i][0] + b[0][j], a[i][1] + b[1][j]);
+        return c;
     }
 };
 int n;
@@ -43,7 +45,10 @@ pll dfs1(int u) {
     dfn[u] = ++dt;
     wt[dt] = sz[u] - sz[s[u]];
     if(!tp[u]) tp[u] = u;
-    if(!s[u]) return dw[tp[u]] = u, pll{f[u][0], f[u][1]};
+    if(!s[u]) {
+        dw[tp[u]] = u;
+        return {f[u][0], f[u][1]};
+    }
     tp[s[u]] = tp[u];
     pll sf = dfs1(s[u]);
     for(auto v : t[u]) {
@@ -61,21 +66,29 @@ struct tree_t {
 #define rs (tr[k].rs)
 int build(int l, int r) {
     if(l == r) return l << 1;
-    int m, s1 = 0, s2 = 0;
+    int s1 = 0, s2 = 0, m = l;
     For(i, l, r) s1 += wt[i];
-    For(i, l, r)
-        if((s2 += wt[i]) * 2 > s1) {
+    For(i, l, r) {
+        s2 += wt[i];
+        if(s2 * 2 > s1) {
             m = i;
             break;
         }
-    m -= m == r;
-    return tr[m << 1 | 1] = {build(l, m), build(m + 1, r)}, m << 1 | 1;
+    }
+    if(m == r) --m;
+    int k = m << 1 | 1;
+    tr[k] = {build(l, m), build(m + 1, r)};
+    return k;
 }
 void pushup(int k) { tr[k].x = tr[rs].x * tr[ls].x; }
 void upd(int p, mat x, int k, int l, int r) {
-    if(l == r) return tr[k].x = x, void();
+    if(l == r) {
+        tr[k].x = x;
+        return;
+    }
     int m = k >> 1;
-    p <= m ? upd(p, x, ls, l, m) : upd(p, x, rs, m + 1, r);
+    if(p <= m) upd(p, x, ls, l, m);
+    else upd(p, x, rs, m + 1, r);
     pushup(k);
 }
 mat que(int L, int R, int k, int l, int r) {
@@ -87,23 +100,27 @@ mat que(int L, int R, int k, int l, int r) {
 }
 #undef ls
 #undef rs
-void apply(int p) { upd(dfn[p], {f[p][0], f[p][1], f[p][0], -INF}, rt[tp[p]], dfn[tp[p]], dfn[dw[tp[p]]]); }
+void apply(int p) {
+    int l = dfn[tp[p]], r = dfn[dw[tp[p]]]; // l/r 是底层树要更新的覆盖范围
+    upd(dfn[p], {f[p][0], f[p][1], f[p][0], -INF}, rt[tp[p]], l, r);
+}
 pll que(int p) {
-    auto res = que(dfn[p], dfn[dw[tp[p]]], rt[tp[p]], dfn[tp[p]], dfn[dw[tp[p]]]);
+    int l = dfn[tp[p]], r = dfn[dw[tp[p]]]; // 查询的是 p 到链尾的后缀,不是从链头开始
+    auto res = que(dfn[p], r, rt[tp[p]], l, r);
     return {max(res[0][0], res[1][0]), max(res[0][1], res[1][1])};
 }
 void upd(int p, int dt) {
     f[p][1] += dt;
-    auto u = [&](int k, int w) {
+    auto fix = [&](int k, int sgn) {
         if(!k) return;
         auto [x, y] = que(k);
-        f[fa[k]][0] += w * max(x, y);
-        f[fa[k]][1] += w * x;
+        f[fa[k]][0] += sgn * max(x, y);
+        f[fa[k]][1] += sgn * x;
     };
     for(; p; p = fa[tp[p]]) {
-        u(tp[p], -1);
+        fix(tp[p], -1);
         apply(p);
-        u(tp[p], 1);
+        fix(tp[p], 1);
     }
 }
 int getans() {

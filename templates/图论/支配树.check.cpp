@@ -36,6 +36,9 @@
 static const int MX = 1024;   // check 用到的最大点数上界(模板自己的 N 是 1e6, 在 namespace DOM 里)
                               // 注意: 随机用例 n<=12, 但下面有个 n=300 的规模用例, 所以按 1024 开
 
+// DOM::f1 是对外可用的公开数组(DFS 树上的父亲, int[N]): 抄写改写不得改名/改形状 —— 编译期钉住
+static_assert(sizeof(DOM::f1) == sizeof(int) * (size_t) DOM::N, "DOM::f1 必须是 namespace DOM 里的 int[N] 公开数组");
+
 // ———— 各用例隔离输入图/参考状态;另有不清算法状态的重复调用回归 ————
 static vect<int> adj[MX];   // check 自己的邻接表(与模板的 t[] 无关, 暴力用)
 static void reset_dom() {
@@ -292,6 +295,7 @@ int main() {
         build(3, {{1, 2}, {2, 3}});
         DOM::getdom(3);
         int ok1 = (DOM::dm[2] == 1 && DOM::dm[3] == 2);
+        bool f1_ok = (DOM::f1[2] == 1 && DOM::f1[3] == 2);   // 公开数组: f1[v] 是 v 的父亲
         // 第二次调用: 只清图和相关数组(像"多次调用 getdom"的用户那样), **不**清 dfn/pos/dt
         For(i, 0, MX - 1) DOM::t[i].clear(), DOM::t2[i].clear(), DOM::q1[i].clear(), DOM::dm[i] = 0, DOM::sd[i] = 0, DOM::f1[i] = 0, DOM::f[i] = {0, 0};
         DOM::add(1, 2), DOM::add(1, 3), DOM::add(2, 3);
@@ -299,6 +303,8 @@ int main() {
         bool good2 = (DOM::dm[2] == 1 && DOM::dm[3] == 1);
         if(!ok1) return printf("  [FAIL] 第一次调用结果就不对: dm[2]=%d dm[3]=%d\n", DOM::dm[2], DOM::dm[3]), 1;
         ok("第一次调用(1->2, 2->3): dm[2]=1, dm[3]=2 正确");
+        if(!f1_ok) return printf("  [FAIL] 公开数组 DOM::f1 不对: f1[2]=%d f1[3]=%d, 应为 1,2\n", DOM::f1[2], DOM::f1[3]), 1;
+        ok("公开数组 DOM::f1(DFS 树父亲): 1->2, 2->3 上 f1[2]=1, f1[3]=2");
         if(!good2) return printf("  [FAIL] 第二次调用 dm[2]=%d dm[3]=%d,应为1,1\n", DOM::dm[2], DOM::dm[3]), 1;
         ok("第二次调用不手工清零 dfn/dt 仍正确");
     }

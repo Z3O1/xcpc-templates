@@ -17,12 +17,13 @@ template <typename Q> vect<int> wqs(int n, int k, Q &&que, i128 up) {
     i128 l = -up - 1, r = 1;
     while(l + 1 < r) {
         i128 m = l + r >> 1;
-        (chk(m).first[n] & T) < k ? (l = m) : (r = m);
+        if((chk(m).first[n] & T) < k) l = m;
+        else r = m;
     }
     auto fp = get(l), gp = get(l + 1);
     if(gp.size() - 1 == k) return gp;
     int j = 1;
-    For(i, 1, gp.size() - 2) {
+    For(i, 1, (int)gp.size() - 2) {
         while(fp[j] < gp[i]) ++j;
         if(fp[j - 1] <= gp[i - 1] && fp.size() - j + i - 1 == k) { return gp.substr(0, i) + fp.substr(j); }
     }

@@ -111,6 +111,23 @@ static vi rnd_G(int n, int hi, int mode) {
 int main() {
     prep(18);
 
+    // ——— 0) 公开缓冲符号回归:F/W/Z 是模板对外公开的缓冲(F、W 为 int[N],Z 为 ull[N]),
+    //        老代码按原用法 F[0]=0; F[1]=1; poly input(vector<int>(F, F+2)); 直接构造输入,
+    //        删掉这些符号就编译不过 —— 固定在这里不让它退回去 ———
+    {
+        static_assert(std::is_same<decltype(F[0]), int &>::value, "F 应是公开的 int[N] 缓冲");
+        static_assert(std::is_same<decltype(W[0]), int &>::value, "W 应是公开的 int[N] 缓冲");
+        static_assert(std::is_same<decltype(Z[0]), unsigned long long &>::value, "Z 应是公开的 ull[N] 缓冲");
+        F[0] = 0, F[1] = 1;  // F(x) = x
+        W[0] = 1, Z[0] = 1;  // 公开缓冲可写
+        poly input(vector<int>(F, F + 2));
+        vi G{0, 3}, want = naive_comp(vi{0, 1}, G, 2);
+        vi got = comp(input, P(G), 2).c;
+        if(!same(want, got) || !same(want, G))
+            return bad("公开缓冲 F 构造的 poly 参与 comp", vi{0, 1}, G, 2, want, got);
+        ok("公开缓冲 F/W/Z 存在且类型正确;F[0]=0,F[1]=1 → poly input(vector<int>(F,F+2)) 可直接喂给 comp");
+    }
+
     // ——— 1) 参考实现自检 + 手算校验 ———
     {
         vi f{1, 2, 3}, g{0, 1, 1};  // (1+2x+3x²)(x+x²) = 1+2x+5x²+6x³+3x⁴

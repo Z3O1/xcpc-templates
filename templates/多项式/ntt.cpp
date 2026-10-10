@@ -22,7 +22,7 @@ template <int M, int G> static void NTT(poly &a, const int k) {
     }
     For(i, 0, n - 1)
         if(i < r[i]) swap(a[r[i]], a[i]);
-    ll wi = ksm(G, (M - 1 >> 1) / n * k + M - 1);
+    ll wi = ksm(G, ((M - 1) >> 1) / n * k + M - 1);
     w.resize(n), w[0] = 1;
     For(i, 1, n - 1) w[i] = w[i - 1] * wi % M;
     for(int m = 1, l = __lg(n); m < n; m <<= 1, --l)
@@ -37,23 +37,22 @@ template <int M, int G> static void NTT(poly &a, const int k) {
         For(i, 0, n - 1) a[i] = a[i] * inv % M;
     }
 }
+// 只用一个模数做卷积:两侧正向 NTT、点乘、逆变换;l 是变换长度。
+template <int M, int G> static poly conv(poly a, poly b, int l) {
+    NTT<M, G>(a, 1), NTT<M, G>(b, 1);
+    For(i, 0, l - 1) a[i] = 1ll * a[i] * b[i] % M;
+    NTT<M, G>(a, -1);
+    return a;
+}
 poly mul(poly a, poly b, int P) {
     int n = a.size(), m = b.size();
     if(!n || !m) return poly();
     if(n == 1 && m == 1) return poly{int(1ll * a[0] * b[0] % P)};
-    int l = 1 << __lg(n + m - 2) + 1;
+    int l = 1 << (__lg(n + m - 2) + 1);
     a.resize(l), b.resize(l);
     static constexpr int M[3]{998244353, 1004535809, 469762049}, G = 3;
-#define g(p)                                                                                                 \
-    [&](poly a, poly b) {                                                                                    \
-        NTT<M[p], G>(a, 1), NTT<M[p], G>(b, 1);                                                              \
-        For(i, 0, l - 1) a[i] = 1ll * a[i] * b[i] % M[p];                                                    \
-        NTT<M[p], G>(a, -1);                                                                                 \
-        return a;                                                                                            \
-    }(a, b)
-    poly c[3]{g(0), g(1), g(2)}, d;
+    poly c[3]{conv<M[0], G>(a, b, l), conv<M[1], G>(a, b, l), conv<M[2], G>(a, b, l)}, d;
     d.reserve(n + m - 1);
-#undef g
     static constexpr ll m01 = 1ll * M[0] * M[1];
     static constexpr int i0 = 669690699, i1 = 354521948;
     For(id, 0, n + m - 2) {

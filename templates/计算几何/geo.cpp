@@ -16,8 +16,8 @@ struct p2 {
     bool operator==(const p2 &b) const { return !cmp(x, b.x) && !cmp(y, b.y); }
     bool operator<(const p2 &b) const {
         int c = cmp(x, b.x);
-        if(c) return !~c;
-        return !~cmp(y, b.y);
+        if(c) return c < 0;
+        return cmp(y, b.y) < 0;
     }
 };
 p2 r90(p2 x) { return {-x.y, x.x}; }
@@ -124,7 +124,10 @@ int convex_hull(int n, p2 *a, p2 *b, bool nos = 0) {
 db convex_diameter(int n, p2 *a) {
     if(n <= 1) return 0;
     int is = 0, js = 0;
-    For(k, 1, n - 1) is = a[k] < a[is] ? k : is, js = a[js] < a[k] ? k : js;
+    For(k, 1, n - 1) {
+        if(a[k] < a[is]) is = k;
+        if(a[js] < a[k]) js = k;
+    }
     int i = is, j = js;
     db ret = dis2(a[i] - a[j]);
     do {
@@ -137,10 +140,10 @@ db convex_diameter(int n, p2 *a) {
 vector<p2> convex_cut(int n, p2 *a, const seg &q) {
     vector<p2> qs;
     For(i, 0, n - 1) {
-        p2 p1 = a[i], p2 = a[(i + 1) % n];
-        int d1 = crossop(q, p1), d2 = crossop(q, p2);
-        if(d1 >= 0) qs.push_back(p1);
-        if(d1 * d2 < 0) qs.push_back(isll({p1, p2}, q));
+        p2 u = a[i], v = a[(i + 1) % n];
+        int d1 = crossop(q, u), d2 = crossop(q, v);
+        if(d1 >= 0) qs.push_back(u);
+        if(d1 * d2 < 0) qs.push_back(isll({u, v}, q));
     }
     return qs;
 }

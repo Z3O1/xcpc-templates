@@ -7,11 +7,13 @@ void ins(int x) {
     int c = ++tot, p = exchange(lst, c);
     l[c] = l[p] + 1, cnt[c] = 1;
     while(p && !t[p][x]) t[p][x] = c, p = f[p];
-    if(!p) return f[c] = 1, void();
+    if(!p) {
+        f[c] = 1;
+        return;
+    }
     int q = t[p][x];
-    if(l[p] + 1 == l[q]) {
-        f[c] = q;
-    } else {
+    if(l[p] + 1 == l[q]) f[c] = q;
+    else {
         int o = ++tot;
         memcpy(t[o], t[q], sizeof(t[o]));
         f[o] = f[q], f[q] = f[c] = o, l[o] = l[p] + 1;

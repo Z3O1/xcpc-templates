@@ -56,8 +56,20 @@ static void set_pre() {
     For(i, 1, n) pre[i] = pre[i - 1] + a[i];
 }
 
+// 旧全局符号兼容探针:模板把两个游标放在文件作用域(wcur s/t),调用方可以直接 s.rs()、t.ml(...)。
+// 这两个名字是源码层可用接口,改名会让老写法编译不过 —— 这里同时验编译与语义,跑完复位不影响 work()。
+static void legacy_globals_probe() {
+    s.rs(), t.rs();
+    s.mr(3), s.ml(1);
+    t.mr(4), t.ml(2);
+    CHECK(s.l == 1 && s.r == 3 && t.l == 2 && t.r == 4, "旧全局 s/t 可按老写法驱动(rs/mr/ml)");
+    s.rs(), t.rs();
+    CHECK(s.l == 0 && s.r == 0 && t.l == 0 && t.r == 0 && Wa.w == 0 && Wb.w == 0, "旧全局 s/t 可复位");
+}
+
 int main() {
     rng.seed(20250921);
+    legacy_globals_probe();
 
     // 0) 平方和代价,滑动窗口用 sum 维护
     MODE = 0;

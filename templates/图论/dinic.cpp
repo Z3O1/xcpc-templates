@@ -18,7 +18,7 @@ class Dinic_t {
     }
     bool bfs() {
         // d[s] = 0、其余 -1(未访问)。注意不能写成 d[i] = -(i == s):
-        // 那样邻居会拿到 0,而下面的判空条件 !~d[v] 只认 -1,于是 BFS 一个点都进不去。
+        // 那样邻居会拿到 0,而下面的判空条件 d[v] == -1 只认 -1,于是 BFS 一个点都进不去。
         For(i, 1, n) d[i] = -1, cur[i] = hd[i];
         d[s] = 0;
         queue<int> q;
@@ -28,7 +28,7 @@ class Dinic_t {
             q.pop();
             if(u == t) return 1;
             for(int i = cur[u]; i; i = e[i].n)
-                if(e[i].w && !~d[e[i].v]) { d[e[i].v] = d[u] + 1, q.push(e[i].v); }
+                if(e[i].w && d[e[i].v] == -1) { d[e[i].v] = d[u] + 1, q.push(e[i].v); }
         }
         return 0;
     }
@@ -37,9 +37,9 @@ class Dinic_t {
         ll out = 0;
         for(int &i = cur[u]; i; i = e[i].n)
             if(e[i].w && d[e[i].v] == d[u] + 1) {
-                ll s = dfs(e[i].v, min(in, e[i].w));
-                e[i].w -= s, e[i ^ 1].w += s;
-                in -= s, out += s;
+                ll fl = dfs(e[i].v, min(in, e[i].w));
+                e[i].w -= fl, e[i ^ 1].w += fl;
+                in -= fl, out += fl;
                 if(!in) break;
             }
         if(!out) d[u] = -1;
@@ -51,17 +51,17 @@ class Dinic_t {
         while(bfs()) ans += dfs(s, Z);
         return ans;
     }
-    void cut(int *f) {
-        For(i, 1, n) f[i] = 1;
+    void cut(int *c) {
+        For(i, 1, n) c[i] = 1;
         queue<int> q;
-        f[s] = 0;
+        c[s] = 0;
         q.push(s);
         while(q.size()) {
             int u = q.front();
             q.pop();
             for(int i = hd[u]; i; i = e[i].n)
-                if(e[i].w && f[e[i].v]) {
-                    f[e[i].v] = 0;
+                if(e[i].w && c[e[i].v]) {
+                    c[e[i].v] = 0;
                     q.push(e[i].v);
                 }
         }

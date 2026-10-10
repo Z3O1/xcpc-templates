@@ -13,12 +13,13 @@ u64 pw(u64 a, u64 x, u64 p, u64 r = 1) {
 } // namespace MR
 // 底数取前 12 个素数:对 u64 范围是确定性判定,没有错误率。
 bool chkp(u64 p) {
+    static const u64 B[] = {2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37};
     if(p < 2) return 0;
     if(p < 4) return 1;
-    for(u64 d : {2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37})
+    for(u64 d : B)
         if(p % d == 0) return p == d;
     u64 s = __builtin_ctzll(p - 1), d = p - 1 >> s;
-    for(u64 a : {2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37}) {
+    for(u64 a : B) {
         u64 x = MR::pw(a, d, p);
         if(x == 1 || x == p - 1) continue;
         bool ok = 0;

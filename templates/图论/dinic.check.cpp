@@ -106,7 +106,7 @@ int main() {
     } else if(base == 0) {
         zero_bug = true;
         bug("dinic.cpp 最大流恒为 0(旧 bug 复发):bfs() 首行 `d[i] = -(i == s)` 让非源点 d=0,"
-            "而 `!~d[v]` 只认 -1,BFS 进不了任何点\n");
+            "而 `d[v] == -1` 只认 -1,BFS 进不了任何点\n");
         bug("  最小复现: f.add(1,2,3); f.add(2,3,4); f.add(1,3,1); f.solve(1,3,3) → 0 (应为 4)\n");
     } else {
         printf("  [FAIL] 基础用例返回 %lld(应为 4)\n", base);

@@ -10,7 +10,7 @@ template <typename T, typename cmp = less<T>, int dt = 1> struct rmq_t {
         return max(st[k][L], st[k][R - (1 << k) + 1], cmp());
     }
     T _que_bitc(int k, int L, int R) {
-        int l = k * B, x = f[R] & ~((1 << L - l) - 1);
+        int l = k * B, x = f[R] & ~((1 << (L - l)) - 1);
         return a[l + __lg(x & -x)];
     }
     void bd(int n, T *_a) {
@@ -26,22 +26,22 @@ template <typename T, typename cmp = less<T>, int dt = 1> struct rmq_t {
             static int b[B + 1];
             int t = 0, s = 0;
             For(i, l, r) {
-                while(t && cmp()(a[b[t]], a[i])) s ^= 1 << b[t--] - l;
-                f[i] = s ^= 1 << i - l;
+                while(t && cmp()(a[b[t]], a[i])) s ^= 1 << (b[t--] - l);
+                f[i] = s ^= 1 << (i - l);
                 b[++t] = i;
             }
         }
         For(i, 1, __lg(k + 1)) {
             int m = k - (1 << i) + 1;
             st[i].resize(m + 1);
-            For(j, 0, m) st[i][j] = max(st[i - 1][j], st[i - 1][j + (1 << i - 1)], cmp());
+            For(j, 0, m) st[i][j] = max(st[i - 1][j], st[i - 1][j + (1 << (i - 1))], cmp());
         }
     }
-    void bd(vector<T> &a) { bd(a.size(), a.data() - dt); }
+    void bd(vector<T> &v) { bd(v.size(), v.data() - dt); }
     template <class F> void bd(int n, F func) {
-        vector<T> a(n);
-        For(i, 0, n - 1) a[i] = func(i + dt);
-        bd(a);
+        vector<T> v(n);
+        For(i, 0, n - 1) v[i] = func(i + dt);
+        bd(v);
     }
     T que(int l, int r) {
         l -= dt, r -= dt;

@@ -21,9 +21,9 @@
 //       再调 mcmf() 时路径回退 e[p[u]^1] 踩到 e[0]/自环 → 死循环。现已修: add() 自己
 //       `cmax(mx, u), cmax(mx, v)`; 第 7 节用「全新实例」(mx = 0)+ 子进程看门狗守着它。
 //
-// mcmf2() 在第 9 节做动态对拍。它原先不能连续调用: `static int d[N]` 从不重置, 上次调用
+// mcmf2() 在第 9 节做动态对拍。它原先不能连续调用: `static int ex[N]`(旧名 d[N]) 从不重置, 上次调用
 // 写下的差额会被当成这次的初始差额(最小复现: 先 add(1,2,1,-5)+mcmf2, 复位后 add(1,2,5,3)
-// +mcmf2 → 流量 6 > 容量 5)。模板已在入口清 d[1 .. _n], 第 9 节留了一条回归守卫。
+// +mcmf2 → 流量 6 > 容量 5)。模板已在入口清 ex[1 .. _n], 第 9 节留了一条回归守卫。
 //
 #include "../_check_base.hpp"
 #include "mcmf.cpp"
@@ -649,7 +649,7 @@ int main() {
         ncase += 1;
     }
 
-    // ———— 9) mcmf2() 本体: 动态对拍(模板入口清了 static d[] 之后, 可以同进程反复调用) ————
+    // ———— 9) mcmf2() 本体: 动态对拍(模板入口清了 static ex[] 之后, 可以同进程反复调用) ————
     puts("— mcmf2() 本体: 与独立 SPFA 费用流动态对拍 —");
     {
         // 手算: 1->2->3 每单位 3 元、能走 3 单位; 剩下 5 单位走直连(每单位 9) → 满流 8, 费用 54
@@ -666,13 +666,13 @@ int main() {
             auto r = mf.mcmf2(1, 2, 0, 2);
             CHECK(r.first == 1 && r.second == -5, "mcmf2 单条负费用边: 流 1 费用 -5");
         }
-        // 回归守卫: 上一行那次调用写过 static d[](d[1] = -1, d[2] = 1), 不清的话这一次会
+        // 回归守卫: 上一行那次调用写过 static ex[](ex[1] = -1, ex[2] = 1), 不清的话这一次会
         // 多出平衡边, 算出流量 6 > 容量 5
         reset();
         mf.add(1, 2, 5, 3);
         {
             auto r = mf.mcmf2(1, 2, 0, 2);
-            CHECK(r.first == 5 && r.second == 15, "mcmf2 复用同一实例: 上一次的 d[] 不影响这一次");
+            CHECK(r.first == 5 && r.second == 15, "mcmf2 复用同一实例: 上一次的 ex[] 不影响这一次");
         }
     }
     {
@@ -758,7 +758,7 @@ int main() {
         printf("  [FAIL] 命中 clear() 的旧 bug(mx 没被 add() 抬高)—— 这是回归, 不是已知缺陷\n");
         return 1;
     }
-    printf("  小结: 用例 %lld 组(mcmf() 与 mcmf2() 都与独立 SPFA 费用流对拍; mcmf2 的 static d[] 已修)\n",
+    printf("  小结: 用例 %lld 组(mcmf() 与 mcmf2() 都与独立 SPFA 费用流对拍; mcmf2 的 static ex[] 已修)\n",
            ncase);
     PASSED("mcmf");
 }

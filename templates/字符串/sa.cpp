@@ -38,7 +38,7 @@ template <class T> void SA(int n, const T *a) {
             height[1] = k = 0;
             continue;
         }
-        k -= k > 0;
+        if(k) --k;
         int j = sa[rk[i] - 1];
         while(i + k <= n && j + k <= n && a[i + k] == a[j + k]) ++k;
         height[rk[i]] = k;

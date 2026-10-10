@@ -8,6 +8,11 @@ pii approx(int p, int q, int A) {
     q %= p;
     if(q < 0) q += p;
     int x = q, y = p, a = 1, b = 0;
-    while(x > A) { swap(x, y), swap(a, b), a -= x / y * b, x %= y; }
+    while(x > A) {
+        swap(x, y);
+        swap(a, b);
+        a -= x / y * b;
+        x %= y;
+    }
     return {x, a};
 }

@@ -43,7 +43,10 @@ bool isperp(const line3 &a, const line3 &b) { return !sign(cosang(a.d, b.d)); }
 // ---------- 两直线:最近点对与距离 ----------
 // pa 在 a 上、pb 在 b 上,dis(pa, pb) 即两直线距离;平行时取 pa = a.o。
 db dis(const line3 &a, const line3 &b, p3 &pa, p3 &pb) {
-    if(ispara(a, b)) return pa = a.o, pb = proj(b, pa), dis(pa - pb);
+    if(ispara(a, b)) {
+        pa = a.o, pb = proj(b, pa);
+        return dis(pa - pb);
+    }
     db A = dis2(a.d), B = a.d * b.d, C = dis2(b.d), den = A * C - B * B;
     p3 w = a.o - b.o;
     db D = a.d * w, E = b.d * w;

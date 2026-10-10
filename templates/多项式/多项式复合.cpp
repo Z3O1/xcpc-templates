@@ -58,15 +58,15 @@ inline void ntt(int *A, int n, bool t) // 0 DFT 1 IDFT
 }
 struct poly {
     vector<int> c;
-    poly() { c.clear(); }
-    poly(vector<int> d) { c = d; }
+    poly() = default;
+    poly(vector<int> d) : c(move(d)) {}
     friend poly operator*(poly f, poly g) {
         if(f.c.empty() || g.c.empty()) return poly();
         poly h;
         int i, l = 0;
         while((f.c.size() + g.c.size()) >> l) l++;
-        memset(X, 0, 4 << l);
-        memset(Y, 0, 4 << l);
+        memset(X, 0, (1 << l) * sizeof(int));
+        memset(Y, 0, (1 << l) * sizeof(int));
         for(i = 0; i < f.c.size(); i++) X[i] = f.c[i];
         for(i = 0; i < g.c.size(); i++) Y[i] = g.c[i];
         ntt(X, l, 0);
@@ -122,10 +122,7 @@ vv solve(vi F, vv G, int n, int m) // [x^[0, n)y^(-m, 0]], [x^0]G = 1
 poly comp(poly F, poly G, int n) // [x^0]G = 0
 {
     int i;
-    vv Gp;
-    Gp.resize(2);
-    Gp[0].resize(n);
-    Gp[1].resize(n);
+    vv Gp(2, vi(n)); // 2×n:第一行 1,第二行 -G
     Gp[0][0] = 1;
     // 调用方给的 G 可能不足 n 个系数:必须补齐,否则下面 G.c[i] 越界读。F 侧也一样,补到 n。
     if((int)G.c.size() < n) G.c.resize(n);

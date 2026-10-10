@@ -17,13 +17,14 @@ inline bool gc(int k) { return ch[fa[k]][1] == k; }
 inline bool ir(int k) { return ch[fa[k]][gc(k)] != k; }
 void pda(int k) {
     static int st[N], t;
-    for(st[++t] = k; !ir(k);) st[++t] = k = fa[k];
+    st[++t] = k;
+    while(!ir(k)) st[++t] = k = fa[k];
     while(t) pd(st[t--]);
 }
 void rot(int u) {
-    int f = fa[u], &g = fa[f], t = gc(u), x = ch[u][!t];
+    int f = fa[u], g = fa[f], t = gc(u), x = ch[u][!t];
     if(!ir(f)) ch[g][gc(f)] = u;
-    fa[u] = g, g = u;
+    fa[u] = g, fa[f] = u;
     ch[u][!t] = f, ch[f][t] = x;
     if(x) fa[x] = f;
     pu(f);
@@ -38,8 +39,8 @@ void access(int u0) {
     splay(u0);
 }
 int fd(int u) {
-    for(access(u); ls(u); u = ls(u), pd(u))
-        ;
+    access(u);
+    while(ls(u)) u = ls(u), pd(u);
     return splay(u), u;
 }
 void mkr(int u) { access(u), pl(u); }

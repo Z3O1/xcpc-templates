@@ -4,12 +4,14 @@
 // 复杂度 O(log m),比逐项枚举快;n、m 可到 1e18(int 参数时按 int 上限)。
 int minmod(int n, int m, int a, ll b) {
     int ans = m;
-    for(; n; swap(a, m)) {
-        a %= m, b %= m;
+    while(n) {
+        a %= m;
+        b %= m;
         if(b < 0) b += m;
         cmin(ans, (int)b);
         n = ((ll)(n - 1) * a + b) / m;
         b -= (ll)m * n;
+        swap(a, m);
     }
     return ans;
 }
