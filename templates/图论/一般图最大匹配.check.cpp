@@ -15,7 +15,7 @@
 //      超时 SIGKILL; 子进程用管道回传每次 getmat() 的痕迹 → check 永不挂住,
 //      还能指出卡在哪个根、以及 mat[0] 有没有被写脏。
 //
-// 已知模板 bug(本 check 不修模板, 只如实反映):
+// 历史缺陷回归(模板已修,复发必须失败):
 //   【已修复】模板原来在 for(auto v : t[u]) 里少了一行 `if(fd(u) == fd(v)) continue;`
 //   (同一朵花内部的边不再处理)。少了它会出两类问题:
 //     · 死循环 —— 实测 400 组随机 n=6..12 里有 4 组卡死;穷举 n<=5 全部 1099 个图不触发
@@ -33,7 +33,7 @@
 //       "只测死循环 + 子进程自报大小"。若连符号名都不存在, 则链接直接失败
 //       (check.sh 报 COMPILE FAIL, 一眼可见, 比静默测错强)。
 //
-// 想让已知 bug 直接判失败: XCPC_CHECK_STRICT=1 ./check.sh -v 图论
+// 所有已记录错误默认也必须失败,不再依赖 XCPC_CHECK_STRICT。
 #include "../_check_base.hpp"
 static const int N = 1005;   // 模板依赖 house header 的 N(点数上界), check 里补一个
 #include "一般图最大匹配.cpp"
@@ -47,7 +47,6 @@ static const int CHK_MAXN = 24;   // check 自己用到的最大点数
 // 观测窗口: getmat(int) 的函数内 static `mat[]`(Itanium ABI 名 _ZZ6getmatiE3mat)
 extern int MAT[] asm("_ZZ6getmatiE3mat");
 
-static const bool STRICT = getenv("XCPC_CHECK_STRICT") != nullptr;
 static const int WATCHDOG_MS = 60;   // 单个用例的看门狗上限(正确实现跑 n<=10 只花微秒)
 static void bug(const char *fmt, ...) {
     va_list ap;
@@ -463,8 +462,8 @@ int main() {
     } else {
         ok("全部用例: 匹配大小 == 暴力最优, 无挂死、无非对称匹配");
     }
-    if(n_bug && STRICT) {
-        printf("  [FAIL] XCPC_CHECK_STRICT=1: 已知模板 bug 直接判失败\n");
+    if(n_bug) {
+        printf("  [FAIL] 历史模板缺陷回归,默认运行也必须失败\n");
         return 1;
     }
     printf("  小结: 用例 %lld 个(结构 21 + 穷举 n<=5 共 1098 + 随机 240), 已知 bug 触发 %lld 次\n", n_case, n_bug);

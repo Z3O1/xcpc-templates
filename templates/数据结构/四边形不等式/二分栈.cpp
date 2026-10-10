@@ -18,6 +18,7 @@ nd work(ll dt) {
             auto [R, p] = q.back();
             q.pop_back();
             int L = q.size() ? q.back()[0] + 1 : i + 1;
+            if(L > R) continue;
             if(!(get(p, L) < get(i, L))) continue;
             int l = L, r = R + 1;
             while(l + 1 < r) {

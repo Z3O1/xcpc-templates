@@ -18,20 +18,33 @@ int main() {
         else if(!chkp(p)) return printf("  [FAIL] %llu 应为素数\n", (unsigned long long) p), 1;
     ok("大素数 + 2^32+1(Fermat 数,合数)");
 
-    // 强伪素数(前 12 个素数底数应全部判为合数)
-    for(u64 x : {2047ULL, 3215031751ULL, 3825123056546413051ULL, 318665857834031151167461ULL,
-                 3317044064679887385961981ULL})
-        if(chkp(x)) return printf("  [FAIL] 强伪素数 %llu 被误判为素数\n", (unsigned long long) x), 1;
-    ok("已知强伪素数(含 318665857834031151167461 等)");
-
-    // 随机大合数:两个大素数之积
-    For(t, 1, 3000) {
-        u64 a = rnd(1000000000LL, 2000000000LL), b = rnd(1000000000LL, 2000000000LL);
-        auto prime = [&](u64 x) { if(x < 2) return false; for(u64 d = 2; d * d <= x; ++d) if(x % d == 0) return false; return true; };
-        if(!prime(a) || !prime(b)) continue;
-        if(chkp(a * b)) return printf("  [FAIL] 合数 %llu * %llu 被误判\n", (unsigned long long) a, (unsigned long long) b), 1;
+    // 强伪素数均在 u64 内,另给出真因子来独立确认合数,不使用会截断的超范围常量。
+    struct { u64 x, factor; } composites[] = {
+        {2047ULL, 23}, {1373653ULL, 829}, {25326001ULL, 2251}, {3215031751ULL, 151},
+        {341550071728321ULL, 10670053}, {3825123056546413051ULL, 149491},
+    };
+    for(auto c : composites) {
+        CHECK(c.factor > 1 && c.factor < c.x && c.x % c.factor == 0, "伪素数样本有真因子");
+        if(chkp(c.x)) return printf("  [FAIL] 强伪素数 %llu 被误判为素数\n", c.x), 1;
     }
-    ok("3000 组大素数之积(合数)");
+    ok("6 个 u64 范围内的强伪素数,真因子确认合数");
+
+    // 独立试除预生成大素数池,每一轮都实际检测半素数,不能把3000次尝试当作3000个有效样本。
+    auto prime = [](u64 x) {
+        if(x < 2) return false;
+        for(u64 d = 2; d * d <= x; ++d) if(x % d == 0) return false;
+        return true;
+    };
+    vector<u64> pool;
+    while(pool.size() < 128) {
+        u64 x = rnd(1000000000LL, 2000000000LL);
+        if(prime(x)) pool.push_back(x);
+    }
+    For(t, 1, 3000) {
+        u64 a = pool[rnd(0, (ll) pool.size() - 1)], b = pool[rnd(0, (ll) pool.size() - 1)];
+        if(chkp(a * b)) return printf("  [FAIL] 合数 %llu * %llu 被误判\n", a, b), 1;
+    }
+    ok("3000 个实际大素数之积(素数池由独立试除确认)");
 
     // 边界
     CHECK(!chkp(0) && !chkp(1) && chkp(2) && chkp(3) && !chkp(4), "0..4 边界");

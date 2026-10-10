@@ -1,7 +1,7 @@
 // Wilber(): 数据结构 · Wilber (在线 1D1D 线性决策单调)
 
-template <typename T, int B = 16>
-pair<vect<T>, vect<int>> Wilber(int n, auto &&que, const T Z = numeric_limits<T>::max()) {
+template <typename T, int B = 16, typename Q>
+pair<vect<T>, vect<int>> Wilber(int n, Q &&que, const T Z = numeric_limits<T>::max()) {
     vect<T> f(n + 1, Z);
     f[0] = 0;
     vect<int> fp(n + 1, 0);

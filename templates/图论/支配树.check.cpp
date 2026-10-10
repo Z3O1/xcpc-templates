@@ -7,22 +7,21 @@
 //      check 会断言这个"最近支配点"唯一(不唯一 = check 自己的定义有问题)。
 //   2) 硬断言:
 //      · (dfn[v] != 0) <=> v 从 1 可达(DFS 的正确性);
-//      · **整张图都从 1 可达**的用例上, dm[v] 必须逐个等于暴力 idom(v),
-//        并且 dm[] 构成以 1 为根的树(dfn[dm[v]] < dfn[v]、沿 dm 一路能回到 1、dm[v] 必须支配 v);
+//      · 每个可达点的 dm[v] 都必须等于暴力 idom(v),不豁免不可达前驱;
+//        全图可达时还验证 dm[] 是以 1 为根的树(dfn[dm[v]] < dfn[v]、能回到 1、dm[v] 支配 v);
 //      · 穷举 n=3 的所有有向边子集 + n=4 的 <=5 条边子集, 全可达的那些同样硬断言。
 //   3) 边界: n=1 / 无边 / 自环 / 平行边 / 只有入边 / 只有出边 / 1 无出边 / 随机图。
 //
-// 已知模板 bug(本 check 不修模板, 只如实反映):
-//   (A) `for(auto x : t2[u]) cmin(s, que(x)[0]);` 没有跳过**从 1 不可达的前驱**(dfn[x] == 0):
+// 历史缺陷回归(模板已修,复发必须失败):
+//   旧版本(A) `for(auto x : t2[u]) cmin(s, que(x)[0]);` 没有跳过**从 1 不可达的前驱**(dfn[x] == 0):
 //       此时 que(x) 返回 f[x] = {dfn[x] = 0, 0} → cmin(s, 0) → s = 0 → sd[u] = pos[0] = 0,
 //       于是这个可达点的 dm[u] 被算成 0(garbage), 而正确答案是某个真实点(通常是 1)。
 //       最小复现: n=3, 边 1->3, 2->3(点 2 从 1 不可达, 但它是 3 的前驱):
 //         DOM::getdom(3) 后 dm[3] == 0, 正确应为 1。
 //       实测(gcc -O2, 固定种子随机图 n<=8): 「图里存在'可达点的不可达前驱'」的用例里
 //       约一半会踩到这个 bug; 反过来, 不含这种前驱的用例 4049/4049 全对。
-//       → check 的分类: 偏差 + 该图存在这种前驱 + dm[v] == 0 → 归为这个已知 bug([BUG]);
-//         其余偏差(含"全图从 1 可达"上的任何偏差)一律 FAIL。
-//   (B) 轻微: getdom() 里 `dfs(1)` 用的 dfn/pos/dt 不会被重置(而 fa/f 每个调用都重置),
+//       当前 check 对所有可达点硬断言,不再把这一指纹记为允许通过的 [BUG]。
+//   旧版本(B): getdom() 里 `dfs(1)` 用的 dfn/pos/dt 不会被重置(而 fa/f 每个调用都重置),
 //       所以**同一进程内第二次调用**(不手工清零全局数组)会得到错结果。
 //       最小复现: 先 pid=1..3 链跑一次 getdom(3); 再不清 dfn/dt 跑 1->2,1->3,2->3 →
 //       dm[2] = 0, dm[3] = 2(正确是 1, 1)。本 check 每个用例前都手工重置, 所以能一直测下去。
@@ -30,24 +29,14 @@
 // 另注: 模板依赖 house 的 `pii = array<int,2>`(f[i] = {dfn[i]} 与 que(x)[1]),
 //       _check_base.hpp 里的 pii 正是 array<int,2>, 所以这里能直接编译。
 //
-// 想让已知 bug 直接判失败: XCPC_CHECK_STRICT=1 ./check.sh -v 图论
+// 失败不依赖 XCPC_CHECK_STRICT,默认运行就必须抓住历史回归。
 #include "../_check_base.hpp"
 #include "支配树.cpp"
 
 static const int MX = 1024;   // check 用到的最大点数上界(模板自己的 N 是 1e6, 在 namespace DOM 里)
                               // 注意: 随机用例 n<=12, 但下面有个 n=300 的规模用例, 所以按 1024 开
 
-static const bool STRICT = getenv("XCPC_CHECK_STRICT") != nullptr;
-static void bug(const char *fmt, ...) {
-    va_list ap;
-    va_start(ap, fmt);
-    printf("  [BUG] ");
-    vprintf(fmt, ap);
-    va_end(ap);
-    fflush(stdout);
-}
-
-// ———— 每次调用前必须手工复位(见已知 bug (B): 模板自己不重置 dfn/pos/dt) ————
+// ———— 各用例隔离输入图/参考状态;另有不清算法状态的重复调用回归 ————
 static vect<int> adj[MX];   // check 自己的邻接表(与模板的 t[] 无关, 暴力用)
 static void reset_dom() {
     For(i, 0, MX - 1) {
@@ -102,8 +91,7 @@ static bool has_unreach_pred(int n, const vect<array<int, 2>> &es) {
     return false;
 }
 
-static long long n_case = 0, n_bug = 0;
-static int n_printed = 0;
+static long long n_case = 0;
 static void dump_edges(int n, const vect<array<int, 2>> &es) {
     printf("  (n=%d, 边:", n);
     for(auto &e : es) printf(" %d>%d", e[0], e[1]);
@@ -132,20 +120,9 @@ static void run_case(const char *tag, int n, const vect<array<int, 2>> &es, bool
         int want = brute_idom(n, v);
         int got = DOM::dm[v];
         if(got == want) continue;
-        if(hard || !badpred || got != 0) {
-            printf("  [FAIL] %s: idom(%d) = %d, 暴力应为 %d%s\n", tag, v, got, want,
-                   hard ? "(全图可达的用例必须全对)" : (got != 0 ? "(非 0 偏差不是已知 bug 的样子)" : "(没有'不可达前驱')"));
-            dump_edges(n, es);
-            exit(1);
-        }
-        // 已知 bug (A): 有不可达前驱 + dm 被算成 0
-        ++n_bug;
-        if(n_printed < 6) {
-            ++n_printed;
-            bug("%s: idom(%d) = 0(应为 %d) —— 该图的某个可达点有从 1 不可达的前驱 → sd 被算成 pos[0]", tag, v, want);
-            dump_edges(n, es);
-        }
-        break;   // 该图已经触发已知 bug, 后面的点不必再报
+        printf("  [FAIL] %s: idom(%d) = %d, 暴力应为 %d(不可达前驱=%d)\n", tag, v, got, want, (int) badpred);
+        dump_edges(n, es);
+        exit(1);
     }
     // 3) dm[] 必须是以 1 为根的树(只在全可达用例上查, 否则 dm 可能是 0)
     if(hard) {
@@ -261,7 +238,7 @@ int main() {
         printf("  [ok] 随机全可达 %lld 个图: dm[v] 全等于暴力 idom, 且 dm[] 是以 1 为根的树\n", cnt);
     }
 
-    puts("— 随机图: 允许有不可达点(已知 bug 的分类) —");
+    puts("— 随机图: 允许不可达点,但所有可达点的 idom 必须正确 —");
     {
         long long cnt = 0;
         For(rep, 1, 6000) {
@@ -274,7 +251,7 @@ int main() {
             run_case("随机(可能不可达)", n, es, h);
             ++cnt;
         }
-        printf("  [ok] 随机 %lld 个图跑完(含不可达点的用例按定义对拍, 已知 bug 只报 [BUG])\n", cnt);
+        printf("  [ok] 随机 %lld 个图跑完(所有可达点按定义对拍,无历史缺陷豁免)\n", cnt);
     }
 
     puts("— 中等规模(健壮性/性能) —");
@@ -309,7 +286,7 @@ int main() {
         printf("  [ok] n=300, m=%d: dfn 与可达性一致, 抽查 %d 个点的 idom 全对\n", (int) es.size(), checked);
     }
 
-    puts("— 已知 bug (B): getdom() 不自重置 dfn/pos/dt —");
+    puts("— 重复调用回归: getdom() 必须自行重置 dfn/pos/dt —");
     {
         // 第一次调用
         build(3, {{1, 2}, {2, 3}});
@@ -322,34 +299,15 @@ int main() {
         bool good2 = (DOM::dm[2] == 1 && DOM::dm[3] == 1);
         if(!ok1) return printf("  [FAIL] 第一次调用结果就不对: dm[2]=%d dm[3]=%d\n", DOM::dm[2], DOM::dm[3]), 1;
         ok("第一次调用(1->2, 2->3): dm[2]=1, dm[3]=2 正确");
-        if(good2) {
-            ok("第二次调用(不手工清零)也对 —— 说明 dfn/dt 已被重置");
-        } else {
-            ++n_bug;
-            bug("同一进程内第二次调用 getdom() 结果错: dm[2] = %d, dm[3] = %d(应为 1, 1)\n", DOM::dm[2], DOM::dm[3]);
-            bug("  原因: getdom() 重置了 fa[]/f[], 但 dfs(1) 依赖的 dfn[]/pos[]/dt 没重置, 旧 dfn 让 DFS 不再往下走\n");
-            bug("  最小复现: DOM::getdom(3) 跑完(1->2,2->3)后, 清掉 t[]/dm[] 再建 1->2,1->3,2->3 并 getdom(3)\n");
-            bug("  → 本 check 的每个用例都会手工把 dfn/pos/fa/f1/sd/dm/f/dt 复位后再调用, 因此不受影响\n");
-        }
+        if(!good2) return printf("  [FAIL] 第二次调用 dm[2]=%d dm[3]=%d,应为1,1\n", DOM::dm[2], DOM::dm[3]), 1;
+        ok("第二次调用不手工清零 dfn/dt 仍正确");
     }
 
     if(n_ambig) {
         printf("  [FAIL] 暴力定义的『最近支配点』有 %d 次不唯一 —— check 自身的定义有问题\n", n_ambig);
         return 1;
     }
-    if(n_bug) {
-        bug("结论: 支配树模板有 2 处缺陷(见上), 其中 (A) 会直接算出错的 idom:\n");
-        bug("  (A) `for(auto x : t2[u]) cmin(s, que(x)[0]);` 没跳过 dfn[x] == 0 的前驱 → sd[u] = pos[0] = 0 → dm[u] = 0\n");
-        bug("      最小复现: n=3, 边 1->3 与 2->3 → dm[3] = 0, 应为 1\n");
-        bug("      修法(仅供参考, 本 check 不改模板): 该行加 `if(dfn[x])` 前置判断\n");
-        bug("  (B) getdom() 不自重置 dfn/pos/dt, 同一进程内第二次调用会错(轻微, 手工清零即可)\n");
-        if(STRICT) {
-            printf("  [FAIL] XCPC_CHECK_STRICT=1: 已知模板 bug 直接判失败\n");
-            return 1;
-        }
-    } else {
-        ok("全部用例: idom 与暴力一致, 也没有复现到已知 bug");
-    }
-    printf("  小结: 用例 %lld 个, 已知 bug 触发 %lld 次\n", n_case, n_bug);
+    ok("全部用例: idom 与暴力一致,历史缺陷回归无豁免");
+    printf("  小结: 用例 %lld 个\n", n_case);
     PASSED("支配树");
 }

@@ -26,12 +26,17 @@ int main() {
         ll p1 = rnd(1, (ll) 1e9), p2 = rnd(1, (ll) 1e9);
         ll a1 = rnd(0, p1 - 1), a2 = rnd(0, p2 - 1);
         ll r = CRT(a1, p1, a2, p2);
-        if(r < 0) continue;
-        ll lcm = p1 / std::gcd(p1, p2) * p2;
+        ll g = std::gcd(p1, p2);
+        bool exists = (a2 - a1) % g == 0;
+        if(!exists) {
+            if(r != -1) return printf("  [FAIL] 随机无解被接受 a1=%lld p1=%lld a2=%lld p2=%lld r=%lld\n", a1, p1, a2, p2, r), 1;
+            continue;
+        }
+        ll lcm = p1 / g * p2;
         if(r < 0 || r >= lcm || r % p1 != a1 % p1 || r % p2 != a2 % p2)
             return printf("  [FAIL] 随机 p1=%lld p2=%lld r=%lld lcm=%lld\n", p1, p2, r, lcm), 1;
     }
-    ok("5 万组随机大模数:落在 [0,lcm) 且同余成立");
+    ok("5 万组随机大模数:独立判断存在性,有解时落在 [0,lcm) 且同余成立");
 
     // 两两互质(经典 CRT)与极端边界
     {

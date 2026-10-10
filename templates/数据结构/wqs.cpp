@@ -1,6 +1,6 @@
 // wqs(): 数据结构 · WQS 二分构造方案
 
-vect<int> wqs(int n, int k, auto &&que, i128 up) {
+template <typename Q> vect<int> wqs(int n, int k, Q &&que, i128 up) {
     int B = __lg(n) + 1, T = (1 << B) - 1;
     auto chk = [&](i128 dt) {
         return Wilber<i128>(

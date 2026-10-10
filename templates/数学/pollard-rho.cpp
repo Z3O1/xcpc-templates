@@ -1,30 +1,30 @@
 // chkp()/PR()/fact(): 数学 · Miller-Rabin + Pollard Rho 分解质因数
 
+// chkp 接受 ll;PR 要求 n 为正合数,fact 要求 n >= 1,返回升序去重质因子。
 constexpr bool chkp(ll n) {
+    if(n < 2) return 0;
+    if(n % 2 == 0) return n == 2;
     constexpr int p[] = {2, 325, 9375, 28178, 450775, 9780504, 1795265022}; // {2, 7, 61} for 32-bits
     auto ksm = [&](i128 a, ll b) {
         i128 s = 1;
         for(; b; b >>= 1, a = a * a % n) b & 1 && (s = s * a % n, 0);
         return s;
     };
-    if(n <= 40) return binary_search(p, p + sizeof(p), n);
-    else {
-        if(n % 2 == 0) return 0;
-        int t = __builtin_ctzll(n - 1), i = 0;
-        for(auto b : p) {
-            i128 x = ksm(b, n - 1 >> t);
-            if(x == 1) continue;
-            for(i = 0; i < t && x != n - 1; ++i) x = x * x % n;
-            if(i == t) return 0;
-        }
-        return 1;
+    int t = __builtin_ctzll(n - 1), i = 0;
+    for(auto b : p) {
+        if(b % n == 0) continue;
+        i128 x = ksm(b, (n - 1) >> t);
+        if(x == 1) continue;
+        for(i = 0; i < t && x != n - 1; ++i) x = x * x % n;
+        if(i == t) return 0;
     }
+    return 1;
 }
 ll PR(ll n) {
     mt19937_64 rng(114514);
     if(n % 2 == 0) return 2;
     static constexpr int S = 127;
-    uniform_int_distribution<> rnd(1, n - 1);
+    uniform_int_distribution<ll> rnd(1, n - 1);
     ll x = 0, y = 0, c = rnd(rng), w = 1, g;
     auto f = [&](ll x) { return (i128(x) * x + c) % n; };
     for(int t = 1;; ++t) {

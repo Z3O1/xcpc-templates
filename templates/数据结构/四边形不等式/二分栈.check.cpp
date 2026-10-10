@@ -1,11 +1,6 @@
 // 二分栈.cpp 自测:与朴素 O(n²) DP 对照最优值(值 + 段数,nd 的 (x,c) 字典序比较)
 //
-// ★ 已知契约缺陷(详见报告,check 里有可打印的复现):work() 会在 i > n 处调用 calc(j+1, i)。
-//   实测:把 calc 做成「r 夹到 n」的自然延拓后,dt 取遍正/零/负 30 万组随机用例全部与朴素 DP 一致;
-//   若 calc 直接读 pre[r](r > n 落在未定义/上一组数据的残留区),dt <= 0 时会算出非最优解。
-//   最小复现:数据 2 19 12 4 14 7 2 15 20 1、dt = -1000 时,work() 返回 {x=10216, c=1} 段,
-//   而朴素 DP 与枚举所有 2^9 种划分都给出最优 {x=6114, c=3} 段(前提是 calc 在 n 之外读到非零残留)。
-//   因此本 check 的 calc 采用自然延拓(把 r 夹到 n),并在末尾打印「走出 [1,n] 的调用」证据。
+// calc 严格拒绝域外区间,不夹端点;包括空候选区间与上一组残留数据的旧越界回归。
 //
 // 说明:模板用的是 house header 的 pii(带 [0]/[1] 下标,见 q.front()[0]),这里就地补局部类型。
 #include "../../_check_base.hpp"
@@ -20,11 +15,13 @@ struct pii2 {
 const int N = 4005;
 int n;
 static ll pre[N];
-static bool CLAMP = true;    // true:把 r 夹到 n(自然延拓);false:直接读 pre[r](模拟越界读)
-static int max_r_seen = 0;   // 记录模板传给 calc 的最大右端点
+static int max_r_seen = 0;
 static ll calc(int l, int r) { // 区间和的平方(非负数据下满足四边形不等式)
+    if(l < 1 || l > r || r > n) {
+        printf("  [FAIL] calc(%d,%d) 越出合法区间 n=%d\n", l, r, n);
+        exit(1);
+    }
     if(r > max_r_seen) max_r_seen = r;
-    if(CLAMP && r > n) r = n;
     ll s = pre[r] - pre[l - 1];
     return s * s;
 }
@@ -63,6 +60,7 @@ static nd brute_all(ll dt) {
 }
 static void set_data(const vector<int> &v) {
     n = (int) v.size();
+    max_r_seen = 0;
     pre[0] = 0;
     For(i, 1, n) pre[i] = pre[i - 1] + v[i - 1];
 }
@@ -183,38 +181,22 @@ int main() {
         ok("41 档 dt(含负数)上段数单调不降且落在 [1,n]");
     }
 
-    // 5) 已知契约缺陷:work() 会以 r > n 调用 calc
+    // 5) 空候选区间回归:单独在末轮加 break 不够,重复尾端点在中途也可能形成空段。
     {
-        max_r_seen = 0;
-        vector<int> v(30);
-        For(i, 0, 29) v[i] = (int) rnd(0, 100);
-        set_data(v);
-        work(-12345); // 单纯为了记录越界调用
-        printf("  [note] 已知契约缺陷:work() 会以 r = %d 调用 calc(数据 n = %d),即在 [1,n] 之外求值\n", max_r_seen, n);
-        if(max_r_seen > n) {
-            // 复现影响:让 calc 在 n 之外读到「上一组数据的残留」(真实使用中最常见的情形)
-            vector<int> probe{2, 19, 12, 4, 14, 7, 2, 15, 20, 1};
-            int bad = 0, tot = 0;
-            For(seed, 1, 20) {
-                rng.seed(seed);
-                set_data(probe);
-                For(r, n + 1, n + 8) pre[r] = rnd(-1000000, 1000000); // n 之外的残留
-                CLAMP = false;
-                nd got = work(-1000);
-                CLAMP = true;
-                nd want = naive_work(-1000);
-                ++tot;
-                if(got.x != want.x || got.c != want.c) {
-                    ++bad;
-                    if(bad == 1)
-                        printf("  [note]   其中一例(seed=%d):work(-1000) = {%lld,%d},朴素 DP/枚举最优 = {%lld,%d}\n", seed,
-                               (ll) got.x, got.c, (ll) want.x, want.c);
-                }
+        vector<vector<int>> probes{{1, 1}, {2, 19, 12, 4, 14, 7, 2, 15, 20, 1}};
+        for(const auto &v : probes) For(seed, 1, 20) {
+            rng.seed(seed);
+            set_data(v);
+            For(r, n + 1, n + 8) pre[r] = rnd(-1000000, 1000000);
+            for(ll dt : {-1000LL, -3LL, 0LL, 1000LL}) {
+                nd got = work(dt), want = naive_work(dt);
+                if(got.x != want.x || got.c != want.c)
+                    return printf("  [FAIL] 残留回归 seed=%d n=%d dt=%lld got{%lld,%d} want{%lld,%d}\n",
+                                  seed, n, dt, got.x, got.c, want.x, want.c), 1;
+                CHECK(max_r_seen <= n, "calc 不得依赖区间外的数据");
             }
-            printf("  [note] 影响复现:n=10、数据 %s、dt=-1000,calc 在 n 之外有残留时,20 组里 %d 组给出非最优解\n",
-                   show(probe).c_str(), bad);
-            if(bad == 0) printf("  [note] 按上面的契约缺陷,本应能复现非最优解但没复现 —— 模板行为可能已变化,请复核\n");
         }
+        ok("空候选、负 dt、短数组接大数组残留回归均通过,calc 不延拓");
     }
 
     PASSED("二分栈");

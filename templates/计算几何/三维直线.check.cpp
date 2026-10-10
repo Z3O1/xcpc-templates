@@ -328,7 +328,12 @@ int main() {
             p3 c = closest_on(l1, l2), pa, pb;
             dis(l1, l2, pa, pb);
             db sc = 1 + dis(a) + dis(b);
-            if(!eq(dis(c - pa), 0, 1e-11 * sc)) { if(!bad) break; ++bad; }
+            if(!eq(dis(c - pa), 0, 1e-11 * sc)) {
+                ++bad;
+                printf("  [FAIL] closest_on 首次偏差 t=%d a=(%.9Lf,%.9Lf,%.9Lf) d1=(%.9Lf,%.9Lf,%.9Lf) b=(%.9Lf,%.9Lf,%.9Lf) d2=(%.9Lf,%.9Lf,%.9Lf)\n",
+                       t, a.x, a.y, a.z, d1.x, d1.y, d1.z, b.x, b.y, b.z, d2.x, d2.y, d2.z);
+                break;
+            }
             if(dis(l2, c) > dis(l2, pa) + 1e-9 * sc) ++bad;
             if(!eq(dis(l2, c), dis(l1, l2), 1e-10 * sc)) ++bad;
         }

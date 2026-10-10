@@ -4,9 +4,11 @@
 // 前置:结果系数绝对值要明显小于 1e15(否则 double 精度不够,请用本目录 ntt.cpp 的模意义卷积)。
 // 复杂度 O((n + m) log(n + m))。
 
+// fft 非空长度须为2的幂,k取1或-1;空向量/长度1直接返回。
 using cp = complex<db>;
 void fft(vect<cp> &a, int k) {
     int n = a.size();
+    if(n <= 1) return;
     static vect<int> r;
     if((int)r.size() != n) {
         int l = __lg(n);

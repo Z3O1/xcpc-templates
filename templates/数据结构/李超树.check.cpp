@@ -19,6 +19,9 @@ struct pll2 {
 #undef pll
 
 static const int LO = 1, HI = 1000000;
+static ll eval_ref(const pll2 &l, ll x) {
+    return (ll) ((i128) l.first * x + l.second); // 取样范围内在 ll 中,不调用 DS::eval。
+}
 
 int main() {
     DS::bd();
@@ -45,7 +48,7 @@ int main() {
             vector<int> qs{LO, HI, (int) rnd(LO, HI), (int) rnd(LO, HI), HI - 1, LO + 1};
             for(int x : qs) {
                 ll want = LLONG_MAX;
-                for(auto &l : ls) want = min(want, DS::eval(l, x));
+                for(auto &l : ls) want = min(want, eval_ref(l, x));
                 ll got = DS::que(x, rt);
                 if(got != want) {
                     printf("  [FAIL] x=%d want=%lld got=%lld(直线 %d 条)\n", x, want, got, n);
@@ -71,13 +74,13 @@ int main() {
             For(q, 1, 200) {
                 int x = (int) rnd(LO, HI);
                 ll want = LLONG_MAX;
-                for(auto &l : ls) want = min(want, DS::eval(l, x));
+                for(auto &l : ls) want = min(want, eval_ref(l, x));
                 if(DS::que(x, rt) != want) return printf("  [FAIL] 大规模 x=%d\n", x), 1;
             }
             // 值域两端必须也正确(树的分段边界)
             for(int x : {LO, HI}) {
                 ll want = LLONG_MAX;
-                for(auto &l : ls) want = min(want, DS::eval(l, x));
+                for(auto &l : ls) want = min(want, eval_ref(l, x));
                 if(DS::que(x, rt) != want) return printf("  [FAIL] 边界 x=%d\n", x), 1;
             }
         }
@@ -89,14 +92,14 @@ int main() {
         {
             int rt = 0;
             For(i, 1, 500) DS::ins({-1000000, 1000000000}, rt);
-            for(int x : {LO, 500000, HI}) CHECK(DS::que(x, rt) == DS::eval({-1000000, 1000000000}, x), "500 条相同直线");
+            for(int x : {LO, 500000, HI}) CHECK(DS::que(x, rt) == eval_ref({-1000000, 1000000000}, x), "500 条相同直线");
         }
         {
             int rt = 0;
             For(i, 1, 500) DS::ins({1000000, -i * (ll) 1000000}, rt);
             for(int x : {LO, 999999, HI}) {
                 ll want = LLONG_MAX;
-                For(i, 1, 500) want = min(want, DS::eval({1000000, -i * (ll) 1000000}, x));
+                For(i, 1, 500) want = min(want, eval_ref({1000000, -i * (ll) 1000000}, x));
                 if(DS::que(x, rt) != want) return printf("  [FAIL] 同斜率序列 x=%d\n", x), 1;
             }
             ok("同斜率不同截距(500 条)一致");
@@ -112,7 +115,7 @@ int main() {
             For(q, 1, 500) {
                 int x = (int) rnd(LO, HI);
                 ll want = LLONG_MAX;
-                for(auto &l : ls) want = min(want, DS::eval(l, x));
+                for(auto &l : ls) want = min(want, eval_ref(l, x));
                 if(DS::que(x, rt) != want) return printf("  [FAIL] 斜率递增序列 x=%d\n", x), 1;
             }
             ok("斜率递增 500 条 + 500 次查询一致");

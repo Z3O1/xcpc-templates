@@ -3,7 +3,7 @@
 #include "SMAWK.cpp"
 
 // 与暴力对照:返回 false 并打印
-static bool cmp(int n, int m, auto &&que) {
+template <typename Q> static bool cmp(int n, int m, Q &&que) {
     auto [f, fp] = SMAWK<ll>(n, m, que);
     For(i, 1, n) {
         ll best = LLONG_MAX;

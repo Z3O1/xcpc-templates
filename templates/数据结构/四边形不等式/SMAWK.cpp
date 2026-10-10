@@ -1,6 +1,6 @@
 // SMAWK(): 数据结构 · SMAWK (全单调矩阵行最值)
 
-template <typename T> pair<vect<T>, vect<int>> SMAWK(int n0, int m, auto &&que) {
+template <typename T, typename Q> pair<vect<T>, vect<int>> SMAWK(int n0, int m, Q &&que) {
     vect<T> f(n0 + 1, T());
     vect<int> fp(n0 + 1, 0), b(m + 1, 0);
     For(i, 1, m) b[i] = i;

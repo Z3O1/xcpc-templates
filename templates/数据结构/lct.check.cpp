@@ -169,24 +169,32 @@ static void case_relink() {
 static int forked(void (*fn)()) {
     fflush(stdout);
     pid_t pid = fork();
-    if(pid == 0) fn();
+    if(pid < 0) { perror("fork"); return 1; }
+    if(pid == 0) { fn(); _exit(0); }
     int st = 0;
-    waitpid(pid, &st, 0);
+    pid_t waited;
+    do waited = waitpid(pid, &st, 0); while(waited < 0 && errno == EINTR);
+    if(waited != pid) { perror("waitpid"); return 1; }
     if(WIFEXITED(st) && WEXITSTATUS(st) == 0) return 0;
     printf("  [FAIL] 子进程%s\n", WIFSIGNALED(st) ? "崩溃(SIGSEGV 等)" : "断言不通过");
     return 1;
 }
 template <class F> static int forked_arg(F fn, int arg) {
     fflush(stdout);
+    u64 seed = rng(); // 在父进程推进状态,不能让各 fork 继承同一条随机序列。
     pid_t pid = fork();
+    if(pid < 0) { perror("fork"); return 1; }
     if(pid == 0) {
+        rng.seed(seed);
         fn(arg);
         _exit(0);
     }
     int st = 0;
-    waitpid(pid, &st, 0);
+    pid_t waited;
+    do waited = waitpid(pid, &st, 0); while(waited < 0 && errno == EINTR);
+    if(waited != pid) { perror("waitpid"); return 1; }
     if(WIFEXITED(st) && WEXITSTATUS(st) == 0) return 0;
-    printf("  [FAIL] 子进程%s\n", WIFSIGNALED(st) ? "崩溃(SIGSEGV 等)" : "断言不通过");
+    printf("  [FAIL] round=%d seed=%llu 子进程%s\n", arg, seed, WIFSIGNALED(st) ? "崩溃(SIGSEGV 等)" : "断言不通过");
     return 1;
 }
 

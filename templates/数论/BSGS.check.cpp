@@ -20,7 +20,7 @@ int main() {
         For(a, 1, p - 1) For(b, 0, p - 1) {
             ll want = brute(a, b, p), got = BSGS(a, b, p);
             ++cnt;
-            if(got != want) return printf("  [FAIL] BSGS(%d,%d,%d)=%lld 应 %lld\n", a, b, p, got, want), 1;
+            if(got != want) return printf("  [FAIL] BSGS(%d,%d,%lld)=%lld 应 %lld\n", a, b, p, got, want), 1;
         }
     }
     printf("  [ok] 25 个小素数:全部 (a,b) 共 %lld 组与暴力一致\n", cnt);
