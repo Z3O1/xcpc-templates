@@ -18,9 +18,9 @@ static poly naive_exp(const poly &f, int n, bool *okp = nullptr) {
     if(n) b[0] = 1;
     bool okk = true;
     For(k, 1, n - 1) {
-        mint s = 0;
-        For(j, 1, min((int) f.size() - 1, k)) s += f[j] * j * b[k - j];
-        b[k] = s * mint(k).inv();
+        ll s = 0;
+        For(j, 1, min((int) f.size() - 1, k)) s = (s + (ll) f[j] * j % MOD * b[k - j]) % MOD;
+        b[k] = s * ksm(k, MOD - 2, MOD) % MOD;
     }
     if(okp) *okp = okk;
     return b;
@@ -29,19 +29,19 @@ static poly naive_exp(const poly &f, int n, bool *okp = nullptr) {
 static poly naive_exp2(const poly &f, int n) {
     poly s(n), cur(n);
     if(n) s[0] = 1, cur[0] = 1;
-    mint fac = 1;
+    int fac = 1;
     For(t, 1, n - 1) {
         poly nx(n);
-        For(i, 0, n - 1) if(cur[i].val()) For(j, 0, min((int) f.size(), n - i) - 1) nx[i + j] += cur[i] * f[j];
-        cur = nx, fac *= t;
-        mint ifac = fac.inv();
-        For(i, 0, n - 1) s[i] += cur[i] * ifac;
+        For(i, 0, n - 1) if(cur[i]) For(j, 0, min((int) f.size(), n - i) - 1) nx[i + j] = (nx[i + j] + (ll) cur[i] * f[j]) % MOD;
+        cur = nx, fac = (ll) fac * t % MOD;
+        int ifac = ksm(fac, MOD - 2, MOD);
+        For(i, 0, n - 1) s[i] = (s[i] + (ll) cur[i] * ifac) % MOD;
     }
     return s;
 }
 static string pstr(const poly &a, int k = 12) {
     string s = "[" + to_string(a.size()) + "]";
-    For(i, 0, min((int) a.size(), k) - 1) s += " " + to_string(a[i].val());
+    For(i, 0, min((int) a.size(), k) - 1) s += " " + to_string(a[i]);
     return s + ((int) a.size() > k ? " ..." : "");
 }
 static int firstdiff(const poly &want, const poly &got) {
@@ -51,14 +51,14 @@ static int firstdiff(const poly &want, const poly &got) {
 }
 static int bad(const char *what, const poly &f, int n, const poly &want, const poly &got, int at = -1) {
     printf("  [FAIL] %s\n    n = %d, f = %s\n", what, n, pstr(f).c_str());
-    if(at >= 0) printf("    首个不符: k = %d, want = %d, got = %d\n", at, want[at].val(), got[at].val());
+    if(at >= 0) printf("    首个不符: k = %d, want = %d, got = %d\n", at, want[at], got[at]);
     printf("    want = %s\n    got  = %s\n", pstr(want).c_str(), pstr(got).c_str());
     return 1;
 }
 static poly rpoly(int len, int mode) {  // 0 稠密 1 稀疏 2 小值 3 全 0
     poly a(len);
     For(i, 0, len - 1) {
-        int v = (int) rnd(0, mint::getM() - 1);
+        int v = (int) rnd(0, MOD - 1);
         if(mode == 1 && (i & 1)) v = 0;
         if(mode == 2) v = (int) rnd(0, 3);
         a[i] = v;
@@ -78,8 +78,6 @@ static int cmp(const char *what, const poly &f, int n) {
     return 0;
 }
 int main() {
-    M = 998244353;  // ntt.cpp 的包装 mul 按全局 M 取模
-
     // ——— 0) 参考实现自检 ———
     {
         For(t, 1, 200) {
@@ -148,8 +146,8 @@ int main() {
                 printf("  [FAIL] exp(ln f) ≠ f 于第 %d 位:n = %d, f = %s\n", i, n, pstr(f).c_str());
                 return bad("exp(ln f) == f", f, n, f, h, i);
             }
-            For(i, (int) f.size(), n - 1) if(h[i] != mint(0)) {
-                printf("  [FAIL] exp(ln f) 高次应为 0,第 %d 位 = %d(f = %s, n = %d)\n", i, h[i].val(), pstr(f).c_str(), n);
+            For(i, (int) f.size(), n - 1) if(h[i] != 0) {
+                printf("  [FAIL] exp(ln f) 高次应为 0,第 %d 位 = %d(f = %s, n = %d)\n", i, h[i], pstr(f).c_str(), n);
                 return 1;
             }
         }
@@ -161,7 +159,7 @@ int main() {
             poly f = rpoly((int) rnd(1, 50), t % 3), g = rpoly((int) rnd(1, 50), (t + 1) % 3);
             poly s = f;
             s.resize(max(f.size(), g.size()));
-            For(i, 0, (int) g.size() - 1) s[i] += g[i];
+            For(i, 0, (int) g.size() - 1) s[i] = (s[i] + g[i]) % MOD;
             s[0] = 0;
             poly lhs = mul(poly_exp(f, n), poly_exp(g, n));
             lhs.resize(n);
@@ -180,12 +178,12 @@ int main() {
         For(t, 1, 200) {
             poly f = rpoly((int) rnd(1, 8), t % 3);
             poly g1 = poly_exp(f, 1);
-            if(g1.size() != 1 || g1[0] != mint(1)) {
+            if(g1.size() != 1 || g1[0] != 1) {
                 printf("  [FAIL] n=1 时应返回 {1},得到 %s(f = %s)\n", pstr(g1).c_str(), pstr(f).c_str());
                 return 1;
             }
             poly g2 = poly_exp(f, 2);
-            if(g2.size() != 2 || g2[0] != mint(1) || g2[1] != (f.size() > 1 ? f[1] : mint(0))) {
+            if(g2.size() != 2 || g2[0] != 1 || g2[1] != (f.size() > 1 ? f[1] : 0)) {
                 printf("  [FAIL] n=2 时应返回 {1, f[1]},得到 %s(f = %s)\n", pstr(g2).c_str(), pstr(f).c_str());
                 return 1;
             }
@@ -196,8 +194,8 @@ int main() {
         // f = 0 → 1
         {
             poly f(60), got = poly_exp(f, 60);
-            For(i, 0, 59) if(got[i] != mint(i == 0)) {
-                printf("  [FAIL] exp 0 应为 1,第 %d 位 = %d\n", i, got[i].val());
+            For(i, 0, 59) if(got[i] != (i == 0)) {
+                printf("  [FAIL] exp 0 应为 1,第 %d 位 = %d\n", i, got[i]);
                 return 1;
             }
             ok("f = 0(全零,长度 60)→ exp f = 1(n = 60)");
@@ -205,10 +203,10 @@ int main() {
         // f = x → Σ x^i/i!
         {
             poly f{0, 1}, want(300), got = poly_exp(f, 300);
-            mint fac = 1;
+            int fac = 1;
             For(i, 0, 299) {
-                if(i) fac *= i;
-                want[i] = fac.inv();
+                if(i) fac = (ll) fac * i % MOD;
+                want[i] = ksm(fac, MOD - 2, MOD);
             }
             int at = firstdiff(want, got);
             if(at >= 0) return bad("exp x = Σ x^i/i!", f, 300, want, got, at);
@@ -217,7 +215,7 @@ int main() {
         // f = -ln(1-x) = Σ_{i>=1} x^i/i → exp f = 1/(1-x) = 全 1
         {
             poly f(200);
-            For(i, 1, 199) f[i] = mint(i).inv();
+            For(i, 1, 199) f[i] = ksm(i, MOD - 2, MOD);
             poly want(200), got = poly_exp(f, 200);
             For(i, 0, 199) want[i] = 1;
             int at = firstdiff(want, got);
@@ -243,7 +241,7 @@ int main() {
             int n = 800;
             poly f = rpoly(n, t % 3);
             poly g = poly_exp(f, n);
-            CHECK(g.size() == (size_t) n && g[0] == mint(1), "n = 800:长度恰为 n 且常数项为 1");
+            CHECK(g.size() == (size_t) n && g[0] == 1, "n = 800:长度恰为 n 且常数项为 1");
             poly h = poly_ln(g, n);
             poly ff = f;
             ff.resize(n);

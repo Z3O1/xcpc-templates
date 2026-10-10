@@ -298,7 +298,7 @@ def render_sections(data: dict, files: dict, intros: dict) -> tuple[str, int, in
             name = entry['key'].split('/', 1)[1]
             path = files[chapter][name]
             intro = intros.get(chapter, {}).get(name.rsplit('.', 1)[0])
-            if intro:
+            if intro and not hidden_from_header(path.with_suffix('.typ')):
                 out.extend(['', f'#include "templates/{chapter}/{intro}"'])
             out.append('')
             if path.suffix == '.typ':

@@ -116,13 +116,13 @@
    "key": "数据结构/李超树.cpp",
    "title": "李超树",
    "missing": false,
-   "hidden": false
+   "hidden": true
   },
   {
    "key": "数据结构/全局平衡二叉树.cpp",
    "title": "全局平衡二叉树",
    "missing": false,
-   "hidden": false
+   "hidden": true
   },
   {
    "key": "数据结构/lct.cpp",
@@ -176,7 +176,7 @@
    "key": "图论/dinic.cpp",
    "title": "网络流",
    "missing": false,
-   "hidden": false
+   "hidden": true
   },
   {
    "key": "图论/mcmf.cpp",
@@ -320,7 +320,7 @@
    "key": "数论/积性函数/线性筛.cpp",
    "title": "线性筛",
    "missing": false,
-   "hidden": false
+   "hidden": true
   },
   {
    "key": "数论/积性函数/杜教筛.cpp",

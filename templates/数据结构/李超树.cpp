@@ -1,4 +1,5 @@
 // DS::ins()/que(): 数据结构 · 李超树 (值域 [1,1e6] 直线插/查询)
+// hide
 
 namespace DS {
 const int S = 1e7 + 10;

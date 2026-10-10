@@ -16,17 +16,17 @@
 static poly naive_ln(const poly &f, int n) {
     if(n <= 0) return poly();
     poly g(n);
-    mint i0 = f[0].inv();
+    int i0 = ksm(f[0], MOD - 2, MOD);
     For(i, 0, n - 1) {
-        mint s = 0;
-        For(j, 1, i) if(j < (int) f.size()) s += f[j] * g[i - j];
-        g[i] = (i == 0 ? i0 : -s * i0);
+        ll s = 0;
+        For(j, 1, i) if(j < (int) f.size()) s = (s + (ll) f[j] * g[i - j]) % MOD;
+        g[i] = (i == 0 ? i0 : (MOD - s) * i0 % MOD);
     }
     poly r(n);
     For(k, 0, n - 2) {  // [(f'·g)]_k → ln 的 k+1 次项
-        mint s = 0;
-        For(j, 1, min((int) f.size() - 1, k + 1)) s += f[j] * j * g[k + 1 - j];
-        r[k + 1] = s * mint(k + 1).inv();
+        ll s = 0;
+        For(j, 1, min((int) f.size() - 1, k + 1)) s = (s + (ll) f[j] * j % MOD * g[k + 1 - j]) % MOD;
+        r[k + 1] = s * ksm(k + 1, MOD - 2, MOD) % MOD;
     }
     return r;
 }
@@ -34,20 +34,21 @@ static poly naive_ln(const poly &f, int n) {
 static poly naive_ln2(const poly &f, int n) {
     poly s(n), cur(n), u(n);
     For(i, 0, min((int) f.size(), n) - 1) u[i] = f[i];
-    u[0] -= 1;
+    u[0] = (u[0] - 1 + MOD) % MOD;
     cur = u;
     For(m, 1, n - 1) {
-        mint c = (m & 1) ? mint(m).inv() : -mint(m).inv();
-        For(i, 0, n - 1) s[i] += cur[i] * c;
+        int c = ksm(m, MOD - 2, MOD);
+        if(!(m & 1)) c = MOD - c;
+        For(i, 0, n - 1) s[i] = (s[i] + (ll) cur[i] * c) % MOD;
         poly t(n);  // cur *= u(O(n²) 朴素卷积,截到 n 项)
-        For(i, 0, n - 1) if(cur[i].val()) For(j, 0, n - 1 - i) t[i + j] += cur[i] * u[j];
+        For(i, 0, n - 1) if(cur[i]) For(j, 0, n - 1 - i) t[i + j] = (t[i + j] + (ll) cur[i] * u[j]) % MOD;
         cur = t;
     }
     return s;
 }
 static string pstr(const poly &a, int k = 12) {
     string s = "[" + to_string(a.size()) + "]";
-    For(i, 0, min((int) a.size(), k) - 1) s += " " + to_string(a[i].val());
+    For(i, 0, min((int) a.size(), k) - 1) s += " " + to_string(a[i]);
     return s + ((int) a.size() > k ? " ..." : "");
 }
 static int firstdiff(const poly &want, const poly &got) {
@@ -57,14 +58,14 @@ static int firstdiff(const poly &want, const poly &got) {
 }
 static int bad(const char *what, const poly &f, int n, const poly &want, const poly &got, int at = -1) {
     printf("  [FAIL] %s\n    n = %d, f = %s\n", what, n, pstr(f).c_str());
-    if(at >= 0) printf("    首个不符: k = %d, want = %d, got = %d\n", at, want[at].val(), got[at].val());
+    if(at >= 0) printf("    首个不符: k = %d, want = %d, got = %d\n", at, want[at], got[at]);
     printf("    want = %s\n    got  = %s\n", pstr(want).c_str(), pstr(got).c_str());
     return 1;
 }
 static poly rpoly(int len, int mode) {  // 0 稠密 1 稀疏 2 小值 3 全 1 4 首项 1 且其余稠密
     poly a(len);
     For(i, 0, len - 1) {
-        int v = (int) rnd(0, mint::getM() - 1);
+        int v = (int) rnd(0, MOD - 1);
         if(mode == 1 && (i & 1)) v = 0;
         if(mode == 2) v = (int) rnd(0, 3);
         if(mode == 3 && i > 0) v = 0;
@@ -85,8 +86,6 @@ static int cmp(const char *what, const poly &f, int n, const char *extra = "") {
     return 0;
 }
 int main() {
-    M = 998244353;  // ntt.cpp 的包装 mul 按全局 M 取模
-
     // ——— 0) 参考实现自检 + 常数项恒 0 ———
     {
         For(t, 1, 300) {
@@ -135,9 +134,9 @@ int main() {
             poly f = rpoly((int) rnd(1, 120), t % 4);
             poly g = poly_ln(f, n);
             poly dg(n - 1);
-            For(i, 1, n - 1) dg[i - 1] = g[i] * i;
+            For(i, 1, n - 1) dg[i - 1] = (ll) g[i] * i % MOD;
             poly lhs = mul(dg, f), df(n - 1);
-            For(i, 1, min((int) f.size(), n) - 1) df[i - 1] = f[i] * i;
+            For(i, 1, min((int) f.size(), n) - 1) df[i - 1] = (ll) f[i] * i % MOD;
             lhs.resize(n - 1), df.resize(n - 1);
             For(i, 0, n - 2) if(lhs[i] != df[i]) {
                 printf("  [FAIL] (ln f)'·f ≠ f' 于第 %d 位:n = %d, f = %s\n", i, n, pstr(f).c_str());
@@ -151,10 +150,10 @@ int main() {
             int n = (int) rnd(1, 100);
             poly f = rpoly((int) rnd(1, 60), t % 4), g = rpoly((int) rnd(1, 60), (t + 1) % 4);
             poly fg = mul(f, g);
-            fg.resize(n, mint(0));
+            fg.resize(n, 0);
             fg[0] = 1;
             poly lhs = poly_ln(fg, n), lf = poly_ln(f, n), lg = poly_ln(g, n);
-            For(i, 0, n - 1) if(lhs[i] != lf[i] + lg[i]) {
+            For(i, 0, n - 1) if(lhs[i] != (lf[i] + lg[i]) % MOD) {
                 printf("  [FAIL] ln(f·g) ≠ ln f + ln g 于第 %d 位:n = %d, f = %s, g = %s\n", i, n, pstr(f).c_str(), pstr(g).c_str());
                 return 1;
             }
@@ -168,12 +167,12 @@ int main() {
         For(t, 1, 200) {
             poly f = rpoly((int) rnd(1, 8), t % 4);
             poly g1 = poly_ln(f, 1);
-            if(g1.size() != 1 || g1[0] != mint(0)) {
+            if(g1.size() != 1 || g1[0] != 0) {
                 printf("  [FAIL] n=1 时应返回 {0},得到 %s(f = %s)\n", pstr(g1).c_str(), pstr(f).c_str());
                 return 1;
             }
             poly g2 = poly_ln(f, 2);
-            if(g2.size() != 2 || g2[0] != mint(0) || g2[1] != (f.size() > 1 ? f[1] : mint(0))) {
+            if(g2.size() != 2 || g2[0] != 0 || g2[1] != (f.size() > 1 ? f[1] : 0)) {
                 printf("  [FAIL] n=2 时应返回 {0, f[1]},得到 %s(f = %s)\n", pstr(g2).c_str(), pstr(f).c_str());
                 return 1;
             }
@@ -184,16 +183,16 @@ int main() {
         // f = {1} → 全 0
         {
             poly f{1}, got = poly_ln(f, 60);
-            For(i, 0, 59) if(got[i] != mint(0)) {
-                printf("  [FAIL] ln 1 应为 0,第 %d 位 = %d\n", i, got[i].val());
+            For(i, 0, 59) if(got[i] != 0) {
+                printf("  [FAIL] ln 1 应为 0,第 %d 位 = %d\n", i, got[i]);
                 return 1;
             }
             ok("f = {1} → ln f 全 0(n = 60)");
         }
         // f = 1 - x → ln = -Σ x^i/i
         {
-            poly f{1, mint(-1)}, want(200), got = poly_ln(f, 200);
-            For(i, 1, 199) want[i] = -mint(i).inv();
+            poly f{1, MOD - 1}, want(200), got = poly_ln(f, 200);
+            For(i, 1, 199) want[i] = MOD - ksm(i, MOD - 2, MOD);
             int at = firstdiff(want, got);
             if(at >= 0) return bad("ln(1-x) = -Σ x^i/i", f, 200, want, got, at);
             ok("f = 1-x → ln f = -x - x²/2 - x³/3 - ...(n = 200)");
@@ -225,9 +224,9 @@ int main() {
             int n = 1000;
             poly f = rpoly(n, t % 4);
             poly g = poly_ln(f, n);
-            CHECK(g.size() == (size_t) n && g[0] == mint(0), "n = 1000:长度恰为 n 且常数项为 0");
+            CHECK(g.size() == (size_t) n && g[0] == 0, "n = 1000:长度恰为 n 且常数项为 0");
             poly dg(n - 1), df(n - 1);
-            For(i, 1, n - 1) dg[i - 1] = g[i] * i, df[i - 1] = f[i] * i;
+            For(i, 1, n - 1) dg[i - 1] = (ll) g[i] * i % MOD, df[i - 1] = (ll) f[i] * i % MOD;
             poly lhs = mul(dg, f);
             lhs.resize(n - 1);
             bool allok = true;

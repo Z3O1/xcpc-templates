@@ -1,10 +1,10 @@
-// SA(n, a): 字符串 · 后缀数组 + LCP(ST 表)
+// SA(n, a): 字符串 · 后缀数组与 height
 
 const int N = 1e6 + 10;
 // a[1..n] 的字符值在 [0, N-2],n < N;输入只读,不需要哨兵,可重复构建。
-int sa[N], rk[N << 1], st[20][N], sa_n;
+// height[1] = 0;height[i] 是 sa[i-1] 与 sa[i] 两个后缀的最长公共前缀长度。
+int sa[N], rk[N << 1], height[N];
 template <class T> void SA(int n, const T *a) {
-    sa_n = n;
     if(!n) return;
     static int b[N], c[N];
     int m = *max_element(a + 1, a + n + 1) + 1;
@@ -35,21 +35,12 @@ template <class T> void SA(int n, const T *a) {
     int k = 0;
     For(i, 1, n) {
         if(rk[i] == 1) {
-            st[0][1] = k = 0;
+            height[1] = k = 0;
             continue;
         }
         k -= k > 0;
         int j = sa[rk[i] - 1];
         while(i + k <= n && j + k <= n && a[i + k] == a[j + k]) ++k;
-        st[0][rk[i]] = k;
+        height[rk[i]] = k;
     }
-    For(i, 1, __lg(n))
-        For(j, 1, n - (1 << i) + 1) { st[i][j] = min(st[i - 1][j], st[i - 1][j + (1 << (i - 1))]); }
-}
-int lcp(int x, int y) {
-    if(x == y) return sa_n - x + 1;
-    x = rk[x], y = rk[y];
-    if(x > y) swap(x, y);
-    int k = __lg(y - x);
-    return min(st[k][x + 1], st[k][y - (1 << k) + 1]);
 }

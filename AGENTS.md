@@ -14,8 +14,8 @@
 | 项目 | 值 |
 |---|---|
 | 章节 | **8 章**:字符串 / 数据结构 / 图论 / 数学 / 数论 / 多项式 / 计算几何 / 通用(顺序见 `.manifest.json`) |
-| 模板 | **69** 个代码文件,其中 2 个标了 `// hide`(只留档不进 PDF) |
-| PDF | `xcpc.pdf` **40 页**(含 3 栏目录),71 个代码块 = 67 个模板 + 4 个独立 typ 页(`通用/大质数表.typ`、`通用/常数速查表.typ`、`数据结构/四边形不等式/四边形不等式.typ`、`数论/积性函数/积性函数.typ`);另有 17 份 `.typ` 介绍(渲染在对应代码前,不占条目);第 2 行起的头注释也进 PDF(见 §4) |
+| 模板 | **69** 个代码文件,其中 6 个标了 `// hide`(只留档不进 PDF) |
+| PDF | `xcpc.pdf` **38 页**(含 3 栏目录),68 个代码块 = 63 个模板 + 5 个独立 typ 页(`通用/大质数表.typ`、`通用/常数速查表.typ`、`数据结构/四边形不等式/四边形不等式.typ`、`数论/积性函数/积性函数.typ`、`数学/反射容斥.typ`);另有 15 份 `.typ` 介绍(渲染在对应代码前,不占条目);第 2 行起的头注释也进 PDF(见 §4) |
 | 自测 | **69** 份 `X.check.cpp`,全跑 = 69 passed / 0 failed;改一个模板只跑 `./check.sh -x <模板名>` |
 | 未完成 | 见 §11 → `TODO.md` |
 
@@ -51,15 +51,15 @@ pdftoppm -png -r 150 -f N -l N xcpc.pdf tmp/x    # 出图判断排版(别用 pdf
 | 章 | 模板 |
 |---|---|
 | 字符串(6) | `manacher` `sa` `zfunc` `最小表示法` `sam`⚠ `pam`⚠ |
-| 数据结构(11) | `lct` `rmq` `wqs` `四边形不等式`(独立页) `决策单调性分治` `SMAWK` `Wilber` `二分栈` `全局平衡二叉树` `广义串并联图` `李超树` |
-| 图论(4) | `dinic` `mcmf` `一般图最大匹配` `支配树` |
+| 数据结构(11) | `lct` `rmq` `wqs` `四边形不等式`(独立页) `决策单调性分治` `SMAWK` `Wilber` `二分栈` `全局平衡二叉树`⚠ `广义串并联图` `李超树`⚠ |
+| 图论(4) | `dinic`⚠ `mcmf` `一般图最大匹配` `支配树` |
 | 数学(4) | `barrett` `lagrange` `pollard-rho` `类欧` |
-| 数论(15) | `积性函数`(小节:`线性筛` `杜教筛` `min_25`)+ `exgcd` `CRT` `BSGS` `原根` `Miller-Rabin` `Pollard-Rho` `二次剩余` `fgcd` `minmod` `下取整和` `分数还原` `高斯整数`(自配介绍页) |
+| 数论(15) | `积性函数`(小节:`线性筛`⚠ `杜教筛` `min_25`)+ `exgcd` `CRT` `BSGS` `原根` `Miller-Rabin` `Pollard-Rho` `二次剩余` `fgcd` `minmod` `下取整和` `分数还原` `高斯整数`(自配介绍页) |
 | 多项式(13) | `ntt` `FFT` `多项式求逆` `多项式ln` `多项式exp` `多项式开根` `多项式除法` `Berlekamp-Massey` `Bostan-Mori` `多点求值` `快速插值` `多项式复合` `多项式复合逆` |
 | 计算几何(17) | `geo` `半平面交` `上凸壳` `凸包内点判定` `多边形包含` `多边形重心` `最近点对` `最小圆覆盖` `图形交` `简单多边形三角剖分` `Delaunay` `Voronoi` `三维向量` `三维直线` `三维平面` `三维凸包` `三维旋转` |
 | 通用(2) | 独立页 `大质数表.typ`($10^k$ 以上的前 10 个素数,写成 $10^k + x$,数据来自 cnblogs/ljxtt/p/13514346)+ 独立页 `常数速查表.typ` |
 
-- `sam`(用户不用 SAM)与 `pam` 不进 PDF,它们的介绍 `.typ` 一并被跳过。
+- `sam`(用户不用 SAM)、`pam`、`线性筛`、`李超树`、`全局平衡二叉树` 与 `dinic` 不进 PDF,对应介绍 `.typ` 一并跳过;`支配树.typ` 单独隐藏,代码保留。
 - 仍需留意的前提:`全局平衡二叉树` / `geo` → 见 §8;SA/Z/Min_25 的旧缺陷已修复并加回归断言。
 - `高斯整数`(数论)配了介绍页 `高斯整数.typ`:那份资料页现在渲染在 `高斯整数.cpp` 前面,行文口味见 §4。
 
@@ -75,10 +75,10 @@ templates/<章>/<模板>.check.cpp       ─┘(gen.py 直接跳过,只给 check
 - Typst 的 `read()` 不能遍历目录 → "扫描"全由 `gen.py` 承担:扫磁盘 → 与 `.manifest.json` 对账
   (记忆章节顺序 + 标题,增删改都是增量) → 输出 `sections.typ` → 确保 `xcpc.typ` 正文是 `#include "sections.typ"`。
 - **`sections.typ` 是生成物,不要手改**;`.manifest.json` 是状态文件,调顺序/标题**只手工改它**。
-- `.manifest.json` 结构:`{"sections": [章名…], "entries": [{key,title,missing,hidden}, …]}`(现 90 条)。
+- `.manifest.json` 结构:`{"sections": [章名…], "entries": [{key,title,missing,hidden}, …]}`(现 91 条)。
   - `missing: true` = 曾存在、后来删除/改名的条目(**记忆保留**,同名文件回来会原位复原),现有 17 条
     (如 `通用/常数表.cpp`→`通用/大质数表.typ`、`数学/ntt.cpp`→`多项式/`、`数学/min25.cpp`→`数论/积性函数/`、`数论/两平方和.typ`→`高斯整数.typ`、`数据结构/线段树.cpp`)。**不进 PDF,别管也别清**。
-  - `hidden: true` = 文件头有 `// hide`(当前 SAM、广义 PAM)。
+  - `hidden: true` = 文件头有 `// hide`(当前 SAM、广义 PAM、线性筛、李超树、全局平衡二叉树、Dinic)。
   - 注意 `数学/pollard-rho.cpp` 与 `数论/Pollard-Rho.cpp` 是**两个都还在**的独立模板,不是同一份。
 - **改标题**:`gen.py` 只给*新*条目从首行注释取标题,已有条目一律以 manifest 为准 →
   想换标题先从 `.manifest.json` 删掉该条,再 `python3 gen.py` 重取。
@@ -106,7 +106,8 @@ templates/<章>/<模板>.check.cpp       ─┘(gen.py 直接跳过,只给 check
 - **不写 `main`**:模板是给读者抄的片段,自带 main 会把输入输出调度整块渲染进 PDF(已有 3 个被抽象掉)。
   **不写 `#include` / `using namespace std;`**:片段默认读者有 base header。
 - **隐藏**:开头连续行注释区(允许空行)含 `// hide` 或 `// 隐藏` → 整块不进 PDF(去掉标记即恢复),用于"留档但不上书"。
-- **介绍 `.typ`(推荐写)**:同名 `.typ` 渲染在该代码前面,**不进 manifest、不占条目**。
+  **用户说“删/去掉某个板子”默认只隐藏**,源码、自测与介绍均保留;只有明确要求物理删除才删文件。
+- **介绍 `.typ`(推荐写)**:同名 `.typ` 渲染在该代码前面,**不进 manifest、不占条目**;可在自身头部加 `// hide` 单独隐藏;不写“坑:”说明段。
   判断规则 = "**存在同基底名的非 `.typ` 文件**";没有同名代码的 `.typ` 才是独立渲染页(`常数速查表.typ`)。首行习惯 `// 介绍: <标题>`(Typst 注释,不渲染);
   介绍里**不要再写与 `== 标题` 同级的标题**;加粗用单 `*`/`_`,Typst **不认 `**双星粗体**`**。
 - **资料页/介绍的行文(用户口味)**:同余条件别写成 `$a equiv b mod m$`,说人话 ——
@@ -119,7 +120,8 @@ templates/<章>/<模板>.check.cpp       ─┘(gen.py 直接跳过,只给 check
 模板是**竞赛代码片段**,不是能单独编译的单元:文件内不定义宏/类型,沿用读者 base header 的那套命名。
 拿不准就参考 `~/0/Code/`(最接近 house 风格)与 `skip2004-ICPC-Templates/`。
 
-- `For(i,l,r)` / `rFor` / `ForD` 代替 `for`;`vect<T>` 代替 `vector<T>`;`ll` / `db` / `mint`(带 `.inv()`)/ `poly` / `ksm`。
+- `For(i,l,r)` / `rFor` / `ForD` 代替 `for`;`vect<T>` 代替 `vector<T>`;`ll` / `db` / `poly` / `ksm`。
+  模运算直接用整数:`poly = vector<int>`、常量 `MOD = 998244353`,系数在 `[0, MOD)`;乘法升 `ll` 并逐步 `% MOD`,非零逆元用 `ksm(x, MOD - 2, MOD)`;任意模数卷积仍用 `Mul::mul(a, b, P)`。
 - `vect<T>` 是带 `+=` 的自定义容器,**没有 `push_back`**(追加用 `p += x`);要标准语义就用 `std::vector`。
 - `pii` 是 `array<int,2>`(支持 `f[i] = {dfn[i]}`、`que(x)[1]`),不是 `std::pair`。
 - 计算几何统一 `struct p2`(点)/`seg`/`line`;`eps`/`cmp`/`sgn`/`cross`/`det` 常规。
@@ -146,7 +148,7 @@ int main() { /* 断言 + 暴力对照 */; PASSED("X"); }
   编译 `g++ -std=c++17 -O2`,运行目录 = 该章目录,单个 check 60s 超时按 FAIL(`XCPC_CHECK_TIMEOUT` 可改)。
   逻辑就是 `find templates -name '*.check.cpp'` 逐个编译运行,没有别的魔法。
 - `templates/_check_base.hpp` 提供:`ll/u64/s64/i128/u128/db`、`vect<T>`(薄派生自 `vector`,带 `+=`/`substr`/`operator+`)、
-  `pii = array<int,2>`、`all/cmin/cmax/For/rFor/ForD`、`ksm`、`mint`(成员 `int v`,还有 union 别名 `x`;`.inv()`)、
+  `pii = array<int,2>`、`all/cmin/cmax/For/rFor/ForD`、`ksm`、常量 `MOD = 998244353`、
   `rng`/`rnd(l,r)`、`ok()`、`CHECK(cond,name)`、`PASSED(name)`;它的 `ksm` 同样有 §5 的模数限制。
 - **标准**:「内置**独立**参考实现 + 大规模随机对拍 + 退化/极端用例 + 性质断言」,失败要打印具体输入。
   别写成"跑一遍不崩":写完用**变异测试**验证 check 有牙(故意把模板改错一处,看它是否变红)。

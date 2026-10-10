@@ -21,25 +21,25 @@ static poly lagrange(const poly &xs, const poly &ys) {
     poly M{1};
     For(j, 0, m - 1) {  // M *= (x - xs[j])
         poly t(M.size() + 1);
-        ForD(k, 0, (int) M.size()) t[k] -= M[k] * xs[j], t[k + 1] += M[k];
+        ForD(k, 0, (int) M.size()) t[k] = (t[k] - (ll) M[k] * xs[j] % MOD + MOD) % MOD, t[k + 1] = (t[k + 1] + M[k]) % MOD;
         M = t;
     }
     poly res(m);
     For(i, 0, m - 1) {
-        mint r = xs[i];
+        int r = xs[i];
         poly q(m);  // M / (x - r)
         q[m - 1] = M[m];
-        rFor(k, m - 1, 1) q[k - 1] = M[k] + r * q[k];
-        mint den = 1;
-        For(j, 0, m - 1) if(j != i) den *= (r - xs[j]);
-        mint c = ys[i] / den;
-        For(k, 0, m - 1) res[k] += c * q[k];
+        rFor(k, m - 1, 1) q[k - 1] = (M[k] + (ll) r * q[k]) % MOD;
+        ll den = 1;
+        For(j, 0, m - 1) if(j != i) den = den * (r - xs[j] + MOD) % MOD;
+        int c = (ll) ys[i] * ksm(den, MOD - 2, MOD) % MOD;
+        For(k, 0, m - 1) res[k] = (res[k] + (ll) c * q[k]) % MOD;
     }
     return res;
 }
 static string pstr(const poly &a, int k = 12) {
     string s = "[" + to_string(a.size()) + "]";
-    For(i, 0, min((int) a.size(), k) - 1) s += " " + to_string(a[i].val());
+    For(i, 0, min((int) a.size(), k) - 1) s += " " + to_string(a[i]);
     return s + ((int) a.size() > k ? " ..." : "");
 }
 static int firstdiff(const poly &want, const poly &got) {
@@ -63,26 +63,24 @@ static int cmp(const char *what, const poly &xs, const poly &ys) {
     int at = firstdiff(want, got);
     if(at >= 0) {
         printf("  [FAIL] %s 与拉格朗日暴力不符\n    xs = %s\n    ys = %s\n    首个不符: i = %d, x = %d, want = %d, got = %d\n", what,
-               pstr(xs).c_str(), pstr(ys).c_str(), at, xs[at].val(), want[at].val(), got[at].val());
+               pstr(xs).c_str(), pstr(ys).c_str(), at, xs[at], want[at], got[at]);
         return 1;
     }
     // 再验一遍点值:插值结果在每个点上必须等于 ys
     poly back = poly_eval(got, xs);
     For(i, 0, (int) xs.size() - 1) if(back[i] != ys[i]) {
-        printf("  [FAIL] %s:插值结果在 x = %d 处取值 %d ≠ y = %d\n", what, xs[i].val(), back[i].val(), ys[i].val());
+        printf("  [FAIL] %s:插值结果在 x = %d 处取值 %d ≠ y = %d\n", what, xs[i], back[i], ys[i]);
         return 1;
     }
     return 0;
 }
 int main() {
-    M = 998244353;  // ntt.cpp 的包装 mul 按全局 M 取模
-
     // ——— 1) 随机点值对拍 ———
     {
         For(t, 1, 500) {
             int m = (int) rnd(1, 12);
             poly xs = rxs(m), ys(m);
-            For(i, 0, m - 1) ys[i] = (int) rnd(0, mint::getM() - 1);
+            For(i, 0, m - 1) ys[i] = (int) rnd(0, MOD - 1);
             if(cmp("随机小规模", xs, ys)) return 1;
         }
         ok("500 组随机 m ≤ 12 的 (xs, ys):与 O(m²) 拉格朗日插值逐位相同");
@@ -99,7 +97,7 @@ int main() {
             int m = (1 << k) + d;
             if(m < 1) continue;
             poly xs = rxs(m), ys(m);
-            For(i, 0, m - 1) ys[i] = (int) rnd(0, mint::getM() - 1);
+            For(i, 0, m - 1) ys[i] = (int) rnd(0, MOD - 1);
             if(cmp("跨 2 的幂的 m", xs, ys)) return 1;
         }
         ok("m = 2^k-1 / 2^k / 2^k+1(k ≤ 7)一致");
@@ -110,7 +108,7 @@ int main() {
         For(t, 1, 300) {
             int m = (int) rnd(1, 60);
             poly f((int) rnd(0, m - 1));  // deg f < m
-            For(i, 0, (int) f.size() - 1) f[i] = (int) rnd(0, mint::getM() - 1);
+            For(i, 0, (int) f.size() - 1) f[i] = (int) rnd(0, MOD - 1);
             poly xs = rxs(m), ys = poly_eval(f, xs);
             poly back = poly_interp(xs, ys);
             poly ff = f;
@@ -128,14 +126,14 @@ int main() {
         For(t, 1, 100) {
             int m = (int) rnd(1, 40);
             poly xs = rxs(m), ys(m);
-            For(i, 0, m - 1) ys[i] = (int) rnd(0, mint::getM() - 1);
+            For(i, 0, m - 1) ys[i] = (int) rnd(0, MOD - 1);
             poly f = poly_interp(xs, ys);
             poly zs = rxs((int) rnd(1, 20));
             For(i, 0, (int) zs.size() - 1) {
-                mint s = 0;
-                rFor(j, (int) f.size() - 1, 0) s = s * zs[i] + f[j];
+                ll s = 0;
+                rFor(j, (int) f.size() - 1, 0) s = (s * zs[i] + f[j]) % MOD;
                 if(s != poly_eval(f, zs)[i]) {
-                    printf("  [FAIL] poly_interp 的结果与 poly_eval 自相矛盾(x = %d)\n", zs[i].val());
+                    printf("  [FAIL] poly_interp 的结果与 poly_eval 自相矛盾(x = %d)\n", zs[i]);
                     return 1;
                 }
             }
@@ -158,10 +156,10 @@ int main() {
         // m = 1 → {y0}
         {
             For(t, 1, 100) {
-                mint x = (int) rnd(0, mint::getM() - 1), y = (int) rnd(0, mint::getM() - 1);
+                int x = (int) rnd(0, MOD - 1), y = (int) rnd(0, MOD - 1);
                 poly xs{x}, ys{y}, got = poly_interp(xs, ys);
                 if(got.size() != 1 || got[0] != y) {
-                    printf("  [FAIL] m = 1 时应返回 {%d},得到 %s(x = %d)\n", y.val(), pstr(got).c_str(), x.val());
+                    printf("  [FAIL] m = 1 时应返回 {%d},得到 %s(x = %d)\n", y, pstr(got).c_str(), x);
                     return 1;
                 }
             }
@@ -171,9 +169,9 @@ int main() {
         {
             For(t, 1, 50) {
                 int m = (int) rnd(1, 30);
-                poly xs = rxs(m), ys(m, mint(0)), got = poly_interp(xs, ys);
-                For(i, 0, m - 1) if(got[i] != mint(0)) {
-                    printf("  [FAIL] ys 全 0 时应返回零多项式,第 %d 位 = %d\n", i, got[i].val());
+                poly xs = rxs(m), ys(m, 0), got = poly_interp(xs, ys);
+                For(i, 0, m - 1) if(got[i] != 0) {
+                    printf("  [FAIL] ys 全 0 时应返回零多项式,第 %d 位 = %d\n", i, got[i]);
                     return 1;
                 }
             }
@@ -184,9 +182,9 @@ int main() {
             For(t, 1, 100) {
                 int m = (int) rnd(2, 20);
                 poly xs = rxs(m), ys(m);
-                xs[0] = 0, xs[1] = mint::getM() - 1;  // 0 与 -1
+                xs[0] = 0, xs[1] = MOD - 1;  // 0 与 -1
                 For(i, 2, m - 1) xs[i] = 100 + i;      // 2 起用小值,保证互异(契约要求两两不同)
-                For(i, 0, m - 1) ys[i] = (int) rnd(0, mint::getM() - 1);
+                For(i, 0, m - 1) ys[i] = (int) rnd(0, MOD - 1);
                 if(cmp("xs 含 0 与 P-1", xs, ys)) return 1;
             }
             ok("100 组 xs 含 0 与 P-1(即 -1):一致");
@@ -196,7 +194,7 @@ int main() {
             For(t, 1, 100) {
                 int m = (int) rnd(1, 30);
                 poly xs = rxs(m), f(m);  // deg = m-1(取到上界)
-                For(i, 0, m - 1) f[i] = (int) rnd(0, mint::getM() - 1);
+                For(i, 0, m - 1) f[i] = (int) rnd(0, MOD - 1);
                 poly ys = poly_eval(f, xs);
                 poly back = poly_interp(xs, ys);
                 int at = firstdiff(f, back);
@@ -216,7 +214,7 @@ int main() {
         For(t, 1, 3) {
             int m = 300;
             poly xs = rxs(m), f(299);
-            For(i, 0, 298) f[i] = (int) rnd(0, mint::getM() - 1);
+            For(i, 0, 298) f[i] = (int) rnd(0, MOD - 1);
             poly ys = poly_eval(f, xs);
             poly back = poly_interp(xs, ys);
             CHECK(back.size() == (size_t) m, "m = 300:插值结果长度恰为 300");

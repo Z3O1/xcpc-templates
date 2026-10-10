@@ -1,4 +1,5 @@
 // Dinic_t: 图论 · 网络流 (Dinic 最大流 + cut 割集)
+// hide
 
 class Dinic_t {
   public:

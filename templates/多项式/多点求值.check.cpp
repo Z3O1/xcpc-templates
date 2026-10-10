@@ -17,8 +17,8 @@
 static poly naive_eval(const poly &f, const poly &xs) {
     poly r(xs.size());
     For(i, 0, (int) xs.size() - 1) {
-        mint s = 0;
-        rFor(j, (int) f.size() - 1, 0) s = s * xs[i] + f[j];
+        ll s = 0;
+        rFor(j, (int) f.size() - 1, 0) s = (s * xs[i] + f[j]) % MOD;
         r[i] = s;
     }
     return r;
@@ -30,25 +30,25 @@ static poly lagrange(const poly &xs, const poly &ys) {
     poly M{1};
     For(j, 0, m - 1) {  // M *= (x - xs[j])
         poly t(M.size() + 1);
-        ForD(k, 0, (int) M.size()) t[k] -= M[k] * xs[j], t[k + 1] += M[k];
+        ForD(k, 0, (int) M.size()) t[k] = (t[k] - (ll) M[k] * xs[j] % MOD + MOD) % MOD, t[k + 1] = (t[k + 1] + M[k]) % MOD;
         M = t;
     }
     poly res(m);
     For(i, 0, m - 1) {
-        mint r = xs[i];
+        int r = xs[i];
         poly q(m);  // M / (x - r) 的系数(合成除法)
         if(m) q[m - 1] = M[m];
-        rFor(k, m - 1, 1) q[k - 1] = M[k] + r * q[k];
-        mint den = 1;
-        For(j, 0, m - 1) if(j != i) den *= (r - xs[j]);
-        mint c = ys[i] / den;
-        For(k, 0, m - 1) res[k] += c * q[k];
+        rFor(k, m - 1, 1) q[k - 1] = (M[k] + (ll) r * q[k]) % MOD;
+        ll den = 1;
+        For(j, 0, m - 1) if(j != i) den = den * (r - xs[j] + MOD) % MOD;
+        int c = (ll) ys[i] * ksm(den, MOD - 2, MOD) % MOD;
+        For(k, 0, m - 1) res[k] = (res[k] + (ll) c * q[k]) % MOD;
     }
     return res;
 }
 static string pstr(const poly &a, int k = 12) {
     string s = "[" + to_string(a.size()) + "]";
-    For(i, 0, min((int) a.size(), k) - 1) s += " " + to_string(a[i].val());
+    For(i, 0, min((int) a.size(), k) - 1) s += " " + to_string(a[i]);
     return s + ((int) a.size() > k ? " ..." : "");
 }
 static int firstdiff(const poly &want, const poly &got) {
@@ -65,7 +65,7 @@ static int cmp(const char *what, const poly &f, const poly &xs) {
     int at = firstdiff(want, got);
     if(at >= 0) {
         printf("  [FAIL] %s\n    |f| = %d, f = %s\n    m = %d, xs = %s\n    首个不符: i = %d, x = %d, want = %d, got = %d\n", what,
-               (int) f.size(), pstr(f).c_str(), (int) xs.size(), pstr(xs).c_str(), at, xs[at].val(), want[at].val(), got[at].val());
+               (int) f.size(), pstr(f).c_str(), (int) xs.size(), pstr(xs).c_str(), at, xs[at], want[at], got[at]);
         return 1;
     }
     return 0;
@@ -73,7 +73,7 @@ static int cmp(const char *what, const poly &f, const poly &xs) {
 static poly rpoly(int len, int mode) {  // 0 稠密 1 稀疏 2 小值 3 全 0
     poly a(len);
     For(i, 0, len - 1) {
-        int v = (int) rnd(0, mint::getM() - 1);
+        int v = (int) rnd(0, MOD - 1);
         if(mode == 1 && (i & 1)) v = 0;
         if(mode == 2) v = (int) rnd(0, 3);
         if(mode == 3) v = 0;
@@ -94,8 +94,6 @@ static poly rxs(int m, int mode) {  // mode 0 任意(可能重复)1 互异 2 含
     return xs;
 }
 int main() {
-    M = 998244353;  // ntt.cpp 的包装 mul 按全局 M 取模
-
     // ——— 1) 随机对拍 ———
     {
         For(t, 1, 3000) {
@@ -136,7 +134,7 @@ int main() {
             ff.resize(n);
             For(i, 0, n - 1) if(back[i] != ff[i]) {
                 printf("  [FAIL] 求值后拉格朗日插值未还原 f:第 %d 位 want %d got %d(|f| = %d, m = %d)\n    f = %s\n    xs = %s\n", i,
-                       ff[i].val(), back[i].val(), n, n, pstr(f).c_str(), pstr(xs).c_str());
+                       ff[i], back[i], n, n, pstr(f).c_str(), pstr(xs).c_str());
                 return 1;
             }
         }
@@ -151,12 +149,12 @@ int main() {
             poly P{1};
             For(i, 0, m - 1) {
                 poly nxt(P.size() + 1);
-                ForD(k, 0, (int) P.size()) nxt[k] -= P[k] * xs[i], nxt[k + 1] += P[k];
+                ForD(k, 0, (int) P.size()) nxt[k] = (nxt[k] - (ll) P[k] * xs[i] % MOD + MOD) % MOD, nxt[k + 1] = (nxt[k + 1] + P[k]) % MOD;
                 P = nxt;
             }
             poly ys = poly_eval(P, xs);
-            For(i, 0, m - 1) if(ys[i] != mint(0)) {
-                printf("  [FAIL] Π(x-xs[j]) 在 x = %d 处取值 %d 应为 0(xs = %s)\n", xs[i].val(), ys[i].val(), pstr(xs).c_str());
+            For(i, 0, m - 1) if(ys[i] != 0) {
+                printf("  [FAIL] Π(x-xs[j]) 在 x = %d 处取值 %d 应为 0(xs = %s)\n", xs[i], ys[i], pstr(xs).c_str());
                 return 1;
             }
         }
@@ -178,10 +176,10 @@ int main() {
         // f 为空 / 全零 → 全是 0
         {
             poly xs = rxs(20, 0);
-            poly e, z(20, mint(0));
+            poly e, z(20, 0);
             poly a = poly_eval(e, xs), b = poly_eval(z, xs);
-            For(i, 0, 19) if(a[i] != mint(0) || b[i] != mint(0)) {
-                printf("  [FAIL] 零多项式求值不为 0(第 %d 位 %d / %d)\n", i, a[i].val(), b[i].val());
+            For(i, 0, 19) if(a[i] != 0 || b[i] != 0) {
+                printf("  [FAIL] 零多项式求值不为 0(第 %d 位 %d / %d)\n", i, a[i], b[i]);
                 return 1;
             }
             ok("f 为空或全零 → 每个点都是 0");
@@ -189,7 +187,7 @@ int main() {
         // f 为常数 / 单项
         {
             For(t, 1, 100) {
-                mint c = (int) rnd(0, mint::getM() - 1);
+                int c = (int) rnd(0, MOD - 1);
                 poly f{c}, xs = rxs((int) rnd(1, 30), 0);
                 if(cmp("常数 f", f, xs)) return 1;
                 poly g{c, 0, 0, 0};
@@ -211,7 +209,7 @@ int main() {
         {
             For(t, 1, 100) {
                 int m = (int) rnd(1, 20);
-                poly f = rpoly((int) rnd(1, 20), t % 4), xs(m, mint((int) rnd(0, 5)));
+                poly f = rpoly((int) rnd(1, 20), t % 4), xs(m, (int) rnd(0, 5));
                 if(cmp("重复点", f, xs)) return 1;
             }
             ok("100 组 xs 全部相同(重根)与 Horner 一致");
@@ -219,7 +217,7 @@ int main() {
         // m = 1
         {
             For(t, 1, 100) {
-                poly f = rpoly((int) rnd(0, 30), t % 4), xs{(int) rnd(0, mint::getM() - 1)};
+                poly f = rpoly((int) rnd(0, 30), t % 4), xs{(int) rnd(0, MOD - 1)};
                 if(cmp("m = 1", f, xs)) return 1;
             }
             ok("100 组 m = 1(|f| 任意,含空)与 Horner 一致");
@@ -227,7 +225,7 @@ int main() {
         // |f| = 1 / m 很大时 f 很短
         {
             For(t, 1, 50) {
-                poly f{(int) rnd(0, mint::getM() - 1)}, xs = rxs((int) rnd(1, 50), 1);
+                poly f{(int) rnd(0, MOD - 1)}, xs = rxs((int) rnd(1, 50), 1);
                 if(cmp("|f| = 1", f, xs)) return 1;
             }
             ok("50 组 |f| = 1、m ≤ 50:每个点都取同一个常数");
@@ -243,10 +241,10 @@ int main() {
         // 抽 20 个点与 Horner 对照
         For(t, 1, 20) {
             int i = (int) rnd(0, m - 1);
-            mint s = 0;
-            rFor(j, n - 1, 0) s = s * xs[i] + f[j];
+            ll s = 0;
+            rFor(j, n - 1, 0) s = (s * xs[i] + f[j]) % MOD;
             if(s != got[i]) {
-                printf("  [FAIL] m = 500 抽查第 %d 个点:Horner = %d, poly_eval = %d\n", i, s.val(), got[i].val());
+                printf("  [FAIL] m = 500 抽查第 %d 个点:Horner = %d, poly_eval = %d\n", i, (int) s, got[i]);
                 return 1;
             }
         }
@@ -255,12 +253,12 @@ int main() {
         poly P{1};
         For(i, 0, m - 1) {
             poly nxt(P.size() + 1);
-            ForD(k, 0, (int) P.size()) nxt[k] -= P[k] * xs[i], nxt[k + 1] += P[k];
+            ForD(k, 0, (int) P.size()) nxt[k] = (nxt[k] - (ll) P[k] * xs[i] % MOD + MOD) % MOD, nxt[k + 1] = (nxt[k + 1] + P[k]) % MOD;
             P = nxt;
         }
         poly ys = poly_eval(P, xs);
         bool allzero = true;
-        For(i, 0, m - 1) allzero &= (ys[i] == mint(0));
+        For(i, 0, m - 1) allzero &= (ys[i] == 0);
         CHECK(allzero, "m = 500:deg 500 的 Π(x - xs[i]) 在 500 个点上全取 0");
     }
 

@@ -121,6 +121,29 @@ class GeneratorTests(Workspace):
         data = self.generate()
         self.assertEqual([e['key'] for e in data['entries'] if not e['missing']], ['章/a.typ'])
 
+    def test_intro_can_be_hidden_without_hiding_code(self):
+        for name in ('a', '小节/a'):
+            with self.subTest(name=name):
+                self.source(f'章/{name}.cpp')
+                self.put(f'templates/章/{name}.typ', '// 介绍\n// hide\n原理正文\n')
+                data = self.generate()
+                entry = next(e for e in data['entries'] if e['key'] == f'章/{name}.cpp')
+                self.assertFalse(entry['hidden'])
+                sections = (self.root / 'sections.typ').read_text(encoding='utf-8')
+                self.assertIn(f'readcode("templates/章/{name}.cpp")', sections)
+                self.assertNotIn(f'#include "templates/章/{name}.typ"', sections)
+                self.put(f'templates/章/{name}.typ', '// 介绍\n原理正文\n')
+                self.generate()
+                sections = (self.root / 'sections.typ').read_text(encoding='utf-8')
+                self.assertIn(f'#include "templates/章/{name}.typ"', sections)
+
+    def test_hide_marker_in_intro_body_does_not_hide_it(self):
+        self.source('章/a.cpp')
+        self.put('templates/章/a.typ', '// 介绍\n原理正文\n// hide\n')
+        self.generate()
+        sections = (self.root / 'sections.typ').read_text(encoding='utf-8')
+        self.assertIn('#include "templates/章/a.typ"', sections)
+
     def test_groups_with_and_without_body(self):
         self.source('章/小节/a.cpp', '子条')
         self.put('templates/章/小节/小节.typ', '小节正文\n')

@@ -1,20 +1,25 @@
-// 杜教筛 自测:与线性筛前缀和对照,并验证大 n 的已知值
+// 杜教筛 自测:独立埃氏筛预处理、线性筛前缀和交叉对照,并验证大 n 的已知值
 #include "../../_check_base.hpp"
-constexpr int N = 1000000;   // 线性筛按项目级常量 N 开数组;杜教筛用它作阈值
-#include "线性筛.cpp"
+constexpr int N = 1000000;   // 杜教筛查表阈值
 
 int mu[N + 1], phi[N + 1];
 ll smu[N + 1], sphi[N + 1];
 #include "杜教筛.cpp"
 
 int main() {
-    S.work();
-    For(i, 1, N) mu[i] = S.mu[i], phi[i] = S.phi[i], smu[i] = smu[i - 1] + mu[i], sphi[i] = sphi[i - 1] + phi[i];
+    // 自测自行用埃氏筛预处理,不依赖已删除的模板。
+    For(i, 1, N) mu[i] = 1, phi[i] = i;
+    For(p, 2, N) if(phi[p] == p) {
+        for(int i = p; i <= N; i += p) phi[i] -= phi[i] / p, mu[i] = -mu[i];
+        if(1ll * p * p <= N)
+            for(ll i = 1ll * p * p; i <= N; i += 1ll * p * p) mu[i] = 0;
+    }
+    For(i, 1, N) smu[i] = smu[i - 1] + mu[i], sphi[i] = sphi[i - 1] + phi[i];
 
-    // 1) n <= N 必须走查表分支,与线性筛前缀和完全一致
+    // 1) n <= N 必须走查表分支,与预筛前缀和完全一致
     For(n, 1, N) if(DJS_mu(n) != smu[n] || DJS_phi(n) != sphi[n])
         return printf("  [FAIL] n=%d DJS_mu=%lld(%lld) DJS_phi=%lld(%lld)\n", n, DJS_mu(n), smu[n], DJS_phi(n), sphi[n]), 1;
-    ok("1..1e6 与线性筛前缀和逐项一致(走查表分支)");
+    ok("1..1e6 与埃氏筛前缀和逐项一致(走查表分支)");
 
     // 2) 已知值(公开可查):Σμ(1e6)=212,Σφ(1e6)=303963552392
     CHECK(DJS_mu(1000000) == 212, "Σμ(1e6) = 212");

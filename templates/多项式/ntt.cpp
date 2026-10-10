@@ -40,6 +40,7 @@ template <int M, int G> static void NTT(poly &a, const int k) {
 poly mul(poly a, poly b, int P) {
     int n = a.size(), m = b.size();
     if(!n || !m) return poly();
+    if(n == 1 && m == 1) return poly{int(1ll * a[0] * b[0] % P)};
     int l = 1 << __lg(n + m - 2) + 1;
     a.resize(l), b.resize(l);
     static constexpr int M[3]{998244353, 1004535809, 469762049}, G = 3;
@@ -63,16 +64,6 @@ poly mul(poly a, poly b, int P) {
     return d;
 }
 } // namespace Mul
-using poly = vector<mint>;
-int M;
-poly mul(poly a, const poly &b) {
-    int n = a.size(), m = b.size();
-    if(!n || !m) return poly();
-    vector<int> c(n), d(m);
-    For(i, 0, n - 1) c[i] = a[i].x;
-    For(i, 0, m - 1) d[i] = b[i].x;
-    c = Mul::mul(c, d, M);
-    a.resize(c.size());
-    For(i, 0, a.size() - 1) a[i] = c[i];
-    return a;
-}
+// 普通卷积使用 base header 的常量 MOD;任意模数用 Mul::mul(a, b, P)。
+using poly = vector<int>;
+poly mul(poly a, poly b) { return Mul::mul(move(a), move(b), MOD); }

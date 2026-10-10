@@ -11,22 +11,22 @@
 #include "多项式求逆.cpp"
 #include "多项式开根.cpp"
 
-static const mint ih2 = mint(2).inv();
+static const int ih2 = ksm(2, MOD - 2, MOD);
 // ——— 暴力:由 g² = f 逐项解 g(g[0] = 1) ———
 static poly naive_sqrt(const poly &f, int n) {
     poly g(n);
     if(n) g[0] = 1;
     For(k, 1, n - 1) {
-        mint s = 0;
-        For(i, 1, k - 1) s += g[i] * g[k - i];
-        mint fk = (k < (int) f.size() ? f[k] : mint(0));
-        g[k] = (fk - s) * ih2;
+        ll s = 0;
+        For(i, 1, k - 1) s = (s + (ll) g[i] * g[k - i]) % MOD;
+        int fk = (k < (int) f.size() ? f[k] : 0);
+        g[k] = (fk - s + MOD) * ih2 % MOD;
     }
     return g;
 }
 static string pstr(const poly &a, int k = 12) {
     string s = "[" + to_string(a.size()) + "]";
-    For(i, 0, min((int) a.size(), k) - 1) s += " " + to_string(a[i].val());
+    For(i, 0, min((int) a.size(), k) - 1) s += " " + to_string(a[i]);
     return s + ((int) a.size() > k ? " ..." : "");
 }
 static int firstdiff(const poly &want, const poly &got) {
@@ -36,14 +36,14 @@ static int firstdiff(const poly &want, const poly &got) {
 }
 static int bad(const char *what, const poly &f, int n, const poly &want, const poly &got, int at = -1) {
     printf("  [FAIL] %s\n    n = %d, f = %s\n", what, n, pstr(f).c_str());
-    if(at >= 0) printf("    首个不符: k = %d, want = %d, got = %d\n", at, want[at].val(), got[at].val());
+    if(at >= 0) printf("    首个不符: k = %d, want = %d, got = %d\n", at, want[at], got[at]);
     printf("    want = %s\n    got  = %s\n", pstr(want).c_str(), pstr(got).c_str());
     return 1;
 }
 static poly rpoly(int len, int mode) {  // 0 稠密 1 稀疏 2 小值
     poly a(len);
     For(i, 0, len - 1) {
-        int v = (int) rnd(0, mint::getM() - 1);
+        int v = (int) rnd(0, MOD - 1);
         if(mode == 1 && (i & 1)) v = 0;
         if(mode == 2) v = (int) rnd(0, 3);
         a[i] = v;
@@ -63,8 +63,6 @@ static int cmp(const char *what, const poly &f, int n) {
     return 0;
 }
 int main() {
-    M = 998244353;  // ntt.cpp 的包装 mul 按全局 M 取模
-
     // ——— 0) 随机对拍 ———
     {
         For(t, 1, 2000) {
@@ -114,8 +112,8 @@ int main() {
             int n = (int) rnd(1, 200), len = (int) rnd(1, 200);
             poly h = rpoly(len, t % 3);
             poly f = mul(h, h);
-            f.resize(n, mint(0));
-            f.resize(max((int) f.size(), n), mint(0));
+            f.resize(n, 0);
+            f.resize(max((int) f.size(), n), 0);
             if((int) f.size() < n) f.resize(n);
             f[0] = 1;
             poly g = poly_sqrt(f, n);
@@ -123,8 +121,8 @@ int main() {
                 printf("  [FAIL] f = h² 时 sqrt f ≠ h 于第 %d 位:n = %d, h = %s\n", i, n, pstr(h).c_str());
                 return bad("完全平方还原", f, n, h, g, i);
             }
-            For(i, len, n - 1) if(g[i] != mint(0)) {
-                printf("  [FAIL] h² 的平方根高次应为 0,第 %d 位 = %d(h = %s, n = %d)\n", i, g[i].val(), pstr(h).c_str(), n);
+            For(i, len, n - 1) if(g[i] != 0) {
+                printf("  [FAIL] h² 的平方根高次应为 0,第 %d 位 = %d(h = %s, n = %d)\n", i, g[i], pstr(h).c_str(), n);
                 return 1;
             }
         }
@@ -136,12 +134,12 @@ int main() {
         For(t, 1, 200) {
             poly f = rpoly((int) rnd(1, 8), t % 3);
             poly g1 = poly_sqrt(f, 1);
-            if(g1.size() != 1 || g1[0] != mint(1)) {
+            if(g1.size() != 1 || g1[0] != 1) {
                 printf("  [FAIL] n=1 时应返回 {1},得到 %s(f = %s)\n", pstr(g1).c_str(), pstr(f).c_str());
                 return 1;
             }
             poly g2 = poly_sqrt(f, 2);
-            if(g2.size() != 2 || g2[0] != mint(1) || g2[1] != ih2 * (f.size() > 1 ? f[1] : mint(0))) {
+            if(g2.size() != 2 || g2[0] != 1 || g2[1] != (ll) ih2 * (f.size() > 1 ? f[1] : 0) % MOD) {
                 printf("  [FAIL] n=2 时应返回 {1, f[1]/2},得到 %s(f = %s)\n", pstr(g2).c_str(), pstr(f).c_str());
                 return 1;
             }
@@ -152,8 +150,8 @@ int main() {
         // f = 1 → {1,0,0,...}
         {
             poly f{1}, got = poly_sqrt(f, 60);
-            For(i, 0, 59) if(got[i] != mint(i == 0)) {
-                printf("  [FAIL] sqrt 1 应为 1,第 %d 位 = %d\n", i, got[i].val());
+            For(i, 0, 59) if(got[i] != (i == 0)) {
+                printf("  [FAIL] sqrt 1 应为 1,第 %d 位 = %d\n", i, got[i]);
                 return 1;
             }
             ok("f = {1} → sqrt f = 1(n = 60)");
@@ -167,7 +165,7 @@ int main() {
             // 手算核对(sympy 出的 C(1/2,k) mod P):1 + x/2 - x²/8 + x³/16 - 5x⁴/128 + 7x⁵/256 …
             const int exp8[8] = {1, 499122177, 124780544, 935854081, 38993920, 970948609, 20471808, 982159361};
             bool handok = true;
-            For(i, 0, 7) handok &= (got[i].val() == exp8[i]);
+            For(i, 0, 7) handok &= (got[i] == exp8[i]);
             if(!handok) {
                 printf("  [FAIL] sqrt(1+x) 手算 8 项不符:got = %s\n", pstr(got).c_str());
                 return 1;
@@ -176,7 +174,7 @@ int main() {
         }
         // f = (1-2x)² = 1 - 4x + 4x² → sqrt = 1 - 2x
         {
-            poly f{1, mint(-4), 4}, want{1, mint(-2)}, got = poly_sqrt(f, 2);
+            poly f{1, MOD - 4, 4}, want{1, MOD - 2}, got = poly_sqrt(f, 2);
             int at = firstdiff(want, got);
             if(at >= 0) return bad("sqrt((1-2x)²) = 1-2x", f, 2, want, got, at);
             ok("f = 1-4x+4x² = (1-2x)² → sqrt f = 1-2x");
@@ -200,7 +198,7 @@ int main() {
             int n = 1000;
             poly f = rpoly(n, t % 3);
             poly g = poly_sqrt(f, n);
-            CHECK(g.size() == (size_t) n && g[0] == mint(1), "n = 1000:长度恰为 n 且常数项为 1");
+            CHECK(g.size() == (size_t) n && g[0] == 1, "n = 1000:长度恰为 n 且常数项为 1");
             poly h = mul(g, g);
             h.resize(n);
             bool allok = true;

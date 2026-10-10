@@ -44,16 +44,6 @@
 
 = 数据结构
 
-== 李超树
-
-#zebraw(lang: false)[#raw(readcode("templates/数据结构/李超树.cpp"), lang: "cpp", block: true)]
-
-== 全局平衡二叉树
-
-#include "templates/数据结构/全局平衡二叉树.typ"
-
-#zebraw(lang: false)[#raw(readcode("templates/数据结构/全局平衡二叉树.cpp"), lang: "cpp", block: true)]
-
 == LCT
 
 #include "templates/数据结构/lct.typ"
@@ -104,17 +94,11 @@
 
 = 图论
 
-== 网络流
-
-#zebraw(lang: false)[#raw(readcode("templates/图论/dinic.cpp"), lang: "cpp", block: true)]
-
 == 费用流
 
 #zebraw(lang: false)[#raw(readcode("templates/图论/mcmf.cpp"), lang: "cpp", block: true)]
 
 == 支配树
-
-#include "templates/图论/支配树.typ"
 
 #zebraw(lang: false)[#raw(readcode("templates/图论/支配树.cpp"), lang: "cpp", block: true)]
 
@@ -195,10 +179,6 @@
 == 积性函数
 
 #include "templates/数论/积性函数/积性函数.typ"
-
-=== 线性筛
-
-#zebraw(lang: false)[#raw(readcode("templates/数论/积性函数/线性筛.cpp"), lang: "cpp", block: true)]
 
 === 杜教筛
 

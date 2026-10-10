@@ -2,7 +2,7 @@
 //
 // ===== 模板契约(读 ntt.cpp 的注释/代码 + 本 check 实测敲定,越界不保证) =====
 //   1. 系数 c:非负 int(0 <= c < 2^31)。c 不必 < P —— 三模 CRT 在整数上精确,最后才 % P,
-//      所以 c >= P 也一样对(第 6 段实测);但 c < 0 不在契约内(第 9 段给了最小反例)。
+//      所以 c >= P 也一样对(第 6 段实测);但 c < 0 不在契约内(第 9 段验证先归一的用法)。
 //   2. 模数 P:任意 int,2 <= P <= 2^31-1。不要求素数、不要求 NTT 友好(第 6 段逐个覆盖)。
 //   3. CRT 精确条件:min(n,m) * max(c)^2 < M0*M1*M2 = 471064322751194440790966273(≈4.71e26)。
 //      int 系数下要 min(n,m) > 1e8 才会破,实际够用;本 check 覆盖 n,m <= 600。
@@ -301,54 +301,30 @@ int main() {
         }
     }
 
-    // ——— 8) 带 mint 的包装 mul(a, b):系数 < 998244353 时与朴素一致;M 应等于 mint 的模数 ———
+    // ——— 8) 普通 mul(a, b) 按常量 MOD 取模;任意模数显式传给 Mul::mul ———
     {
-        M = 998244353;
         For(t, 1, 400) {
             int n = (int) rnd(1, 40), m = (int) rnd(1, 40);
-            poly a(n), b(m);
-            For(i, 0, n - 1) a[i] = (int) rnd(0, M - 1);
-            For(j, 0, m - 1) b[j] = (int) rnd(0, M - 1);
-            poly c = mul(a, b);
-            if((int) c.size() != n + m - 1) {
-                printf("  [FAIL] 包装 mul 结果长度 %d,应为 %d(n=%d m=%d M=%d)\n", (int) c.size(), n + m - 1, n, m, M);
-                return 1;
-            }
-            For(k, 0, n + m - 2) {
-                mint want = 0;
-                For(i, 0, n - 1) if(k - i >= 0 && k - i < m) want += a[i] * b[k - i];
-                if(c[k] != want) {
-                    printf("  [FAIL] 包装 mul 系数 k=%d want=%d got=%d(M=%d n=%d m=%d)\n", k, want.val(), c[k].val(), M, n, m);
-                    return 1;
-                }
-            }
+            poly a = rpoly(n, MOD, t % 5), b = rpoly(m, MOD, t % 5);
+            vi want = naive(a, b, MOD), got = mul(a, b);
+            if(!same(want, got)) return bad("普通 mul", a, b, MOD, want, got);
         }
-        // M 换成别的模数:基座 mint 的模数固定 998244353,所以系数只能取 < 998244353 的值,
-        // 才能保证「mint 里的数」与「模 M 的整数」一致。
-        M = 1000000007;
-        poly a{mint(5), mint(2)}, b{mint(7), mint(3)};
-        poly c = mul(a, b);
-        CHECK(c.size() == 3 && c[0] == mint(35) && c[1] == mint(29) && c[2] == mint(6),
-              "包装 mul 在 M = 1e9+7 下与手算 (5+2x)(7+3x) = 35+29x+6x² 一致");
-        // M < mint 模数也不会错:CRT 在整数上精确,系数 >= M 只是没归一,不是错。
-        M = 1000003;
-        poly d{mint(2000000)}, e{mint(2)};
-        int got = mul(d, e)[0].x;
-        if(got != (int) (2000000LL % M * 2 % M)) {
-            printf("  [FAIL] 包装 mul 在 M=1000003 下系数 2000000 × 2 得 %d,应为 %d\n", got, (int) (2000000LL % M * 2 % M));
-            return 1;
-        }
-        M = 998244353;
-        ok("400 组包装 mul(mint 版)+ 换模数手算 + M < mint 模数时的非归一系数一致");
+        poly a{5, 2}, b{7, 3};
+        CHECK(Mul::mul(a, b, 1000000007) == poly({35, 29, 6}),
+              "任意模数接口:模 1e9+7 的手算卷积");
+        CHECK(Mul::mul({2000000}, {2}, 1000003) == poly({999991}),
+              "任意模数接口:非归一的非负系数");
+        CHECK(mul({MOD - 1}, {MOD - 1}) == poly({1}), "1×1 卷积及大系数乘法");
+        CHECK(mul({}, {1}).empty() && mul({1}, {}).empty(), "普通 mul 的空输入");
+        ok("400 组普通 mul 与独立 i128 参考一致");
     }
 
-    // ——— 9) 记录契约外/易踩的点 ———
+    // ——— 9) 负数先归一的回归与易踩的点 ———
     {
-        // 负系数:不在契约内。NTT 里按负数运算,残数不是 [0,M) 代表,CRT 直接失配。
-        int P = 998244353;
-        vi neg = Mul::mul({-1}, {1}, P);
-        int badcnt = 0;
-        std::mt19937 seedfix(20040924);  // 固定种子:这条 note 的数字每次跑都一样
+        // 不直接执行契约外负输入(可能触发 UB);验证归一后与精确的带符号参考一致。
+        int P = MOD;
+        CHECK(Mul::mul({P - 1}, {1}, P) == vi({P - 1}), "-1 必须先归一为 P-1");
+        std::mt19937 seedfix(20040924);
         For(t, 1, 300) {
             int n = (int) (seedfix() % 8) + 1, m = (int) (seedfix() % 8) + 1;
             vi a(n), b(m);
@@ -356,19 +332,16 @@ int main() {
             For(j, 0, m - 1) b[j] = (int) (seedfix() % (2 * P)) - P;
             vector<i128> s(n + m - 1, 0);
             For(i, 0, n - 1) For(j, 0, m - 1) s[i + j] += (i128) a[i] * b[j];
-            vi g = Mul::mul(a, b, P);
-            bool same_all = ((int) g.size() == n + m - 1);
-            if(same_all) For(k, 0, n + m - 2) if(g[k] != (int) (((s[k] % P) + P) % P)) { same_all = false; break; }
-            if(!same_all) ++badcnt;
+            for(int &v : a) v = (v % P + P) % P;
+            for(int &v : b) v = (v % P + P) % P;
+            vi g = Mul::mul(a, b, P), want(n + m - 1);
+            For(k, 0, n + m - 2) want[k] = (s[k] % P + P) % P;
+            if(!same(want, g)) return bad("带符号系数先归一", a, b, P, want, g);
         }
-        printf("  [note] 负系数不在契约内:Mul::mul({-1},{1},998244353) = %d(不是 %d);"
-               "随机含负系数 300 组里 %d 组与「先归一再卷积」不符 —— 要用 -1 请传 P-1(第 2/3/6 段已覆盖)\n",
-               neg.empty() ? -12345 : neg[0], P - 1, badcnt);
+        ok("300 组带符号系数先归一后,与 i128 精确参考一致");
         printf("  [note] 长度上限:变换长度 l = 2^ceil(lg(n+m-1)) <= 2^20(M1 = 1004535809 = 479*2^21+1 最小)。"
                "n+m-1 = 2^20 已实测正确,2^21 起对 P ∉ {M0,M1,M2} 出错(见第 7 段)\n");
-        printf("  [note] 1×1 会走到 `__lg(n + m - 2)` = __lg(0),这是标准意义上的 UB(bsr 对 0 未定义)。"
-               "实测无碍:不管它返回 0 还是 63,1 次卷积只剩一个系数,算法都退化成 a[0]*b[0] 取模 —— "
-               "第 2 段 9 个模数的全枚举每次都包含 1×1,从未错过\n");
+        printf("  [note] 1×1 卷积直接做 ll 乘法取模,不再调用 __lg(0);第 2/8 段覆盖回归\n");
         printf("  [note] CRT 精度界:min(n,m)·max(c)² < 4.71e26;int 系数下 min(n,m) 要 > 1e8 才破,本 check 到 600 远未触及\n");
     }
 

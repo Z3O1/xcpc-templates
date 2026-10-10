@@ -10,6 +10,7 @@ using s64 = long long;
 using i128 = __int128_t;
 using u128 = unsigned __int128;
 using db = long double;
+constexpr int MOD = 998244353;
 // vect<T>:house header 里的自定义容器(带 += 追加、substr、operator+)。
 // 为了让 wqs.cpp 这类用了 substr/operator+ 的模板能编译,这里做成 vector 的薄派生类:
 // 既有 std::vector 的全部接口(下标/迭代器/resize/sort/all(...)),又补上 house 的额外接口。
@@ -41,51 +42,13 @@ using pll = pair<ll, ll>;
 #define ForD(i, l, r) for(int i = l, i##_e = r; i < i##_e; ++i)
 
 // 快速幂(模乘按 ll,模数 > 2^32 会溢出 —— 大模数请像 Miller-Rabin 那样自带模乘)
-ll ksm(ll a, ll b, ll p = 998244353) {
+ll ksm(ll a, ll b, ll p = MOD) {
     ll s = 1;
     a %= p;
     for(; b; b >>= 1, a = a * a % p)
         if(b & 1) s = s * a % p;
     return s;
 }
-// 模数类(简化版:够模板编译与对拍用)。成员 v 与 x 是同一个 int 的两个名字:
-// 本仓库有些 check 用 .v,而模板本体(house header)用的是 .x。
-struct mint {
-    static const int P = 998244353;
-    union {
-        int v;
-        int x;
-    };
-    mint(ll x = 0) : v(int((x % P + P) % P)) {}
-    int val() const { return v; }
-    static constexpr int getM() { return P; }
-    static mint raw(int x) {
-        mint s;
-        s.v = x;
-        return s;
-    }
-    mint operator+(mint b) const { return v + b.v; }
-    mint operator-(mint b) const { return v - b.v; }
-    mint operator*(mint b) const { return (ll)v * b.v; }
-    mint operator/(mint b) const { return *this * b.inv(); }
-    mint operator-() const { return v ? P - v : 0; }
-    mint &operator+=(mint b) { return *this = *this + b; }
-    mint &operator-=(mint b) { return *this = *this - b; }
-    mint &operator*=(mint b) { return *this = *this * b; }
-    mint &operator/=(mint b) { return *this = *this / b; }
-    bool operator==(mint b) const { return v == b.v; }
-    bool operator!=(mint b) const { return v != b.v; }
-    explicit operator bool() const { return v; }
-    mint inv() const {
-        ll a = v, b = P, x = 1, y = 0;
-        while(b) {
-            ll q = a / b;
-            swap(a -= q * b, b), swap(x -= q * y, y);
-        }
-        return x;
-    }
-};
-
 // —— check 通用小工具 ——
 mt19937_64 rng(chrono::steady_clock::now().time_since_epoch().count());
 inline ll rnd(ll l, ll r) { return l + (ll)(rng() % (u64)(r - l + 1)); }

@@ -14,11 +14,11 @@
 // ——— 参考实现 1:按定义解 Σ_{j=0..i} f[j]·g[i-j] = [i=0] ———
 static poly naive_inv(const poly &f, int n) {
     poly g(n);
-    mint i0 = f[0].inv();
+    int i0 = ksm(f[0], MOD - 2, MOD);
     For(i, 0, n - 1) {
-        mint s = 0;
-        For(j, 1, i) if(j < (int) f.size()) s += f[j] * g[i - j];
-        g[i] = (i == 0 ? i0 : -s * i0);
+        ll s = 0;
+        For(j, 1, i) if(j < (int) f.size()) s = (s + (ll) f[j] * g[i - j]) % MOD;
+        g[i] = (i == 0 ? i0 : (MOD - s) * i0 % MOD);
     }
     return g;
 }
@@ -28,31 +28,31 @@ static bool naive_inv_ok(const poly &f, int n) {
     poly g = naive_inv(f, n);
     poly h = mul(f, g);
     h.resize(n);
-    For(i, 0, n - 1) if(h[i] != mint(i == 0)) return false;
+    For(i, 0, n - 1) if(h[i] != (i == 0)) return false;
     return true;
 }
 static string pstr(const poly &a, int k = 12) {
     string s = "[" + to_string(a.size()) + "]";
-    For(i, 0, min((int) a.size(), k) - 1) s += " " + to_string(a[i].val());
+    For(i, 0, min((int) a.size(), k) - 1) s += " " + to_string(a[i]);
     return s + ((int) a.size() > k ? " ..." : "");
 }
 static int bad(const char *what, const poly &f, int n, const poly &want, const poly &got, int at = -1) {
     printf("  [FAIL] %s\n    n = %d, f = %s\n", what, n, pstr(f).c_str());
-    if(at >= 0) printf("    首个不符: k = %d, want = %d, got = %d\n", at, want[at].val(), got[at].val());
+    if(at >= 0) printf("    首个不符: k = %d, want = %d, got = %d\n", at, want[at], got[at]);
     printf("    want = %s\n    got  = %s\n", pstr(want).c_str(), pstr(got).c_str());
     return 1;
 }
 static poly rpoly(int len, int mode) {  // 0 稠密 1 稀疏 2 小值 3 全 1 4 首项 1
     poly a(len);
     For(i, 0, len - 1) {
-        int v = (int) rnd(0, mint::getM() - 1);
+        int v = (int) rnd(0, MOD - 1);
         if(mode == 1 && (i & 1)) v = 0;
         if(mode == 2) v = (int) rnd(0, 3);
         if(mode == 3) v = 1;
         a[i] = v;
     }
     if(!len) return a;
-    if(a[0].val() == 0) a[0] = (mode == 4 ? 1 : (int) rnd(1, mint::getM() - 1));
+    if(a[0] == 0) a[0] = (mode == 4 ? 1 : (int) rnd(1, MOD - 1));
     if(mode == 4) a[0] = 1;
     return a;
 }
@@ -77,8 +77,6 @@ static int cmp(const char *what, const poly &f, int n, const char *extra = "") {
 }
 
 int main() {
-    M = 998244353;  // ntt.cpp 的包装 mul 按全局 M 取模,must 与 mint 的模数一致
-
     // ——— 0) 参考实现自检 ———
     {
         For(t, 1, 400) {
@@ -101,7 +99,7 @@ int main() {
                 poly f(len);
                 int x = mask;
                 For(i, 0, len - 1) f[i] = vals[x & 3], x >>= 2;
-                if(f[0].val() == 0) continue;  // 契约要求首项可逆
+                if(f[0] == 0) continue;  // 契约要求首项可逆
                 For(n, 1, 6) {
                     if(cmp("小规模全枚举", f, n)) return 1;
                     ++cnt;
@@ -145,8 +143,8 @@ int main() {
             poly g = poly_inv(f, n);
             poly h = mul(f, g);
             h.resize(n);
-            For(i, 0, n - 1) if(h[i] != mint(i == 0)) {
-                printf("  [FAIL] f*g 在第 %d 位 = %d(应 %d),n = %d,f = %s\n", i, h[i].val(), i == 0, n, pstr(f).c_str());
+            For(i, 0, n - 1) if(h[i] != (i == 0)) {
+                printf("  [FAIL] f*g 在第 %d 位 = %d(应 %d),n = %d,f = %s\n", i, h[i], i == 0, n, pstr(f).c_str());
                 return 1;
             }
         }
@@ -185,16 +183,16 @@ int main() {
         // f = {c} → 逆 = {1/c, 0, 0, ...}
         {
             For(t, 1, 20) {
-                mint c = (int) rnd(1, mint::getM() - 1);
+                int c = (int) rnd(1, MOD - 1);
                 poly f{c}, got = poly_inv(f, 40), want(40);
-                want[0] = c.inv();
+                want[0] = ksm(c, MOD - 2, MOD);
                 if(firstdiff(want, got) >= 0) return bad("单系数 f", f, 40, want, got);
             }
             ok("f = {c}(只 1 项)时逆 = {1/c, 0, 0, ...},20 组一致");
         }
         // f = 1 - x → 逆 = 1 + x + x² + ...(全 1)
         {
-            poly f{1, mint(-1)}, got = poly_inv(f, 500), want(500);
+            poly f{1, MOD - 1}, got = poly_inv(f, 500), want(500);
             For(i, 0, 499) want[i] = 1;
             if(firstdiff(want, got) >= 0) return bad("f = 1-x → 全 1 级数", f, 500, want, got);
             ok("f = 1-x 的逆 = 1+x+x²+...(n = 500)");
@@ -203,8 +201,8 @@ int main() {
         For(t, 1, 20) {
             poly f = rpoly((int) rnd(2, 30), 4);
             poly g = poly_inv(f, 100);
-            if(g[0] != mint(1)) {
-                printf("  [FAIL] f[0]=1 时逆的首项 %d 应为 1\n", g[0].val());
+            if(g[0] != 1) {
+                printf("  [FAIL] f[0]=1 时逆的首项 %d 应为 1\n", g[0]);
                 return 1;
             }
         }
@@ -228,7 +226,7 @@ int main() {
             poly h = mul(f, g);
             h.resize(n);
             bool allok = true;
-            For(i, 0, n - 1) allok &= (h[i] == mint(i == 0));
+            For(i, 0, n - 1) allok &= (h[i] == (i == 0));
             CHECK(allok, "n = 1000:f*g ≡ 1 (mod x^n)");
         }
         // f 很长、n 很小:高次项必须被忽略

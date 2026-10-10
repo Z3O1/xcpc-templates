@@ -4,12 +4,12 @@
 //       常量开方用「二次剩余」模板);n >= 1。
 //       返回 g 满足 g² ≡ f (mod x^n),长度恰为 n 且 g[0] = 1(这个解唯一)。
 // 复杂度:O(n log n)。
-// 依赖:poly_inv(多项式求逆.cpp)、mul(ntt.cpp,设 M = 998244353)。
+// 依赖:poly_inv、mul(ntt.cpp)、常量 MOD = 998244353;系数在 [0, MOD)。
 // 每轮:g ← (g + f/g)/2 mod x^m,精度翻倍。
 
-using poly = vector<mint>;
+using poly = vector<int>;
 poly poly_sqrt(const poly &f, int n) {
-    static const mint ih = mint(2).inv();
+    const int ih = (MOD + 1) / 2;
     poly g{1};
     for(int m = 1; m < n; m <<= 1) {
         int t = min(m << 1, n);
@@ -17,7 +17,7 @@ poly poly_sqrt(const poly &f, int n) {
         poly d = mul(c, poly_inv(g, t));                      // f/g
         d.resize(t);
         g.resize(t);
-        For(i, 0, t - 1) g[i] = (g[i] + d[i]) * ih; // (g + f/g)/2
+        For(i, 0, t - 1) g[i] = (g[i] + 1ll * d[i]) * ih % MOD; // (g + f/g)/2
     }
     g.resize(n);
     return g;
