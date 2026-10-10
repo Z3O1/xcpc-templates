@@ -9,7 +9,7 @@ bool brute_qr(ll x, ll p) {
     return false;
 }
 
-// 大 p 下的欧拉判别参考(必须用 i128,base header 的 ksm 在 p > 2^32 会溢出)
+// 大 p 下的独立欧拉判别参考:用 i128 乘法,不复用可能溢出的 base ksm。
 bool euler_ref(ll x, ll p) {
     if(x == 0) return true;
     ll r = 1, a = x % p, e = (p - 1) / 2;
@@ -22,20 +22,20 @@ int main() {
     for(ll p : {3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 97, 101, 103, 107, 109, 113, 127, 131, 193}) {
         For(x, 0, p - 1) {
             bool want = brute_qr(x, p);
-            if(quadres((ll) x, p) != want) return printf("  [FAIL] quadres(%lld,%lld) 期望 %d\n", x, p, (int) want), 1;
+            if(quadres((ll) x, p) != want) return printf("  [FAIL] quadres(%d,%lld) 期望 %d\n", x, p, (int) want), 1;
             ll r = sqrtp(x, p);
             if(!want) {
-                if(r != -1) return printf("  [FAIL] sqrtp(%lld,%lld) 非剩余却返回 %lld\n", x, p, r), 1;
+                if(r != -1) return printf("  [FAIL] sqrtp(%d,%lld) 非剩余却返回 %lld\n", x, p, r), 1;
             } else {
-                // -1 也算合法(部分实现约定),但 r 非 -1 时必须 r^2 ≡ x;0 必须返回 0
+                // 每个二次剩余都必须开出根;只有非剩余才允许返回 -1,0 必须返回 0。
                 if(x == 0 && r != 0) return printf("  [FAIL] sqrtp(0,%lld) 应返回 0\n", p), 1;
-                if(r >= 0 && (i128) r * r % p != x % p) return printf("  [FAIL] sqrtp(%lld,%lld)=%lld 平方不为 x\n", x, p, r), 1;
+                if(r < 0 || (i128) r * r % p != x % p) return printf("  [FAIL] sqrtp(%d,%lld)=%lld 平方不为 x\n", x, p, r), 1;
             }
         }
         // p % 4 == 3 与 p % 4 == 1 两条分支都要有非平凡用例
         For(x, 2, p - 1) if(quadres((ll) x, p)) {
             ll r = sqrtp(x, p);
-            if(r < 0 || (i128) r * r % p != x % p) return printf("  [FAIL] 非平凡开根 %lld mod %lld\n", x, p), 1;
+            if(r < 0 || (i128) r * r % p != x % p) return printf("  [FAIL] 非平凡开根 %d mod %lld\n", x, p), 1;
             break;
         }
     }

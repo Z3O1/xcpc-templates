@@ -12,13 +12,13 @@
 - [ ] det(Ax + B)
 - [ ] https://codeforces.com/topic/112249
 
-每个新模板的流程:片段丢进 `templates/<章>/`(写法见 `AGENTS.md` §4)→ 配一份 `X.check.cpp`(§6)→
+每个新模板的流程:片段丢进 `templates/<章>/`(写法见 `AGENTS.md` §4)→ 配一份 `X.check.cpp`(§5)→
 `./build.sh` → `./check.sh -x <模板名>`。章节归属、标题、顺序按 §3 调 `.manifest.json`。
 
 ## 要改的地方
 
 - [ ] **多项式** —— 整章过一遍(具体改什么待补)
-- [ ] **计算几何** —— 整章过一遍(剩余限制见 `AGENTS.md` §8:`geo.cpp` 的 `eps` 是绝对量;
+- [ ] **计算几何** —— 整章过一遍(剩余限制见 `AGENTS.md` §5:`geo.cpp` 的 `eps` 是绝对量;
       零长线段与重复顶点误判已修,还改什么待补)
 
 ## 早先的遗留

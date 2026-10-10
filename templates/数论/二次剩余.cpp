@@ -1,7 +1,7 @@
 // quadres(): 数论 · 二次剩余 (欧拉判别法 + 模素数开根)
 
-// 不要复用 base header 的 ksm:它按 ll 相乘,p > 2^32 时 a * a 会溢出算错。这里自带 u128 模乘与快速幂,
-// 与 Miller-Rabin 模板里的 MR::mul 同理。
+// 不复用 base header 的 ksm:它按 ll 相乘,不能保证大模数下不溢出。
+// 这里自带 u128 模乘与快速幂,与 Miller-Rabin 的 MR::mul 同理。
 namespace QR {
 auto mul = [](ll a, ll b, ll p) { return (ll)((unsigned __int128)a * b % p); };
 auto pw = [](ll a, ll x, ll p, ll r = 1) {
