@@ -3,12 +3,12 @@
 // 不要复用 base header 的 ksm:它按 ll 相乘,p > 2^32 时 a * a 会溢出算错。这里自带 u128 模乘与快速幂,
 // 与 Miller-Rabin 模板里的 MR::mul 同理。
 namespace QR {
-ll mul(ll a, ll b, ll p) { return (ll)((unsigned __int128)a * b % p); }
-ll pw(ll a, ll x, ll p, ll r = 1) {
+auto mul = [](ll a, ll b, ll p) { return (ll)((unsigned __int128)a * b % p); };
+auto pw = [](ll a, ll x, ll p, ll r = 1) {
     for(a %= p, (a += p) %= p; x; x >>= 1, a = mul(a, a, p))
         if(x & 1) r = mul(r, a, p);
     return r;
-}
+};
 } // namespace QR
 // quadres(a, p): 判断 a 是否为奇素数 p 的二次剩余(要求 0 <= a < p)。
 bool quadres(u64 a, u64 p) { return !a || QR::pw(a, (p - 1) >> 1, p) == 1; }
