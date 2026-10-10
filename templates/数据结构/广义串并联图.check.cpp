@@ -1,17 +1,8 @@
-// 广义串并联图.cpp 自测:与「同一套约简规则的独立参考实现」对照(缩点后的核 + add 的记账)
-//
-// ★ 仅覆盖能覆盖的部分(模板是半成品,详见报告):
-//   * node() 里写的是 `tp[++m] = t`,而 `tp` 这个数组在模板里根本没有声明(应为成员 `typ`)→
-//     本 check 必须在包含模板前自己定义 `int tp[N];`,否则连编译都过不去。
-//   * node() 里 `fa[u] = t, fa[v] = t` 把 bool 写进父指针数组(SPQR 语义应为 fa[u] = fa[v] = m),
-//     于是 `typ` 永远是 0、`fa` 里存的是 0/1 —— SPQR 树的父子/类型信息拿不到,
-//     所以本 check 只能覆盖「约简结果」与 add/node 的记账,覆盖不了 SPQR 树本身(末尾会打印证据)。
-//   * 模板的 build() 没有清理被删点的 `t[u]`,`t[u]` 里会留下残留项(参考实现的 clean 版会 clear),
-//     因此不能用「t[u].size() <= 2 就说明被删」来判定 —— 这里只对比「度数 >= 3 的核」。
-// 覆盖:add 的双向记账与平行边(新建 node)语义;path/star/随机树/三角形/C4/K4/随机图 的核。
+// 广义串并联图自测:独立约简核 + 导出森林的父子/串并联端点语义,2万随机图
+// build 不清理删点的自身邻接表,核按度>=3判定;不声称完成任意图的完整SPQR分解。
+// 每次先把m设为原边数,边ID与内部结点ID不重叠;不额外声明tp掩盖编译错误。
 #include "../_check_base.hpp"
 const int N = 2005;
-int tp[N]; // 模板 node() 用到但未声明的数组(见文件头说明)
 #include "广义串并联图.cpp"
 
 // ---- 独立参考:同一套规则(邻居去重 = 平行边合并;度 1 删点;度 2 并边),但每轮重算度数 ----
@@ -47,9 +38,43 @@ static string show(const set<int> &s) {
     for(int x : s) r += to_string(x) + " ";
     return r;
 }
-static void reset_tree(int n) {
+// 从父数组与原边端点重建并解释森林,不重放模板的队列。
+static bool check_forest(const vector<pii> &edges) {
+    int leaves = edges.size();
+    vector<vector<int>> sons(d1.m + 1);
+    vector<pii> ends(d1.m + 1);
+    For(i, 1, d1.m) {
+        int p = d1.fa[i];
+        if(p && (p <= i || p > d1.m))
+            return printf("  [FAIL] 非法父指针 node=%d fa=%d m=%d\n", i, p, d1.m), false;
+        if(p) sons[p].push_back(i);
+    }
+    For(i, 1, leaves) {
+        if(!sons[i].empty()) return printf("  [FAIL] 原边%d被当成内部结点\n", i), false;
+        ends[i] = edges[i - 1];
+        sort(all(ends[i]));
+    }
+    For(i, leaves + 1, d1.m) {
+        if(sons[i].size() != 2)
+            return printf("  [FAIL] 内部结点%d孩子数=%zu\n", i, sons[i].size()), false;
+        auto a = ends[sons[i][0]], b = ends[sons[i][1]];
+        if(!d1.typ[i]) {
+            if(a != b) return printf("  [FAIL] 并联结点%d的两条边端点不同\n", i), false;
+            ends[i] = a;
+        } else {
+            int common = -1, cnt = 0;
+            ForD(x, 0, 2) ForD(y, 0, 2) if(a[x] == b[y]) common = a[x], ++cnt;
+            if(cnt != 1) return printf("  [FAIL] 串联结点%d共同端点数=%d\n", i, cnt), false;
+            ends[i] = {a[0] == common ? a[1] : a[0], b[0] == common ? b[1] : b[0]};
+            sort(all(ends[i]));
+        }
+    }
+    CHECK(fa == d1.fa && typ == d1.typ && &m == &d1.m, "公开别名共享实例状态");
+    return true;
+}
+static void reset_tree(int leaves) {
     d1 = SPQR_tree();
-    For(i, 1, n + 1) tp[i] = 0;
+    d1.m = leaves;
 }
 
 int main() {
@@ -69,6 +94,9 @@ int main() {
         int m1 = d1.m;
         d1.add(2, 1, 13);
         CHECK(d1.m == m1 + 1 && d1.t[1][2] == d1.m, "第三条平行边再新建结点");
+        CHECK(d1.fa[7] == m0 + 1 && d1.fa[11] == m0 + 1, "原边挂在新并联结点下");
+        CHECK(d1.fa[m0 + 1] == m1 + 1 && d1.fa[13] == m1 + 1, "并联结点继续合并");
+        CHECK(!d1.typ[m0 + 1] && !d1.typ[m1 + 1], "并联类型为假");
     }
 
     // 2) 结构化图:树/SP 图的核应为空,K4 的核应全是 4 个点
@@ -90,10 +118,11 @@ int main() {
         cs.push_back({"K4 + 尾", 5, {{1, 2}, {1, 3}, {1, 4}, {2, 3}, {2, 4}, {3, 4}, {4, 5}}, true});
         cs.push_back({"单边", 2, {{1, 2}}, false});
         for(auto &c : cs) {
-            reset_tree(c.n);
+            reset_tree(c.e.size());
             int w = 1;
             for(auto [u, v] : c.e) d1.add(u, v, w++);
             d1.build(c.n);
+            if(!check_forest(c.e)) return 1;
             set<int> want = ref_core(c.n, c.e), got = tpl_core(c.n);
             if(want != got) {
                 printf("  [FAIL] %s:参考核 {%s} != 模板核 {%s}\n", c.name, show(want).c_str(), show(got).c_str());
@@ -111,15 +140,19 @@ int main() {
             int n = (int) rnd(1, 7);
             int mm = (int) rnd(0, 9);
             vector<pii> e;
-            reset_tree(n);
-            int w = 1;
             For(i, 1, mm) {
                 int u = (int) rnd(1, n), v = (int) rnd(1, n);
-                if(u == v) continue;
-                e.push_back({u, v});
-                d1.add(u, v, w++);
+                if(u != v) e.push_back({u, v});
             }
+            reset_tree(e.size());
+            int w = 1;
+            for(auto [u, v] : e) d1.add(u, v, w++);
             d1.build(n);
+            if(!check_forest(e)) {
+                printf("  [FAIL] 森林 n=%d 边:", n);
+                for(auto [u, v] : e) printf(" %d-%d", u, v);
+                return printf("\n"), 1;
+            }
             set<int> want = ref_core(n, e), got = tpl_core(n);
             if(want != got) {
                 printf("  [FAIL] 随机图 n=%d 边:", n);
@@ -131,20 +164,13 @@ int main() {
         ok("2 万组随机小图(1..7 点、0..9 边、含平行边)的核与参考一致");
     }
 
-    // 4) 已知缺陷记录:SPQR 树信息不可用(node() 的 tp/fa 写法)
+    // 4) 原最小反例:串联类型及两个孩子的新父结点。
     {
-        reset_tree(3);
-        d1.add(1, 2, 1), d1.add(2, 3, 2), d1.add(3, 1, 3);
-        d1.build(3);
-        printf("  [note] 已知缺陷:node() 写的是未声明的 `tp[++m] = t`(应为成员 typ),且 `fa[u] = t, fa[v] = t`\n");
-        printf("  [note]   实测三角形 build 后:m = %d,typ[] = ", d1.m);
-        For(i, 1, d1.m) printf("%d ", (int) d1.typ[i]);
-        printf(" (全 0,没被写过);fa[] = ");
-        For(i, 1, d1.m) printf("%d ", d1.fa[i]);
-        printf("(存的是 bool 而不是结点号);外部 tp[] = ");
-        For(i, 1, d1.m) printf("%d ", tp[i]);
-        printf("\n");
-        printf("  [note]   因此本 check 覆盖不到 SPQR 树的类型/父子关系,只能验约简结果与 add 记账\n");
+        reset_tree(9);
+        int id = d1.node(7, 9, true);
+        CHECK(id == 10 && d1.typ[id] && d1.fa[7] == id && d1.fa[9] == id,
+              "node(7,9,true):成员类型与父指针不能写成外部数组/bool");
+        ok("串联node最小回归,父子/类型信息为硬断言");
     }
 
     PASSED("广义串并联图");

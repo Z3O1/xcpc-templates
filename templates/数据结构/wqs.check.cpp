@@ -1,7 +1,7 @@
 // wqs.cpp 自测:与「朴素 O(n²k) DP 求恰好 k 段最优值」对照,并校验返回的划分本身
 //
 // 模板依赖外部 Wilber<T>(n, w, INF) 这个区间 DP 黑盒(该文件没给),这里用最朴素的 O(n²) DP 实现:
-//   值里已经把「段数」打包在低 B 位(与模板 chk 里的 `(que-dt) << B | 1` 一致),
+//   值里已经把「段数」打包在低 B 位,用 (que-dt)*2^B+1 避免负数左移。
 //   于是最小化打包值 = 先比总代价、再比段数,与模板的取用方式完全对应。
 // 校验内容:① 返回数组是恰好 k 段的合法划分(0 起、n 终、严格递增);
 //          ② 该划分的真实代价 == 恰好 k 段的最优代价;③ dt = 1 处段数 = n(全正数据的前置条件)。
@@ -27,6 +27,13 @@ template <class T> struct Wilber {
     }
 };
 #include "wqs.cpp"
+
+// 真实依赖链另作集成验证,上面的朴素 DP 保留作独立参考。
+namespace real_wqs {
+#include "四边形不等式/SMAWK.cpp"
+#include "四边形不等式/Wilber.cpp"
+#include "wqs.cpp"
+}
 
 static int gn;
 static vector<ll> gpre;
@@ -75,7 +82,7 @@ int main() {
             int B = __lg(gn) + 1, T = (1 << B) - 1;
             auto chk = [&](i128 dt) {
                 return Wilber<i128>(
-                    gn, [&](int l, int r) { return (que(l, r) - dt) << B | 1; }, 1e36);
+                    gn, [&](int l, int r) { return (que(l, r) - dt) * ((i128)1 << B) + 1; }, 1e36);
             };
             i128 c1 = chk(1).first[gn] & T;
             if(c1 != gn) return printf("  [FAIL] dt=1 时段数应为 n=%d,实际 %lld\n", gn, (ll) c1), 1;
@@ -169,6 +176,23 @@ int main() {
             CHECK((p2 == vect<int>{0, 1, 2}), "n = 2, k = 2 → 划分 [0,1,2]");
         }
     }
+
+    // 4) 零权/混合零权:真实 SMAWK + Wilber,逐个 k 对照独立 O(n²k) DP。
+    For(t, 0, 119) {
+        gn = t == 0 ? 2 : (int)rnd(1, 24);
+        gpre.assign(gn + 1, 0);
+        For(i, 1, gn) gpre[i] = gpre[i - 1] + (t % 3 == 0 ? 0 : rnd(0, 50));
+        For(k, 1, gn) {
+            auto pt = real_wqs::wqs(gn, k, [](int l, int r) { return que(l + 1, r); }, que(1, gn));
+            i128 cost = 0, want = opt_k(k);
+            if(!check_partition(pt, k, cost) || cost != want) {
+                printf("  [FAIL] 真实 WQS 零权 n=%d k=%d, pt=%s, 权:", gn, k, show(pt).c_str());
+                For(i, 1, gn) printf(" %lld", gpre[i] - gpre[i - 1]);
+                return printf("\n"), 1;
+            }
+        }
+    }
+    ok("120 组零权/混合零权,真实依赖链所有 k 与独立 DP 一致");
 
     PASSED("wqs");
 }

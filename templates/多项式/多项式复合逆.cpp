@@ -75,13 +75,13 @@ struct poly {
     friend poly operator*(poly f, poly g) {
         if(f.c.empty() || g.c.empty()) return poly();
         poly h;
-        int i, l = 0;
+        int i, l = 0, len = f.c.size() + g.c.size() - 1;
         while((f.c.size() + g.c.size()) >> l) l++;
         f.c = pv(f.c, l, 0);
         g.c = pv(g.c, l, 0);
         for(i = 0; i < (1 << l); i++) X[i] = (ll)f.c[i] * g.c[i] % mod;
         ntt(X, l, 1);
-        h.c.resize(f.c.size() + g.c.size() - 1);
+        h.c.resize(len);
         for(i = 0; i < h.c.size(); i++) h.c[i] = X[i];
         return h;
     }

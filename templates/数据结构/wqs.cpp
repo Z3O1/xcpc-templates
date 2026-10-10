@@ -1,10 +1,13 @@
 // wqs(): 数据结构 · WQS 二分构造方案
 
+// n >= 1,1 <= k <= n;up >= 0,二分范围须覆盖所需惩罚值,OPT(k) 关于 k 凸。
+// 打包值与 DP 中间和须在 i128 及内层 Wilber 的无穷大范围内。
 template <typename Q> vect<int> wqs(int n, int k, Q &&que, i128 up) {
-    int B = __lg(n) + 1, T = (1 << B) - 1;
+    int B = __lg(n) + 1;
+    ll T = (1ll << B) - 1;
     auto chk = [&](i128 dt) {
         return Wilber<i128>(
-            n, [&](int l, int r) { return (que(l, r) - dt) << B | 1; }, 1e36);
+            n, [&](int l, int r) { return (que(l, r) - dt) * ((i128)1 << B) + 1; }, 1e36);
     };
     auto get = [&](i128 dt) {
         auto [f, fp] = chk(dt);

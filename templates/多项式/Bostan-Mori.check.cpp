@@ -1,7 +1,19 @@
-// Bostan-Mori 自测:与"逐项递推第 k 项"对拍
+// Bostan-Mori 自测:逐项递推、一般 P/Q 的独立幂级数除法、空分子及常数分母边界
 #include "../_check_base.hpp"
 #include "ntt.cpp"          // 提供 poly / mul(任意模数卷积)
 #include "Bostan-Mori.cpp"
+
+// 独立参考:Q*f=P,按次数解三角方程;不使用 Bostan-Mori 或卷积。
+static poly series_ref(const poly &P, const poly &Q, int n) {
+    poly f(n + 1);
+    int iq = ksm(Q[0], MOD - 2, MOD);
+    For(i, 0, n) {
+        ll v = i < (int)P.size() ? P[i] : 0;
+        For(j, 1, min(i, (int)Q.size() - 1)) v = (v - 1ll * Q[j] * f[i - j] % MOD + MOD) % MOD;
+        f[i] = v * iq % MOD;
+    }
+    return f;
+}
 
 int main() {
     // 1) 与直接递推对拍:随机 k 阶递推
@@ -80,12 +92,38 @@ int main() {
         poly Q{5}, P{7};
         CHECK(bostan_mori(P, Q, 0) == 7 * ksm(5, MOD - 2, MOD) % MOD, "常数生成函数 P/Q 在 k=0");
         CHECK(bostan_mori(P, Q, 100) == 0, "k > 0 且 Q 为常数 → 0");
-        // P 比 Q 长:高于 deg Q - 1 的项不应影响结果
+        // 高次分子确实影响展开,不能按分母次数直接丢弃。
         poly P2{0, 1, MOD - 1, 12345}, Q2{1, MOD - 1, MOD - 1};
-        if(!(bostan_mori(P2, Q2, 30) == bostan_mori(poly{0, 1}, Q2, 30)))
-            return printf("  [FAIL] P 的高次项影响了结果\n"), 1;
-        ok("常数/高次项冗余/k=0 边界");
+        CHECK(bostan_mori(P2, Q2, 30) == series_ref(P2, Q2, 30)[30], "高次分子保留");
+        CHECK(bostan_mori(poly{0, 1}, poly{1}, 1) == 1, "x/1 的第1项");
+        CHECK(bostan_mori(poly{0, 1}, poly{1, MOD - 1}, 1) == 1, "x/(1-x) 的第1项");
+        for(ll n : {0LL, 3LL, 1000000000000000000LL}) {
+            CHECK(bostan_mori(poly{}, poly{1}, n) == 0, "空 P 常数 Q");
+            CHECK(bostan_mori(poly{}, poly{1, MOD - 5}, n) == 0, "空 P 非常数 Q");
+        }
+        poly init{1, 1}, q{1, MOD - 1, MOD - 1}, p = mul(init, q);
+        p.resize(2);
+        CHECK(bostan_mori(p, q, 1) == 1, "初始项必须乘 Q 后截断为递推分子");
+        ok("常数/空分子/一般分子/递推构造边界");
     }
+
+    // 5) 任意分子次数、非1的Q[0]、尾零,包括空P,与三角除法独立对拍。
+    For(t, 1, 6000) {
+        poly p(rnd(0, 30)), q(rnd(1, 16));
+        for(int &x : p) x = rnd(0, MOD - 1);
+        for(int &x : q) x = rnd(0, MOD - 1);
+        q[0] = rnd(1, MOD - 1);
+        if(t % 3 == 0 && q.size() > 1) q.back() = 0;
+        int n = rnd(0, 120), want = series_ref(p, q, n)[n], got = bostan_mori(p, q, n);
+        if(got != want) {
+            printf("  [FAIL] 一般 P/Q t=%d n=%d got=%d want=%d\nP:", t, n, got, want);
+            for(int x : p) printf(" %d", x);
+            printf("\nQ:");
+            for(int x : q) printf(" %d", x);
+            return printf("\n"), 1;
+        }
+    }
+    ok("6000 组一般 P/Q 与独立幂级数除法一致");
 
     PASSED("Bostan-Mori");
 }

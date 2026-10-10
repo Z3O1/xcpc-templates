@@ -1,16 +1,17 @@
 // bostan_mori(): 多项式 · 线性递推第 n 项 (Bostan-Mori)
 
-// 求 [x^n] P(x) / Q(x)(P/Q 展开成幂级数后的第 n 项系数)。要求 Q[0] != 0。
-// 递推 a_n = Σ_{i=1..k} c_i a_{n-i} 时:Q(x) = 1 - Σ c_i x^i,P(x) = Σ_{i<k} a_i x^i。
-// 复杂度 O(k log k log n)。依赖:mul、ksm、常量 MOD = 998244353;系数在 [0, MOD)。
+// 求 [x^n] P(x) / Q(x)。要求 n >= 0,Q[0] != 0;P 可为空,也可比 Q 长。
+// k 阶递推:Q = 1 - Σ c_i x^i,P = (Q * Σ_{i<k} a_i x^i) mod x^k。
+// 复杂度 O(k log k log(n+2)),k 为输入长度上界。依赖:mul、ksm、MOD = 998244353;系数在 [0, MOD)。
 
 using poly = vector<int>;
 int bostan_mori(poly P, poly Q, ll n) {
-    // 平凡情形:Q 是常数且 P 也是常数时,只有第 0 项非零。
-    if((int)Q.size() <= 1) return n == 0 ? (P.empty() ? 0 : P[0]) * ksm(Q[0], MOD - 2, MOD) % MOD : 0;
-    // 高于 deg Q - 1 的 P 项对第 n 项没有影响,直接截掉(不截会让卷积越算越大)
-    if((int)P.size() > (int)Q.size() - 1) P.resize(Q.size() - 1);
+    if(P.empty()) return 0;
+    if(Q.size() == 1) return n < (ll)P.size() ? 1ll * P[n] * ksm(Q[0], MOD - 2, MOD) % MOD : 0;
     while(n) {
+        // 只求第 n 项,高于 n 次的分子/分母项可安全丢弃。
+        if(n < (ll)P.size()) P.resize(n + 1);
+        if(n < (ll)Q.size()) Q.resize(n + 1);
         poly Qm = Q;
         For(i, 1, (int)Qm.size() - 1)
             if(i & 1) Qm[i] = (MOD - Qm[i]) % MOD; // Q(-x)

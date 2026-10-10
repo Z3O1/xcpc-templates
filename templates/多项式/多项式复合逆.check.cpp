@@ -1,29 +1,16 @@
-// 多项式复合逆.cpp 自测:g = comp_inv(f, n) 必须满足 f(g(x)) ≡ x (mod x^n),用朴素复合验证
+// 多项式复合逆自测:双向朴素复合、两种独立参考、公共乘法与先大后小缓存回归
 //
-// 说明:模板自带 main,这里 #define main 改名后自己写 main 调 comp_inv()。
-//
-// ===== 模板契约(读 多项式复合逆.cpp + 本 check 实测) =====
-//   1. comp_inv(F, n) 返回长度为 n 的 G: G = F^{<-1>}(x),G[0] = 0、G[1] = 1/F[1],
-//      并且 F(G(x)) ≡ x、G(F(x)) ≡ x (mod x^n)。
-//   2. 前置条件:[x^0]F = 0 且 [x^1]F != 0(即 F = x·u(x),u(0) != 0),且 F.c.size() **恰好** == n。
-//   3. 长度不是 n 的后果(两样都实测过):
-//      * F.c.size() < n → 越界读:多项式复合逆.cpp:185 `F.c[i] = F.c[i] * c`,
-//        n = 1 且 F.c.size() < 2 → 第 183 行 `qpow(F.c[1], mod - 2)`(ASAN 复现过);
-//      * F.c.size() > n → 静默算错(不崩,结果只依赖低 n 项这条性质不成立)—— 见第 8 段的 [BUG],附最小复现。
-//      所以 n = 1 这种退化情形本 check 传长度 2 的 F,其他情形一律传长度恰为 n 的 F。
-//   4. F[1] == 0(无复合逆)与 F[0] != 0 都在契约外,本 check 只记录不依赖(第 6/9 段)。
-//   5. 前置:必须先 prep(k)(模板内部会把 N-5 = 4.4e6 的阶乘/逆元都算出来,约 40 ms / 50 MB)。
-//      本 check 用 prep(18),实测 n <= 2000 正确。
-// =========================================================
+// 本自测覆盖正整数n,要求F[0]=0、F[1]!=0;返回n项并满足双向复合等于x(mod x^n)。
+// 输入可比n长或短:实现补齐不足系数,丢弃不影响低n项的高次系数。
+// n=1也传入非零一次项;F[1]=0或F[0]!=0不属于复合逆有效输入。
+// 使用前prep(k),且实际NTT长度须在预处理范围内;本check用prep(18),覆盖n<=2000。
 #include "../_check_base.hpp"
-#define main xcpc_tpl_main
 #include "多项式复合逆.cpp"
-#undef main
 
-// comp_inv 的调用口:先做一次前置自检,免得 check 自己写错用例(本 check 的 bug 不该伪装成模板的 bug)
+// 原随机用例使用规范长度;长/短输入另在第8段直接调用模板测试。
 static vi CIV(const vi &F, int n) {
     if((int) F.size() < n || (n == 1 && (int) F.size() < 2)) {
-        printf("  [INTERNAL] check 用例违规:F.size() = %d, n = %d(会越界读)\n", (int) F.size(), n);
+        printf("  [INTERNAL] 原随机用例长度未规范:F.size() = %d, n = %d\n", (int) F.size(), n);
         exit(1);
     }
     poly p;
@@ -38,8 +25,9 @@ static string str(const vi &a, int k = 12) {
 }
 // 失败现场:F、G、期望、实际全打出来
 static int bad(const char *what, const vi &F, const vi &G, int n, const vi &want, const vi &got) {
-    printf("  [FAIL] %s\n    n = %d\n    F = %s\n    G = %s\n    want = %s\n    got  = %s\n", what, n, str(F).c_str(),
-           str(G).c_str(), str(want).c_str(), str(got).c_str());
+    printf("  [FAIL] %s\n    n = %d\n    F = %s\n    G = %s\n    want = %s\n    got  = %s\n", what, n,
+           str(F, F.size()).c_str(), str(G, G.size()).c_str(),
+           str(want, want.size()).c_str(), str(got, got.size()).c_str());
     return 1;
 }
 // ——— 参考实现 1:F(G) mod x^n,Horner 展开 r ← r·G + F[i](G 是完整幂级数,G[0] 允许非 0) ———
@@ -207,8 +195,8 @@ int main() {
             vi g = CIV(F, n);
             if(!same(want, g)) return bad("F = x/(1-x) → 逆 = x/(1+x)", F, g, n, want, g);
         }
-        // n = 1 退化:只返回常数项 0(注意要传长度 >= 2 的 F,否则模板第 183 行越界读)
-        CHECK(same(CIV({0, 7}, 1), vi{0}), "n = 1 → {0}(F 给长度 2 以避免模板越界读)");
+        // n = 1 退化:仍须提供非零一次项以定义复合逆,只返回常数项0。
+        CHECK(same(CIV({0, 7}, 1), vi{0}), "n = 1 → {0}(仍需非零一次项)");
         // n = 2:g = x/F[1]
         CHECK(same(CIV({0, 3, 5}, 2), vi{0, (int) qpow(3, mod - 2)}), "n = 2 只用到 F[1]");
         ok("结构/退化用例(F = x / c·x / -x / x+x² / -(x+x²+x³+x⁴) / x(1-x)^{-1} / n = 1,2)全部一致");
@@ -279,7 +267,7 @@ int main() {
         }
     }
 
-    // ——— 8) 长度契约:必须恰好 F.c.size() == n ———
+    // ——— 8) 长度与重复调用:高次不影响低n项,短输入补零 ———
     {
         // 8a) |F| == n 时同一输入重复调用必须完全一样(模板里有 static 的 rev/omg/X/tmp,查状态污染)
         For(t, 1, 200) {
@@ -290,45 +278,58 @@ int main() {
         }
         ok("200 组 |F| == n:重复调用结果稳定,static 的 rev/omg/X/tmp 无状态污染");
 
-        // 8b) [BUG] |F| > n:模板静默给出错误结果 —— 只取决于低 n 项这条性质不成立。
-        //     本 check 不当 FAIL(模板自带 main 会先把 F.c.resize(n),契约里的 F 就是「模 x^n 的截断」),
-        //     但这是真的错,最小复现与根因打在这里。
+        // 8b) 原长输入反例必须作为硬回归,不能仅打印历史BUG后放行。
         {
             auto ci = [](vi f, int n) {
                 poly p;
                 p.c = f;
-                vi g = comp_inv(p, n).c;
-                g.resize(n);
-                return g;
+                return comp_inv(p, n).c;
             };
             vi got1 = ci({0, 1, 0}, 2), want1 = ci({0, 1}, 2);
             vi got2 = ci({0, 1, 1, 0, 0}, 4), want2 = ci({0, 1, 1, 0}, 4);
             vi got3 = ci({0, 1, 0, 0, 7}, 4), want3 = ci({0, 1, 0, 0}, 4);
             bool bug = !same(got1, want1) || !same(got2, want2) || !same(got3, want3);
             if(bug) {
-                printf("  [BUG] 多项式复合逆.cpp:comp_inv(F, n) 只在 F.c.size() == n 时正确;F 更长就静默算错(不崩,返回长度仍是 n)\n");
-                printf("        最小复现(把同一幂级数多截几项,结果就变):\n");
-                printf("          n = 2: F = {0,1,0}     → g = %s  应为 %s\n", str(got1).c_str(), str(want1).c_str());
-                printf("          n = 4: F = {0,1,1,0,0} → g = %s  应为 %s\n", str(got2).c_str(), str(want2).c_str());
-                printf("          n = 4: F = {0,1,0,0,7} → g = %s  应为 %s\n", str(got3).c_str(), str(want3).c_str());
-                printf("        根因:pw_pj 只写前 n 项 `for(i=0;i<n;i++) F.c[i] = A[i][0];`(多项式复合逆.cpp:177-178)后就返回,\n");
-                printf("              F.c 仍是输入的长度;comp_inv 紧接着 `reverse(F.c.begin(), F.c.end())`(:188)反转的是整个向量,\n");
-                printf("              于是 [n, |F|) 里的高次项被反转到了低次位置,参与后面的运算。\n");
-                printf("        调用方对策:F.c.resize(n)(模板自带 main 正是这么写的);对照 多项式复合.cpp 的 comp 能正确处理更长的 F。\n");
-                printf("        —— 本 check 不把它算 FAIL(契约内用法是 |F| == n),但结论明确:这是模板的静默错。\n");
-            } else {
-                printf("  [ok] |F| > n 时也已正确(上述静默错似乎已被修掉)\n");
+                if(!same(got1, want1)) return bad("长输入最小回归", vi{0, 1, 0}, vi{}, 2, want1, got1);
+                if(!same(got2, want2)) return bad("长输入二次项回归", vi{0, 1, 1, 0, 0}, vi{}, 4, want2, got2);
+                return bad("高次项不能倒入低次", vi{0, 1, 0, 0, 7}, vi{}, 4, want3, got3);
             }
+            vi short_g = ci({0, 1}, 12), padded_g = ci(serX(12), 12);
+            if(!same(short_g, padded_g)) return bad("短输入补零", vi{0, 1}, vi{}, 12, padded_g, short_g);
+            ok("三组长输入与短输入补零回归均为硬断言");
         }
     }
 
     // ——— 9) 记录契约外/易踩的点 ———
     {
-        printf("  [note] 越界读(ASAN 实测):F.c.size() < n → 多项式复合逆.cpp:185;n = 1 且 F.c.size() < 2 → 第 183 行 "
-               "qpow(F.c[1], mod-2)。调用方必须补满 n 个系数(n = 1 要补到 2 个)\n");
+
         printf("  [note] F[1] = 0(无复合逆)、F[0] != 0(模板按 F = x·u(x) 做 Lagrange 反演)都在契约外;"
                "F[1] = 0 时实测不崩不挂、返回全 0,但那不是「逆」,别依赖\n");
         printf("  [note] 模板会先 prep 到 N-5 = 4.4e6 的阶乘/逆元(约 40 ms、50 MB),与 n 无关;本 check 用 prep(18)\n");
+    }
+
+    // 公共operator*:先大后小须返回真实卷积长度,不能把旧X尾部当系数。
+    {
+        poly warm = poly(vi(5, 1)) * poly(vi(5, 1));
+        vi got = (poly(vi{1}) * poly(vi{1})).c;
+        if(!same(got, vi{1})) return bad("大乘法后的常数乘法", vi{1}, vi{1}, 1, vi{1}, got);
+        For(t, 1, 2400) {
+            vi a(rnd(0, 70)), b(rnd(0, 70));
+            for(int &x : a) x = rnd(0, mod - 1);
+            for(int &x : b) x = rnd(0, mod - 1);
+            vi want;
+            if(!a.empty() && !b.empty()) {
+                want.resize(a.size() + b.size() - 1);
+                ForD(i, 0, (int)a.size()) ForD(j, 0, (int)b.size())
+                    want[i + j] = (want[i + j] + 1ll * a[i] * b[j]) % mod;
+            }
+            got = (poly(a) * poly(b)).c;
+            if(!same(want, got)) {
+                printf("  [FAIL] 公共乘法随机用例 t=%d\n", t);
+                return bad("公共乘法与独立O(nm)卷积", a, b, want.size(), want, got);
+            }
+        }
+        ok("公共乘法真实长度/空输入/旧缓存,2400随机与独立卷积一致");
     }
 
     PASSED("多项式复合逆");
