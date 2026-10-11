@@ -1,6 +1,6 @@
-// comp(): 多项式 · 多项式复合 (G(F(x)) mod x^n, O(n log n))
+// comp(): 多项式 · 多项式复合 (F(G(x)) mod x^n, O(n log n))
 
-// 接口:comp(F, G, n) 返回 G(F(x)) 在 mod x^n 下的结果(F、G 均按 n 个系数给出)。
+// 接口:comp(F, G, n) 返回 F(G(x)) 在 mod x^n 下的结果(F、G 均按 n 个系数给出)。
 // 使用前必须先调用一次 prep(22)(初始化 NTT 的 rev/omg;长度上界按 2^22 准备),
 // 否则内部 NTT 用的是未初始化的单位根 —— 原来这一步写在模板自带的 main 里。
 
