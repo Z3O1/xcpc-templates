@@ -106,10 +106,6 @@
 
 #zebraw(lang: false)[#raw(readcode("templates/数学/lagrange.cpp"), lang: "cpp", block: true)]
 
-== Pollard Rho
-
-#zebraw(lang: false)[#raw(readcode("templates/数学/pollard-rho.cpp"), lang: "cpp", block: true)]
-
 == 类欧
 
 #include "templates/数学/类欧.typ"

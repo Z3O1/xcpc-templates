@@ -92,7 +92,7 @@
    "key": "数学/pollard-rho.cpp",
    "title": "Pollard Rho",
    "missing": false,
-   "hidden": false
+   "hidden": true
   },
   {
    "key": "数学/min25.cpp",

@@ -1,5 +1,7 @@
 // chkp()/PR()/fact(): 数学 · Miller-Rabin + Pollard Rho 分解质因数
 
+// hide
+
 // chkp 接受 ll;PR 要求 n 为正合数,fact 要求 n >= 1,返回升序去重质因子。
 constexpr bool chkp(ll n) {
     if(n < 2) return 0;
