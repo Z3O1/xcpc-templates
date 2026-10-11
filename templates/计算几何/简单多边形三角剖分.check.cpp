@@ -36,7 +36,7 @@ static db refArea3(p2 a, p2 b, p2 c) { return refDet(b - a, c - a) / 2; }
 static db refArea(const vector<p2> &a) {  // shoelace 带号面积
     db s = 0;
     int n = a.size();
-    ForD(i, 0, n) s += refDet(a[i], a[(i + 1) % n]);
+    for(int i = 0; i < n; ++i) s += refDet(a[i], a[(i + 1) % n]);
     return s / 2;
 }
 static db refNearest(p2 a, p2 b, p2 q) {  // 点到线段距离平方(零长线段也定义良好)
@@ -50,16 +50,16 @@ static db refNearest(p2 a, p2 b, p2 q) {  // 点到线段距离平方(零长线�
 }
 static db refDistPolyOnly(int n, const p2 *a, p2 q) {  // 只到边的距离平方
     db r = 1e300L;
-    ForD(i, 0, n) r = min(r, refNearest(a[i], a[(i + 1) % n], q));
+    for(int i = 0; i < n; ++i) r = min(r, refNearest(a[i], a[(i + 1) % n], q));
     return r;
 }
 static int refContain(int n, const p2 *a, p2 q) {  // 0 外 / 1 边界 / 2 内
     db sc = 1;
-    ForD(i, 0, n) sc = max(sc, max(A_(a[i].x), A_(a[i].y)));
+    for(int i = 0; i < n; ++i) sc = max(sc, max(A_(a[i].x), A_(a[i].y)));
     db tol = 1e-12L * sc;
-    ForD(i, 0, n) if(refNearest(a[i], a[(i + 1) % n], q) <= tol * tol) return 1;
+    for(int i = 0; i < n; ++i) if(refNearest(a[i], a[(i + 1) % n], q) <= tol * tol) return 1;
     int c = 0;
-    ForD(i, 0, n) {
+    for(int i = 0; i < n; ++i) {
         p2 u = a[i], v = a[(i + 1) % n];
         if(u.y > v.y) swap(u, v);  // 半开区间 (u.y, v.y]: 水平边排除、顶点只数一次
         if(!(u.y < q.y && q.y <= v.y)) continue;
@@ -75,7 +75,7 @@ static bool refProperCross(p2 a, p2 b, p2 c, p2 d) {
     return s1 != s2 && s3 != s4;
 }
 static bool refIsSimple(int n, const p2 *a) {
-    ForD(i, 0, n) ForD(j, i + 1, n) {
+    for(int i = 0; i < n; ++i) for(int j = i + 1; j < n; ++j) {
         int i2 = (i + 1) % n, j2 = (j + 1) % n;
         if(i == j || i2 == j || j2 == i) continue;
         if(refProperCross(a[i], a[i2], a[j], a[j2])) return false;
@@ -85,7 +85,7 @@ static bool refIsSimple(int n, const p2 *a) {
 // 独立复刻「剥掉共线点」: 返回还留在环上的下标(判定用相对尺度容差 ceps)
 static vector<int> refSurvivors(int n, const p2 *a) {
     vector<int> prv(n), nxt(n), out;
-    ForD(i, 0, n) prv[i] = (i + n - 1) % n, nxt[i] = (i + 1) % n;
+    for(int i = 0; i < n; ++i) prv[i] = (i + n - 1) % n, nxt[i] = (i + 1) % n;
     int cnt = n;
     auto live = [&](int x) { return prv[nxt[x]] == x && nxt[prv[x]] == x; };
     // 与模板同样的「局部相对」共线判据(独立写一遍, 不用模板的代码)
@@ -102,21 +102,21 @@ static vector<int> refSurvivors(int n, const p2 *a) {
                 nxt[p] = q, prv[q] = p, --cnt, ch = 1;
             }
     }
-    ForD(i, 0, n) if(cnt >= 3 && live(i)) out.push_back(i);
+    for(int i = 0; i < n; ++i) if(cnt >= 3 && live(i)) out.push_back(i);
     return out;
 }
 
 // ================= 通用工具 =================
 static db polyScale(const vector<p2> &a) {
     db x0 = a[0].x, x1 = a[0].x, y0 = a[0].y, y1 = a[0].y;
-    ForD(i, 0, (int) a.size()) x0 = min(x0, a[i].x), x1 = max(x1, a[i].x), y0 = min(y0, a[i].y), y1 = max(y1, a[i].y);
+    for(int i = 0; i < (int) a.size(); ++i) x0 = min(x0, a[i].x), x1 = max(x1, a[i].x), y0 = min(y0, a[i].y), y1 = max(y1, a[i].y);
     return 1 + max(x1 - x0, y1 - y0);
 }
 static bool eqd(db got, db want, db tol) { return A_(got - want) <= tol; }
 static void prP(p2 p) { printf("(%g,%g)", (double) p.x, (double) p.y); }
 static void prPoly(const vector<p2> &a) {
     printf("    多边形 n=%d:", (int) a.size());
-    ForD(i, 0, (int) a.size()) prP(a[i]);
+    for(int i = 0; i < (int) a.size(); ++i) prP(a[i]);
     printf("\n");
 }
 static void prTri(const char *what, int idx, const vector<p2> &a, const array<int, 3> &t) {
@@ -127,7 +127,7 @@ static void prTri(const char *what, int idx, const vector<p2> &a, const array<in
 static bool polyCCW(const vector<p2> &a) { return refArea(a) > 0; }
 static p2 bboxRand(const vector<p2> &a) {
     db x0 = a[0].x, x1 = a[0].x, y0 = a[0].y, y1 = a[0].y;
-    ForD(i, 0, (int) a.size()) x0 = min(x0, a[i].x), x1 = max(x1, a[i].x), y0 = min(y0, a[i].y), y1 = max(y1, a[i].y);
+    for(int i = 0; i < (int) a.size(); ++i) x0 = min(x0, a[i].x), x1 = max(x1, a[i].x), y0 = min(y0, a[i].y), y1 = max(y1, a[i].y);
     return {x0 + (x1 - x0) * ((db) rnd(0, 1000000) / 1000000.0L), y0 + (y1 - y0) * ((db) rnd(0, 1000000) / 1000000.0L)};
 }
 
@@ -152,13 +152,13 @@ static void earCase(const vector<p2> &poly0, const char *what, bool expectFull) 
     bool degenerate = (int) surv.size() < 3;
     if(!degenerate) {
         bool allcol = true;
-        ForD(k, 2, (int) surv.size()) if(refDet(poly0[surv[k]] - poly0[surv[0]], poly0[surv[1]] - poly0[surv[0]]) != 0) allcol = false;
+        for(int k = 2; k < (int) surv.size(); ++k) if(refDet(poly0[surv[k]] - poly0[surv[0]], poly0[surv[1]] - poly0[surv[0]]) != 0) allcol = false;
         if(allcol) degenerate = true;
     }
     if(degenerate && !tri.empty()) {
         diePoly();
         printf("    面积 0 的退化输入(去掉共线点后参考存活 %d 个顶点), 却返回了 %d 个三角形\n", (int) surv.size(), (int) tri.size());
-        ForD(i, 0, (int) tri.size()) prTri("输出", i, poly0, tri[i]);
+        for(int i = 0; i < (int) tri.size(); ++i) prTri("输出", i, poly0, tri[i]);
         exit(1);
     }
     int wantCnt = degenerate ? 0 : (int) surv.size() - 2;
@@ -166,13 +166,13 @@ static void earCase(const vector<p2> &poly0, const char *what, bool expectFull) 
     if((int) tri.size() != wantCnt) {
         diePoly();
         printf("    期望 %d 个三角形(剥掉共线点后 %d 个顶点 - 2), 实测 %d 个\n", wantCnt, (int) surv.size(), (int) tri.size());
-        ForD(i, 0, (int) tri.size()) prTri("输出", i, poly0, tri[i]);
+        for(int i = 0; i < (int) tri.size(); ++i) prTri("输出", i, poly0, tri[i]);
         printf("    独立参考认为的存活顶点:");
-        ForD(i, 0, (int) surv.size()) printf(" %d", surv[i]);
+        for(int i = 0; i < (int) surv.size(); ++i) printf(" %d", surv[i]);
         printf("\n");
         exit(1);
     }
-    ForD(i, 0, (int) tri.size()) ForD(k, 0, 3) {
+    for(int i = 0; i < (int) tri.size(); ++i) for(int k = 0; k < 3; ++k) {
         int v = tri[i][k];
         if(v < 0 || v >= n) {
             diePoly();
@@ -181,7 +181,7 @@ static void earCase(const vector<p2> &poly0, const char *what, bool expectFull) 
             exit(1);
         }
     }
-    ForD(i, 0, (int) tri.size()) if(tri[i][0] == tri[i][1] || tri[i][1] == tri[i][2] || tri[i][0] == tri[i][2]) {
+    for(int i = 0; i < (int) tri.size(); ++i) if(tri[i][0] == tri[i][1] || tri[i][1] == tri[i][2] || tri[i][0] == tri[i][2]) {
         diePoly();
         prTri("三个下标有重复", i, poly0, tri[i]);
         printf("    下标重复 => 面积为 0 的退化三角形\n");
@@ -189,7 +189,7 @@ static void earCase(const vector<p2> &poly0, const char *what, bool expectFull) 
     }
     // ---- A2: 逆时针且面积严格为正; 三角形内部不含其它顶点 ----
     db sum = 0;
-    ForD(i, 0, (int) tri.size()) {
+    for(int i = 0; i < (int) tri.size(); ++i) {
         db s = refArea3(poly0[tri[i][0]], poly0[tri[i][1]], poly0[tri[i][2]]);
         sum += s;
         if(!(s > 0)) {
@@ -199,7 +199,7 @@ static void earCase(const vector<p2> &poly0, const char *what, bool expectFull) 
             exit(1);
         }
         p2 x = poly0[tri[i][0]], y = poly0[tri[i][1]], z = poly0[tri[i][2]];
-        ForD(jj, 0, (int) surv.size()) {  // 只查「存活顶点」: 被剥掉的共线点本来就落在某条边上
+        for(int jj = 0; jj < (int) surv.size(); ++jj) {  // 只查「存活顶点」: 被剥掉的共线点本来就落在某条边上
             int j = surv[jj];
             if(j == tri[i][0] || j == tri[i][1] || j == tri[i][2]) continue;
             db d1 = refDet(y - x, poly0[j] - x), d2 = refDet(z - y, poly0[j] - y), d3 = refDet(x - z, poly0[j] - z);
@@ -223,18 +223,18 @@ static void earCase(const vector<p2> &poly0, const char *what, bool expectFull) 
     if(!eqd(sum, want, 1e-9L * (1 + A_(want)))) {
         diePoly();
         printf("    三角形面积之和实测 %.17Lg, 多边形带号面积期望 %.17Lg, 差 %Lg > 容差 %Lg\n", sum, want, A_(sum - want), 1e-9L * (1 + A_(want)));
-        ForD(i, 0, (int) tri.size()) prTri("输出", i, poly0, tri[i]);
+        for(int i = 0; i < (int) tri.size(); ++i) prTri("输出", i, poly0, tri[i]);
         exit(1);
     }
     // ---- A4: 每条边是多边形边或合法对角线 ----
     // 「多边形边」按剥掉共线点之后的环来算: 两个相邻存活顶点之间的那条线(可能跨过若干共线点)
     bool isPolyEdge[64][64];
-    ForD(i, 0, n) ForD(j, 0, n) isPolyEdge[i][j] = false;
+    for(int i = 0; i < n; ++i) for(int j = 0; j < n; ++j) isPolyEdge[i][j] = false;
     {
         int m = surv.size();
-        ForD(k, 0, m) isPolyEdge[surv[k]][surv[(k + 1) % m]] = true, isPolyEdge[surv[(k + 1) % m]][surv[k]] = true;
+        for(int k = 0; k < m; ++k) isPolyEdge[surv[k]][surv[(k + 1) % m]] = true, isPolyEdge[surv[(k + 1) % m]][surv[k]] = true;
     }
-    ForD(i, 0, (int) tri.size()) ForD(k, 0, 3) {
+    for(int i = 0; i < (int) tri.size(); ++i) for(int k = 0; k < 3; ++k) {
         int u = tri[i][k], v = tri[i][(k + 1) % 3];
         if(isPolyEdge[u][v]) continue;  // 多边形边
         p2 m = (poly0[u] + poly0[v]) / 2;
@@ -255,7 +255,7 @@ db dm = refDistPolyOnly(n, poly0.data(), m), need = 1e-12L * (ext + 1e-300L);  /
             printf(" 的 refContain = %d(0 外 / 1 边界 / 2 内), 期望 2\n", c);
             exit(1);
         }
-        ForD(j, 0, n) {
+        for(int j = 0; j < n; ++j) {
             int j2 = (j + 1) % n;
             if(j == u || j == v || j2 == u || j2 == v) continue;
             if(refProperCross(poly0[u], poly0[v], poly0[j], poly0[j2])) {
@@ -268,7 +268,7 @@ db dm = refDistPolyOnly(n, poly0.data(), m), need = 1e-12L * (ext + 1e-300L);  /
     }
     // ---- A5: 采样覆盖且不重叠 ----
     int samples = 20;
-    ForD(it, 0, samples) {
+    for(int it = 0; it < samples; ++it) {
         p2 q = bboxRand(poly0);
         db margin = 1e-6L * (sc - 1 + 1e-300L);
 db dq = refDistPolyOnly(n, poly0.data(), q);
@@ -277,7 +277,7 @@ db dq = refDistPolyOnly(n, poly0.data(), q);
         if(pc == 1) continue;
         bool onTriEdge = false;
         int cnt = 0;
-        ForD(i, 0, (int) tri.size()) {
+        for(int i = 0; i < (int) tri.size(); ++i) {
             p2 te[3] = {poly0[tri[i][0]], poly0[tri[i][1]], poly0[tri[i][2]]};
             if(refNearest(te[0], te[1], q) <= 1e-18L * sc * sc || refNearest(te[1], te[2], q) <= 1e-18L * sc * sc || refNearest(te[2], te[0], q) <= 1e-18L * sc * sc) onTriEdge = true;
             if(contain(3, te, q)) ++cnt;  // 模板的 contain(只对逆时针三角形有效)
@@ -301,15 +301,15 @@ db dq = refDistPolyOnly(n, poly0.data(), q);
     }
     // ---- A6: 每个存活顶点都被用到; 三角形顶点只能来自存活集合 ----
     vector<int> vis(n, 0), isSurv(n, 0);
-    ForD(i, 0, (int) surv.size()) isSurv[surv[i]] = 1;
-    ForD(i, 0, (int) tri.size()) ForD(k, 0, 3) vis[tri[i][k]] = 1;
+    for(int i = 0; i < (int) surv.size(); ++i) isSurv[surv[i]] = 1;
+    for(int i = 0; i < (int) tri.size(); ++i) for(int k = 0; k < 3; ++k) vis[tri[i][k]] = 1;
     if(degenerate) return;  // 面积 0 的退化输入: 没有三角形, A6 不适用
-    ForD(i, 0, (int) surv.size()) if(!vis[surv[i]]) {
+    for(int i = 0; i < (int) surv.size(); ++i) if(!vis[surv[i]]) {
         diePoly();
         printf("    存活顶点 %d ", surv[i]), prP(poly0[surv[i]]), printf(" 没有出现在任何三角形里\n");
         exit(1);
     }
-    ForD(i, 0, (int) tri.size()) ForD(k, 0, 3) if(!isSurv[tri[i][k]]) {
+    for(int i = 0; i < (int) tri.size(); ++i) for(int k = 0; k < 3; ++k) if(!isSurv[tri[i][k]]) {
         diePoly();
         prTri("三角形用到了被剥掉的共线点", i, poly0, tri[i]);
         printf("    顶点 %d 在独立参考里是共线点(会被剥掉)\n", tri[i][k]);
@@ -322,7 +322,7 @@ db dq = refDistPolyOnly(n, poly0.data(), q);
 static vector<p2> subPoly(const vector<p2> &poly, int k) {
     vector<p2> sub(poly.begin(), poly.begin() + k);
     p2 c{0, 0};
-    ForD(i, 0, k) c = c + sub[i];
+    for(int i = 0; i < k; ++i) c = c + sub[i];
     c = c / (db) k;
     sort(sub.begin(), sub.end(), [&](p2 x, p2 y) { return (x - c).alpha() < (y - c).alpha(); });
     return sub;
@@ -338,10 +338,10 @@ static void subCases(const vector<p2> &poly, const char *what, bool full) {
 static vector<p2> insertCollinear(const vector<p2> &h, int per) {
     vector<p2> r;
     int k = h.size();
-    ForD(i, 0, k) {
+    for(int i = 0; i < k; ++i) {
         r.push_back(h[i]);
         int ins = per < 0 ? (int) rnd(0, 3) : per;
-        ForD(j, 1, ins + 1) {
+        for(int j = 1; j < ins + 1; ++j) {
             db t = (db) (j * 5) / 100;  // 0.05, 0.10, ... 精确可表示
             r.push_back(h[i] + (h[(i + 1) % k] - h[i]) * t);
         }
@@ -384,7 +384,7 @@ int main() {
         earCase({{0, 0}, {4, 0}, {4, 4}, {2, 1}, {0, 4}}, "凹五边形 2(反射顶点在 (2,1))", true);
         earCase({{0, 0}, {2000000000.0L, 0}, {1000000000.0L, 1}}, "细长三角形(底 2e9 高 1, 逆时针)", true);
         vector<p2> big;
-        ForD(i, 0, 8) {
+        for(int i = 0; i < 8; ++i) {
             db ang = 2 * pi * i / 8 + 0.1L, r = (i % 2 ? 1e9L : 5e8L) * (i % 3 ? 1.0L : 0.9L);
             big.push_back({r * cos(ang), r * sin(ang)});
         }
@@ -414,7 +414,7 @@ int main() {
             if(done >= 2000) break;
             int m = (int) rnd(3, 60), R = (t % 3 == 0) ? 1000000 : (t % 3 == 1 ? 1000 : 30);
             vector<p2> v(m);
-            ForD(i, 0, m) v[i] = {(db) rnd(-R, R), (db) rnd(-R, R)};
+            for(int i = 0; i < m; ++i) v[i] = {(db) rnd(-R, R), (db) rnd(-R, R)};
             vector<p2> src = v, h(2 * m + 10);  // convex_hull 会改写输入并另写输出, 两个缓冲都要 n 以上
             int k = convex_hull(m, src.data(), h.data());
             if(k < 3) {
@@ -443,14 +443,14 @@ int main() {
             int m = (int) rnd(3, 30);
             vector<db> ang(m), rr(m);
             db rmin = (db) rnd(50, 900) / 100.0L, rmax = rmin * (1 + (db) rnd(1, 40) / 10.0L);
-            ForD(i, 0, m) {
+            for(int i = 0; i < m; ++i) {
                 ang[i] = 2 * pi * i / m + (db) rnd(-300, 300) / 1000.0L;
                 rr[i] = rmin + (rmax - rmin) * (db) rnd(0, 1000) / 1000.0L;
             }
             sort(ang.begin(), ang.end());                               // 按角度排序 => 绕星心一圈
             db cx = (db) rnd(-1000, 1000), cy = (db) rnd(-1000, 1000);  // 星心
             vector<p2> poly(m);
-            ForD(i, 0, m) poly[i] = {cx + rr[i] * cos(ang[i]), cy + rr[i] * sin(ang[i])};
+            for(int i = 0; i < m; ++i) poly[i] = {cx + rr[i] * cos(ang[i]), cy + rr[i] * sin(ang[i])};
             if(!polyCCW(poly) || !refIsSimple(m, poly.data())) {
                 ++skip;
                 continue;  // 半径抖动过大时会自交, 只对合法输入剖分
@@ -470,7 +470,7 @@ int main() {
             if(done >= 2000) break;
             int m = (int) rnd(3, 30);
             vector<p2> v(m);
-            ForD(i, 0, m) v[i] = {(db) rnd(-200, 200), (db) rnd(-200, 200)};
+            for(int i = 0; i < m; ++i) v[i] = {(db) rnd(-200, 200), (db) rnd(-200, 200)};
             vector<p2> src = v, h(2 * m + 10);
             int k = convex_hull(m, src.data(), h.data());
             if(k < 3) {

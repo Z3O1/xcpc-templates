@@ -1,5 +1,5 @@
 // exgcd(): 数论 · 扩展欧几里得
-
+//hide
 // 返回 gcd(a, b);x, y 为一组解满足 a * x + b * y = gcd(a, b)。
 // b = 0 时返回 x = 1, y = 0。
 ll exgcd(ll a, ll b, ll &x, ll &y) {

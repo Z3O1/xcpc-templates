@@ -7,7 +7,7 @@
 //         |f| <  |g| 时 q 为空,r 就是传入的 f 原样(长度 |f|,不补到 |g|-1)。
 // 做法:反转两者,商 rev(q) = rev(f) * inv(rev(g), |f|-|g|+1),再整回来算余式。
 // 复杂度:O(n log n)。
-// 依赖:poly_inv、mul(ntt.cpp)、常量 MOD = 998244353;系数在 [0, MOD)。
+// 依赖:poly_inv、mul(ntt.cpp)、常量 M = 998244353;系数在 [0, M)。
 
 using poly = vector<int>;
 pair<poly, poly> poly_divmod(const poly &f, const poly &g) {
@@ -20,7 +20,7 @@ pair<poly, poly> poly_divmod(const poly &f, const poly &g) {
     reverse(q.begin(), q.end());
     poly r = mul(q, g);
     r.resize(n);
-    For(i, 0, n - 1) r[i] = (f[i] - r[i] + MOD) % MOD;
+    For(i, 0, n - 1) r[i] = (f[i] - r[i] + M) % M;
     r.resize(m - 1);
     return {q, r};
 }

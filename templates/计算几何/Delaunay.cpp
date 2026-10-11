@@ -44,7 +44,7 @@ int ill(int p, int a, int b, int c) { // p 是否严格落在逆时针三角形 
     return t1 + t2 + t3 > 1e-12L * (abs(t1) + abs(t2) + abs(t3));
 }
 int finde(int t, int a, int b) { // 三角形 t 中「有序边 (a,b)」的编号
-    ForD(i, 0, 3)
+    for(int i = 0; i < 3; ++i)
         if(tri[t].v[(i + 1) % 3] == a && tri[t].v[(i + 2) % 3] == b) return i;
     return -1;
 }
@@ -93,7 +93,7 @@ vect<p2> delaunay(vect<p2> a) {
     fre.clear();
     verc = 0;
     sort(a.begin(), a.end(), lt);
-    ForD(i, 0, (int)a.size())
+    for(int i = 0; i < (int)a.size(); ++i)
         if(pts.empty() || pts.back().x != a[i].x || pts.back().y != a[i].y) pts += a[i];
     int n = (int)pts.size();
     if(n < 3) return {};
@@ -102,26 +102,26 @@ vect<p2> delaunay(vect<p2> a) {
     int k = convex_hull(n, q.data(), hb.data()); // 凸包(逆时针,去掉共线点)
     if(k < 3) return {};                         // 全部共线:没有任何非退化三角形
     vect<int> hv(k), fs(k - 2);
-    ForD(j, 0, k) hv[j] = (int)(lower_bound(pts.begin(), pts.end(), hb[j], lt) - pts.begin());
+    for(int j = 0; j < k; ++j) hv[j] = (int)(lower_bound(pts.begin(), pts.end(), hb[j], lt) - pts.begin());
     vector<Tst> st;
     For(i, 1, k - 2) fs[i - 1] = mk(hv[0], hv[i], hv[i + 1]); // 先做扇形剖分
     For(i, 1, k - 3) lnk(fs[i - 1], 1, fs[i]);
-    ForD(t, 0, (int)tri.size())
-        ForD(i, 0, 3) st.push_back({t, i, tri[t].ver}); // 把它翻成 Delaunay
+    for(int t = 0; t < (int)tri.size(); ++t)
+        for(int i = 0; i < 3; ++i) st.push_back({t, i, tri[t].ver}); // 把它翻成 Delaunay
     flipall(st);
     vect<int> in; // 内部点(不在凸包上的点;可能正好落在凸包边上)
     vect<char> onh(n, 0);
-    ForD(j, 0, k) onh[hv[j]] = 1;
-    ForD(i, 0, n)
+    for(int j = 0; j < k; ++j) onh[hv[j]] = 1;
+    for(int i = 0; i < n; ++i)
         if(!onh[i]) in += i;
     mt19937 rng(20240915);
     shuffle(in.begin(), in.end(), rng);
     int last = fs[0];
-    ForD(ii, 0, (int)in.size()) {
+    for(int ii = 0; ii < (int)in.size(); ++ii) {
         int p = in[ii], cur = last, go;
         for(;;) { // 游走定位:p 一定在凸包内(或凸包边上),所以走不出三角剖分
             go = -1;
-            ForD(j, 0, 3)
+            for(int j = 0; j < 3; ++j)
                 if(ori(tri[cur].v[(j + 1) % 3], tri[cur].v[(j + 2) % 3], p) < 0) {
                     go = j;
                     break;
@@ -130,7 +130,7 @@ vect<p2> delaunay(vect<p2> a) {
             cur = tri[cur].f[go];
         }
         int e = -1; // p 正好落在某条边上
-        ForD(j, 0, 3)
+        for(int j = 0; j < 3; ++j)
             if(!ori(tri[cur].v[(j + 1) % 3], tri[cur].v[(j + 2) % 3], p)) {
                 e = j;
                 break;
@@ -184,7 +184,7 @@ vect<p2> delaunay(vect<p2> a) {
         flipall(st);
     }
     vect<p2> res;
-    ForD(t, 0, (int)tri.size())
+    for(int t = 0; t < (int)tri.size(); ++t)
         if(live[t]) {
             int a = tri[t].v[0], b = tri[t].v[1], c = tri[t].v[2];
             res += pts[a], res += pts[b], res += pts[c];

@@ -63,7 +63,7 @@ static bool check_forest(const vector<pii> &edges) {
             ends[i] = a;
         } else {
             int common = -1, cnt = 0;
-            ForD(x, 0, 2) ForD(y, 0, 2) if(a[x] == b[y]) common = a[x], ++cnt;
+            for(int x = 0; x < 2; ++x) for(int y = 0; y < 2; ++y) if(a[x] == b[y]) common = a[x], ++cnt;
             if(cnt != 1) return printf("  [FAIL] 串联结点%d共同端点数=%d\n", i, cnt), false;
             ends[i] = {a[0] == common ? a[1] : a[0], b[0] == common ? b[1] : b[0]};
             sort(all(ends[i]));

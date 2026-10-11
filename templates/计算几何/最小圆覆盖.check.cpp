@@ -56,8 +56,8 @@ static circle bruteMCC(const vector<p2> &v) {  // O(n^4):枚举点对/点三组
         if(r < best) best = r, bo = o;
     };
     tryC(v[0]);
-    ForD(i, 0, n) ForD(j, i + 1, n) tryC((v[i] + v[j]) / 2);
-    ForD(i, 0, n) ForD(j, i + 1, n) ForD(k, j + 1, n) {
+    for(int i = 0; i < n; ++i) for(int j = i + 1; j < n; ++j) tryC((v[i] + v[j]) / 2);
+    for(int i = 0; i < n; ++i) for(int j = i + 1; j < n; ++j) for(int k = j + 1; k < n; ++k) {
         if(sign(refDet(v[j] - v[i], v[k] - v[i])) == 0) continue;
         tryC(refCircum(v[i], v[j], v[k]));
     }
@@ -69,7 +69,7 @@ static vector<p2> refHullV(vector<p2> v) {  // Andrew 单调链(只留顶点,逆
     int n = v.size();
     if(n <= 2) return v;
     vector<p2> h;
-    ForD(i, 0, n) {
+    for(int i = 0; i < n; ++i) {
         while(h.size() > 1 && sign(refDet(h[h.size() - 1] - h[h.size() - 2], v[i] - h[h.size() - 2])) <= 0) h.pop_back();
         h.push_back(v[i]);
     }
@@ -150,7 +150,7 @@ int main() {
         CHECK(eqd(c.r, dis(P(5, 5) - P(1, 1)) / 2, 1e-12L), "mcc:带重复点的共线点集 -> 最远两点为直径");
         {
             vector<p2> cirn;
-            ForD(i, 0, 37) cirn.push_back(P(100 * cos(2 * pi * i / 37), 100 * sin(2 * pi * i / 37)));
+            for(int i = 0; i < 37; ++i) cirn.push_back(P(100 * cos(2 * pi * i / 37), 100 * sin(2 * pi * i / 37)));
             c = mcc(cirn);
             CHECK(eqd(c.r, 100, 1e-9L) && dis(c.o) < 1e-9, "mcc:半径 100 的圆上 37 个点 -> 半径 100、圆心在原点");
             cirn.push_back(P(0, 0));
@@ -170,7 +170,7 @@ int main() {
         For(t, 1, 4000) {
             int n = (int) rnd(1, 12), R = (int) rnd(1, 10);
             vector<p2> v;
-            ForD(i, 0, n) v.push_back(P((db) rnd(-R, R), (db) rnd(-R, R)));
+            for(int i = 0; i < n; ++i) v.push_back(P((db) rnd(-R, R), (db) rnd(-R, R)));
             if(!oneCase(v, 1) && ++bad >= 3) break;
         }
         CHECK(bad == 0, "mcc 与全点暴力一致(4000 组:n=1..12,坐标 ±10,大量重复点,半径相对 1e-9 + 覆盖性 + 最小性 + 全点暴力==凸包暴力)");
@@ -182,7 +182,7 @@ int main() {
         For(t, 1, 2000) {
             int n = (int) rnd(3, 100);
             vector<p2> v;
-            ForD(i, 0, n) v.push_back(P((db) rnd(-1000000, 1000000), (db) rnd(-1000000, 1000000)));
+            for(int i = 0; i < n; ++i) v.push_back(P((db) rnd(-1000000, 1000000), (db) rnd(-1000000, 1000000)));
             if(!oneCase(v, 0) && ++bad >= 3) break;
         }
         CHECK(bad == 0, "mcc 与凸包暴力一致(2000 组:n=3..100,坐标 ±1e6;凸包上的点对/点三组暴力 + 覆盖性 + 最小性)");
@@ -195,7 +195,7 @@ int main() {
             int n = (int) rnd(3, 30);
             db R = (db) rnd(1, 1000);
             vector<p2> v;
-            ForD(i, 0, n) v.push_back(P(R * cos(2 * pi * i / n), R * sin(2 * pi * i / n)));
+            for(int i = 0; i < n; ++i) v.push_back(P(R * cos(2 * pi * i / n), R * sin(2 * pi * i / n)));
             if(!oneCase(v, 0) && ++bad >= 3) break;
         }
         CHECK(bad == 0, "mcc 与凸包暴力一致(300 组:n=3..30 个半径随机的圆上点,凸包 ≈ n 的最坏情况)");
@@ -207,7 +207,7 @@ int main() {
         For(t, 1, 3000) {
             int n = (int) rnd(1, 30);
             vector<p2> v;
-            ForD(i, 0, n) v.push_back(P((db) rnd(-5000, 5000), (db) rnd(-5000, 5000)));
+            for(int i = 0; i < n; ++i) v.push_back(P((db) rnd(-5000, 5000), (db) rnd(-5000, 5000)));
             circle c = mcc(v);
             if(c.r < 0) ++bad;
             if(!covers(c, v)) {
@@ -215,7 +215,7 @@ int main() {
                 ++bad;
             }
             db far = 0;
-            ForD(i, 0, n) far = max(far, dis(v[i] - v[0]));
+            for(int i = 0; i < n; ++i) far = max(far, dis(v[i] - v[0]));
             if(c.r > far + 1e-9L * (1 + far)) {
                 if(bad < 3) printf("      [反例] 半径超过「最远点到 v[0] 的距离」:%.17Lg > %.17Lg\n", c.r, far);
                 ++bad;
@@ -230,7 +230,7 @@ int main() {
         For(t, 1, 2000) {
             int n = (int) rnd(1, 25);
             vector<p2> v;
-            ForD(i, 0, n) v.push_back(P((db) rnd(-1000000000, 1000000000), (db) rnd(-1000000000, 1000000000)));
+            for(int i = 0; i < n; ++i) v.push_back(P((db) rnd(-1000000000, 1000000000), (db) rnd(-1000000000, 1000000000)));
             circle c = mcc(v);
             if(c.r < 0) ++bad;
             if(!covers(c, v)) {

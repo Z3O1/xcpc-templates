@@ -22,13 +22,13 @@ circle mcc(vector<p2> a) {
     static mt19937_64 mcc_rng(chrono::steady_clock::now().time_since_epoch().count());
     shuffle(a.begin(), a.end(), mcc_rng);
     circle c = {a[0], 0};
-    ForD(i, 1, (int)a.size()) {
+    for(int i = 1; i < (int)a.size(); ++i) {
         if(in_circle(c, a[i])) continue;
         c = cir(a[0], a[i]);
-        ForD(j, 0, i) {
+        for(int j = 0; j < i; ++j) {
             if(in_circle(c, a[j])) continue;
             c = cir(a[i], a[j]);
-            ForD(k, 0, j) {
+            for(int k = 0; k < j; ++k) {
                 if(in_circle(c, a[k])) continue;
                 if(!crossop({a[i], a[j]}, a[k])) { // 三点共线:最小圆取最远两点的直径
                     db dij = dis2(a[i] - a[j]), dik = dis2(a[i] - a[k]), djk = dis2(a[j] - a[k]);

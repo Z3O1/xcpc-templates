@@ -40,7 +40,7 @@ static void prl(const char *s, const vector<seg> &v) {
 }
 static db polyArea(const vector<p2> &v) {
     db s = 0;
-    ForD(i, 0, (int) v.size()) s += v[i].det(v[(i + 1) % v.size()]);
+    for(int i = 0; i < (int) v.size(); ++i) s += v[i].det(v[(i + 1) % v.size()]);
     return s / 2;
 }
 static p2 gg = P(0, 0);  // 打印反例时固定用的输入缓存(见 runCase)
@@ -50,7 +50,7 @@ static vector<p2> refClip(vector<p2> poly, seg l) {  // 保留 cross(l, .) >= 0 
     vector<p2> r;
     int n = poly.size();
     if(!n) return r;
-    ForD(i, 0, n) {
+    for(int i = 0; i < n; ++i) {
         p2 u = poly[i], v = poly[(i + 1) % n];
         db cu = cross(l, u), cv = cross(l, v);
         if(cu >= 0) r.push_back(u);
@@ -61,12 +61,12 @@ static vector<p2> refClip(vector<p2> poly, seg l) {  // 保留 cross(l, .) >= 0 
 static vector<seg> boxLines(db B) {  // 逆时针正方形 4 条有向边:左侧即内部
     vector<p2> c = {P(-B, -B), P(B, -B), P(B, B), P(-B, B)};
     vector<seg> r;
-    ForD(i, 0, 4) r.push_back({c[i], c[(i + 1) % 4]});
+    for(int i = 0; i < 4; ++i) r.push_back({c[i], c[(i + 1) % 4]});
     return r;
 }
 static vector<p2> refHPI(const vector<seg> &ls, db B) {  // 只裁剪 B 方框(调用方自己把方框边并入 ls)
     vector<p2> cur = {P(-B, -B), P(B, -B), P(B, B), P(-B, B)};
-    ForD(i, 0, (int) ls.size()) cur = refClip(cur, ls[i]);
+    for(int i = 0; i < (int) ls.size(); ++i) cur = refClip(cur, ls[i]);
     if(cur.size() < 3) return {};
     return cur;
 }
@@ -81,7 +81,7 @@ static vector<p2> refHull(vector<p2> v) {  // Andrew 单调链:去重 + 去共�
     int n = v.size();
     if(n <= 2) return v;
     vector<p2> h;
-    ForD(i, 0, n) {
+    for(int i = 0; i < n; ++i) {
         while(h.size() > 1 && sign((h[h.size() - 1] - h[h.size() - 2]).det(v[i] - h[h.size() - 2])) <= 0) h.pop_back();
         h.push_back(v[i]);
     }
@@ -103,13 +103,13 @@ static db nearTol(const vector<p2> &v) {  // 与坐标规模相关的容差(仅�
 static vector<p2> canon(vector<p2> v) {
     db tol = nearTol(v);
     vector<p2> r;
-    ForD(i, 0, (int) v.size()) if(r.empty() || !eqp(r.back(), v[i], tol)) r.push_back(v[i]);
+    for(int i = 0; i < (int) v.size(); ++i) if(r.empty() || !eqp(r.back(), v[i], tol)) r.push_back(v[i]);
     while(r.size() > 1 && eqp(r.front(), r.back(), tol)) r.pop_back();
     bool ch = 1;
     while(ch && r.size() >= 3) {  // 去掉共线中间点(用「转角」这个相对量:叉积 / 两边长)
         ch = 0;
         vector<p2> t;
-        ForD(i, 0, (int) r.size()) {
+        for(int i = 0; i < (int) r.size(); ++i) {
             p2 a = r[(i + r.size() - 1) % r.size()], b = r[i], c = r[(i + 1) % r.size()];
             db lb = dis(b - a), lc = dis(c - a);
             if(lb > 0 && lc > 0 && Abs((b - a).det(c - a)) < 1e-9 * lb * lc) {
@@ -150,10 +150,10 @@ static int cmpOut(const vector<seg> &inp, const vector<p2> &got, const vector<p2
     }
     db worst = 0;  // 顶点按「相对距离」做最小匹配(避免 x 或 y 相近时排序次序被舍入翻转)
     vector<char> used(B.size(), 0);
-    ForD(i, 0, (int) A.size()) {
+    for(int i = 0; i < (int) A.size(); ++i) {
         int best = -1;
         db bd = 1e300L;
-        ForD(j, 0, (int) B.size()) if(!used[j]) {
+        for(int j = 0; j < (int) B.size(); ++j) if(!used[j]) {
             db d = max(Abs(A[i].x - B[j].x) / (1 + Abs(B[j].x)), Abs(A[i].y - B[j].y) / (1 + Abs(B[j].y)));
             if(d < bd) bd = d, best = j;
         }
@@ -181,7 +181,7 @@ static int cmpOut(const vector<seg> &inp, const vector<p2> &got, const vector<p2
         prp("模板输出", got), prl("输入直线", inp);
         return 0;
     }
-    ForD(i, 0, (int) got.size()) ForD(j, 0, (int) inp.size()) {  // 每个顶点都要满足每条直线
+    for(int i = 0; i < (int) got.size(); ++i) for(int j = 0; j < (int) inp.size(); ++j) {  // 每个顶点都要满足每条直线
         db c = cross(inp[j], got[i]);
         if(c < -1e-6 * (1 + Abs(c)) * (1 + dis(inp[j].dir())) * (1 + dis(got[i] - inp[j].x))) {
             printf("      顶点 "), pr(got[i]), printf(" 违反直线 "), pr(inp[j].x), printf("->"), pr(inp[j].y), printf("  cross = %.17Lg\n", c);
@@ -203,7 +203,7 @@ static void analytic() {
         r = hpi(tri);
         CHECK(r.size() == 3 && eqd(polyArea(r), 9), "hpi:三角形 -> 3 个顶点、面积 9");
         vector<seg> red = sq;
-        ForD(i, 0, 3) red.push_back(sq[1]);  // 同一条边重复 4 次
+        for(int i = 0; i < 3; ++i) red.push_back(sq[1]);  // 同一条边重复 4 次
         red.push_back({P(4, 0), P(4, 8)});   // 同向、更弱的一条(会切掉正方形?不会:它更靠右)
         r = hpi(red);
         CHECK(r.size() == 4 && eqd(polyArea(r), 16), "hpi:重复直线 + 同向更弱直线 -> 结果不变(去平行只留最强)");
@@ -275,7 +275,7 @@ static int runRandom(int groups, int mode) {  // mode 0:极角均匀 1:完全随
         int k = (int) rnd(3, 9);
         if(mode == 2) k = (int) rnd(3, 12);
         db base = (db) rnd(0, 100000) / 100000 * 2 * pi;
-        ForD(i, 0, k) {
+        for(int i = 0; i < k; ++i) {
             p2 o = P((db) rnd(-10000, 10000) / 100, (db) rnd(-10000, 10000) / 100);
             db ang;
             if(mode == 0)
@@ -287,7 +287,7 @@ static int runRandom(int groups, int mode) {  // mode 0:极角均匀 1:完全随
             ls.push_back({o, o + P(cos(ang), sin(ang))});
         }
         if(mode == 2) {  // 再塞一批重复的、同向平移的、反向的
-            ForD(i, 0, 3) {
+            for(int i = 0; i < 3; ++i) {
                 seg s = ls[rnd(0, ls.size() - 1)];
                 int r = (int) rnd(0, 3);
                 if(r == 0) ls.push_back(s);
@@ -300,14 +300,14 @@ static int runRandom(int groups, int mode) {  // mode 0:极角均匀 1:完全随
             for(seg s : ls) a.push_back(s.dir().alpha());
             sort(a.begin(), a.end());
             bool ok = 1;
-            ForD(i, 0, (int) a.size()) if(min(Abs(a[(i + 1) % a.size()] - a[i]), Abs(a[(i + 1) % a.size()] - a[i] - 2 * pi)) < 0.05) ok = 0;
+            for(int i = 0; i < (int) a.size(); ++i) if(min(Abs(a[(i + 1) % a.size()] - a[i]), Abs(a[(i + 1) % a.size()] - a[i] - 2 * pi)) < 0.05) ok = 0;
             if(!ok) {
                 hpi(ls);
                 continue;
             }
         }
         vector<seg> inp = ls;
-        ForD(i, 0, 4) inp.push_back(box[i]);
+        for(int i = 0; i < 4; ++i) inp.push_back(box[i]);
         vector<p2> got = hpi(inp), want = refHPI(ls, B);
         if(!cmpOut(inp, got, want, boxArea)) {
             printf("      [反例] mode=%d 第 %d 组(共 %d 条直线,未含方框)\n", mode, t, (int) ls.size());
@@ -323,11 +323,11 @@ static int runHull(int groups) {
     For(t, 1, groups) {
         int n = (int) rnd(3, 40);
         vector<p2> v;
-        ForD(i, 0, n) v.push_back(P((db) rnd(-1000, 1000), (db) rnd(-1000, 1000)));
+        for(int i = 0; i < n; ++i) v.push_back(P((db) rnd(-1000, 1000), (db) rnd(-1000, 1000)));
         vector<p2> H = refHull(v);
         if(H.size() < 3) continue;
         vector<seg> ls;
-        ForD(i, 0, (int) H.size()) ls.push_back({H[i], H[(i + 1) % H.size()]});
+        for(int i = 0; i < (int) H.size(); ++i) ls.push_back({H[i], H[(i + 1) % H.size()]});
         vector<p2> got = hpi(ls);
         if(!cmpOut(ls, got, H, 4e6)) {
             printf("      [反例] 凸包对拍第 %d 组(凸包 %zu 个顶点)\n", t, H.size());
@@ -346,7 +346,7 @@ static int runBig(int groups) {
         int k = (int) rnd(3, 8);
         vector<seg> ls;
         db base = (db) rnd(0, 100000) / 100000 * 2 * pi;
-        ForD(i, 0, k) {
+        for(int i = 0; i < k; ++i) {
             ll x = rnd(-1000000000, 1000000000), y = rnd(-1000000000, 1000000000);
             db ang = base + 2 * pi * i / k + (db) rnd(-1000, 1000) / 100000;
             p2 o = P((db) x, (db) y);
@@ -387,7 +387,7 @@ static int runBig(int groups) {
             if(++bad >= 3) break;
             continue;
         }
-        ForD(i, 0, (int) got.size()) ForD(j, 0, (int) ls.size()) {
+        for(int i = 0; i < (int) got.size(); ++i) for(int j = 0; j < (int) ls.size(); ++j) {
             db c = cross(ls[j], got[i]), sc = (1 + dis(ls[j].dir())) * (1 + dis(got[i] - ls[j].x));
             if(c < -1e-6L * sc) {
                 printf("      大坐标下顶点违反直线:cross = %.17Lg,规模 %.3Lg\n", c, sc);
@@ -410,7 +410,7 @@ static int runPatho(int groups) {
         int k = (int) rnd(2, 5);
         vector<seg> ls;
         db base = (db) rnd(0, 100000) / 100000 * 2 * pi;
-        ForD(i, 0, k) {
+        for(int i = 0; i < k; ++i) {
             db ang = base + 2 * pi * i / k;
             p2 o = P((db) rnd(-1000000, 1000000), (db) rnd(-1000000, 1000000));
             ls.push_back({o, o + P(cos(ang), sin(ang))});
@@ -431,7 +431,7 @@ static int runPatho(int groups) {
             if(++bad >= 3) break;
             continue;
         }
-        ForD(i, 0, (int) got.size()) ForD(j, 0, (int) ls.size()) {
+        for(int i = 0; i < (int) got.size(); ++i) for(int j = 0; j < (int) ls.size(); ++j) {
             db c = cross(ls[j], got[i]), sc = (1 + dis(ls[j].dir())) * (1 + dis(got[i] - ls[j].x));
             if(c < -1e-6L * sc) {
                 printf("      病态组第 %d 组:顶点 (%.17Lg,%.17Lg) 违反直线 %d,cross = %.17Lg\n", t, got[i].x, got[i].y, j, c);
@@ -469,19 +469,19 @@ int main() {
         For(t, 1, 2000) {
             int k = (int) rnd(3, 12);
             vector<seg> ls;
-            ForD(i, 0, k) {
+            for(int i = 0; i < k; ++i) {
                 p2 o = P((db) rnd(-500, 500), (db) rnd(-500, 500));
                 db ang = (db) rnd(-3141592, 3141592) / 1000000;
                 ls.push_back({o, o + P(cos(ang), sin(ang))});
             }
-            ForD(i, 0, 4) ls.push_back(box[i]);
+            for(int i = 0; i < 4; ++i) ls.push_back(box[i]);
             vector<p2> got = hpi(ls);
             auto bad_hit = [&](const char *what) {
                 if(bad < 3) printf("      [反例] %s:输出 %zu 个点(输入 %zu 条直线),面积 %.17Lg\n", what, got.size(), ls.size(), polyArea(got));
                 ++bad;
             };
             if((int) got.size() > (int) ls.size()) bad_hit("顶点数超过直线数");
-            ForD(i, 0, (int) got.size()) if(eqp(got[i], got[(i + 1) % got.size()], 1e-12)) bad_hit("输出有重合点");
+            for(int i = 0; i < (int) got.size(); ++i) if(eqp(got[i], got[(i + 1) % got.size()], 1e-12)) bad_hit("输出有重合点");
             if((int) got.size() >= 3 && polyArea(got) <= 0) bad_hit("输出不是逆时针(带号面积 <= 0)");
         }
         CHECK(bad == 0, "hpi 性质:加方框后有界,输出顶点数 <= 直线数、无重合点、逆时针(2000 组随机方向)");

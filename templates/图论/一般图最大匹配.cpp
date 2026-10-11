@@ -10,8 +10,7 @@ void getmat(int rt) {
     For(i, 1, n) vis[i] = pr[i] = 0, fa[i] = i;
     queue<int> q;
     auto lca = [](int x, int y) {
-        static int mk[N], tm;
-        ++tm;
+        static int mk[N], tm; ++tm;
         while(1) {
             x = fd(x);
             if(x && exchange(mk[x], tm) == tm) return x;

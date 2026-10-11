@@ -116,7 +116,7 @@ static vector<p2> refHull(vector<p2> v) {  // 去重 + 去共线,逆时针,首�
     int n = v.size();
     if(n <= 2) return v;
     vector<p2> h;
-    ForD(i, 0, n) {
+    for(int i = 0; i < n; ++i) {
         while(h.size() > 1 && sign(refDet(h[h.size() - 1] - h[h.size() - 2], v[i] - h[h.size() - 2])) <= 0) h.pop_back();
         h.push_back(v[i]);
     }
@@ -133,9 +133,9 @@ static int refOnSeg(p2 a, p2 b, p2 q) {  // q 在线段 ab 上(整数坐标,det 
 }
 static int refContain(const vector<p2> &h, p2 q) {  // 单位正方形射线法上取整:0 外 / 1 边界 / 2 内
     int n = h.size();
-    ForD(i, 0, n) if(refOnSeg(h[i], h[(i + 1) % n], q)) return 1;
+    for(int i = 0; i < n; ++i) if(refOnSeg(h[i], h[(i + 1) % n], q)) return 1;
     int c = 0;
-    ForD(i, 0, n) {
+    for(int i = 0; i < n; ++i) {
         p2 u = h[i], v = h[(i + 1) % n];
         if(u.y > v.y) swap(u, v);  // 半开区间 (u.y, v.y]:水平边被排除、顶点只数一次
         if(!(u.y < q.y && q.y <= v.y)) continue;
@@ -146,13 +146,13 @@ static int refContain(const vector<p2> &h, p2 q) {  // 单位正方形射线法�
 static db refArea(const vector<p2> &h) {  // 带号面积(shoelace)
     db s = 0;
     int n = h.size();
-    ForD(i, 0, n) s += refDet(h[i], h[(i + 1) % n]);
+    for(int i = 0; i < n; ++i) s += refDet(h[i], h[(i + 1) % n]);
     return s / 2;
 }
 static vector<p2> refCut(const vector<p2> &h, seg q) {  // 保留 cross(q, .) >= 0 一侧
     vector<p2> r;
     int n = h.size();
-    ForD(i, 0, n) {
+    for(int i = 0; i < n; ++i) {
         p2 p1 = h[i], p2r = h[(i + 1) % n];
         db c1 = cross(q, p1), c2 = cross(q, p2r);
         if(c1 >= 0) r.push_back(p1);
@@ -204,11 +204,11 @@ static p2 bruteMEC(const vector<p2> &v) {
     p2 bc = v[0];
     auto tryC = [&](p2 c) {
         db r = 0;
-        ForD(i, 0, n) r = max(r, dd(c, v[i]));
+        for(int i = 0; i < n; ++i) r = max(r, dd(c, v[i]));
         if(r < best) best = r, bc = c;
     };
-    ForD(i, 0, n) ForD(j, i + 1, n) tryC((v[i] + v[j]) / 2);
-    ForD(i, 0, n) ForD(j, i + 1, n) ForD(k, j + 1, n) {
+    for(int i = 0; i < n; ++i) for(int j = i + 1; j < n; ++j) tryC((v[i] + v[j]) / 2);
+    for(int i = 0; i < n; ++i) for(int j = i + 1; j < n; ++j) for(int k = j + 1; k < n; ++k) {
         if(sign(refDet(v[j] - v[i], v[k] - v[i])) == 0) continue;
         tryC(refCircumcenter(v[i], v[j], v[k]));
     }
@@ -219,7 +219,7 @@ static p2 bruteMEC(const vector<p2> &v) {
 static int lowerChainWithTemplateMinusEq(int n, p2 *a, p2 *b) {
     sort(a, a + n, [](p2 u, p2 v) { return refCmpP(u, v) < 0; });
     int k = 0;
-    ForD(i, 0, n) {
+    for(int i = 0; i < n; ++i) {
         while(k > 1) {
             p2 rel = b[k - 1];
             rel -= b[k - 2];  // 模板 operator-=:修好后 rel = b[k-1]-b[k-2];出 bug 时 rel = b[k-1]+b[k-2]
@@ -240,11 +240,11 @@ static int lowerChainWithTemplateMinusEq(int n, p2 *a, p2 *b) {
 static bool hullCheckOne(const vector<p2> &v, bool verbose = false) {
     int n = v.size();
     static p2 a[4096], h[4096];
-    ForD(i, 0, n) a[i] = v[i];
+    for(int i = 0; i < n; ++i) a[i] = v[i];
     int k = convex_hull(n, a, h);
     vector<p2> H(h, h + k), R = refHull(v);
     bool allSame = true;
-    ForD(i, 0, n) if(refCmpP(v[i], v[0]) != 0) allSame = false;
+    for(int i = 0; i < n; ++i) if(refCmpP(v[i], v[0]) != 0) allSame = false;
     if(n >= 2 && allSame) return k == 2;  // 全同点:模板返回 2 个重复点(第 15 段 [note]),不参与与参考的比对
     if(k > n || k < 0) {
         if(verbose) printf("      k=%d > n=%d\n", k, n);
@@ -252,7 +252,7 @@ static bool hullCheckOne(const vector<p2> &v, bool verbose = false) {
     }
     if(H.empty()) return false;
     p2 mn = v[0];
-    ForD(i, 0, n) if(refCmpP(v[i], mn) < 0) mn = v[i];
+    for(int i = 0; i < n; ++i) if(refCmpP(v[i], mn) < 0) mn = v[i];
     if(v.size() == 1) return k == 1;  // n == 1:k 返回 1,但模板不往 b 里写点(见第 10 段 [note]),故只查返回值
     if(!eqp(H[0], mn, 1e-9)) {
         if(verbose) printf("      H[0] 不是最小点\n");
@@ -264,7 +264,7 @@ static bool hullCheckOne(const vector<p2> &v, bool verbose = false) {
     }
     if(k >= 3) {  // 逆时针:以 h[0] 为原点看,所有三角形 (h[0],h[i],h[i+1]) 的带号面积都非负
         db sgn2 = 0;
-        ForD(i, 0, k) sgn2 += refDet(h[i] - h[0], h[(i + 1) % k] - h[0]);
+        for(int i = 0; i < k; ++i) sgn2 += refDet(h[i] - h[0], h[(i + 1) % k] - h[0]);
         db tol = 1e-9L * (1 + Abs(h[0].x) + Abs(h[0].y)) * (1 + Abs(h[1].x - h[0].x) + Abs(h[1].y - h[0].y)) * k;
         if(sgn2 < -tol) {
             if(verbose) printf("      凸包带号面积(以 h[0] 为原点)= %.17Lg < 0,旋向为顺时针\n", sgn2 / 2);
@@ -276,14 +276,14 @@ static bool hullCheckOne(const vector<p2> &v, bool verbose = false) {
             return false;
         }
     }
-    ForD(i, 0, k) {
+    for(int i = 0; i < k; ++i) {
         p2 u = h[i], w = h[(i + 1) % k], t = h[(i + 2) % k];
         if(refDet(w - u, t - u) < -1e-9L * (1 + Abs(u.x) + Abs(u.y) + Abs(w.x) + Abs(w.y) + Abs(t.x) + Abs(t.y))) {
             if(verbose) printf("      h[%d] 处非凸\n", (i + 1) % k);
             return false;
         }
     }
-    ForD(i, 0, n) ForD(j, 0, k) {
+    for(int i = 0; i < n; ++i) for(int j = 0; j < k; ++j) {
         p2 u = h[j], w = h[(j + 1) % k];
         db c = refDet(w - u, v[i] - u);
         if(c < -1e-9L * (1 + Abs(u.x) + Abs(u.y) + Abs(w.x) + Abs(w.y) + Abs(v[i].x) + Abs(v[i].y))) {
@@ -296,7 +296,7 @@ static bool hullCheckOne(const vector<p2> &v, bool verbose = false) {
         if(verbose) printf("      顶点数 %d != 参考 %d\n", k, (int) R.size());
         return false;
     }
-    ForD(i, 0, k) {
+    for(int i = 0; i < k; ++i) {
         if(refCmpP(h[i], R[i]) != 0) {
             if(verbose) printf("      第 %d 个顶点不同:", i), pr(h[i]), printf(" vs "), pr(R[i]), printf("\n");
             return false;
@@ -677,11 +677,11 @@ int main() {
         For(t, 1, 300) {
             int n = (int) rnd(3, 12);
             vector<db> ang(n), rr(n);
-            ForD(i, 0, n) ang[i] = 2 * pi * i / n + (db) rnd(-100, 100) / 1000.0;
-            ForD(i, 0, n) rr[i] = (db) rnd(100, 1000) / 10;
+            for(int i = 0; i < n; ++i) ang[i] = 2 * pi * i / n + (db) rnd(-100, 100) / 1000.0;
+            for(int i = 0; i < n; ++i) rr[i] = (db) rnd(100, 1000) / 10;
             vector<p2> poly(n);
-            ForD(i, 0, n) poly[i] = P(rr[i] * cos(ang[i]), rr[i] * sin(ang[i]));
-            ForD(it, 0, 60) {
+            for(int i = 0; i < n; ++i) poly[i] = P(rr[i] * cos(ang[i]), rr[i] * sin(ang[i]));
+            for(int it = 0; it < 60; ++it) {
                 p2 q = P((db) rnd(-1200, 1200) / 10, (db) rnd(-1200, 1200) / 10);
                 if(contain(n, poly.data(), q) != refContain(poly, q)) { ++pb.bad; ++nt; }
             }
@@ -694,12 +694,12 @@ int main() {
         For(t, 1, 200) {
             int n = (int) rnd(3, 10);
             vector<p2> poly(n);
-            ForD(i, 0, n) poly[i] = P((db) rnd(-50, 50), (db) rnd(-50, 50));
+            for(int i = 0; i < n; ++i) poly[i] = P((db) rnd(-50, 50), (db) rnd(-50, 50));
             if(Abs(area(n, poly.data())) < 1) continue;
             db dx = (db) rnd(-100, 100) / 7, dy = (db) rnd(-100, 100) / 7;
             vector<p2> mv(n);
-            ForD(i, 0, n) mv[i] = poly[i] + P(dx, dy);
-            ForD(it, 0, 40) {
+            for(int i = 0; i < n; ++i) mv[i] = poly[i] + P(dx, dy);
+            for(int it = 0; it < 40; ++it) {
                 p2 q = P((db) rnd(-60, 60), (db) rnd(-60, 60));
                 if(contain(n, poly.data(), q) != contain(n, mv.data(), q + P(dx, dy))) ++pb.bad;
             }
@@ -725,15 +725,15 @@ int main() {
             int n = (int) rnd(1, 14), R = (int) rnd(1, 8);
             vector<p2> v;
             if(t <= 1500) {  // 前半允许大量重复点(每个坐标只有 (2R+1)^2 种可能)
-                ForD(i, 0, n) v.push_back(P((db) rnd(-R, R), (db) rnd(-R, R)));
+                for(int i = 0; i < n; ++i) v.push_back(P((db) rnd(-R, R), (db) rnd(-R, R)));
             } else {  // 后半保证互不相同,覆盖一般位置
-                ForD(i, 0, n) v.push_back(P((db) rnd(-60, 60), (db) rnd(-60, 60)));
-                ForD(i, 0, n) ForD(j, 0, (int) v.size()) if(i != j && refCmpP(v[i], v[j]) == 0) { v[i].x += 1000; }
+                for(int i = 0; i < n; ++i) v.push_back(P((db) rnd(-60, 60), (db) rnd(-60, 60)));
+                for(int i = 0; i < n; ++i) for(int j = 0; j < (int) v.size(); ++j) if(i != j && refCmpP(v[i], v[j]) == 0) { v[i].x += 1000; }
             }
             if(!hullCheckOne(v, true)) {
                 if(!pb.bad) {  // 第一条反例:把输入点集打出来
                     printf("      反例输入(%d 个点):", n);
-                    ForD(i, 0, n) pr(v[i]);
+                    for(int i = 0; i < n; ++i) pr(v[i]);
                     printf("\n");
                 }
                 ++pb.bad, ++dupcnt;
@@ -748,18 +748,18 @@ int main() {
         For(t, 1, 3000) {
             int n = (int) rnd(1, 40);
             vector<p2> v;
-            ForD(i, 0, n) v.push_back(P((db) rnd(-1000000, 1000000), (db) rnd(-1000000, 1000000)));
+            for(int i = 0; i < n; ++i) v.push_back(P((db) rnd(-1000000, 1000000), (db) rnd(-1000000, 1000000)));
             p2 a2[64], h[64 * 2 + 2]; // 契约:输出缓冲要 >= 2n+2
-            ForD(i, 0, n) a2[i] = v[i];
+            for(int i = 0; i < n; ++i) a2[i] = v[i];
             int k = convex_hull(n, a2, h);
             if(k > n) { pb.hit("顶点数超过输入点数", k, n); continue; }
             if(n == 1) {  // n==1 时模板不写 b(第 10 段 [note]),只查返回值
                 if(k != 1) pb.hit("n=1 返回值应为 1", k, 1);
                 continue;
             }
-            ForD(i, 0, k) {  // 排序会重排 a2,所以和 a2 比(而非原始 v)
+            for(int i = 0; i < k; ++i) {  // 排序会重排 a2,所以和 a2 比(而非原始 v)
                 bool found = false;
-                ForD(j, 0, n) if(refCmpP(h[i], a2[j]) == 0) found = true;
+                for(int j = 0; j < n; ++j) if(refCmpP(h[i], a2[j]) == 0) found = true;
                 if(!found) pb.hit("凸包顶点不是输入点", 0, 0);
             }
             // 凸包面积 <= 任何内接多边形面积不可能更大:用 shoelace 面积非负(逆时针)
@@ -775,7 +775,7 @@ int main() {
         {
             vector<p2> allsame(37, P(-8, 11));
             p2 a2[64], h[64 * 2 + 2]; // 契约:输出缓冲要 >= 2n+2
-            ForD(i, 0, 37) a2[i] = allsame[i];
+            for(int i = 0; i < 37; ++i) a2[i] = allsame[i];
             int k = convex_hull(37, a2, h);
             CHECK(k == 2 && eqp(h[0], P(-8, 11)) && eqp(h[1], P(-8, 11)), "凸包:37 个完全相同的点 -> 返回 2 个重复的同一个点(k=2,不是 1)");
         }
@@ -801,16 +801,16 @@ int main() {
         {
             // 圆上 40 个点(精度受 cos/sin 支配,只做性质级断言)
             vector<p2> cir;
-            ForD(i, 0, 40) {
+            for(int i = 0; i < 40; ++i) {
                 db ang = 2 * pi * i / 40;
                 cir.push_back(P(1000 * cos(ang), 1000 * sin(ang)));
             }
             p2 a2[64], h[64 * 2 + 2]; // 契约:输出缓冲要 >= 2n+2
-            ForD(i, 0, 40) a2[i] = cir[i];
+            for(int i = 0; i < 40; ++i) a2[i] = cir[i];
             int k = convex_hull(40, a2, h);
             Probe pb;
             if(k != 40) pb.hit("圆上 40 点凸包顶点数应为 40", k, 40);
-            ForD(i, 0, k) {
+            for(int i = 0; i < k; ++i) {
                 p2 u = h[i], w = h[(i + 1) % k];
                 if(refDet(w - u, cir[(2 * i) % 40] - u) < -1e-6L) pb.hit("圆上点凸包非凸/漏点", 0, 0);
             }
@@ -824,13 +824,13 @@ int main() {
             For(t, 1, 400) {
                 int kk = (int) rnd(0, 12);
                 vector<p2> v;
-                ForD(i, 0, kk) v.push_back(P(0, i));  // 左边上的共线点
-                ForD(i, 0, kk) v.push_back(P(100, i));  // 右边上的共线点
-                ForD(i, 0, kk) v.push_back(P(i, 0));
+                for(int i = 0; i < kk; ++i) v.push_back(P(0, i));  // 左边上的共线点
+                for(int i = 0; i < kk; ++i) v.push_back(P(100, i));  // 右边上的共线点
+                for(int i = 0; i < kk; ++i) v.push_back(P(i, 0));
                 v.push_back(P(0, 0)), v.push_back(P(100, 0)), v.push_back(P(100, 100)), v.push_back(P(0, 100));
                 if(!hullCheckOne(v)) ++pb.bad;
                 p2 a2[64], h[64 * 2 + 2]; // 契约:输出缓冲要 >= 2n+2
-                ForD(i, 0, (int) v.size()) a2[i] = v[i];
+                for(int i = 0; i < (int) v.size(); ++i) a2[i] = v[i];
                 int got = convex_hull(v.size(), a2, h);
                 if(got != 4) pb.hit("共线点应被去掉,只剩 4 个角点", got, 4);
             }
@@ -850,21 +850,21 @@ int main() {
             For(t, 1, 300) {
                 int n = (int) rnd(4, 12);
                 vector<p2> v;
-                ForD(i, 0, n) v.push_back(P((db) rnd(-6, 6), (db) rnd(-6, 6)));
+                for(int i = 0; i < n; ++i) v.push_back(P((db) rnd(-6, 6), (db) rnd(-6, 6)));
                 p2 a2[64], h[64 * 2 + 2]; // 契约:输出缓冲要 >= 2n+2
-                ForD(i, 0, n) a2[i] = v[i];
+                for(int i = 0; i < n; ++i) a2[i] = v[i];
                 int k = convex_hull(n, a2, h, 1);
                 vector<p2> H(h, h + k);
-                ForD(i, 0, n) {  // 每个输入点都必须仍然「在凸包内」(容差级);nos=1 只是不去掉共线点
+                for(int i = 0; i < n; ++i) {  // 每个输入点都必须仍然「在凸包内」(容差级);nos=1 只是不去掉共线点
                     bool in = k < 3;
-                    ForD(j, 0, k) {
+                    for(int j = 0; j < k; ++j) {
                         db c = refDet(h[(j + 1) % k] - h[j], v[i] - h[j]);
                         if(c >= -1e-9L * (1 + Abs(v[i].x) + Abs(v[i].y))) in = true;
                     }
                     if(!in) {
                         if(!pb.bad) {
                             printf("      反例:输入点 "), pr(v[i]), printf(" 在 nos=1 凸包外侧;hull(%d 点):", k);
-                            ForD(j, 0, k) pr(h[j]);
+                            for(int j = 0; j < k; ++j) pr(h[j]);
                             printf("\n");
                         }
                         pb.hit("nos=1 时凸包不再包含输入点", 0, 0);
@@ -887,26 +887,26 @@ int main() {
             for(int i = 0; i < n; i++) v.push_back(P((db) rnd(-100, 100), (db) rnd(-100, 100)));
             vector<p2> R = refHull(v);
             p2 a2[64], h[64 * 2 + 2]; // 契约:输出缓冲要 >= 2n+2
-            ForD(i, 0, n) a2[i] = v[i];
+            for(int i = 0; i < n; ++i) a2[i] = v[i];
             int k = convex_hull(n, a2, h);
             if(k != (int) R.size()) { pb.hit("原始点数与参考不符", k, R.size()); continue; }
             db s0 = Abs(refArea(R));
             // 旋转
             db ang = (db) rnd(-3000, 3000) / 1000;
             vector<p2> rv(n), rH;
-            ForD(i, 0, n) rv[i] = rot(v[i], ang);
-            ForD(i, 0, n) a2[i] = rv[i];
+            for(int i = 0; i < n; ++i) rv[i] = rot(v[i], ang);
+            for(int i = 0; i < n; ++i) a2[i] = rv[i];
             int k2 = convex_hull(n, a2, h);
             if(k2 != (int) R.size()) pb.hit("旋转后顶点数变了", k2, R.size());
             db s1 = Abs(refArea(vector<p2>(h, h + k2)));
             if(!eqd(s1, s0, 1e-6 * (1 + s0))) pb.hit("旋转后面积变了", s1, s0);
             // 平移
-            ForD(i, 0, n) a2[i] = v[i] + P(1234.5L, -987.25L);
+            for(int i = 0; i < n; ++i) a2[i] = v[i] + P(1234.5L, -987.25L);
             int k3 = convex_hull(n, a2, h);
             if(k3 != (int) R.size()) pb.hit("平移后顶点数变了", k3, R.size());
             if(!eqd(Abs(refArea(vector<p2>(h, h + k3))), s0, 1e-6 * (1 + s0))) pb.hit("平移后面积变了", 0, 0);
             // 正数缩放
-            ForD(i, 0, n) a2[i] = v[i] * 7.0L;
+            for(int i = 0; i < n; ++i) a2[i] = v[i] * 7.0L;
             int k4 = convex_hull(n, a2, h);
             if(k4 != (int) R.size()) pb.hit("缩放后顶点数变了", k4, R.size());
             if(!eqd(Abs(refArea(vector<p2>(h, h + k4))), s0 * 49, 1e-5 * (1 + s0 * 49))) pb.hit("缩放后面积不是 49 倍", Abs(refArea(vector<p2>(h, h + k4))), s0 * 49);
@@ -919,12 +919,12 @@ int main() {
         For(t, 1, 3000) {
             int n = (int) rnd(2, 12);
             vector<p2> v;
-            ForD(i, 0, n) v.push_back(P((db) rnd(-70, 70), (db) rnd(-70, 70)));
+            for(int i = 0; i < n; ++i) v.push_back(P((db) rnd(-70, 70), (db) rnd(-70, 70)));
             p2 a2[64], h[64 * 2 + 2]; // 契约:输出缓冲要 >= 2n+2
-            ForD(i, 0, n) a2[i] = v[i];
+            for(int i = 0; i < n; ++i) a2[i] = v[i];
             int k = convex_hull(n, a2, h);
             db bf = 0;
-            ForD(i, 0, k) ForD(j, 0, k) bf = max(bf, dd(h[i], h[j]));
+            for(int i = 0; i < k; ++i) for(int j = 0; j < k; ++j) bf = max(bf, dd(h[i], h[j]));
             db got = convex_diameter(k, h);
             if(!eqd(got, bf, 1e-9 * (1 + bf))) pb.hit("convex_diameter != 暴搜最远点对", got, bf);
             if(!eqd(dis2(a2[0] - a2[1]), 0, 1e300L)) {}  // no-op 保序
@@ -938,9 +938,9 @@ int main() {
         p2 one[1] = {P(5, 5)};
         if(!eqd(convex_diameter(1, one), 0)) pb.hit("n=1 直径", convex_diameter(1, one), 0);
         vector<p2> cird;
-        ForD(i, 0, 24) cird.push_back(P(1000 * cos(2 * pi * i / 24), 1000 * sin(2 * pi * i / 24)));
+        for(int i = 0; i < 24; ++i) cird.push_back(P(1000 * cos(2 * pi * i / 24), 1000 * sin(2 * pi * i / 24)));
         db bf = 0;
-        ForD(i, 0, 24) ForD(j, 0, 24) bf = max(bf, dd(cird[i], cird[j]));
+        for(int i = 0; i < 24; ++i) for(int j = 0; j < 24; ++j) bf = max(bf, dd(cird[i], cird[j]));
         if(!eqd(convex_diameter(24, cird.data()), bf, 1e-9 * (1 + bf))) pb.hit("圆上点直径", convex_diameter(24, cird.data()), bf);
         CHECK(pb.bad == 0, "convex_diameter = 暴搜最远点对(3000 组随机凸包 + n=1/2/全共线/重合点/圆上点的边界用例)");
     }
@@ -952,9 +952,9 @@ int main() {
         For(t, 1, 3000) {
             int n = (int) rnd(3, 10);
             vector<p2> v;
-            ForD(i, 0, n) v.push_back(P((db) rnd(-30, 30), (db) rnd(-30, 30)));
+            for(int i = 0; i < n; ++i) v.push_back(P((db) rnd(-30, 30), (db) rnd(-30, 30)));
             p2 a2[64], h[64 * 2 + 2]; // 契约:输出缓冲要 >= 2n+2
-            ForD(i, 0, n) a2[i] = v[i];
+            for(int i = 0; i < n; ++i) a2[i] = v[i];
             int k = convex_hull(n, a2, h);
             if(k < 3) continue;
             vector<p2> H(h, h + k);
@@ -962,7 +962,7 @@ int main() {
             if(dd(q.x, q.y) < 1) continue;
             vector<p2> got = convex_cut(k, H.data(), q), want = refCut(H, q);
             if(got.size() != want.size()) { pb.hit("裁剪后顶点数与参考不同", got.size(), want.size()); continue; }
-            ForD(i, 0, want.size()) if(!eqp(got[i], want[i], 1e-6)) pb.hitp("裁剪顶点与参考不同", got[i], want[i]);
+            for(int i = 0; i < want.size(); ++i) if(!eqp(got[i], want[i], 1e-6)) pb.hitp("裁剪顶点与参考不同", got[i], want[i]);
             if(!eqd(cutArea(got), cutArea(want), 1e-6 * (1 + cutArea(want)))) pb.hit("裁剪后面积与参考不同", cutArea(got), cutArea(want));
         }
         CHECK(pb.bad == 0, "convex_cut 与独立参考半平面裁剪逐顶点一致(3000 组随机凸包)");
@@ -973,9 +973,9 @@ int main() {
         For(t, 1, 3000) {
             int n = (int) rnd(3, 12);
             vector<p2> v;
-            ForD(i, 0, n) v.push_back(P((db) rnd(-40, 40), (db) rnd(-40, 40)));
+            for(int i = 0; i < n; ++i) v.push_back(P((db) rnd(-40, 40), (db) rnd(-40, 40)));
             p2 a2[64], h[64 * 2 + 2]; // 契约:输出缓冲要 >= 2n+2
-            ForD(i, 0, n) a2[i] = v[i];
+            for(int i = 0; i < n; ++i) a2[i] = v[i];
             int k = convex_hull(n, a2, h);
             if(k < 3) continue;
             vector<p2> H(h, h + k);
@@ -987,24 +987,24 @@ int main() {
             if((int) got.size() > k + 2) {
                 if(!pb.bad) {
                     printf("      反例:输入 %d 边形:", k);
-                    ForD(j, 0, k) pr(H[j]);
+                    for(int j = 0; j < k; ++j) pr(H[j]);
                     printf("\n            切割线 "), pr(q.x), printf("-"), pr(q.y), printf(" -> 输出 %zu 个点:", got.size());
-                    ForD(j, 0, got.size()) pr(got[j]);
+                    for(int j = 0; j < got.size(); ++j) pr(got[j]);
                     printf("\n            crossop(q,H[j]) =");
-                    ForD(j, 0, k) printf(" %d", crossop(q, H[j]));
+                    for(int j = 0; j < k; ++j) printf(" %d", crossop(q, H[j]));
                     printf("\n");
                 }
                 pb.hit("裁剪后顶点数异常", got.size(), k + 1);
             }
             db a0 = Abs(refArea(H)), a1 = cutArea(got);
             if(a1 > a0 + 1e-6 * (1 + a0)) pb.hit("裁剪后面积变大", a1, a0);
-            ForD(i, 0, got.size()) {
+            for(int i = 0; i < got.size(); ++i) {
                 if(cross(q, got[i]) < -1e-9L * (1 + dis(got[i] - q.x)) * dis(q.dir())) pb.hit("裁剪后顶点跑到半平面外侧", cross(q, got[i]), 0);
                 bool fromIn = false;
-                ForD(j, 0, k) if(eqp(got[i], H[j], 1e-7)) fromIn = true;
+                for(int j = 0; j < k; ++j) if(eqp(got[i], H[j], 1e-7)) fromIn = true;
                 if(!fromIn && Abs(cross(q, got[i])) > 1e-6L * (1 + dis(got[i] - q.x)) * dis(q.dir())) pb.hit("裁剪顶点既不是输入顶点也不在切割线上", 0, 0);
             }
-            ForD(i, 0, got.size()) {
+            for(int i = 0; i < got.size(); ++i) {
                 p2 u = got[i], w = got[(i + 1) % got.size()], z = got[(i + 2) % got.size()];
                 if(got.size() >= 3 && refDet(w - u, z - u) < -1e-6L) pb.hit("裁剪后非凸", 0, 0);
             }
@@ -1043,9 +1043,9 @@ int main() {
         For(t, 1, 800) {
             int n = (int) rnd(3, 10);
             vector<p2> v;
-            ForD(i, 0, n) v.push_back(P((db) rnd(-50, 50), (db) rnd(-50, 50)));
+            for(int i = 0; i < n; ++i) v.push_back(P((db) rnd(-50, 50), (db) rnd(-50, 50)));
             p2 a2[64], h[64 * 2 + 2]; // 契约:输出缓冲要 >= 2n+2
-            ForD(i, 0, n) a2[i] = v[i];
+            for(int i = 0; i < n; ++i) a2[i] = v[i];
             int k = convex_hull(n, a2, h);
             if(k < 3) continue;
             vector<p2> H(h, h + k);
@@ -1114,13 +1114,13 @@ int main() {
         For(t, 1, 400) {
             int n = (int) rnd(3, 7);
             vector<p2> v;
-            ForD(i, 0, n) v.push_back(P((db) rnd(-30, 30), (db) rnd(-30, 30)));
+            for(int i = 0; i < n; ++i) v.push_back(P((db) rnd(-30, 30), (db) rnd(-30, 30)));
             p2 O = bruteMEC(v);
             db r2 = 0;
-            ForD(i, 0, n) r2 = max(r2, dd(O, v[i]));
-            ForD(i, 0, n) if(dd(O, v[i]) > r2 + 1e-9L) pb.hit("bruteMEC 未覆盖点", 0, 0);
+            for(int i = 0; i < n; ++i) r2 = max(r2, dd(O, v[i]));
+            for(int i = 0; i < n; ++i) if(dd(O, v[i]) > r2 + 1e-9L) pb.hit("bruteMEC 未覆盖点", 0, 0);
             // 对三角形:O 必须是某两点中点或三点外心;验证模板外心确实给出这个圆的圆心
-            ForD(i, 0, n) ForD(j, i + 1, n) ForD(k, j + 1, n) {
+            for(int i = 0; i < n; ++i) for(int j = i + 1; j < n; ++j) for(int k = j + 1; k < n; ++k) {
                 if(sign(refDet(v[j] - v[i], v[k] - v[i])) == 0) continue;
                 auto cc = circumcenter(v[i], v[j], v[k]);
                 p2 O2 = P(cc[0], cc[1]);
@@ -1137,12 +1137,12 @@ int main() {
         For(t, 1, 4000) {  // 1e9 量级随机点集的凸包
             int n = (int) rnd(3, 12);
             vector<p2> v;
-            ForD(i, 0, n) v.push_back(P((db) rnd(-1000000000, 1000000000), (db) rnd(-1000000000, 1000000000)));
+            for(int i = 0; i < n; ++i) v.push_back(P((db) rnd(-1000000000, 1000000000), (db) rnd(-1000000000, 1000000000)));
             p2 a2[64], h[64 * 2 + 2]; // 契约:输出缓冲要 >= 2n+2
-            ForD(i, 0, n) a2[i] = v[i];
+            for(int i = 0; i < n; ++i) a2[i] = v[i];
             int k = convex_hull(n, a2, h);
             if(k > n || k < 1) { pb.hit("hull 顶点数越界", k, n); continue; }
-            ForD(i, 0, n) ForD(j, 0, k) {  // 凸包必须包含所有输入点(容差 1e-9 相对量级)
+            for(int i = 0; i < n; ++i) for(int j = 0; j < k; ++j) {  // 凸包必须包含所有输入点(容差 1e-9 相对量级)
                 p2 u = h[j], w = h[(j + 1) % k];
                 db c = refDet(w - u, v[i] - u);
                 if(c < -1e-9L * (1 + Abs(u.x) + Abs(u.y) + Abs(w.x) + Abs(w.y))) pb.hit("1e9 量级凸包漏掉输入点", c, 0);
@@ -1150,7 +1150,7 @@ int main() {
             db ar = refArea(vector<p2>(h, h + k));
             if(ar < -1e-6L * (1 + Abs(ar))) pb.hit("1e9 量级凸包带号面积为负(旋向错)", ar, 0);
             db bf = 0;
-            ForD(i, 0, k) ForD(j, 0, k) bf = max(bf, dd(h[i], h[j]));
+            for(int i = 0; i < k; ++i) for(int j = 0; j < k; ++j) bf = max(bf, dd(h[i], h[j]));
             db gd = convex_diameter(k, h);
             if(!eqd(gd, bf, 1e-8L * (1 + bf))) pb.hit("1e9 量级 convex_diameter 与暴搜不符", gd, bf);
             if(gd < -1e-9L) pb.hit("1e9 量级直径为负", gd, 0);
@@ -1209,23 +1209,23 @@ int main() {
         For(t, 1, 2000) {
             int n = (int) rnd(3, 8);
             vector<p2> v;
-            ForD(i, 0, n) v.push_back(P((db) rnd(-1000000000, 1000000000), (db) rnd(-1000000000, 1000000000)));
+            for(int i = 0; i < n; ++i) v.push_back(P((db) rnd(-1000000000, 1000000000), (db) rnd(-1000000000, 1000000000)));
             p2 a2[64], h[64 * 2 + 2]; // 契约:输出缓冲要 >= 2n+2
-            ForD(i, 0, n) a2[i] = v[i];
+            for(int i = 0; i < n; ++i) a2[i] = v[i];
             int k = convex_hull(n, a2, h);
             if(k < 3) continue;
             vector<p2> H(h, h + k);
             db A = Abs(area(k, h));
             if(A < -1e-6) pb.hit("1e9 量级 area 为负", A, 0);
             if(!eqd(A, Abs(refArea(H)), 1e-9L * (1 + A))) pb.hit("1e9 量级 area 与 shoelace 不符", A, Abs(refArea(H)));
-            ForD(it, 0, 25) {
+            for(int it = 0; it < 25; ++it) {
                 p2 q = P((db) rnd(-1000000000, 1000000000), (db) rnd(-1000000000, 1000000000));
                 int got = contain(k, H.data(), q), want = refContain(H, q);
                 if(got != want) pb.hit("1e9 量级 contain 与独立射线法不符", got, want);
             }
             // 凸包内部点(顶点加权平均)必判为「内」
             p2 c = P(0, 0);
-            ForD(i, 0, k) c = c + H[i] * (1.0L / k);
+            for(int i = 0; i < k; ++i) c = c + H[i] * (1.0L / k);
             if(contain(k, H.data(), c) == 0 && k >= 3 && A > 1e9) pb.hit("凸包重心被判为外", 0, 2);
         }
         CHECK(pb.bad == 0, "1e9 量级 area/contain 与独立参考一致(2000 组凸包 × 25 点;含重心必为内部的断言)");
@@ -1279,20 +1279,20 @@ int main() {
             p2 O = P((db) rnd(-1000000000, 1000000000), (db) rnd(-1000000000, 1000000000));
             db R = (db) rnd(1000000, 1000000000);
             vector<p2> v;
-            ForD(i, 0, n) {
+            for(int i = 0; i < n; ++i) {
                 db ang = 2 * pi * i / n + (db) rnd(-1000, 1000) / 1000000.0;
                 v.push_back(O + P(R * cos(ang), R * sin(ang)));
             }
             p2 a2[64], h[64 * 2 + 2]; // 契约:输出缓冲要 >= 2n+2
-            ForD(i, 0, n) a2[i] = v[i];
+            for(int i = 0; i < n; ++i) a2[i] = v[i];
             int k = convex_hull(n, a2, h);
             if(k != n) pb.hit("圆上点凸包漏顶点", k, n);
-            ForD(i, 0, n) ForD(j, 0, k) {
+            for(int i = 0; i < n; ++i) for(int j = 0; j < k; ++j) {
                 p2 u = h[j], w = h[(j + 1) % k];
                 if(refDet(w - u, v[i] - u) < -1e-9L * (R * (1 + Abs(R)))) pb.hit("圆上点被判在凸包外", 0, 0);
             }
             db bf = 0;
-            ForD(i, 0, k) ForD(j, 0, k) bf = max(bf, dd(h[i], h[j]));
+            for(int i = 0; i < k; ++i) for(int j = 0; j < k; ++j) bf = max(bf, dd(h[i], h[j]));
             if(!eqd(convex_diameter(k, h), bf, 1e-8L * (1 + bf))) pb.hit("大坐标圆上点直径不对", convex_diameter(k, h), bf);
         }
         CHECK(pb.bad == 0, "1e9 量级 + 半径 1e6~1e9 圆上点:凸包不漏点、直径 = 暴搜(500 组)");
@@ -1352,7 +1352,7 @@ int main() {
         // 实际后果:任何用 `rel -= ...` 取差向量再算叉积的几何代码,算出来的叉积符号是错的
         vector<p2> gset = {P(0, 0), P(3, 0), P(4, 2), P(3, 4), P(0, 4), P(-1, 2), P(1, 1), P(2, 3)};
         p2 gp[16], gb[32];
-        ForD(i, 0, (int) gset.size()) gp[i] = gset[i];
+        for(int i = 0; i < (int) gset.size(); ++i) gp[i] = gset[i];
         int gk = lowerChainWithTemplateMinusEq(gset.size(), gp, gb);
         printf("        实际后果(用模板的 -= 求相邻点差向量再 det):%s(正确凸包有 %zu 个顶点、面积 %Lg)\n",
                gk < 0 ? "diff = b[k-1] -= b[k-2] 得到的叉积与真实值不同 -> 整个扫描判据失效" : "叉积与真实值一致",

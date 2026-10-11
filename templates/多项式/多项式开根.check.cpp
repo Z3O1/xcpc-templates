@@ -11,16 +11,16 @@
 #include "多项式求逆.cpp"
 #include "多项式开根.cpp"
 
-static const int ih2 = ksm(2, MOD - 2, MOD);
+static const int ih2 = ksm(2, M - 2, M);
 // ——— 暴力:由 g² = f 逐项解 g(g[0] = 1) ———
 static poly naive_sqrt(const poly &f, int n) {
     poly g(n);
     if(n) g[0] = 1;
     For(k, 1, n - 1) {
         ll s = 0;
-        For(i, 1, k - 1) s = (s + (ll) g[i] * g[k - i]) % MOD;
+        For(i, 1, k - 1) s = (s + (ll) g[i] * g[k - i]) % M;
         int fk = (k < (int) f.size() ? f[k] : 0);
-        g[k] = (fk - s + MOD) * ih2 % MOD;
+        g[k] = (fk - s + M) * ih2 % M;
     }
     return g;
 }
@@ -43,7 +43,7 @@ static int bad(const char *what, const poly &f, int n, const poly &want, const p
 static poly rpoly(int len, int mode) {  // 0 稠密 1 稀疏 2 小值
     poly a(len);
     For(i, 0, len - 1) {
-        int v = (int) rnd(0, MOD - 1);
+        int v = (int) rnd(0, M - 1);
         if(mode == 1 && (i & 1)) v = 0;
         if(mode == 2) v = (int) rnd(0, 3);
         a[i] = v;
@@ -139,7 +139,7 @@ int main() {
                 return 1;
             }
             poly g2 = poly_sqrt(f, 2);
-            if(g2.size() != 2 || g2[0] != 1 || g2[1] != (ll) ih2 * (f.size() > 1 ? f[1] : 0) % MOD) {
+            if(g2.size() != 2 || g2[0] != 1 || g2[1] != (ll) ih2 * (f.size() > 1 ? f[1] : 0) % M) {
                 printf("  [FAIL] n=2 时应返回 {1, f[1]/2},得到 %s(f = %s)\n", pstr(g2).c_str(), pstr(f).c_str());
                 return 1;
             }
@@ -174,7 +174,7 @@ int main() {
         }
         // f = (1-2x)² = 1 - 4x + 4x² → sqrt = 1 - 2x
         {
-            poly f{1, MOD - 4, 4}, want{1, MOD - 2}, got = poly_sqrt(f, 2);
+            poly f{1, M - 4, 4}, want{1, M - 2}, got = poly_sqrt(f, 2);
             int at = firstdiff(want, got);
             if(at >= 0) return bad("sqrt((1-2x)²) = 1-2x", f, 2, want, got, at);
             ok("f = 1-4x+4x² = (1-2x)² → sqrt f = 1-2x");

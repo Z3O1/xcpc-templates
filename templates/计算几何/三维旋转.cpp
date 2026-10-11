@@ -25,18 +25,18 @@ struct mat3 {
 };
 mat3 operator*(const mat3 &x, const mat3 &y) {
     mat3 r{};
-    ForD(i, 0, 3)
-        ForD(j, 0, 3) {
+    for(int i = 0; i < 3; ++i)
+        for(int j = 0; j < 3; ++j) {
             db s = 0;
-            ForD(k, 0, 3) s += x.a[i][k] * y.a[k][j];
+            for(int k = 0; k < 3; ++k) s += x.a[i][k] * y.a[k][j];
             r.a[i][j] = s;
         }
     return r;
 }
 mat3 transpose(const mat3 &m) {
     mat3 r{};
-    ForD(i, 0, 3)
-        ForD(j, 0, 3) r.a[i][j] = m.a[j][i];
+    for(int i = 0; i < 3; ++i)
+        for(int j = 0; j < 3; ++j) r.a[i][j] = m.a[j][i];
     return r;
 }
 // 罗德里格斯:v' = v·cos + (k×v)·sin + k·(k·v)·(1-cos)

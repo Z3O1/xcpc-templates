@@ -39,7 +39,7 @@ static vector<p2> refHull(vector<p2> v) {
     int n = v.size();
     if(n <= 2) return v;
     vector<p2> h;
-    ForD(i, 0, n) {
+    for(int i = 0; i < n; ++i) {
         while(h.size() > 1 && det3(h[h.size() - 2], h.back(), v[i]) <= 0) h.pop_back();
         h.push_back(v[i]);
     }
@@ -53,7 +53,7 @@ static vector<p2> refHull(vector<p2> v) {
 }
 static db hullArea(const vector<p2> &h) {
     db s = 0;
-    ForD(i, 0, (int) h.size()) s += h[i].det(h[(i + 1) % h.size()]);
+    for(int i = 0; i < (int) h.size(); ++i) s += h[i].det(h[(i + 1) % h.size()]);
     return abs(s / 2);
 }
 // ---- 独立参考:解析外心/半径(写法与模板的 4x4 行列式不同) ----
@@ -86,7 +86,7 @@ static string verify(const vector<p2> &in, const vect<p2> &out, bool exactCircle
     sort(u.begin(), u.end(), [](p2 a, p2 b) { return a.x != b.x ? a.x < b.x : a.y < b.y; });
     u.erase(unique(u.begin(), u.end(), [](p2 a, p2 b) { return a.x == b.x && a.y == b.y; }), u.end());
     map<K, int> id;
-    ForD(i, 0, (int) u.size()) id[key(u[i])] = i;
+    for(int i = 0; i < (int) u.size(); ++i) id[key(u[i])] = i;
     int n = u.size();
     vector<p2> hu = refHull(u);
     int h = hu.size();
@@ -95,7 +95,7 @@ static string verify(const vector<p2> &in, const vect<p2> &out, bool exactCircle
     // --- 每个三角形:顶点来自输入、逆时针、空圆性质 ---
     vector<array<int, 3>> tri;
     db sum = 0;
-    ForD(i, 0, F) {
+    for(int i = 0; i < F; ++i) {
         p2 A = out[3 * i], B = out[3 * i + 1], C = out[3 * i + 2];
         if(!id.count(key(A)) || !id.count(key(B)) || !id.count(key(C))) return "三角形顶点不是输入点";
         int ia = id[key(A)], ib = id[key(B)], ic = id[key(C)];
@@ -109,7 +109,7 @@ static string verify(const vector<p2> &in, const vect<p2> &out, bool exactCircle
         p2 O;
         db R2 = 0;
         circum(A, B, C, O, R2);
-        ForD(j, 0, n) {
+        for(int j = 0; j < n; ++j) {
             p2 p = u[j];
             if(key(p) == key(A) || key(p) == key(B) || key(p) == key(C)) continue;
             if(exactCircle && exactInC(p, A, B, C) > 0) {
@@ -129,13 +129,13 @@ static string verify(const vector<p2> &in, const vect<p2> &out, bool exactCircle
         vector<array<int, 3>> s = tri;
         for(auto &x : s) sort(x.begin(), x.end());
         sort(s.begin(), s.end());
-        ForD(i, 1, (int) s.size()) if(s[i] == s[i - 1]) return "出现重复三角形";
+        for(int i = 1; i < (int) s.size(); ++i) if(s[i] == s[i - 1]) return "出现重复三角形";
     }
     // --- 边的重数(每条无序边 <= 2 个三角形)---
     map<pair<K, K>, int> ec;
-    ForD(i, 0, F) {
+    for(int i = 0; i < F; ++i) {
         p2 t[3] = {out[3 * i], out[3 * i + 1], out[3 * i + 2]};
-        ForD(j, 0, 3) ++ec[ekey(t[j], t[(j + 1) % 3])];
+        for(int j = 0; j < 3; ++j) ++ec[ekey(t[j], t[(j + 1) % 3])];
     }
     for(auto &e : ec)
         if(e.second > 2) {
@@ -145,13 +145,13 @@ static string verify(const vector<p2> &in, const vect<p2> &out, bool exactCircle
         }
     if(h < 3) {  // 全部共线:不允许有三角形
         if(F) return "退化输入(点全共线)却返回了三角形";
-        ForD(i, 0, F) {}
+        for(int i = 0; i < F; ++i) {}
         return "";
     }
     // --- 凸包边界上的点(含角点)个数 b:用于 Euler 计数 F = 2n - b - 2 ---
     int b = 0;
-    ForD(i, 0, n) {
-        ForD(j, 0, h) if(onSeg(hu[j], hu[(j + 1) % h], u[i])) {
+    for(int i = 0; i < n; ++i) {
+        for(int j = 0; j < h; ++j) if(onSeg(hu[j], hu[(j + 1) % h], u[i])) {
             ++b;
             break;
         }
@@ -171,7 +171,7 @@ static string verify(const vector<p2> &in, const vect<p2> &out, bool exactCircle
             p2 p1 = IP(e.first.first.first, e.first.first.second), p2r = IP(e.first.second.first, e.first.second.second);
             bd.push_back({p1, p2r});
         }
-    ForD(j, 0, h) {
+    for(int j = 0; j < h; ++j) {
         p2 A = hu[j], B = hu[(j + 1) % h];
         i128 D = (i128) (B.x - A.x) * (i128) (B.x - A.x) + (i128) (B.y - A.y) * (i128) (B.y - A.y);  // > 0
         vector<pair<i128, i128>> seg;
@@ -199,7 +199,7 @@ static string verify(const vector<p2> &in, const vect<p2> &out, bool exactCircle
     // --- 每条边界边必须整条落在某条凸包边上(防止出现弦当边界) ---
     for(auto &e : bd) {
         bool ok = false;
-        ForD(j, 0, h) if(onSeg(hu[j], hu[(j + 1) % h], e.first) && onSeg(hu[j], hu[(j + 1) % h], e.second)) ok = true;
+        for(int j = 0; j < h; ++j) if(onSeg(hu[j], hu[(j + 1) % h], e.first) && onSeg(hu[j], hu[(j + 1) % h], e.second)) ok = true;
         if(!ok) {
             snprintf(buf, sizeof buf, "边界边 (%g,%g)-(%g,%g) 不在凸包边界上(剖分没有覆盖凸包)", (double) e.first.x, (double) e.first.y, (double) e.second.x, (double) e.second.y);
             return buf;
@@ -207,8 +207,8 @@ static string verify(const vector<p2> &in, const vect<p2> &out, bool exactCircle
     }
     if(needAllVerts) {
         vector<char> used(n, 0);
-        ForD(i, 0, F) ForD(j, 0, 3) used[tri[i][j]] = 1;
-        ForD(i, 0, n) if(!used[i]) {
+        for(int i = 0; i < F; ++i) for(int j = 0; j < 3; ++j) used[tri[i][j]] = 1;
+        for(int i = 0; i < n; ++i) if(!used[i]) {
             snprintf(buf, sizeof buf, "输入点 (%g,%g) 不是任何三角形的顶点", (double) u[i].x, (double) u[i].y);
             return buf;
         }
@@ -234,8 +234,8 @@ static vect<p2> V(const vector<p2> &v) { return vect<p2>(v.begin(), v.end()); }
 // 一般位置:没有三点共线、没有四点共圆(小坐标下用 i128 精确判断)
 static bool generalPosition(const vector<p2> &v) {
     int n = v.size();
-    ForD(i, 0, n) ForD(j, i + 1, n) ForD(k, j + 1, n) if(det3(v[i], v[j], v[k]) == 0) return false;
-    ForD(i, 0, n) ForD(j, i + 1, n) ForD(k, j + 1, n) ForD(l, k + 1, n) {
+    for(int i = 0; i < n; ++i) for(int j = i + 1; j < n; ++j) for(int k = j + 1; k < n; ++k) if(det3(v[i], v[j], v[k]) == 0) return false;
+    for(int i = 0; i < n; ++i) for(int j = i + 1; j < n; ++j) for(int k = j + 1; k < n; ++k) for(int l = k + 1; l < n; ++l) {
         // 四点共圆 <=> 第四个点在外接圆上(精确)
         if(exactInC(v[l], v[i], v[j], v[k]) == 0) return false;
     }
@@ -314,19 +314,19 @@ int main() {
             ++cases;
             // 暴力:所有三点组合,空圆(精确)即为 Delaunay 三角形
             set<array<int, 3>> want, got;
-            ForD(i, 0, n) ForD(j, i + 1, n) ForD(k, j + 1, n) {
+            for(int i = 0; i < n; ++i) for(int j = i + 1; j < n; ++j) for(int k = j + 1; k < n; ++k) {
                 if(det3(in[i], in[j], in[k]) == 0) continue;  // 共线,不可能是三角形
                 // 按逆时针顺序取三个顶点(否则空圆判据的符号是反的)
                 p2 A = in[i], B = in[j], C = in[k];
                 if(det3(A, B, C) < 0) swap(B, C);
                 bool ok = true;
-                ForD(l, 0, n) if(l != i && l != j && l != k && exactInC(in[l], A, B, C) > 0) ok = false;
+                for(int l = 0; l < n; ++l) if(l != i && l != j && l != k && exactInC(in[l], A, B, C) > 0) ok = false;
                 if(ok) want.insert({i, j, k});
             }
             map<K, int> id;
-            ForD(i, 0, n) id[key(in[i])] = i;
+            for(int i = 0; i < n; ++i) id[key(in[i])] = i;
             vect<p2> r = delaunay(V(in));
-            ForD(i, 0, (int) r.size() / 3) {
+            for(int i = 0; i < (int) r.size() / 3; ++i) {
                 array<int, 3> t{id[key(r[3 * i])], id[key(r[3 * i + 1])], id[key(r[3 * i + 2])]};
                 sort(t.begin(), t.end());
                 got.insert(t);
@@ -364,7 +364,7 @@ int main() {
         For(k, 4, 12) {
             vector<p2> v;
             set<K> s;
-            ForD(i, 0, k) {
+            for(int i = 0; i < k; ++i) {
                 ll x = (ll) roundl(10000 * cosl(2 * pi * i / k)), y = (ll) roundl(10000 * sinl(2 * pi * i / k));
                 if(!s.count({x, y})) s.insert({x, y}), v.push_back(IP(x, y));
             }
@@ -373,7 +373,7 @@ int main() {
         // 网格 k x k:大量共线 + 大量共圆
         For(k, 2, 6) {
             vector<p2> v;
-            ForD(i, 0, k) ForD(j, 0, k) v.push_back(IP(i, j));
+            for(int i = 0; i < k; ++i) for(int j = 0; j < k; ++j) v.push_back(IP(i, j));
             one(v, "k x k 网格点");
         }
         // 点落在凸包边上(与两凸包顶点共线)和内边上
@@ -495,7 +495,7 @@ int main() {
         {
             vector<p2> v;
             set<K> s;
-            ForD(i, 0, 300) {
+            for(int i = 0; i < 300; ++i) {
                 ll x = (ll) roundl(1000000 * cosl(2 * pi * i / 300)), y = (ll) roundl(1000000 * sinl(2 * pi * i / 300));
                 if(!s.count({x, y})) s.insert({x, y}), v.push_back(IP(x, y));
             }

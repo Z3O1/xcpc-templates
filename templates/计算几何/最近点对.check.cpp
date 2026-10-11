@@ -24,7 +24,7 @@ static bool eqd(db a, db b, db tol) { return Abs(a - b) < tol; }
 static void pr(p2 a) { printf("(%g,%g)", (double) a.x, (double) a.y); }
 static void prv(const char *s, const vector<p2> &v) {
     printf("      %s(%zu):", s, v.size());
-    ForD(i, 0, (int) min<size_t>(v.size(), 20)) printf(" "), pr(v[i]);
+    for(int i = 0; i < (int) min<size_t>(v.size(), 20); ++i) printf(" "), pr(v[i]);
     printf("%s\n", v.size() > 20 ? " ..." : "");
 }
 
@@ -33,7 +33,7 @@ static db bruteClosest(const vector<p2> &v) {
     int n = v.size();
     if(n < 2) return -1;
     db ans = 1e100L;
-    ForD(i, 0, n) ForD(j, i + 1, n) ans = min(ans, dis(v[i] - v[j]));
+    for(int i = 0; i < n; ++i) for(int j = i + 1; j < n; ++j) ans = min(ans, dis(v[i] - v[j]));
     return ans;
 }
 
@@ -65,10 +65,10 @@ int main() {
             int n = (int) rnd(2, 40), R = (int) rnd(1, 8);
             vector<p2> v;
             if(t % 4 == 0) {  // 每 4 组里有一组「保证互异」
-                ForD(i, 0, n) v.push_back(P((db) rnd(-200, 200), (db) rnd(-200, 200)));
-                ForD(i, 0, n) ForD(j, 0, i) if(v[i] == v[j]) v[i].x += 1000;
+                for(int i = 0; i < n; ++i) v.push_back(P((db) rnd(-200, 200), (db) rnd(-200, 200)));
+                for(int i = 0; i < n; ++i) for(int j = 0; j < i; ++j) if(v[i] == v[j]) v[i].x += 1000;
             } else {
-                ForD(i, 0, n) v.push_back(P((db) rnd(-R, R), (db) rnd(-R, R)));
+                for(int i = 0; i < n; ++i) v.push_back(P((db) rnd(-R, R), (db) rnd(-R, R)));
             }
             db got = dis_closest(v), want = bruteClosest(v);
             if(!eqd(got, want, 1e-9 * (1 + want))) {
@@ -87,12 +87,12 @@ int main() {
             vector<p2> v;
             int kind = (int) rnd(0, 2);
             if(kind == 0) {
-                ForD(i, 0, n) v.push_back(P((db) rnd(-1000000, 1000000), (db) rnd(-1000000, 1000000)));
+                for(int i = 0; i < n; ++i) v.push_back(P((db) rnd(-1000000, 1000000), (db) rnd(-1000000, 1000000)));
             } else if(kind == 1) {  // 圆上点:最近点对常常落在「相邻弧」上
                 db R = (db) rnd(1, 10000);
-                ForD(i, 0, n) v.push_back(P(R * cos(2 * pi * i / n), R * sin(2 * pi * i / n)));
+                for(int i = 0; i < n; ++i) v.push_back(P(R * cos(2 * pi * i / n), R * sin(2 * pi * i / n)));
             } else {  // 细长分布:横坐标差很小、纵坐标差很大
-                ForD(i, 0, n) v.push_back(P((db) rnd(-5, 5), (db) rnd(-1000000, 1000000)));
+                for(int i = 0; i < n; ++i) v.push_back(P((db) rnd(-5, 5), (db) rnd(-1000000, 1000000)));
             }
             db got = dis_closest(v), want = bruteClosest(v);
             if(!eqd(got, want, 1e-9 * (1 + want))) {
@@ -109,10 +109,10 @@ int main() {
         For(t, 1, 3000) {
             int n = (int) rnd(2, 60);
             vector<p2> v;
-            ForD(i, 0, n) v.push_back(P((db) rnd(-1000, 1000), (db) rnd(-1000, 1000)));
+            for(int i = 0; i < n; ++i) v.push_back(P((db) rnd(-1000, 1000), (db) rnd(-1000, 1000)));
             db got = dis_closest(v);
             if(got < 0) ++bad;
-            ForD(i, 0, min(n, 25)) ForD(j, i + 1, min(n, 25)) {  // 答案必须 <= 任意一对具体点的距离
+            for(int i = 0; i < min(n, 25); ++i) for(int j = i + 1; j < min(n, 25); ++j) {  // 答案必须 <= 任意一对具体点的距离
                 db d = dis(v[i] - v[j]);
                 if(got > d + 1e-9 * (1 + d)) {
                     if(bad < 3) printf("      [反例] 答案 %.17Lg 大于点对距离 %.17Lg\n", got, d), prv("输入", v);
@@ -120,7 +120,7 @@ int main() {
                 }
             }
             bool dup = false;  // 答案 == 0 <=> 存在重复点
-            ForD(i, 0, n) ForD(j, 0, i) if(v[i] == v[j]) dup = true;
+            for(int i = 0; i < n; ++i) for(int j = 0; j < i; ++j) if(v[i] == v[j]) dup = true;
             if(dup != (got == 0)) {
                 if(bad < 3) printf("      [反例] 有重复点=%d,而答案=%Lg\n", (int) dup, got), prv("输入", v);
                 ++bad;
@@ -133,7 +133,7 @@ int main() {
     {
         vector<p2> v;
         int nx = 450, ny = 450;  // 202500 个晶格点
-        ForD(i, 0, nx) ForD(j, 0, ny) v.push_back(P((db) i * 10000, (db) j * 10000));
+        for(int i = 0; i < nx; ++i) for(int j = 0; j < ny; ++j) v.push_back(P((db) i * 10000, (db) j * 10000));
         db cx = (db) (nx - 1) * 10000 / 2, cy = (db) (ny - 1) * 10000 / 2 + 5000;  // 落在两行晶格正中
         v.push_back(P(cx - 1.75L, cy)), v.push_back(P(cx + 1.75L, cy));
         db got = dis_closest(v);
@@ -141,7 +141,7 @@ int main() {
         vector<p2> samep(200000, P(-1234.5L, 9876.25L));
         CHECK(eqd(dis_closest(samep), 0, 1e-12L), "dis_closest:20 万个完全相同的点 -> 0(不许退化成 O(n²))");
         vector<p2> line;  // 20 万个共线点(横坐标递增很慢),最近对是相邻两点
-        ForD(i, 0, 200000) line.push_back(P((db) i * 0.001L, 1));
+        for(int i = 0; i < 200000; ++i) line.push_back(P((db) i * 0.001L, 1));
         CHECK(eqd(dis_closest(line), 0.001L, 1e-9L), "dis_closest:20 万个几乎共线的点 -> 相邻两点距离 0.001");
     }
 
@@ -151,7 +151,7 @@ int main() {
         For(t, 1, 2000) {
             int n = (int) rnd(2, 60);
             vector<p2> v;
-            ForD(i, 0, n) v.push_back(P((db) rnd(-1000000000, 1000000000), (db) rnd(-1000000000, 1000000000)));
+            for(int i = 0; i < n; ++i) v.push_back(P((db) rnd(-1000000000, 1000000000), (db) rnd(-1000000000, 1000000000)));
             if(t % 5 == 0) v.push_back(v[0]);  // 掺重复点
             db got = dis_closest(v), want = bruteClosest(v);
             if(!eqd(got, want, 1e-9 * (1 + want))) {

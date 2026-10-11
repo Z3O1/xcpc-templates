@@ -30,7 +30,7 @@ static bool eqp(p2 a, p2 b, db tol = 1e-9) { return eqd(a.x, b.x, tol) && eqd(a.
 static void pr(p2 a) { printf("(%.17Lg,%.17Lg)", a.x, a.y); }
 static void prv(const char *s, const vector<p2> &v) {
     printf("      %s(%zu):", s, v.size());
-    ForD(i, 0, (int) min<size_t>(v.size(), 30)) printf(" "), pr(v[i]);
+    for(int i = 0; i < (int) min<size_t>(v.size(), 30); ++i) printf(" "), pr(v[i]);
     printf("%s\n", v.size() > 30 ? " ..." : "");
 }
 
@@ -38,7 +38,7 @@ static void prv(const char *s, const vector<p2> &v) {
 static array<db, 3> refCentroidEdge(const vector<p2> &a) {  // 返回 {x̄, ȳ, 带号面积}
     int n = a.size();
     db ax = 0, ay = 0, ar = 0;
-    ForD(i, 0, n) {
+    for(int i = 0; i < n; ++i) {
         p2 u = a[i], v = a[(i + 1) % n];
         db s = v.x - u.x, dv = v.y - u.y;
         db A = s * (u.y + v.y) / 2;                            // 有向梯形面积
@@ -48,7 +48,7 @@ static array<db, 3> refCentroidEdge(const vector<p2> &a) {  // 返回 {x̄, ȳ, 
     }
     if(ar == 0) {  // 退化:与模板同约定(顶点平均)
         p2 av = {0, 0};
-        ForD(i, 0, n) av = av + a[i];
+        for(int i = 0; i < n; ++i) av = av + a[i];
         av = av / (db) n;
         return {av.x, av.y, 0};
     }
@@ -57,11 +57,11 @@ static array<db, 3> refCentroidEdge(const vector<p2> &a) {  // 返回 {x̄, ȳ, 
 static p2 refCentroidMC(const vector<p2> &a, int N) {
     int n = a.size();
     db mnx = 1e30L, mxx = -1e30L, mny = 1e30L, mxy = -1e30L;
-    ForD(i, 0, n) mnx = min(mnx, a[i].x), mxx = max(mxx, a[i].x), mny = min(mny, a[i].y), mxy = max(mxy, a[i].y);
+    for(int i = 0; i < n; ++i) mnx = min(mnx, a[i].x), mxx = max(mxx, a[i].x), mny = min(mny, a[i].y), mxy = max(mxy, a[i].y);
     db sx = 0, sy = 0;
     int cnt = 0;
     vector<p2> b = a;  // contain 要非 const 指针
-    ForD(t, 0, N) {
+    for(int t = 0; t < N; ++t) {
         p2 q = P(mnx + (mxx - mnx) * (db) rnd(0, 1000000) / 1000000, mny + (mxy - mny) * (db) rnd(0, 1000000) / 1000000);
         if(contain(n, b.data(), q) == 2) sx += q.x, sy += q.y, ++cnt;
     }
@@ -87,7 +87,7 @@ int main() {
         CHECK(eqp(centroid(4, cw.data()), P(2, 2)), "centroid 顺时针正方形 -> 一样是中心");
         {
             vector<p2> pent;  // 正 n 边形:重心 = 外接圆心
-            ForD(i, 0, 7) pent.push_back(P(50 * cos(2 * pi * i / 7), 50 * sin(2 * pi * i / 7)));
+            for(int i = 0; i < 7; ++i) pent.push_back(P(50 * cos(2 * pi * i / 7), 50 * sin(2 * pi * i / 7)));
             p2 g = centroid(7, pent.data());
             CHECK(dis(g) < 1e-12L, "centroid 正七边形(半径 50)-> 圆心 (0,0)");
             CHECK(eqd(perimeter(7, pent.data()), 7 * dis(pent[1] - pent[0]), 1e-12L), "perimeter 正七边形 = 7×边长");
@@ -123,11 +123,11 @@ int main() {
             int n = (int) rnd(3, 40);
             vector<p2> v;
             if(t % 2) {  // 凸:随机点取凸包
-                ForD(i, 0, n) v.push_back(P((db) rnd(-200, 200), (db) rnd(-200, 200)));
+                for(int i = 0; i < n; ++i) v.push_back(P((db) rnd(-200, 200), (db) rnd(-200, 200)));
                 vector<p2> h;
                 {
                     p2 arr[64], hh[64];
-                    ForD(i, 0, n) arr[i] = v[i];
+                    for(int i = 0; i < n; ++i) arr[i] = v[i];
                     int k = convex_hull(n, arr, hh);
                     if(k < 3) continue;
                     h.assign(hh, hh + k);
@@ -135,7 +135,7 @@ int main() {
                 v = h;
             } else {  // 凹:随机星形多边形(绕中心按角度排序 + 随机半径)
                 db R = (db) rnd(10, 200);
-                ForD(i, 0, n) {
+                for(int i = 0; i < n; ++i) {
                     db ang = 2 * pi * i / n;
                     db r = R * (db) rnd(30, 100) / 100;
                     v.push_back(P(r * cos(ang), r * sin(ang)));
@@ -169,7 +169,7 @@ int main() {
             int n = (int) rnd(3, 20);
             db R = (db) rnd(5, 50);
             vector<p2> v;
-            ForD(i, 0, n) {
+            for(int i = 0; i < n; ++i) {
                 db ang = 2 * pi * i / n + (db) rnd(-100, 100) / 1000 / n;
                 db r = R * (db) rnd(40, 100) / 100;
                 v.push_back(P(r * cos(ang), r * sin(ang)));
@@ -180,12 +180,12 @@ int main() {
             db tol = 1e-9L * (1 + Abs(g.x) + Abs(g.y) + R);
             p2 sh = P((db) rnd(-1000, 1000) / 7, (db) rnd(-1000, 1000) / 7);
             vector<p2> mv(n), rv(n), cy(n);
-            ForD(i, 0, n) mv[i] = v[i] + sh;
-            ForD(i, 0, n) rv[i] = v[n - 1 - i];
-            ForD(i, 0, n) cy[i] = v[(i + 5) % n];
+            for(int i = 0; i < n; ++i) mv[i] = v[i] + sh;
+            for(int i = 0; i < n; ++i) rv[i] = v[n - 1 - i];
+            for(int i = 0; i < n; ++i) cy[i] = v[(i + 5) % n];
             db sc = (db) rnd(1, 100) / 10;
             vector<p2> sv(n);
-            ForD(i, 0, n) sv[i] = v[i] * sc;
+            for(int i = 0; i < n; ++i) sv[i] = v[i] * sc;
             p2 g1 = centroid(n, mv.data()), g2 = centroid(n, rv.data()), g3 = centroid(n, cy.data()), g4 = centroid(n, sv.data());
             if(!eqp(g1, g + sh, tol) || !eqp(g2, g, tol) || !eqp(g3, g, tol) || !eqp(g4, g * sc, tol * sc)) {
                 if(bad < 3) {
@@ -196,7 +196,7 @@ int main() {
             }
             if(Abs(s0) > 1e-6L * R * R) {  // 凸多边形:重心必须在内部
                 p2 arr[64];
-                ForD(i, 0, n) arr[i] = v[i];
+                for(int i = 0; i < n; ++i) arr[i] = v[i];
                 vector<p2> h;
                 p2 hh[64];
                 int k = convex_hull(n, arr, hh);
@@ -219,7 +219,7 @@ int main() {
             int n = (int) rnd(3, 12);
             db R = (db) rnd(10, 60);
             vector<p2> v;
-            ForD(i, 0, n) {
+            for(int i = 0; i < n; ++i) {
                 db ang = 2 * pi * i / n + (db) rnd(-100, 100) / 500 / n;
                 db r = R * (db) rnd(40, 100) / 100;
                 v.push_back(P(r * cos(ang), r * sin(ang)));
@@ -245,10 +245,10 @@ int main() {
         For(t, 1, 1000) {
             int n = (int) rnd(3, 20);
             vector<p2> v;
-            ForD(i, 0, n) v.push_back(P((db) rnd(-1000000000, 1000000000), (db) rnd(-1000000000, 1000000000)));
+            for(int i = 0; i < n; ++i) v.push_back(P((db) rnd(-1000000000, 1000000000), (db) rnd(-1000000000, 1000000000)));
             if(t % 2) {  // 一半取凸包保证是简单多边形
                 p2 arr[64], hh[64];
-                ForD(i, 0, n) arr[i] = v[i];
+                for(int i = 0; i < n; ++i) arr[i] = v[i];
                 int k = convex_hull(n, arr, hh);
                 if(k < 3) continue;
                 v.assign(hh, hh + k);

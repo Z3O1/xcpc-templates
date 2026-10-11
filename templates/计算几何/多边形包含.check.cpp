@@ -24,14 +24,14 @@ static db Abs(db x) { return x < 0 ? -x : x; }
 static void pr(p2 a) { printf("(%g,%g)", (double) a.x, (double) a.y); }
 static void prv(const char *s, const vector<p2> &v) {
     printf("      %s(%zu):", s, v.size());
-    ForD(i, 0, (int) min<size_t>(v.size(), 30)) printf(" "), pr(v[i]);
+    for(int i = 0; i < (int) min<size_t>(v.size(), 30); ++i) printf(" "), pr(v[i]);
     printf("%s\n", v.size() > 30 ? " ..." : "");
 }
 
 // ---------- 独立参考实现 ----------
 static int exactWN(const vector<p2> &a, ll px, ll py) {  // 整数坐标下的精确缠绕数 + 边界:0/1/2
     int n = a.size(), wn = 0;
-    ForD(i, 0, n) {
+    for(int i = 0; i < n; ++i) {
         ll ux = (ll) a[i].x, uy = (ll) a[i].y, vx = (ll) a[(i + 1) % n].x, vy = (ll) a[(i + 1) % n].y;
         if(ux == vx && uy == vy) continue;
         i128 cr = (i128) (vx - ux) * (py - uy) - (i128) (vy - uy) * (px - ux);
@@ -46,7 +46,7 @@ static int exactWN(const vector<p2> &a, ll px, ll py) {  // 整数坐标下的�
 static bool angWNOk(const vector<p2> &a, p2 p, int &sign_out) {  // 有向角和法;false 表示退化(p 在边上/顶点上)
     int n = a.size();
     db s = 0;
-    ForD(i, 0, n) {
+    for(int i = 0; i < n; ++i) {
         p2 u = a[i] - p, v = a[(i + 1) % n] - p;
         if(dis2(u) < 1e-18L || dis2(v) < 1e-18L) return false;
         db d = remainderl(v.alpha() - u.alpha(), 2 * pi);
@@ -60,7 +60,7 @@ static bool angWNOk(const vector<p2> &a, p2 p, int &sign_out) {  // 有向角和
 }
 static bool onAnyEdge(const vector<p2> &a, p2 p) {  // 与模板同约定:跳过退化的零长边(否则 geo 的 ons 对任意点都为真)
     int n = a.size();
-    ForD(i, 0, n) if(!(a[i] == a[(i + 1) % n]) && ons({a[i], a[(i + 1) % n]}, p)) return true;
+    for(int i = 0; i < n; ++i) if(!(a[i] == a[(i + 1) % n]) && ons({a[i], a[(i + 1) % n]}, p)) return true;
     return false;
 }
 
@@ -114,7 +114,7 @@ int main() {
         {
             // 五角星(每两个顶点连一条):中心小五边形缠绕数 ±2 -> 非零规则判内部,奇偶规则判外部
             vector<p2> st;
-            ForD(i, 0, 5) st.push_back(P(100 * cos(pi / 2 + 2 * pi * i / 5), 100 * sin(pi / 2 + 2 * pi * i / 5)));
+            for(int i = 0; i < 5; ++i) st.push_back(P(100 * cos(pi / 2 + 2 * pi * i / 5), 100 * sin(pi / 2 + 2 * pi * i / 5)));
             vector<p2> pent = {st[0], st[2], st[4], st[1], st[3]};
             int sg = 0;
             CHECK(wn_contain(5, pent.data(), P(0, 0)) == 2 && contain(5, pent.data(), P(0, 0)) == 0 && angWNOk(pent, P(0, 0), sg) && sg != 0,
@@ -136,15 +136,15 @@ int main() {
             int n = (int) rnd(3, 12);
             db R = (db) rnd(3, 40);
             vector<p2> a;
-            ForD(i, 0, n) {  // 以原点为心按角度排序 -> 简单多边形(星形),再取整
+            for(int i = 0; i < n; ++i) {  // 以原点为心按角度排序 -> 简单多边形(星形),再取整
                 db ang = 2 * pi * i / n + (db) rnd(-100, 100) / 400 / n;
                 db r = R * (db) rnd(40, 100) / 100;
                 a.push_back(P(llroundl(r * cos(ang)), llroundl(r * sin(ang))));
             }
             if(t % 2) reverse(a.begin(), a.end());  // 一半顺时针
             bool simple = true;                     // 取整后可能自交/重边,先粗筛:与 geo 的 contain 只对简单多边形比
-            ForD(i, 0, n) ForD(j, i + 1, n) if(a[i] == a[j]) simple = false;
-            ForD(it, 0, 80) {
+            for(int i = 0; i < n; ++i) for(int j = i + 1; j < n; ++j) if(a[i] == a[j]) simple = false;
+            for(int it = 0; it < 80; ++it) {
                 ll qx = rnd(-50, 50), qy = rnd(-50, 50);
                 p2 q = P((db) qx, (db) qy);
                 int got = wn_contain(n, a.data(), q), exact = exactWN(a, qx, qy);
@@ -178,8 +178,8 @@ int main() {
         For(t, 1, 3000) {
             int n = (int) rnd(3, 10);
             vector<p2> a;
-            ForD(i, 0, n) a.push_back(P((db) rnd(-15, 15), (db) rnd(-15, 15)));
-            ForD(it, 0, 80) {
+            for(int i = 0; i < n; ++i) a.push_back(P((db) rnd(-15, 15), (db) rnd(-15, 15)));
+            for(int it = 0; it < 80; ++it) {
                 ll qx = rnd(-20, 20), qy = rnd(-20, 20);
                 p2 q = P((db) qx, (db) qy);
                 int got = wn_contain(n, a.data(), q), exact = exactWN(a, qx, qy);
@@ -206,8 +206,8 @@ int main() {
         For(t, 1, 3000) {
             int n = (int) rnd(3, 10);
             vector<p2> a;
-            ForD(i, 0, n) a.push_back(P((db) rnd(-1000000000, 1000000000), (db) rnd(-1000000000, 1000000000)));
-            ForD(it, 0, 20) {
+            for(int i = 0; i < n; ++i) a.push_back(P((db) rnd(-1000000000, 1000000000), (db) rnd(-1000000000, 1000000000)));
+            for(int it = 0; it < 20; ++it) {
                 ll qx = rnd(-1000000000, 1000000000), qy = rnd(-1000000000, 1000000000);
                 int got = wn_contain(n, a.data(), P((db) qx, (db) qy)), exact = exactWN(a, qx, qy);
                 if(got != exact) {
@@ -225,13 +225,13 @@ int main() {
         For(t, 1, 1500) {
             int n = (int) rnd(3, 12);
             vector<p2> a;
-            ForD(i, 0, n) a.push_back(P((db) rnd(-30, 30), (db) rnd(-30, 30)));
+            for(int i = 0; i < n; ++i) a.push_back(P((db) rnd(-30, 30), (db) rnd(-30, 30)));
             p2 sh = P((db) rnd(-1000, 1000), (db) rnd(-1000, 1000));
             vector<p2> mv(n), rv(n), cy(n);
-            ForD(i, 0, n) mv[i] = a[i] + sh;
-            ForD(i, 0, n) rv[i] = a[n - 1 - i];
-            ForD(i, 0, n) cy[i] = a[(i + 3) % n];
-            ForD(it, 0, 40) {
+            for(int i = 0; i < n; ++i) mv[i] = a[i] + sh;
+            for(int i = 0; i < n; ++i) rv[i] = a[n - 1 - i];
+            for(int i = 0; i < n; ++i) cy[i] = a[(i + 3) % n];
+            for(int it = 0; it < 40; ++it) {
                 p2 q = P((db) rnd(-40, 40), (db) rnd(-40, 40));
                 int base = wn_contain(n, a.data(), q);
                 if(wn_contain(n, mv.data(), q + sh) != base) ++bad;

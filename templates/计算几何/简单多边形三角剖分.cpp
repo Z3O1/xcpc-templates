@@ -33,7 +33,7 @@ vector<array<int, 3>> ear_clip(int n, p2 *a) {
     // 环上的前驱、后继: 用下标数组维护双向链表, 不真的删点, 避免下标错位
     // cnt 是环上剩下的点数, 不能拿 n 当计数器 —— n 还是数组的大小
     vector<int> prv(n), nxt(n);
-    ForD(i, 0, n) prv[i] = (i + n - 1) % n, nxt[i] = (i + 1) % n; // ForD(i,l,r) 即 i = l..r-1
+    for(int i = 0; i < n; ++i) prv[i] = (i + n - 1) % n, nxt[i] = (i + 1) % n; // for(int i = l; i < r; ++i) 即 i = l..r-1
     int cnt = n;
     auto live = [&](int x) { return prv[nxt[x]] == x && nxt[prv[x]] == x; }; // 还在环上
     auto drop = [&](int x) {

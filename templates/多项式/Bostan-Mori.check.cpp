@@ -6,11 +6,11 @@
 // 独立参考:Q*f=P,按次数解三角方程;不使用 Bostan-Mori 或卷积。
 static poly series_ref(const poly &P, const poly &Q, int n) {
     poly f(n + 1);
-    int iq = ksm(Q[0], MOD - 2, MOD);
+    int iq = ksm(Q[0], M - 2, M);
     For(i, 0, n) {
         ll v = i < (int)P.size() ? P[i] : 0;
-        For(j, 1, min(i, (int)Q.size() - 1)) v = (v - 1ll * Q[j] * f[i - j] % MOD + MOD) % MOD;
-        f[i] = v * iq % MOD;
+        For(j, 1, min(i, (int)Q.size() - 1)) v = (v - 1ll * Q[j] * f[i - j] % M + M) % M;
+        f[i] = v * iq % M;
     }
     return f;
 }
@@ -21,7 +21,7 @@ int main() {
         int d = (int) rnd(1, 8);
         poly Q(d + 1), P(d + 1);
         Q[0] = 1;
-        For(i, 1, d) Q[i] = (MOD - rnd(0, MOD - 1)) % MOD; // 随机 c_i 的相反数
+        For(i, 1, d) Q[i] = (M - rnd(0, M - 1)) % M; // 随机 c_i 的相反数
         // 注意:初始项 a_0..a_{d-1} 不能随便取 —— 分子必须是它跟 Q 的乘积截到前 d 项
         // (即 P = (a_0 + a_1 x + ... + a_{d-1} x^{d-1}) * Q mod x^d),
         // 这样 P/Q 展开的前 d 项才是 a_0..a_{d-1},之后按递推走
@@ -40,7 +40,7 @@ int main() {
         For(i, 0, d - 1) a[i] = a0[i];
         For(n, d, (int) k) {
             ll s = 0;
-            For(i, 1, d) s = (s - (ll) Q[i] * a[n - i] % MOD + MOD) % MOD;
+            For(i, 1, d) s = (s - (ll) Q[i] * a[n - i] % M + M) % M;
             a[n] = s;
         }
         int got = bostan_mori(P, Q, k);
@@ -53,29 +53,29 @@ int main() {
 
     // 2) 经典 Fibonacci:F = x/(1-x-x^2)
     {
-        poly Q{1, MOD - 1, MOD - 1}, P{0, 1};
+        poly Q{1, M - 1, M - 1}, P{0, 1};
         ll f[80];
         f[0] = 0, f[1] = 1;
         For(i, 2, 79) f[i] = f[i - 1] + f[i - 2];
-        For(k, 0, 79) if(!(bostan_mori(P, Q, k) == f[k] % MOD))
+        For(k, 0, 79) if(!(bostan_mori(P, Q, k) == f[k] % M))
             return printf("  [FAIL] Fibonacci 第 %d 项\n", k), 1;
         ok("Fibonacci 前 80 项");
     }
 
     // 3) 大 k(1e18 级)与已知闭式对照:Fibonacci 用 ksm 快速幂矩阵验证
     {
-        poly Q{1, MOD - 1, MOD - 1}, P{0, 1};
+        poly Q{1, M - 1, M - 1}, P{0, 1};
         auto fib_fast = [&](ll n) -> int {
             ll a = 1, b = 1, c = 1, d = 0; // 矩阵 [[1,1],[1,0]]^n
             ll r00 = 1, r01 = 0, r10 = 0, r11 = 1;
             for(; n; n >>= 1) {
                 if(n & 1) {
-                    ll x = (r00 * a + r01 * c) % MOD, y = (r00 * b + r01 * d) % MOD,
-                       z = (r10 * a + r11 * c) % MOD, w = (r10 * b + r11 * d) % MOD;
+                    ll x = (r00 * a + r01 * c) % M, y = (r00 * b + r01 * d) % M,
+                       z = (r10 * a + r11 * c) % M, w = (r10 * b + r11 * d) % M;
                     r00 = x, r01 = y, r10 = z, r11 = w;
                 }
-                ll x = (a * a + b * c) % MOD, y = (a * b + b * d) % MOD,
-                   z = (c * a + d * c) % MOD, w = (c * b + d * d) % MOD;
+                ll x = (a * a + b * c) % M, y = (a * b + b * d) % M,
+                   z = (c * a + d * c) % M, w = (c * b + d * d) % M;
                 a = x, b = y, c = z, d = w;
             }
             return r01;
@@ -90,18 +90,18 @@ int main() {
     // 4) 退化与边界
     {
         poly Q{5}, P{7};
-        CHECK(bostan_mori(P, Q, 0) == 7 * ksm(5, MOD - 2, MOD) % MOD, "常数生成函数 P/Q 在 k=0");
+        CHECK(bostan_mori(P, Q, 0) == 7 * ksm(5, M - 2, M) % M, "常数生成函数 P/Q 在 k=0");
         CHECK(bostan_mori(P, Q, 100) == 0, "k > 0 且 Q 为常数 → 0");
         // 高次分子确实影响展开,不能按分母次数直接丢弃。
-        poly P2{0, 1, MOD - 1, 12345}, Q2{1, MOD - 1, MOD - 1};
+        poly P2{0, 1, M - 1, 12345}, Q2{1, M - 1, M - 1};
         CHECK(bostan_mori(P2, Q2, 30) == series_ref(P2, Q2, 30)[30], "高次分子保留");
         CHECK(bostan_mori(poly{0, 1}, poly{1}, 1) == 1, "x/1 的第1项");
-        CHECK(bostan_mori(poly{0, 1}, poly{1, MOD - 1}, 1) == 1, "x/(1-x) 的第1项");
+        CHECK(bostan_mori(poly{0, 1}, poly{1, M - 1}, 1) == 1, "x/(1-x) 的第1项");
         for(ll n : {0LL, 3LL, 1000000000000000000LL}) {
             CHECK(bostan_mori(poly{}, poly{1}, n) == 0, "空 P 常数 Q");
-            CHECK(bostan_mori(poly{}, poly{1, MOD - 5}, n) == 0, "空 P 非常数 Q");
+            CHECK(bostan_mori(poly{}, poly{1, M - 5}, n) == 0, "空 P 非常数 Q");
         }
-        poly init{1, 1}, q{1, MOD - 1, MOD - 1}, p = mul(init, q);
+        poly init{1, 1}, q{1, M - 1, M - 1}, p = mul(init, q);
         p.resize(2);
         CHECK(bostan_mori(p, q, 1) == 1, "初始项必须乘 Q 后截断为递推分子");
         ok("常数/空分子/一般分子/递推构造边界");
@@ -110,9 +110,9 @@ int main() {
     // 5) 任意分子次数、非1的Q[0]、尾零,包括空P,与三角除法独立对拍。
     For(t, 1, 6000) {
         poly p(rnd(0, 30)), q(rnd(1, 16));
-        for(int &x : p) x = rnd(0, MOD - 1);
-        for(int &x : q) x = rnd(0, MOD - 1);
-        q[0] = rnd(1, MOD - 1);
+        for(int &x : p) x = rnd(0, M - 1);
+        for(int &x : q) x = rnd(0, M - 1);
+        q[0] = rnd(1, M - 1);
         if(t % 3 == 0 && q.size() > 1) q.back() = 0;
         int n = rnd(0, 120), want = series_ref(p, q, n)[n], got = bostan_mori(p, q, n);
         if(got != want) {

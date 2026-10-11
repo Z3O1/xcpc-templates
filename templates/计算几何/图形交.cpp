@@ -157,6 +157,6 @@ db tri_disk2(const circle &c, p2 a, p2 b) {
 db cir_poly_area(int n, p2 *a, const circle &c) {
     if(n < 3 || !sign(c.r)) return 0;
     db s = 0;
-    ForD(i, 0, n) s += tri_disk2(c, a[i], a[(i + 1) % n]);
+    for(int i = 0; i < n; ++i) s += tri_disk2(c, a[i], a[(i + 1) % n]);
     return s > 0 ? s / 2 : 0; // 逆时针 -> 有向和为正;数值噪声造成的极小负值归零
 }

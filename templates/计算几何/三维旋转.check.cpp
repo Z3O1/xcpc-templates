@@ -48,7 +48,7 @@ mat3 refRotmat(p3 axis, db ang) {
     db c = cos(ang), s = sin(ang), t = 1 - c;
     db K[3][3] = {{0, -k.z, k.y}, {k.z, 0, -k.x}, {-k.y, k.x, 0}};
     mat3 m{};
-    ForD(i, 0, 3) ForD(j, 0, 3) {
+    for(int i = 0; i < 3; ++i) for(int j = 0; j < 3; ++j) {
         db kk = (i == 0 ? k.x : i == 1 ? k.y : k.z) * (j == 0 ? k.x : j == 1 ? k.y : k.z);
         m.a[i][j] = (i == j ? c : 0) + s * K[i][j] + t * kk;
     }
@@ -120,7 +120,7 @@ int main() {
             // 矩阵:正交、det = 1、transpose = 反向旋转
             mat3 m = rotmat(k, ang);
             mat3 mt = transpose(m), prod = m * mt;
-            ForD(i, 0, 3) ForD(j, 0, 3) if(!eq(prod.a[i][j], i == j ? 1 : 0, 1e-10L)) { if(!bad) msg = "M·Mᵀ != I"; ++bad; }
+            for(int i = 0; i < 3; ++i) for(int j = 0; j < 3; ++j) if(!eq(prod.a[i][j], i == j ? 1 : 0, 1e-10L)) { if(!bad) msg = "M·Mᵀ != I"; ++bad; }
             if(!eq(det(P3(m.a[0][0], m.a[0][1], m.a[0][2]), P3(m.a[1][0], m.a[1][1], m.a[1][2]), P3(m.a[2][0], m.a[2][1], m.a[2][2])), 1, 1e-10L)) {
                 if(!bad) msg = "det(M) != 1"; ++bad;
             }

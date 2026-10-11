@@ -23,11 +23,11 @@ db dis_closest(vector<p2> a) {
         while(i < mid && j < r) b[k++] = a[i].y <= a[j].y ? a[i++] : a[j++];
         while(i < mid) b[k++] = a[i++];
         while(j < r) b[k++] = a[j++];
-        ForD(t, l, r) a[t] = b[t];
+        for(int t = l; t < r; ++t) a[t] = b[t];
         int m = 0; // 只留下横坐标距分界线 < ans 的点(按 y 递增)
-        ForD(t, l, r)
+        for(int t = l; t < r; ++t)
             if(abs(a[t].x - mx) < ans) b[m++] = a[t];
-        ForD(t, 0, m)
+        for(int t = 0; t < m; ++t)
             for(int u = t - 1; u >= 0 && b[t].y - b[u].y < ans; --u) ans = min(ans, dis(b[t] - b[u]));
     };
     rec(rec, 0, n);

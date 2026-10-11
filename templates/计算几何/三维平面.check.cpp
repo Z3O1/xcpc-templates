@@ -144,7 +144,7 @@ int main() {
             p3 u, v;
             spanDir(pl, u, v);
             db g = pl.dis(q), best = 1e100L;
-            ForD(i, -20, 21) ForD(j, -20, 21) best = min(best, dis(pl.proj(a) + u * (i * 0.5L) + v * (j * 0.5L) - q));
+            for(int i = -20; i < 21; ++i) for(int j = -20; j < 21; ++j) best = min(best, dis(pl.proj(a) + u * (i * 0.5L) + v * (j * 0.5L) - q));
             if(g > best + 1e-9L) ++bad;              // 采样只能给上界
             if(best - g > 1e-9L && best > 1e-9L) {}  // (采样不到垂足是正常的,不判)
         }

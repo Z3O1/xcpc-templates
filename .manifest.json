@@ -32,13 +32,13 @@
    "key": "字符串/manacher.cpp",
    "title": "Manacher",
    "missing": false,
-   "hidden": false
+   "hidden": true
   },
   {
    "key": "字符串/zfunc.cpp",
    "title": "Z 函数",
    "missing": false,
-   "hidden": false
+   "hidden": true
   },
   {
    "key": "字符串/最小表示法.cpp",
@@ -56,7 +56,7 @@
    "key": "字符串/sa.cpp",
    "title": "SA",
    "missing": false,
-   "hidden": false
+   "hidden": true
   },
   {
    "key": "字符串/pam.cpp",
@@ -290,7 +290,7 @@
    "key": "数论/exgcd.cpp",
    "title": "扩展欧几里得",
    "missing": false,
-   "hidden": false
+   "hidden": true
   },
   {
    "key": "数论/minmod.cpp",

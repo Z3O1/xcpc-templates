@@ -1,3 +1,4 @@
+// hide
 // manacher(): 字符串 · Manacher 回文半径
 
 // 需要保证 s[0] 和 s[n + 1] 是不同特殊字符。

@@ -16,11 +16,11 @@ static pair<poly, poly> naive_divmod(poly f, const poly &g) {
     int n = f.size(), m = g.size();
     if(n < m) return {poly(), f};
     poly q(n - m + 1);
-    int ig = ksm(g[m - 1], MOD - 2, MOD);
+    int ig = ksm(g[m - 1], M - 2, M);
     rFor(k, n - 1, m - 1) {
-        int c = (ll) f[k] * ig % MOD;
+        int c = (ll) f[k] * ig % M;
         q[k - (m - 1)] = c;
-        For(j, 0, m - 1) f[k - (m - 1) + j] = (f[k - (m - 1) + j] - (ll) c * g[j] % MOD + MOD) % MOD;
+        For(j, 0, m - 1) f[k - (m - 1) + j] = (f[k - (m - 1) + j] - (ll) c * g[j] % M + M) % M;
     }
     poly r(m - 1);
     For(i, 0, m - 2) r[i] = f[i];
@@ -44,7 +44,7 @@ static int bad(const char *what, const poly &f, const poly &g, const poly &wf, c
 static poly rpoly_any(int len, int mode) {  // 0 稠密 1 稀疏 2 小值 3 全 0
     poly a(len);
     For(i, 0, len - 1) {
-        int v = (int) rnd(0, MOD - 1);
+        int v = (int) rnd(0, M - 1);
         if(mode == 1 && (i & 1)) v = 0;
         if(mode == 2) v = (int) rnd(0, 3);
         if(mode == 3) v = 0;
@@ -57,7 +57,7 @@ static void rpair(int maxn, int maxm, int t, poly &f, poly &g) {
     f = rpoly_any((int) rnd(0, maxn), t % 4);
     g = rpoly_any((int) rnd(1, maxm), (t + 1) % 4);
     if(g.empty()) g.resize(1);
-    if(g.back() == 0) g.back() = (int) rnd(1, MOD - 1);  // 契约:g.back() != 0
+    if(g.back() == 0) g.back() = (int) rnd(1, M - 1);  // 契约:g.back() != 0
 }
 static int cmp(const char *what, const poly &f, const poly &g) {
     auto want = naive_divmod(f, g);
@@ -71,7 +71,7 @@ static int cmp(const char *what, const poly &f, const poly &g) {
     // 额外的代数校验:f == q*g + r,且 r 的 deg < deg g
     poly qg = mul(got.first, g);
     qg.resize(max(n, (int) qg.size()), 0);
-    For(i, 0, n - 1) if((qg[i] + (i < (int) gr.size() ? gr[i] : 0)) % MOD != f[i]) {
+    For(i, 0, n - 1) if((qg[i] + (i < (int) gr.size() ? gr[i] : 0)) % M != f[i]) {
         printf("  [FAIL] %s:q*g + r ≠ f 于第 %d 位(|f| = %d, |g| = %d)\n    f = %s\n    g = %s\n", what, i, n, m, pstr(f).c_str(),
                pstr(g).c_str());
         return 1;
@@ -97,7 +97,7 @@ int main() {
             poly qg = mul(w.first, g);
             qg.resize(max((int) f.size(), (int) qg.size()), 0);
             bool okk = true;
-            For(i, 0, (int) f.size() - 1) okk &= ((qg[i] + (i < (int) w.second.size() ? w.second[i] : 0)) % MOD == f[i]);
+            For(i, 0, (int) f.size() - 1) okk &= ((qg[i] + (i < (int) w.second.size() ? w.second[i] : 0)) % M == f[i]);
             if(!okk) {
                 printf("  [FAIL] 参考实现自相矛盾:f = %s, g = %s\n", pstr(f).c_str(), pstr(g).c_str());
                 return 1;
@@ -151,14 +151,14 @@ int main() {
         // |g| = 1 → 余式必为空,商 = f / g[0]
         {
             For(t, 1, 200) {
-                poly f = rpoly_any((int) rnd(1, 40), t % 3), g{(int) rnd(1, MOD - 1)};
+                poly f = rpoly_any((int) rnd(1, 40), t % 3), g{(int) rnd(1, M - 1)};
                 if(cmp("|g| = 1", f, g)) return 1;
                 auto got = poly_divmod(f, g);
                 if(!got.second.empty()) {
                     printf("  [FAIL] |g| = 1 时余式应为空,得到 %s\n", pstr(got.second).c_str());
                     return 1;
                 }
-                For(i, 0, (int) f.size() - 1) if((ll) got.first[i] * g[0] % MOD != f[i]) {
+                For(i, 0, (int) f.size() - 1) if((ll) got.first[i] * g[0] % M != f[i]) {
                     printf("  [FAIL] |g| = 1 时商不为 f/g[0],第 %d 位\n", i);
                     return 1;
                 }
@@ -170,7 +170,7 @@ int main() {
             For(t, 1, 300) {
                 poly g = rpoly_any((int) rnd(1, 20), t % 3), q = rpoly_any((int) rnd(1, 20), t % 3);
                 if(g.empty()) g.resize(1);
-                if(g.back() == 0) g.back() = (int) rnd(1, MOD - 1);
+                if(g.back() == 0) g.back() = (int) rnd(1, M - 1);
                 poly f = mul(g, q);
                 // 让 f 与 g 同长度(允许 f 出现首项 0,契约允许)
                 if(f.size() < g.size()) f.resize(g.size(), 0);
@@ -209,8 +209,8 @@ int main() {
         {
             For(t, 1, 300) {
                 poly f = rpoly_any((int) rnd(0, 40), t % 3), g = rpoly_any((int) rnd(1, 20), 1);  // g 稀疏(偶次为 0)
-                if(g.back() == 0) g.back() = (int) rnd(1, MOD - 1);
-                if(t % 3 == 0) g.back() = MOD - 1;
+                if(g.back() == 0) g.back() = (int) rnd(1, M - 1);
+                if(t % 3 == 0) g.back() = M - 1;
                 if(cmp("稀疏 g / 首项非 1", f, g)) return 1;
             }
             ok("300 组稀疏 g(含 0 系数、首项非 1 / 首项 = P-1)一致");
@@ -220,7 +220,7 @@ int main() {
             For(t, 1, 200) {
                 int m = (int) rnd(1, 30);
                 poly g = rpoly_any(m, t % 3), f = rpoly_any(m, t % 3);
-                if(g.back() == 0) g.back() = (int) rnd(1, MOD - 1);
+                if(g.back() == 0) g.back() = (int) rnd(1, M - 1);
                 auto got = poly_divmod(f, g);
                 if(got.first.size() != 1) {
                     printf("  [FAIL] |f| = |g| = %d 时商长度应为 1,得到 %d\n", m, (int) got.first.size());
@@ -233,7 +233,7 @@ int main() {
         // f 只有 1 项
         {
             For(t, 1, 100) {
-                poly f{(int) rnd(0, MOD - 1)}, g = rpoly_any((int) rnd(1, 10), 0);
+                poly f{(int) rnd(0, M - 1)}, g = rpoly_any((int) rnd(1, 10), 0);
                 if(g.back() == 0) g.back() = 1;
                 if(cmp("|f| = 1", f, g)) return 1;
             }
@@ -246,14 +246,14 @@ int main() {
         For(t, 1, 3) {
             int n = 1000, m = 400;
             poly f = rpoly_any(n, t % 3), g = rpoly_any(m, t % 3);
-            g.back() = (int) rnd(1, MOD - 1);
+            g.back() = (int) rnd(1, M - 1);
             auto got = poly_divmod(f, g);
             CHECK(got.first.size() == (size_t) (n - m + 1) && got.second.size() == (size_t) (m - 1),
                   "|f| = 1000、|g| = 400:商长 601、余式长 399");
             poly qg = mul(got.first, g);
             qg.resize(n);
             bool allok = true;
-            For(i, 0, n - 1) allok &= ((qg[i] + (i < (int) got.second.size() ? got.second[i] : 0)) % MOD == f[i]);
+            For(i, 0, n - 1) allok &= ((qg[i] + (i < (int) got.second.size() ? got.second[i] : 0)) % M == f[i]);
             CHECK(allok, "|f| = 1000、|g| = 400:f = q*g + r");
         }
     }

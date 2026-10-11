@@ -1,7 +1,6 @@
 // init()/solveg()/f()/solve(): 数论 · Min_25 筛
 
 // 1 <= n <= 1e10;solve 可重复调用,init 只筛一次;func 是素数幂处的函数值。
-const int M = 1e9 + 7;
 constexpr int i6 = (M + 1) / 6;
 void add(int &a, int b) {
     a += b;

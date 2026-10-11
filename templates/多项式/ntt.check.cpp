@@ -301,20 +301,20 @@ int main() {
         }
     }
 
-    // ——— 8) 普通 mul(a, b) 按常量 MOD 取模;任意模数显式传给 Mul::mul ———
+    // ——— 8) 普通 mul(a, b) 按常量 M 取模;任意模数显式传给 Mul::mul ———
     {
         For(t, 1, 400) {
             int n = (int) rnd(1, 40), m = (int) rnd(1, 40);
-            poly a = rpoly(n, MOD, t % 5), b = rpoly(m, MOD, t % 5);
-            vi want = naive(a, b, MOD), got = mul(a, b);
-            if(!same(want, got)) return bad("普通 mul", a, b, MOD, want, got);
+            poly a = rpoly(n, M, t % 5), b = rpoly(m, M, t % 5);
+            vi want = naive(a, b, M), got = mul(a, b);
+            if(!same(want, got)) return bad("普通 mul", a, b, M, want, got);
         }
         poly a{5, 2}, b{7, 3};
         CHECK(Mul::mul(a, b, 1000000007) == poly({35, 29, 6}),
               "任意模数接口:模 1e9+7 的手算卷积");
         CHECK(Mul::mul({2000000}, {2}, 1000003) == poly({999991}),
               "任意模数接口:非归一的非负系数");
-        CHECK(mul({MOD - 1}, {MOD - 1}) == poly({1}), "1×1 卷积及大系数乘法");
+        CHECK(mul({M - 1}, {M - 1}) == poly({1}), "1×1 卷积及大系数乘法");
         CHECK(mul({}, {1}).empty() && mul({1}, {}).empty(), "普通 mul 的空输入");
         ok("400 组普通 mul 与独立 i128 参考一致");
     }
@@ -322,7 +322,7 @@ int main() {
     // ——— 9) 负数先归一的回归与易踩的点 ———
     {
         // 不直接执行契约外负输入(可能触发 UB);验证归一后与精确的带符号参考一致。
-        int P = MOD;
+        int P = M;
         CHECK(Mul::mul({P - 1}, {1}, P) == vi({P - 1}), "-1 必须先归一为 P-1");
         std::mt19937 seedfix(20040924);
         For(t, 1, 300) {

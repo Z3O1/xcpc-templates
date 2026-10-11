@@ -18,9 +18,9 @@ static void bug(const char *fmt, ...) {
 // ———— 独立暴力 1:枚举所有割(s 侧子集),min cut == max flow ————
 static ll brute_mincut(int n, int s, int t, const vect<array<int, 3>> &es) {
     ll best = LLONG_MAX;
-    ForD(mask, 0, 1 << n) {
+    for(int mask = 0; mask < 1 << n; ++mask) {
         bool inS[32] = {};
-        ForD(i, 0, n) inS[i + 1] = (mask >> i & 1);
+        for(int i = 0; i < n; ++i) inS[i + 1] = (mask >> i & 1);
         if(!inS[s] || inS[t]) continue;
         ll c = 0;
         for(auto &e : es) if(inS[e[0]] && !inS[e[1]]) c += e[2];
@@ -120,9 +120,9 @@ int main() {
         int m = n * (n - 1) / 2;
         vect<array<int, 3>> all;
         For(u, 1, n) For(v, u + 1, n) all.push_back({u, v, (int) rnd(1, 3)});
-        ForD(mask, 0, 1 << m) {
+        for(int mask = 0; mask < 1 << m; ++mask) {
             vect<array<int, 3>> es;
-            ForD(i, 0, m) if(mask >> i & 1) es.push_back(all[i]);
+            for(int i = 0; i < m; ++i) if(mask >> i & 1) es.push_back(all[i]);
             int s = 1, t = n;
             EK ek;
             ek.init(n);
@@ -190,7 +190,7 @@ int main() {
             f.add(1, 20, 5), f.add(2, 19, 4);
             res.push_back(f.solve(1, 20, 20));
         }
-        ForD(i, 1, 50) if(res[i] != res[0])
+        for(int i = 1; i < 50; ++i) if(res[i] != res[0])
             return printf("  [FAIL] clear() 复位不干净:第 %d 次 %lld != 第 1 次 %lld\n", i + 1, res[i], res[0]), 1;
         ll want = 0;
         {   // 独立 EK 结果

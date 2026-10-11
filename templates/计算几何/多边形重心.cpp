@@ -12,14 +12,14 @@
 
 db perimeter(int n, p2 *a) {
     db s = 0;
-    ForD(i, 0, n) s += dis(a[(i + 1) % n] - a[i]);
+    for(int i = 0; i < n; ++i) s += dis(a[(i + 1) % n] - a[i]);
     return s;
 }
 p2 centroid(int n, p2 *a) {
     if(n == 0) return {0, 0};
     p2 ret = {0, 0};
     db s = 0;
-    ForD(i, 0, n) {
+    for(int i = 0; i < n; ++i) {
         p2 u = a[i], v = a[(i + 1) % n];
         db c = u.det(v);
         s += c;
@@ -27,7 +27,7 @@ p2 centroid(int n, p2 *a) {
     }
     if(!sign(s)) { // 退化:退回顶点平均
         p2 av = {0, 0};
-        ForD(i, 0, n) av = av + a[i];
+        for(int i = 0; i < n; ++i) av = av + a[i];
         return av / (db)n;
     }
     return ret / (3 * s);

@@ -194,9 +194,9 @@ int main() {
             int n = 3;
             vect<array<int, 2>> all;
             For(u, 1, n) For(v, 1, n) all.push_back({u, v});
-            ForD(mask, 0, 1 << (int) all.size()) {
+            for(int mask = 0; mask < 1 << (int) all.size(); ++mask) {
                 vect<array<int, 2>> es;
-                ForD(i, 0, all.size()) if(mask >> i & 1) es.push_back(all[i]);
+                for(int i = 0; i < all.size(); ++i) if(mask >> i & 1) es.push_back(all[i]);
                 build(n, es);
                 bool h = all_reach(n);
                 run_case("穷举 n=3", n, es, h);
@@ -210,10 +210,10 @@ int main() {
             vect<array<int, 2>> all;
             For(u, 1, n) For(v, 1, n) all.push_back({u, v});
             int m = (int) all.size();
-            ForD(mask, 0, 1 << m) {
+            for(int mask = 0; mask < 1 << m; ++mask) {
                 if(__builtin_popcount((unsigned) mask) > 5) continue;
                 vect<array<int, 2>> es;
-                ForD(i, 0, m) if(mask >> i & 1) es.push_back(all[i]);
+                for(int i = 0; i < m; ++i) if(mask >> i & 1) es.push_back(all[i]);
                 build(n, es);
                 bool h = all_reach(n);
                 run_case("穷举 n=4", n, es, h);

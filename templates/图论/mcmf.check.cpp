@@ -142,7 +142,7 @@ static bool has_neg_cycle(int n, const vect<array<int, 3>> &es, const vect<ll> &
     vect<ll> d(n + 2, 0);
     For(it, 1, n) {
         bool upd = false;
-        ForD(i, 0, es.size()) if(d[es[i][0]] + cs[i] < d[es[i][1]])
+        for(int i = 0; i < es.size(); ++i) if(d[es[i][0]] + cs[i] < d[es[i][1]])
             d[es[i][1]] = d[es[i][0]] + cs[i], upd = true;
         if(!upd) return false;
     }
@@ -168,7 +168,7 @@ static string strip_line_comments(const string &s) {
 }
 static int line_of(const string &s, size_t pos) {
     int ln = 1;
-    ForD(i, 0, pos) if(s[i] == '\n') ++ln;
+    for(int i = 0; i < pos; ++i) if(s[i] == '\n') ++ln;
     return ln;
 }
 // 取从 '(' 开始到配对 ')' 之间的顶层逗号个数 + 1
@@ -359,9 +359,9 @@ int main() {
         const int M = 9;            // 1..3 之间所有有向边对(含自环)
         vect<E3> all;
         For(u, 1, 3) For(v, 1, 3) all.push_back({u, v, (int) rnd(0, 3)});
-        ForD(mask, 0, 1 << M) {
+        for(int mask = 0; mask < 1 << M; ++mask) {
             vect<E3> es;
-            ForD(i, 0, M) if(mask >> i & 1) es.push_back(all[i]);
+            for(int i = 0; i < M; ++i) if(mask >> i & 1) es.push_back(all[i]);
             if(es.size() && rnd(0, 1)) {    // 一半用例再复制一条边 → 平行边
                 E3 d = es[(size_t) rnd(0, (ll) es.size() - 1)];
                 d[2] = (int) rnd(0, 3);
@@ -369,7 +369,7 @@ int main() {
             }
             bool neg = rnd(0, 1);
             vect<ll> cs;
-            ForD(i, 0, es.size()) cs.push_back(neg ? rnd(-4, 4) : rnd(0, 6));
+            for(int i = 0; i < es.size(); ++i) cs.push_back(neg ? rnd(-4, 4) : rnd(0, 6));
             if(has_neg_cycle(3, es, cs)) {   // 负环(如负自环)下最小费用无定义, 剔除
                 ++skipped;
                 continue;
@@ -379,7 +379,7 @@ int main() {
             R.init(3);
             EK ek;
             ek.init(3);
-            ForD(i, 0, es.size()) {
+            for(int i = 0; i < es.size(); ++i) {
                 mf.add(es[i][0], es[i][1], es[i][2], cs[i]);
                 R.add(es[i][0], es[i][1], es[i][2], cs[i]);
                 ek.add(es[i][0], es[i][1], es[i][2]);
@@ -393,7 +393,7 @@ int main() {
                 ++bad;
                 if(bad <= 5) {
                     printf("  [FAIL] 穷举: 得到 (%d, %lld) != 独立实现 (%d, %lld)  边:", got.first, got.second, R.flow, R.cost);
-                    ForD(i, 0, es.size()) printf(" %d-%d/%d/%lld", es[i][0], es[i][1], es[i][2], cs[i]);
+                    for(int i = 0; i < es.size(); ++i) printf(" %d-%d/%d/%lld", es[i][0], es[i][1], es[i][2], cs[i]);
                     printf("\n");
                 }
             }
@@ -429,7 +429,7 @@ int main() {
             reset();
             RefMCMF R;
             R.init(n);
-            ForD(i, 0, es.size()) {
+            for(int i = 0; i < es.size(); ++i) {
                 mf.add(es[i][0], es[i][1], es[i][2], cs[i]);
                 R.add(es[i][0], es[i][1], es[i][2], cs[i]);
             }
@@ -441,7 +441,7 @@ int main() {
                 if(bad <= 5) {
                     printf("  [FAIL] 随机: n=%d s=%d t=%d 得到 (%d, %lld), 独立实现 (%d, %lld)  边:",
                            n, s, t, got.first, got.second, R.flow, R.cost);
-                    ForD(i, 0, es.size()) printf(" %d-%d/%d/%lld", es[i][0], es[i][1], es[i][2], cs[i]);
+                    for(int i = 0; i < es.size(); ++i) printf(" %d-%d/%d/%lld", es[i][0], es[i][1], es[i][2], cs[i]);
                     printf("\n");
                 }
             }
@@ -472,7 +472,7 @@ int main() {
             reset();
             RefMCMF R;
             R.init(n);
-            ForD(i, 0, es.size()) {
+            for(int i = 0; i < es.size(); ++i) {
                 mf.add(es[i][0], es[i][1], es[i][2], cs[i]);
                 R.add(es[i][0], es[i][1], es[i][2], cs[i]);
             }
@@ -495,7 +495,7 @@ int main() {
                 ++bad;
                 if(bad <= 5) {
                     printf("  [FAIL] mcf=1: n=%d s=%d t=%d 费用 %lld != 参考 %lld\n", n, s, t, got.second, best);
-                    ForD(i, 0, es.size()) printf("       %d-%d/%d/%lld\n", es[i][0], es[i][1], es[i][2], cs[i]);
+                    for(int i = 0; i < es.size(); ++i) printf("       %d-%d/%d/%lld\n", es[i][0], es[i][1], es[i][2], cs[i]);
                 }
             } else if(got.first < lo || got.first > hi) {
                 ++bad;
@@ -555,7 +555,7 @@ int main() {
             mf.add(1, 13, 9, -2);
             res.push_back(mf.mcmf(1, 13, 0, 13));
         }
-        ForD(i, 1, 50) if(res[i] != res[0])
+        for(int i = 1; i < 50; ++i) if(res[i] != res[0])
             return printf("  [FAIL] 复用实例结果不稳定: 第 %d 次 (%d, %lld) != 第 1 次 (%d, %lld)\n",
                           i + 1, res[i].first, res[i].second, res[0].first, res[0].second),
                    1;
@@ -598,7 +598,7 @@ int main() {
         // 后果: clear() 之后重建图再跑 mcmf(), 结果必须等于全新实例(子进程 + 250ms 看门狗)
         static const MfRes want[3] = {{0, 0}, {1, 0}, {0, 0}};   // 三张图 B 各自的正确 (流, 费用)
         int hangs = 0, wrong = 0;
-        ForD(which, 0, 3) {
+        for(int which = 0; which < 3; ++which) {
             MfRes r{};
             bool done = run_child_mcmf(which, r, 250);
             if(!done) ++hangs;
@@ -681,12 +681,12 @@ int main() {
         const int M = 9;            // 1..3 之间所有有向边对(含自环)
         vect<E3> all;
         For(u, 1, 3) For(v, 1, 3) all.push_back({u, v, (int) rnd(0, 3)});
-        ForD(mask, 0, 1 << M) {
+        for(int mask = 0; mask < 1 << M; ++mask) {
             vect<E3> es;
-            ForD(i, 0, M) if(mask >> i & 1) es.push_back(all[i]);
+            for(int i = 0; i < M; ++i) if(mask >> i & 1) es.push_back(all[i]);
             bool neg = rnd(0, 1);
             vect<ll> cs;
-            ForD(i, 0, es.size()) cs.push_back(neg ? rnd(-4, 4) : rnd(0, 6));
+            for(int i = 0; i < es.size(); ++i) cs.push_back(neg ? rnd(-4, 4) : rnd(0, 6));
             if(has_neg_cycle(3, es, cs)) {   // 负环下最小费用无定义, 剔除
                 ++skipped;
                 continue;
@@ -694,7 +694,7 @@ int main() {
             reset();
             RefMCMF R;
             R.init(3);
-            ForD(i, 0, es.size()) {
+            for(int i = 0; i < es.size(); ++i) {
                 mf.add(es[i][0], es[i][1], es[i][2], cs[i]);
                 R.add(es[i][0], es[i][1], es[i][2], cs[i]);
             }
@@ -705,7 +705,7 @@ int main() {
                 if(++bad <= 5) {
                     printf("  [FAIL] mcmf2 穷举: 得到 (%d, %lld) != 独立实现 (%d, %lld)  边:", got.first, got.second,
                            R.flow, R.cost);
-                    ForD(i, 0, es.size()) printf(" %d-%d/%d/%lld", es[i][0], es[i][1], es[i][2], cs[i]);
+                    for(int i = 0; i < es.size(); ++i) printf(" %d-%d/%d/%lld", es[i][0], es[i][1], es[i][2], cs[i]);
                     printf("\n");
                 }
             }
@@ -736,7 +736,7 @@ int main() {
             reset();
             RefMCMF R;
             R.init(n);
-            ForD(i, 0, es.size()) {
+            for(int i = 0; i < es.size(); ++i) {
                 mf.add(es[i][0], es[i][1], es[i][2], cs[i]);
                 R.add(es[i][0], es[i][1], es[i][2], cs[i]);
             }

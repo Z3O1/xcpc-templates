@@ -16,7 +16,7 @@ int upper_hull(int n, p2 *a, p2 *b, bool nos = 0) {
     if(n <= 0) return 0;
     sort(a, a + n, [](const p2 &u, const p2 &v) { return u.x != v.x ? u.x < v.x : u.y > v.y; });
     int k = 0;
-    ForD(i, 0, n) {
+    for(int i = 0; i < n; ++i) {
         if(k && b[k - 1].x == a[i].x) continue; // 同一个 x(精确相等)只留最高的那个
         while(k > 1 && crossop({b[k - 2], b[k - 1]}, a[i]) >= (int)nos) --k; // nos=0:只留右转;nos=1:共线也留
         b[k++] = a[i];

@@ -47,7 +47,7 @@ static void prS(const seg &s, const char *tag) {
 }
 static void prPoly(int n, p2 *a, const char *tag) {
     printf("    %s (%d 点):", tag, n);
-    ForD(i, 0, n) printf(" (%s,%s)", f2s(a[i].x), f2s(a[i].y));
+    for(int i = 0; i < n; ++i) printf(" (%s,%s)", f2s(a[i].x), f2s(a[i].y));
     printf("\n");
 }
 static void prPs(const vector<p2> &v) {
@@ -113,7 +113,7 @@ static vector<p2> ref_seg_pts(const circle &c, const seg &s) {
     vector<p2> r;
     p2 o[2];
     int n = ref_line_pts(c, s, o);
-    ForD(i, 0, n) {
+    for(int i = 0; i < n; ++i) {
         db t = ref_param(s, o[i]), hi = dis2(s.dir());
         if(t >= -1e-12L * (1 + hi) && t <= hi + 1e-12L * (1 + hi)) r.push_back(o[i]);
     }
@@ -147,7 +147,7 @@ static db ref_area_num(const circle &c1, const circle &c2) {
     db lo = byx ? xl : yl, hi = byx ? xr : yr;
     const int N = 40000;
     db h = (hi - lo) / N, s = 0;
-    ForD(k, 0, N) {
+    for(int k = 0; k < N; ++k) {
         db t = lo + h * (k + 0.5L);
         db a1 = sq(c1.r) - sq(t - (byx ? c1.o.x : c1.o.y));
         db a2 = sq(c2.r) - sq(t - (byx ? c2.o.x : c2.o.y));
@@ -186,7 +186,7 @@ static db ref_area_mc(const circle &c1, const circle &c2, int M, db &se) {
     ll Lx = (ll) floorl(mnx), Rx = (ll) ceill(mxx), Ly = (ll) floorl(mny), Ry = (ll) ceill(mxy);
     db box = (db) (Rx - Lx + 1) * (db) (Ry - Ly + 1);
     ll cnt = 0;
-    ForD(i, 0, M) {
+    for(int i = 0; i < M; ++i) {
         // 撒点必须是**连续均匀**的(不能用整数格点、也不能用格心):格点法把边界上的格点一起数进去,
         // 闭区域的格点数 = 面积 + 周长/2 + 1(Pick 定理),格心法也有 O(周长) 的系统偏差 ——
         // 实测都偏高(三角形 ∩ 圆偏高 1.3%;小四边形完全在圆内时模板 8.5 而格心法 9.0)。
@@ -200,7 +200,7 @@ static db ref_area_mc(const circle &c1, const circle &c2, int M, db &se) {
 // 蒙特卡洛:多边形 ∩ 圆(面积 = 盒面积 × 命中比例),盒取「多边形包围盒 ∩ 圆包围盒」
 static db ref_poly_mc(int n, p2 *a, const circle &c, int M, db &se) {
     db mnx = 1e300L, mxx = -1e300L, mny = 1e300L, mxy = -1e300L;  // 先取多边形的包围盒
-    ForD(i, 0, n) mnx = min(mnx, a[i].x), mxx = max(mxx, a[i].x), mny = min(mny, a[i].y), mxy = max(mxy, a[i].y);
+    for(int i = 0; i < n; ++i) mnx = min(mnx, a[i].x), mxx = max(mxx, a[i].x), mny = min(mny, a[i].y), mxy = max(mxy, a[i].y);
     mnx = max(mnx, c.o.x - c.r), mxx = min(mxx, c.o.x + c.r);
     mny = max(mny, c.o.y - c.r), mxy = min(mxy, c.o.y + c.r);
     if(mnx >= mxx || mny >= mxy) {
@@ -210,7 +210,7 @@ static db ref_poly_mc(int n, p2 *a, const circle &c, int M, db &se) {
     ll Lx = (ll) floorl(mnx), Rx = (ll) ceill(mxx), Ly = (ll) floorl(mny), Ry = (ll) ceill(mxy);
     db box = (db) (Rx - Lx + 1) * (db) (Ry - Ly + 1);
     ll cnt = 0;
-    ForD(i, 0, M) {
+    for(int i = 0; i < M; ++i) {
         // 撒点必须是**连续均匀**的(不能用整数格点、也不能用格心):格点法把边界上的格点一起数进去,
         // 闭区域的格点数 = 面积 + 周长/2 + 1(Pick 定理),格心法也有 O(周长) 的系统偏差 ——
         // 实测都偏高(三角形 ∩ 圆偏高 1.3%;小四边形完全在圆内时模板 8.5 而格心法 9.0)。
@@ -226,7 +226,7 @@ static db ref_poly_mc(int n, p2 *a, const circle &c, int M, db &se) {
 // 强凸近似:用 N 边正多边形(顶点在圆上)与圆求交;N 大时内接误差 ~ pi r^2 * (1/N)
 static vector<p2> ref_disk_poly(const circle &c, int N) {
     vector<p2> v;
-    ForD(i, 0, N) {
+    for(int i = 0; i < N; ++i) {
         db t = 2 * PI2() * i / N;
         v.push_back(P(c.o.x + c.r * cosl(t), c.o.y + c.r * sinl(t)));
     }
@@ -235,7 +235,7 @@ static vector<p2> ref_disk_poly(const circle &c, int N) {
 // 多边形是否逆时针
 static bool ccw(int n, p2 *a) {
     db s = 0;
-    ForD(i, 0, n) s += a[i].det(a[(i + 1) % n]);
+    for(int i = 0; i < n; ++i) s += a[i].det(a[(i + 1) % n]);
     return s > 0;
 }
 // 凸包(参考;monotone chain,用于造随机凸多边形)
@@ -267,13 +267,13 @@ static seg rnd_seg(db lim = 1000) {
 static vector<p2> rnd_convex(int maxn, db lim) {
     vector<p2> v;
     int k = rndi(3, maxn);
-    ForD(i, 0, k) v.push_back(P((db) rnd(-(ll) lim, (ll) lim), (db) rnd(-(ll) lim, (ll) lim)));
+    for(int i = 0; i < k; ++i) v.push_back(P((db) rnd(-(ll) lim, (ll) lim), (db) rnd(-(ll) lim, (ll) lim)));
     vector<p2> h = ref_hull(v);
     // 必须再排掉「三点共线/面积 0」的退化凸包:ref_hull 在退化输入上会留下 3 个共线点,
     // 拿它当多边形会让后面「小圆在多边形内 == pi r^2」这类断言失去意义(实测踩过)
     while(h.size() < 3 || !sign(abs(area(h.size(), h.data())))) {
         v.clear();
-        ForD(i, 0, 3) v.push_back(P((db) rnd(-(ll) lim, (ll) lim), (db) rnd(-(ll) lim, (ll) lim)));
+        for(int i = 0; i < 3; ++i) v.push_back(P((db) rnd(-(ll) lim, (ll) lim), (db) rnd(-(ll) lim, (ll) lim)));
         h = ref_hull(v);
     }
     if(!ccw(h.size(), h.data())) reverse(h.begin(), h.end());
@@ -283,7 +283,7 @@ static vector<p2> rnd_convex(int maxn, db lim) {
 static vector<p2> rnd_star(int maxn, db lim) {
     int k = rndi(3, maxn);
     vector<p2> v;
-    ForD(i, 0, k) v.push_back(P((db) rnd(-(ll) lim, (ll) lim), (db) rnd(-(ll) lim, (ll) lim)));
+    for(int i = 0; i < k; ++i) v.push_back(P((db) rnd(-(ll) lim, (ll) lim), (db) rnd(-(ll) lim, (ll) lim)));
     p2 g = {0, 0};
     for(p2 p : v) g = g + p;
     g = g / (db) k;
@@ -305,7 +305,7 @@ static vector<p2> rnd_star(int maxn, db lim) {
 static vector<p2> clip_x(const vector<p2> &p, db X, int keepLeft) {
     vector<p2> r;
     int n = p.size();
-    ForD(i, 0, n) {
+    for(int i = 0; i < n; ++i) {
         p2 u = p[i], v = p[(i + 1) % n];
         db du = keepLeft ? (X - u.x) : (u.x - X), dv = keepLeft ? (X - v.x) : (v.x - X);
         if(du >= 0) r.push_back(u);
@@ -318,13 +318,13 @@ static vector<p2> clip_x(const vector<p2> &p, db X, int keepLeft) {
 // 而「交面积 <= min(圆面积, 多边形面积)」这类性质**只对简单多边形成立** —— 自交多边形的
 // 鞋带面积会正负抵消,拿它当上界会假报错(这一版踩过的坑)。
 static bool is_simple_poly(int n, p2 *a) {
-    ForD(i, 0, n) ForD(j, i + 1, n) {
+    for(int i = 0; i < n; ++i) for(int j = i + 1; j < n; ++j) {
         if(i == j || (i + 1) % n == j || (j + 1) % n == i) continue;
         // 用闭线段相交(chkss)而不是规范相交:顶点落在另一条边上、边与边共线重叠
         // 这类「弱自交」也会让鞋带面积失去几何意义(实测踩过:一条边正好穿过另一个顶点)
         if(chkss({a[i], a[(i + 1) % n]}, {a[j], a[(j + 1) % n]})) return false;
     }
-    ForD(i, 0, n) ForD(j, i + 1, n)
+    for(int i = 0; i < n; ++i) for(int j = i + 1; j < n; ++j)
         if(i != j && a[i] == a[j]) return false;  // 重复顶点也当不自交处理:直接排除
     return true;
 }
@@ -529,7 +529,7 @@ int main() {
         const int N = 12000;
         int bad = 0, cntbad = 0, mx = 0;
         ll h[3] = {0, 0, 0};
-        ForD(it, 0, N) {
+        for(int it = 0; it < N; ++it) {
             circle c = rnd_circle();
             seg l = rnd_seg();
             if(!sign(dis2(l.dir()))) continue;
@@ -592,7 +592,7 @@ int main() {
         const int N = 12000;
         int bad = 0;
         ll h[3] = {0, 0, 0};
-        ForD(it, 0, N) {
+        for(int it = 0; it < N; ++it) {
             circle c1 = rnd_circle(), c2 = rnd_circle();
             vector<p2> got = cir_cir(c1, c2), want = ref_cir_cir(c1, c2);
             ++h[min<size_t>(want.size(), 2)];
@@ -611,7 +611,7 @@ int main() {
                 }
                 ++bad;
             }
-            ForD(i, 1, got.size())
+            for(int i = 1; i < got.size(); ++i)
                 if(!((got[i - 1] - c1.o).alpha() <= (got[i] - c1.o).alpha())) ++bad;               // 极角递增
             for(p2 p : got)
                 if(!(near(dis(p - c1.o), c1.r, 1e-7) && near(dis(p - c2.o), c2.r, 1e-7))) ++bad;   // 真在两圆上
@@ -628,7 +628,7 @@ int main() {
         const int N = 3000;
         int bad = 0;
         db worst = 0, worstmc = 0;
-        ForD(it, 0, N) {
+        for(int it = 0; it < N; ++it) {
             circle c1 = rnd_circle(1000, 300), c2;
             // 让两圆有交的比例高一些:以 c1 为基准在半径和附近挪
             db ang = rndd(0, 2 * PI2()), dd = rndd(0, c1.r + 300);
@@ -659,7 +659,7 @@ int main() {
         // 蒙特卡洛(盒取两圆并包围盒、容差 4σ:只见证量级,精确性由上面的数值积分负责)
         const int M = 200000;
         int badmc = 0;
-        ForD(it, 0, 24) {
+        for(int it = 0; it < 24; ++it) {
             circle c1 = rnd_circle(600, 250), c2 = rnd_circle(600, 250);
             db se = 0;
             db got = cir_cir_area(c1, c2), mc = ref_area_mc(c1, c2, M, se);
@@ -685,7 +685,7 @@ int main() {
         const int N = 20;
         int bad = 0;
         db worst = 0;
-        ForD(it, 0, N) {
+        for(int it = 0; it < N; ++it) {
             circle c = rnd_circle(400, 400);
             vector<p2> hp = ref_disk_poly(c, BIG);
             // 把整体平移到以圆心为原点:逐边求和里每项含 r^2 量级的大数,不平移会有严重抵消
@@ -714,7 +714,7 @@ int main() {
         const int N2 = 40;
         int bad2 = 0;
         db worst2 = 0;
-        ForD(it, 0, N2) {
+        for(int it = 0; it < N2; ++it) {
             circle c = rnd_circle(500, 300);
             vector<p2> hp = ref_disk_poly(c, BIG2);
             for(p2 &q : hp) q = q - c.o;                  // 同上:平移消除大数抵消
@@ -736,7 +736,7 @@ int main() {
         const int M = 200000;
         int badmc = 0;
         db worstmc = 0;
-        ForD(it, 0, 35) {
+        for(int it = 0; it < 35; ++it) {
             vector<p2> poly = (it % 3 == 0) ? rnd_star(12, 300) : rnd_convex(12, 300);
             circle c = rnd_circle(300, 250);
             db se = 0;
@@ -761,7 +761,7 @@ int main() {
         int bad = 0;
         // (a) 随机星形凹多边形(顶点 <= 12)与「圆盘 ∩ 多边形」的两种独立路径互校:
         //     圆很大(盖住整个多边形)时必须 == 多边形面积,圆很小(在多边形内)时必须 == pi r^2
-        ForD(it, 0, N) {
+        for(int it = 0; it < N; ++it) {
             vector<p2> poly = (it & 1) ? rnd_star(12, 200) : rnd_convex(12, 200);
             int n = poly.size();
             db A = abs(area(n, poly.data()));
@@ -776,14 +776,14 @@ int main() {
             // 找一个一定在多边形内的点(取边界中点的内法向偏移?不可靠)——改为:圆心取多边形顶点平均值,
             // 星形多边形是围绕质心星形的,平均值一定在内部;凸多边形更不用说
             p2 g = {0, 0};
-            ForD(i, 0, n) g = g + poly[i];
+            for(int i = 0; i < n; ++i) g = g + poly[i];
             g = g / (db) n;
             db rr = 1e-3L;
             // 顶点平均值一定在星形/凸多边形内部 —— 但「薄如纸」的退化解(实测:面积 0.5、边长 444 的
             // 三角形)上,质心到某条边的距离可能只有 7.5e-4 < rr,圆会露出一角,此时 πr^2 本来就不成立。
             // 所以先量一下到各边的最近距离,余量不够就跳过这一组。
             db mind = 1e30L;
-            ForD(i, 0, n) mind = min(mind, nearest({poly[i], poly[(i + 1) % n]}, g));
+            for(int i = 0; i < n; ++i) mind = min(mind, nearest({poly[i], poly[(i + 1) % n]}, g));
             if(!(mind > 4 * rr * rr)) continue;
             db sm = cir_poly_area(n, poly.data(), circle{g, rr});
             if(!near(sm, PI2() * rr * rr, 1e-9L)) {
@@ -807,7 +807,7 @@ int main() {
         //     圆放到梳子底部区域里 -> pi r^2;圆盖住整个梳子 -> 多边形面积;再与蒙特卡洛对拍
         // 齿数 T = t + 1 >= 2:只有两个以上的齿才有「齿与齿之间的凹槽」,T = 1 时那条缝隙
         // 根本不存在(整个底座是连通的梯形,凹槽位置的点其实在多边形内部 —— 这一版踩过的坑)。
-        ForD(t, 1, 6) {
+        for(int t = 1; t < 6; ++t) {
             int T = t + 1;
             vector<p2> cb = comb_poly(T, 20, 10, 30, 5, 22 + 20 * T, 2);
             int n = cb.size();
@@ -815,7 +815,7 @@ int main() {
             // 第 i 个齿占 x ∈ [2+20(i-1), 7+20(i-1)](y 从 10 到 40),凹槽是它与下一个齿之间
             // x ∈ [7+20(i-1), 22+20(i-1)]、y > 10 的那块;圆心取凹槽正中 (14.5+20(i-1), 12),
             // 半径 1.5 -> 整个圆都落在凹槽里(离两侧齿各 6,离底座顶边 y=10 有 0.5),交面积必须是 0
-            ForD(i, 1, T) {
+            for(int i = 1; i < T; ++i) {
                 db w1 = cir_poly_area(n, cb.data(), circle{P(2 + 20 * (i - 1) + 12.5L, 12), 1.5L});
                 if(!near(w1, (db) 0, 1e-12L)) {
                     printf("  [梳子:凹槽内的圆不该有交面积] 第 %d 个凹槽,T=%d,模板 %s\n", i, T, f2s(w1));
@@ -867,16 +867,16 @@ int main() {
         // 随机:把圆从多边形中心沿随机方向推到边界附近,考察圆部分覆盖的过渡区
         const int N = 6000;
         int bad = 0;
-        ForD(it, 0, N) {
+        for(int it = 0; it < N; ++it) {
             int n = rndi(3, 8);
             vector<p2> poly;
-            ForD(i, 0, n) poly.push_back(P((db) rnd(-40, 40), (db) rnd(-40, 40)));
+            for(int i = 0; i < n; ++i) poly.push_back(P((db) rnd(-40, 40), (db) rnd(-40, 40)));
             if(!ccw(n, poly.data())) reverse(poly.begin(), poly.end());
             if(!ccw(n, poly.data())) continue;
             if(!is_simple_poly(n, poly.data())) continue;   // 自交多边形不满足下面的界,跳过
             db rr = rndd(1, 60);
             p2 g = {0, 0};
-            ForD(i, 0, n) g = g + poly[i];
+            for(int i = 0; i < n; ++i) g = g + poly[i];
             g = g / (db) n;
             db ang = rndd(0, 2 * PI2()), off = rndd(0, 60);
             circle c = {P(g.x + off * cosl(ang), g.y + off * sinl(ang)), rr};
@@ -895,7 +895,7 @@ int main() {
             db dx = (db) rnd(-1000, 1000), dy = (db) rnd(-1000, 1000);
             circle c2 = {P(c.o.x + dx, c.o.y + dy), rr};
             vector<p2> p2m;
-            ForD(i, 0, n) p2m.push_back(P(poly[i].x + dx, poly[i].y + dy));
+            for(int i = 0; i < n; ++i) p2m.push_back(P(poly[i].x + dx, poly[i].y + dy));
             db got2 = cir_poly_area(n, p2m.data(), c2);
             if(!near(got2, got, 1e-9L)) {
                 if(bad < 6) {
@@ -918,10 +918,10 @@ int main() {
         // 把一个圆切成左右两个半圆(用多边形去截),两半的交面积之和必须等于整个圆的交面积
         const int N = 800;
         int bad = 0;
-        ForD(it, 0, N) {
+        for(int it = 0; it < N; ++it) {
             int n = rndi(3, 9);
             vector<p2> poly;
-            ForD(i, 0, n) poly.push_back(P((db) rnd(-60, 60), (db) rnd(-60, 60)));
+            for(int i = 0; i < n; ++i) poly.push_back(P((db) rnd(-60, 60), (db) rnd(-60, 60)));
             if(!ccw(n, poly.data())) reverse(poly.begin(), poly.end());
             if(!is_simple_poly(n, poly.data())) continue;   // 自交多边形的「面积」没有几何意义,跳过
             circle c = rnd_circle(60, 60);
@@ -950,7 +950,7 @@ int main() {
     // ---------- 10. 极端数值:大坐标 / 大半径 / 极小半径 ----------
     {
         // 大半径 + 大坐标;只做性质断言(交点真在圆上、面积不超过两者上界)
-        ForD(it, 0, 2000) {
+        for(int it = 0; it < 2000; ++it) {
             db big = 1e6L;
             circle c = {P((db) rnd(-(ll) big, (ll) big), (db) rnd(-(ll) big, (ll) big)), rndd(1e5L, big)};
             seg l = {P((db) rnd(-(ll) big, (ll) big), (db) rnd(-(ll) big, (ll) big)), P((db) rnd(-(ll) big, (ll) big), (db) rnd(-(ll) big, (ll) big))};

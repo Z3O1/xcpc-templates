@@ -33,21 +33,21 @@ vector<face3> convex3d(const vector<p3> &a) {
     if(n < 4) return ret;
     // ---- 1. 找一个不共面的初始四面体 A,B,C,D ----
     int A = 0, B = -1, C = -1, D = -1;
-    ForD(i, 0, n)
+    for(int i = 0; i < n; ++i)
         if(sign(dis(a[i] - a[A]))) {
             B = i;
             break;
         }                 // 与 A 不重合
     if(B < 0) return ret; // 全部点重合
     p3 w0 = a[B] - a[A];
-    ForD(i, 0, n)
+    for(int i = 0; i < n; ++i)
         if(sign(dis(cross(a[i] - a[A], w0)) / dis(w0))) {
             C = i;
             break;
         }                 // 不共线
     if(C < 0) return ret; // 全部点共线
     plane p0(a[A], a[B], a[C]);
-    ForD(i, 0, n)
+    for(int i = 0; i < n; ++i)
         if(sign(abs(p0.side(a[i])))) {
             D = i;
             break;
@@ -56,10 +56,10 @@ vector<face3> convex3d(const vector<p3> &a) {
     // ---- 2. 把四个种子点排到前面,后面按顺序插入 ----
     vector<int> id; // 局部下标 -> 原下标
     id.push_back(A), id.push_back(B), id.push_back(C), id.push_back(D);
-    ForD(i, 0, n)
+    for(int i = 0; i < n; ++i)
         if(i != A && i != B && i != C && i != D) id.push_back(i);
     vector<p3> b(n);
-    ForD(i, 0, n) b[i] = a[id[i]];
+    for(int i = 0; i < n; ++i) b[i] = a[id[i]];
     struct F {
         int a, b, c;
         plane p;
@@ -70,42 +70,42 @@ vector<face3> convex3d(const vector<p3> &a) {
     unordered_map<ll, int> vis;                       // 有向边 (u,v) -> 最后一次被删的轮次
     For(i, 3, n - 1) {
         vector<F> keep, kill;
-        ForD(t, 0, f.size()) {
+        for(int t = 0; t < f.size(); ++t) {
             if(f[t].p.side(b[i]) > eps) kill.push_back(f[t]); // 严格在外侧 -> 可见,删掉重连
             else keep.push_back(f[t]);
         }
         if(kill.empty()) continue; // 点在凸包内(或离面不超过 eps):不产生新顶点
         int e[3][2];
-        ForD(t, 0, kill.size()) { // 先把被删面的三条有向边打上本轮标记
+        for(int t = 0; t < kill.size(); ++t) { // 先把被删面的三条有向边打上本轮标记
             e[0][0] = kill[t].a, e[0][1] = kill[t].b;
             e[1][0] = kill[t].b, e[1][1] = kill[t].c;
             e[2][0] = kill[t].c, e[2][1] = kill[t].a;
-            ForD(k, 0, 3) vis[(ll)e[k][0] * n + e[k][1]] = i;
+            for(int k = 0; k < 3; ++k) vis[(ll)e[k][0] * n + e[k][1]] = i;
         }
-        ForD(t, 0, kill.size()) { // 反向边没被标记的边就是地平线,与新点连成新面
+        for(int t = 0; t < kill.size(); ++t) { // 反向边没被标记的边就是地平线,与新点连成新面
             e[0][0] = kill[t].a, e[0][1] = kill[t].b;
             e[1][0] = kill[t].b, e[1][1] = kill[t].c;
             e[2][0] = kill[t].c, e[2][1] = kill[t].a;
-            ForD(k, 0, 3)
+            for(int k = 0; k < 3; ++k)
                 if(vis[(ll)e[k][0] * n + e[k][1]] == i && vis[(ll)e[k][1] * n + e[k][0]] != i)
                     keep.push_back(F{e[k][0], e[k][1], i, plane(b[e[k][0]], b[e[k][1]], b[i])});
         }
         f.swap(keep);
     }
-    ForD(t, 0, f.size()) ret.push_back(face3{id[f[t].a], id[f[t].b], id[f[t].c]});
+    for(int t = 0; t < f.size(); ++t) ret.push_back(face3{id[f[t].a], id[f[t].b], id[f[t].c]});
     return ret;
 }
 
 // 凸包表面积(f 的面法向朝外,这里只用三角形面积,与朝向无关)
 db hull_area(const vector<p3> &a, const vector<face3> &f) {
     db s = 0;
-    ForD(t, 0, f.size()) s += area2(a[f[t].a], a[f[t].b], a[f[t].c]);
+    for(int t = 0; t < f.size(); ++t) s += area2(a[f[t].a], a[f[t].b], a[f[t].c]);
     return s / 2;
 }
 // 凸包体积:每个面与原点围成的四面体带号体积求和(朝向一致时符号相同,取绝对值)
 db hull_volume(const vector<p3> &a, const vector<face3> &f) {
     db s = 0;
-    ForD(t, 0, f.size()) s += det(a[f[t].a], a[f[t].b], a[f[t].c]);
+    for(int t = 0; t < f.size(); ++t) s += det(a[f[t].a], a[f[t].b], a[f[t].c]);
     return abs(s) / 6;
 }
 

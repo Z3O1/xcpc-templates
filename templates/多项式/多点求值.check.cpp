@@ -18,7 +18,7 @@ static poly naive_eval(const poly &f, const poly &xs) {
     poly r(xs.size());
     For(i, 0, (int) xs.size() - 1) {
         ll s = 0;
-        rFor(j, (int) f.size() - 1, 0) s = (s * xs[i] + f[j]) % MOD;
+        rFor(j, (int) f.size() - 1, 0) s = (s * xs[i] + f[j]) % M;
         r[i] = s;
     }
     return r;
@@ -27,22 +27,22 @@ static poly naive_eval(const poly &f, const poly &xs) {
 static poly lagrange(const poly &xs, const poly &ys) {
     int m = xs.size();
     if(!m) return poly();
-    poly M{1};
-    For(j, 0, m - 1) {  // M *= (x - xs[j])
-        poly t(M.size() + 1);
-        ForD(k, 0, (int) M.size()) t[k] = (t[k] - (ll) M[k] * xs[j] % MOD + MOD) % MOD, t[k + 1] = (t[k + 1] + M[k]) % MOD;
-        M = t;
+    poly prod{1};
+    For(j, 0, m - 1) {  // prod *= (x - xs[j])
+        poly t(prod.size() + 1);
+        for(int k = 0; k < (int) prod.size(); ++k) t[k] = (t[k] - (ll) prod[k] * xs[j] % M + M) % M, t[k + 1] = (t[k + 1] + prod[k]) % M;
+        prod = t;
     }
     poly res(m);
     For(i, 0, m - 1) {
         int r = xs[i];
-        poly q(m);  // M / (x - r) 的系数(合成除法)
-        if(m) q[m - 1] = M[m];
-        rFor(k, m - 1, 1) q[k - 1] = (M[k] + (ll) r * q[k]) % MOD;
+        poly q(m);  // prod / (x - r) 的系数(合成除法)
+        if(m) q[m - 1] = prod[m];
+        rFor(k, m - 1, 1) q[k - 1] = (prod[k] + (ll) r * q[k]) % M;
         ll den = 1;
-        For(j, 0, m - 1) if(j != i) den = den * (r - xs[j] + MOD) % MOD;
-        int c = (ll) ys[i] * ksm(den, MOD - 2, MOD) % MOD;
-        For(k, 0, m - 1) res[k] = (res[k] + (ll) c * q[k]) % MOD;
+        For(j, 0, m - 1) if(j != i) den = den * (r - xs[j] + M) % M;
+        int c = (ll) ys[i] * ksm(den, M - 2, M) % M;
+        For(k, 0, m - 1) res[k] = (res[k] + (ll) c * q[k]) % M;
     }
     return res;
 }
@@ -73,7 +73,7 @@ static int cmp(const char *what, const poly &f, const poly &xs) {
 static poly rpoly(int len, int mode) {  // 0 稠密 1 稀疏 2 小值 3 全 0
     poly a(len);
     For(i, 0, len - 1) {
-        int v = (int) rnd(0, MOD - 1);
+        int v = (int) rnd(0, M - 1);
         if(mode == 1 && (i & 1)) v = 0;
         if(mode == 2) v = (int) rnd(0, 3);
         if(mode == 3) v = 0;
@@ -149,7 +149,7 @@ int main() {
             poly P{1};
             For(i, 0, m - 1) {
                 poly nxt(P.size() + 1);
-                ForD(k, 0, (int) P.size()) nxt[k] = (nxt[k] - (ll) P[k] * xs[i] % MOD + MOD) % MOD, nxt[k + 1] = (nxt[k + 1] + P[k]) % MOD;
+                for(int k = 0; k < (int) P.size(); ++k) nxt[k] = (nxt[k] - (ll) P[k] * xs[i] % M + M) % M, nxt[k + 1] = (nxt[k + 1] + P[k]) % M;
                 P = nxt;
             }
             poly ys = poly_eval(P, xs);
@@ -187,7 +187,7 @@ int main() {
         // f 为常数 / 单项
         {
             For(t, 1, 100) {
-                int c = (int) rnd(0, MOD - 1);
+                int c = (int) rnd(0, M - 1);
                 poly f{c}, xs = rxs((int) rnd(1, 30), 0);
                 if(cmp("常数 f", f, xs)) return 1;
                 poly g{c, 0, 0, 0};
@@ -217,7 +217,7 @@ int main() {
         // m = 1
         {
             For(t, 1, 100) {
-                poly f = rpoly((int) rnd(0, 30), t % 4), xs{(int) rnd(0, MOD - 1)};
+                poly f = rpoly((int) rnd(0, 30), t % 4), xs{(int) rnd(0, M - 1)};
                 if(cmp("m = 1", f, xs)) return 1;
             }
             ok("100 组 m = 1(|f| 任意,含空)与 Horner 一致");
@@ -225,7 +225,7 @@ int main() {
         // |f| = 1 / m 很大时 f 很短
         {
             For(t, 1, 50) {
-                poly f{(int) rnd(0, MOD - 1)}, xs = rxs((int) rnd(1, 50), 1);
+                poly f{(int) rnd(0, M - 1)}, xs = rxs((int) rnd(1, 50), 1);
                 if(cmp("|f| = 1", f, xs)) return 1;
             }
             ok("50 组 |f| = 1、m ≤ 50:每个点都取同一个常数");
@@ -242,7 +242,7 @@ int main() {
         For(t, 1, 20) {
             int i = (int) rnd(0, m - 1);
             ll s = 0;
-            rFor(j, n - 1, 0) s = (s * xs[i] + f[j]) % MOD;
+            rFor(j, n - 1, 0) s = (s * xs[i] + f[j]) % M;
             if(s != got[i]) {
                 printf("  [FAIL] m = 500 抽查第 %d 个点:Horner = %d, poly_eval = %d\n", i, (int) s, got[i]);
                 return 1;
@@ -253,7 +253,7 @@ int main() {
         poly P{1};
         For(i, 0, m - 1) {
             poly nxt(P.size() + 1);
-            ForD(k, 0, (int) P.size()) nxt[k] = (nxt[k] - (ll) P[k] * xs[i] % MOD + MOD) % MOD, nxt[k + 1] = (nxt[k + 1] + P[k]) % MOD;
+            for(int k = 0; k < (int) P.size(); ++k) nxt[k] = (nxt[k] - (ll) P[k] * xs[i] % M + M) % M, nxt[k + 1] = (nxt[k + 1] + P[k]) % M;
             P = nxt;
         }
         poly ys = poly_eval(P, xs);

@@ -25,13 +25,13 @@ static p2 VIP(ll x, ll y) { return p2{(db) x, (db) y}; }
 typedef pair<ll, ll> K;
 static db myArea(const vect<p2> &p) {  // 自己的 shoelace(不用模板的 area)
     db s = 0;
-    ForD(i, 0, (int) p.size()) s += p[i].det(p[(i + 1) % p.size()]);
+    for(int i = 0; i < (int) p.size(); ++i) s += p[i].det(p[(i + 1) % p.size()]);
     return abs(s / 2);
 }
 static db edgeTol(p2 u, p2 v, p2 q) { return 1e-9L * (1 + abs(u.x) + abs(u.y) + abs(v.x) + abs(v.y) + abs(q.x) + abs(q.y)); }
 static bool sameP(p2 u, p2 v) { return u.x == v.x && u.y == v.y; }
 static bool inConv(const vect<p2> &p, p2 q, db mul = 1) {  // 闭区域
-    ForD(i, 0, (int) p.size()) {
+    for(int i = 0; i < (int) p.size(); ++i) {
         p2 u = p[i], v = p[(i + 1) % p.size()];
         if(sameP(u, v)) continue;  // 重复相邻点(裁剪时可能产生)
         if(cross(seg{u, v}, q) < -mul * edgeTol(u, v, q)) return false;
@@ -39,7 +39,7 @@ static bool inConv(const vect<p2> &p, p2 q, db mul = 1) {  // 闭区域
     return true;
 }
 static bool inConvStrict(const vect<p2> &p, p2 q) {  // 严格内部
-    ForD(i, 0, (int) p.size()) {
+    for(int i = 0; i < (int) p.size(); ++i) {
         p2 u = p[i], v = p[(i + 1) % p.size()];
         if(sameP(u, v)) continue;
         if(cross(seg{u, v}, q) <= edgeTol(u, v, q)) return false;
@@ -49,7 +49,7 @@ static bool inConvStrict(const vect<p2> &p, p2 q) {  // 严格内部
 // 暴力最近的两个站点;d1 <= d2
 static void nearest2(const vect<p2> &a, p2 q, db &d1, int &i1, db &d2) {
     d1 = d2 = 1e300L, i1 = -1;
-    ForD(i, 0, (int) a.size()) {
+    for(int i = 0; i < (int) a.size(); ++i) {
         db d = dis2(a[i] - q);
         if(d < d1) d2 = d1, d1 = d, i1 = i;
         else if(d < d2) d2 = d;
@@ -64,13 +64,13 @@ static string verifyCells(const vect<p2> &a, const vect<vect<p2>> &c, bool allow
     p2 bl = Voronoi::box[0], tr = Voronoi::box[1];
     db boxa = (tr.x - bl.x) * (tr.y - bl.y);
     db sum = 0;
-    ForD(i, 0, n) {
+    for(int i = 0; i < n; ++i) {
         if(c[i].size() < 3) return "某个区域顶点数 < 3";
         db ar = myArea(c[i]);
         if(!(ar > 0)) return "某个区域面积不为正(不是逆时针或退化了)";
         sum += ar;
         // 凸、顶点在 box 内、含自己的站点
-        ForD(j, 0, (int) c[i].size()) {
+        for(int j = 0; j < (int) c[i].size(); ++j) {
             p2 u = c[i][j], v = c[i][(j + 1) % c[i].size()], w = c[i][(j + 2) % c[i].size()];
             if(sameP(u, v)) continue;
             if((v - u).det(w - v) < -1e-9L * (1 + abs(u.x) + abs(v.x) + abs(w.x) + abs(u.y) + abs(v.y) + abs(w.y))) return "区域不是凸的";
@@ -80,7 +80,7 @@ static string verifyCells(const vect<p2> &a, const vect<vect<p2>> &c, bool allow
         }
         if(!inConvStrict(c[i], a[i])) return "站点不在自己区域的内部";
         // 别的站点不能在它的内部(除非与它重合)
-        ForD(j, 0, n) {
+        for(int j = 0; j < n; ++j) {
             if(j == i || sameP(a[i], a[j])) continue;
             if(inConvStrict(c[i], a[j])) return "别的站点落在本区域内部(区域算错了)";
         }
@@ -106,7 +106,7 @@ static string verifyCells(const vect<p2> &a, const vect<vect<p2>> &c, bool allow
             }
             ++bad;
         }
-        ForD(k, 0, n) if(k != i1 && inConvStrict(c[k], q)) {
+        for(int k = 0; k < n; ++k) if(k != i1 && inConvStrict(c[k], q)) {
             if(!bad) {
                 snprintf(buf, sizeof buf, "点落在非最近站点 %d 的区域内部:q=(%.10Lg,%.10Lg)", k, q.x, q.y);
                 first = buf;
@@ -116,13 +116,13 @@ static string verifyCells(const vect<p2> &a, const vect<vect<p2>> &c, bool allow
     };
     // 格点采样(带半整数偏移,避免总是压在整数格的中垂线上)
     const int G = 24;
-    ForD(sx, 0, G) ForD(sy, 0, G) {
+    for(int sx = 0; sx < G; ++sx) for(int sy = 0; sy < G; ++sy) {
         db x = bl.x + (sx + 0.5 + 0.37) * (tr.x - bl.x) / G;
         db y = bl.y + (sy + 0.5 + 0.29) * (tr.y - bl.y) / G;
         test(p2{x, y});
     }
     // 随机采样(整数 + 半整数)
-    ForD(t, 0, 200) {
+    for(int t = 0; t < 200; ++t) {
         db x = bl.x + (db) vrnd(1, 999) / 1000 * (tr.x - bl.x);
         db y = bl.y + (db) vrnd(1, 999) / 1000 * (tr.y - bl.y);
         test(p2{x, y});
@@ -213,13 +213,13 @@ int main() {
             vect<vect<p2>> c = voronoi(sites);
             // Delaunay 边:(i,j) 出现在同一个三角形里
             map<K, int> id;
-            ForD(i, 0, n) id[make_pair((ll) v[i].x, (ll) v[i].y)] = i;
+            for(int i = 0; i < n; ++i) id[make_pair((ll) v[i].x, (ll) v[i].y)] = i;
             vect<p2> dt = delaunay(sites);
             set<pair<int, int>> done;
             for(int i = 0; i + 3 <= (int) dt.size(); i += 3) {
                 int t[3];
-                ForD(j, 0, 3) t[j] = id[make_pair((ll) dt[i + j].x, (ll) dt[i + j].y)];
-                ForD(j, 0, 3) {
+                for(int j = 0; j < 3; ++j) t[j] = id[make_pair((ll) dt[i + j].x, (ll) dt[i + j].y)];
+                for(int j = 0; j < 3; ++j) {
                     int x = t[j], y = t[(j + 1) % 3];
                     if(x > y) swap(x, y);
                     if(!done.insert({x, y}).second) continue;  // 每条边只查一次
@@ -258,7 +258,7 @@ int main() {
             int same = 0;
             for(int i : {0, 1, 2, 4}) {
                 bool ok = r[i].size() == r[0].size();
-                ForD(j, 0, (int) r[i].size()) if(!sameP(r[i][j], r[0][j])) ok = false;
+                for(int j = 0; j < (int) r[i].size(); ++j) if(!sameP(r[i][j], r[0][j])) ok = false;
                 if(ok) ++same;
             }
             CHECK(same == 4, "4 个重合站点的区域与第一个逐点相同(并列最近的约定)");
@@ -270,7 +270,7 @@ int main() {
         // 网格站点
         For(k, 2, 5) {
             vector<p2> v;
-            ForD(i, 0, k) ForD(j, 0, k) v.push_back(VIP(i, j));
+            for(int i = 0; i < k; ++i) for(int j = 0; j < k; ++j) v.push_back(VIP(i, j));
             string e = verifyVoronoi(VA(v), false);
             if(!e.empty()) printf("      %d x %d 网格:%s\n", k, k, e.c_str()), ++bad;
         }
@@ -298,7 +298,7 @@ int main() {
         {
             vector<p2> v;
             set<pair<ll, ll>> s;
-            ForD(i, 0, 9) {
+            for(int i = 0; i < 9; ++i) {
                 ll x = (ll) roundl(1000 * cosl(2 * pi * i / 9)), y = (ll) roundl(1000 * sinl(2 * pi * i / 9));
                 if(!s.count({x, y})) s.insert({x, y}), v.push_back(VIP(x, y));
             }
@@ -317,7 +317,7 @@ int main() {
         // 5.1 把一个区域整体平移 -> 采样对照或面积和必须报错
         {
             vect<vect<p2>> c = good;
-            ForD(i, 0, (int) c[0].size()) c[0][i] = c[0][i] + p2{1000, 0};
+            for(int i = 0; i < (int) c[0].size(); ++i) c[0][i] = c[0][i] + p2{1000, 0};
             string e = verifyCells(sites, c, false);
             CHECK(!e.empty(), "变异:把区域 0 平移 (1000,0) -> 验证器报错");
             if(e.empty()) printf("      (没报错!)\n");
@@ -346,7 +346,7 @@ int main() {
         // 5.5 把某个区域缩到很小(丢掉一大块面积)
         {
             vect<vect<p2>> c = good;
-            ForD(i, 0, (int) c[0].size()) c[0][i] = sites[0] + (c[0][i] - sites[0]) * 0.01;
+            for(int i = 0; i < (int) c[0].size(); ++i) c[0][i] = sites[0] + (c[0][i] - sites[0]) * 0.01;
             string e = verifyCells(sites, c, false);
             CHECK(!e.empty(), "变异:把区域 0 缩小 100 倍 -> 验证器报错(面积和不足)");
         }

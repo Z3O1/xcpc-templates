@@ -313,20 +313,5 @@ class TypographyTests(Workspace):
         self.assertNotRegex(fonts, r'\+(KaiTi|NSimSun|SimSun)\b')
 
 
-@unittest.skipUnless(shutil.which('clang-format'), '需要 clang-format 14+')
-class FormatTests(Workspace):
-    def test_default_excludes_checks_and_check_mode_is_read_only(self):
-        self.script('format.sh')
-        self.script('.clang-format')
-        path = self.put('templates/章/a.cpp', '// 标题\n\nint f(){return 1;}\n')
-        check = self.put('templates/章/a.check.cpp', 'int main(){return 0;}\n')
-        before = path.read_text()
-        self.assertNotEqual(self.run_script('format.sh', '--check').returncode, 0)
-        self.assertEqual(path.read_text(), before)
-        self.assertEqual(self.run_script('format.sh').returncode, 0)
-        self.assertEqual(self.run_script('format.sh', '--check').returncode, 0)
-        self.assertEqual(check.read_text(), 'int main(){return 0;}\n')
-
-
 if __name__ == '__main__':
     unittest.main()

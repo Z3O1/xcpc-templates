@@ -1,7 +1,8 @@
+//hide
 // SA(n, a): 字符串 · 后缀数组与 height
 
 const int N = 1e6 + 10;
-// a[1..n] 的字符值在 [0, N-2],n < N;输入只读,不需要哨兵,可重复构建。
+// a[1..n] 的字符值在 [0, N-2],n < N。
 // height[1] = 0;height[i] 是 sa[i-1] 与 sa[i] 两个后缀的最长公共前缀长度。
 int sa[N], rk[N << 1], height[N];
 template <class T> void SA(int n, const T *a) {

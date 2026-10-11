@@ -40,7 +40,7 @@ string ps(p3 a) {
 }
 string ps(const vector<p3> &a) {
     string s = "[";
-    ForD(i, 0, a.size()) s += (i ? " " : "") + ps(a[i]);
+    for(int i = 0; i < a.size(); ++i) s += (i ? " " : "") + ps(a[i]);
     return s + "]";
 }
 bool eq(db x, db y, db tol) { return abs(x - y) <= tol; }
@@ -56,12 +56,12 @@ vector<Facet> bruteFacets(const vector<p3> &a, db tol) {
     int n = a.size();
     vector<Facet> fs;
     if(n < 3) return fs;
-    ForD(i, 0, n) ForD(j, i + 1, n) ForD(k, j + 1, n) {
+    for(int i = 0; i < n; ++i) for(int j = i + 1; j < n; ++j) for(int k = j + 1; k < n; ++k) {
         p3 nr = cross(a[j] - a[i], a[k] - a[i]);
         db l = dis(nr);
         if(l <= tol) continue;  // 三点共线
         int pos = 0, neg = 0;
-        ForD(t, 0, n) {
+        for(int t = 0; t < n; ++t) {
             db v = nr * (a[t] - a[i]);
             if(v > tol * l) ++pos;
             else if(v < -tol * l) ++neg;
@@ -73,26 +73,26 @@ vector<Facet> bruteFacets(const vector<p3> &a, db tol) {
 }
 db bruteArea(const vector<p3> &a, const vector<Facet> &fs) {
     db s = 0;
-    ForD(t, 0, fs.size()) s += dis(fs[t].n);
+    for(int t = 0; t < fs.size(); ++t) s += dis(fs[t].n);
     return s / 2;
 }
 db bruteVolume(const vector<p3> &a, const vector<Facet> &fs) {
     db s = 0;
-    ForD(t, 0, fs.size()) s += fs[t].flip ? -det(a[fs[t].i], a[fs[t].j], a[fs[t].k]) : det(a[fs[t].i], a[fs[t].j], a[fs[t].k]);
+    for(int t = 0; t < fs.size(); ++t) s += fs[t].flip ? -det(a[fs[t].i], a[fs[t].j], a[fs[t].k]) : det(a[fs[t].i], a[fs[t].j], a[fs[t].k]);
     return abs(s) / 6;
 }
 set<int> bruteVerts(const vector<Facet> &fs) {
     set<int> v;
-    ForD(t, 0, fs.size()) v.insert(fs[t].i), v.insert(fs[t].j), v.insert(fs[t].k);
+    for(int t = 0; t < fs.size(); ++t) v.insert(fs[t].i), v.insert(fs[t].j), v.insert(fs[t].k);
     return v;
 }
 // 一般位置:任意四点不共面(相对容差)
 bool generalPosition(const vector<p3> &a) {
     int n = a.size();
     db sc = 1;
-    ForD(i, 0, n) sc = max(sc, dis(a[i]));
+    for(int i = 0; i < n; ++i) sc = max(sc, dis(a[i]));
     db tol = 1e-7L * sc * sc * sc;  // 混合积的量级 ~ sc³
-    ForD(i, 0, n) ForD(j, i + 1, n) ForD(k, j + 1, n) ForD(l, k + 1, n)
+    for(int i = 0; i < n; ++i) for(int j = i + 1; j < n; ++j) for(int k = j + 1; k < n; ++k) for(int l = k + 1; l < n; ++l)
         if(abs(det(a[j] - a[i], a[k] - a[i], a[l] - a[i])) <= tol) return false;
     return true;
 }
@@ -102,11 +102,11 @@ p3 fnorm(const vector<p3> &a, face3 f) { return cross(a[f.b] - a[f.a], a[f.c] - 
 // 每个点都在每个面的内侧(返回最大越界距离,<= 0 表示全部满足)
 db maxOutside(const vector<p3> &a, const vector<face3> &f) {
     db worst = -1e100L;
-    ForD(t, 0, f.size()) {
+    for(int t = 0; t < f.size(); ++t) {
         p3 nr = fnorm(a, f[t]);
         db l = dis(nr);
         if(l <= eps) continue;  // 退化面(零面积)不参与
-        ForD(i, 0, a.size()) worst = max(worst, (nr * (a[i] - a[f[t].a])) / l);
+        for(int i = 0; i < a.size(); ++i) worst = max(worst, (nr * (a[i] - a[f[t].a])) / l);
     }
     return worst;
 }
@@ -115,11 +115,11 @@ bool checkTopo(const vector<p3> &a, const vector<face3> &f, string &msg) {
     map<pair<int, int>, int> cnt;
     set<int> vs;
     int n = a.size();
-    ForD(t, 0, f.size()) {
+    for(int t = 0; t < f.size(); ++t) {
         int v[3] = {f[t].a, f[t].b, f[t].c};
-        ForD(k, 0, 3) if(v[k] < 0 || v[k] >= n) { msg = "面片下标越界"; return false; }
+        for(int k = 0; k < 3; ++k) if(v[k] < 0 || v[k] >= n) { msg = "面片下标越界"; return false; }
         if(v[0] == v[1] || v[1] == v[2] || v[0] == v[2]) { msg = "同一个面里有重复顶点"; return false; }
-        ForD(k, 0, 3) {
+        for(int k = 0; k < 3; ++k) {
             ++cnt[{v[k], v[(k + 1) % 3]}];
             vs.insert(v[k]);
         }
@@ -140,9 +140,9 @@ bool checkTopo(const vector<p3> &a, const vector<face3> &f, string &msg) {
 // 面的法向必须朝外:与「重心 -> 面」方向同向(凸包内部在法向的反面)
 bool outwardOK(const vector<p3> &a, const vector<face3> &f, string &msg) {
     p3 c{0, 0, 0};
-    ForD(i, 0, a.size()) c += a[i];
+    for(int i = 0; i < a.size(); ++i) c += a[i];
     c = c / (db) a.size();
-    ForD(t, 0, f.size()) {
+    for(int t = 0; t < f.size(); ++t) {
         p3 nr = fnorm(a, f[t]);
         if(!sign(dis2(nr))) continue;  // 退化面
         if(nr * (c - a[f[t].a]) > 0) { msg = "面法向朝内(顶点顺序给反了)"; return false; }
@@ -152,16 +152,16 @@ bool outwardOK(const vector<p3> &a, const vector<face3> &f, string &msg) {
 // 蒙特卡洛体积:包围盒里均匀撒点,数「在所有面内侧」的比例
 db mcVolume(const vector<p3> &a, const vector<face3> &f, int N) {
     p3 lo = a[0], hi = a[0];
-    ForD(i, 0, a.size()) {
+    for(int i = 0; i < a.size(); ++i) {
         lo.x = min(lo.x, a[i].x), lo.y = min(lo.y, a[i].y), lo.z = min(lo.z, a[i].z);
         hi.x = max(hi.x, a[i].x), hi.y = max(hi.y, a[i].y), hi.z = max(hi.z, a[i].z);
     }
     db box = (hi.x - lo.x) * (hi.y - lo.y) * (hi.z - lo.z);
     int cnt = 0;
-    ForD(s, 0, N) {
+    for(int s = 0; s < N; ++s) {
         p3 q{lo.x + (hi.x - lo.x) * urnd(), lo.y + (hi.y - lo.y) * urnd(), lo.z + (hi.z - lo.z) * urnd()};
         bool in = true;
-        ForD(t, 0, f.size()) {
+        for(int t = 0; t < f.size(); ++t) {
             p3 nr = fnorm(a, f[t]);
             if(nr * (q - a[f[t].a]) > 0) {
                 in = false;
@@ -189,15 +189,15 @@ int main() {
         CHECK(fo.size() == 8 && eq(hull_volume(oct, fo), 4.0L / 3, 1e-14) && eq(hull_area(oct, fo), 4 * sqrtl(3.0L), 1e-14),
               "正八面体(±e_i):8 个面、体积 4/3、表面积 4√3(手算)");
         vector<p3> cube;
-        ForD(i, 0, 2) ForD(j, 0, 2) ForD(k, 0, 2) cube.push_back(P3(i, j, k));
+        for(int i = 0; i < 2; ++i) for(int j = 0; j < 2; ++j) for(int k = 0; k < 2; ++k) cube.push_back(P3(i, j, k));
         vector<face3> fc = convex3d(cube);
         CHECK(eq(hull_volume(cube, fc), 1, 1e-14) && eq(hull_area(cube, fc), 6, 1e-14), "单位立方体 8 个顶点:体积 1、表面积 6(每个正方形面被三角剖分)");
         vector<p3> box;
-        ForD(i, 0, 2) ForD(j, 0, 2) ForD(k, 0, 2) box.push_back(P3(10 * i, 20 * j, 30 * k));
+        for(int i = 0; i < 2; ++i) for(int j = 0; j < 2; ++j) for(int k = 0; k < 2; ++k) box.push_back(P3(10 * i, 20 * j, 30 * k));
         vector<face3> fb = convex3d(box);
         CHECK(eq(hull_volume(box, fb), 6000, 1e-9) && eq(hull_area(box, fb), 2 * (200 + 300 + 600), 1e-9), "10×20×30 长方体:体积 6000、表面积 2·(200+300+600)");
         set<int> vs;
-        ForD(t, 0, fc.size()) vs.insert(fc[t].a), vs.insert(fc[t].b), vs.insert(fc[t].c);
+        for(int t = 0; t < fc.size(); ++t) vs.insert(fc[t].a), vs.insert(fc[t].b), vs.insert(fc[t].c);
         CHECK(vs.size() == 8, "立方体凸包的顶点恰好是 8 个立方体顶点");
         string msg;
         CHECK(checkTopo(cube, fc, msg) && outwardOK(cube, fc, msg), "立方体凸包:拓扑是闭曲面、欧拉公式成立、法向朝外");
@@ -211,13 +211,13 @@ int main() {
         For(t, 1, 4000) {
             int n = (int) grnd(4, 12);
             vector<p3> a;
-            ForD(i, 0, n) a.push_back(P3(db(grnd(-40, 40)), db(grnd(-40, 40)), db(grnd(-40, 40))));
+            for(int i = 0; i < n; ++i) a.push_back(P3(db(grnd(-40, 40)), db(grnd(-40, 40)), db(grnd(-40, 40))));
             if(!generalPosition(a)) continue;  // 只拿一般位置的点集做逐项对照
             ++cnt;
             vector<Facet> bf = bruteFacets(a, 1e-9);
             vector<face3> tf = convex3d(a);
             set<int> bv = bruteVerts(bf), tv;
-            ForD(i, 0, tf.size()) tv.insert(tf[i].a), tv.insert(tf[i].b), tv.insert(tf[i].c);
+            for(int i = 0; i < tf.size(); ++i) tv.insert(tf[i].a), tv.insert(tf[i].b), tv.insert(tf[i].c);
             db ba = bruteArea(a, bf), bvv = bruteVolume(a, bf);
             db ta = hull_area(a, tf), tvv = hull_volume(a, tf);
             if(bf.size() != tf.size() || !eq(ta, ba, 1e-9L * (1 + ba)) || !eq(tvv, bvv, 1e-9L * (1 + bvv)) || bv != tv) {
@@ -247,12 +247,12 @@ int main() {
         For(t, 1, 4000) {
             int n = (int) grnd(4, 30);
             vector<p3> a;
-            ForD(i, 0, n) a.push_back(P3(db(grnd(-6, 6)), db(grnd(-6, 6)), db(grnd(-6, 6))));  // 小格点:大量共线/共面/重复
+            for(int i = 0; i < n; ++i) a.push_back(P3(db(grnd(-6, 6)), db(grnd(-6, 6)), db(grnd(-6, 6))));  // 小格点:大量共线/共面/重复
             if(t % 4 == 0) {  // 一半的用例把点撒在一个平面上(退化输入)
-                ForD(i, 0, n) a[i].z = db(grnd(-6, 6));
+                for(int i = 0; i < n; ++i) a[i].z = db(grnd(-6, 6));
             }
             if(t % 8 == 0) {  // 再掺一些纯内部/重复点
-                ForD(i, 0, n) if(i % 3 == 0) a[i] = a[0];
+                for(int i = 0; i < n; ++i) if(i % 3 == 0) a[i] = a[0];
             }
             vector<face3> f = convex3d(a);
             if(f.empty()) { ++skip; continue; }
@@ -261,7 +261,7 @@ int main() {
             int V = 0;
             {
                 set<int> vs;
-                ForD(i, 0, f.size()) vs.insert(f[i].a), vs.insert(f[i].b), vs.insert(f[i].c);
+                for(int i = 0; i < f.size(); ++i) vs.insert(f[i].a), vs.insert(f[i].b), vs.insert(f[i].c);
                 V = vs.size();
             }
             db mx = maxOutside(a, f);
@@ -272,7 +272,7 @@ int main() {
             if(f.size() > (size_t) (2 * n)) { if(!bad) msg = "面片数超过 2n"; ++bad; }
             // 体积不超过包围盒体积
             p3 lo = a[0], hi = a[0];
-            ForD(i, 0, n) {
+            for(int i = 0; i < n; ++i) {
                 lo.x = min(lo.x, a[i].x), lo.y = min(lo.y, a[i].y), lo.z = min(lo.z, a[i].z);
                 hi.x = max(hi.x, a[i].x), hi.y = max(hi.y, a[i].y), hi.z = max(hi.z, a[i].z);
             }
@@ -292,7 +292,7 @@ int main() {
         For(t, 1, 40) {
             int n = (int) grnd(8, 20);
             vector<p3> a;
-            ForD(i, 0, n) a.push_back(P3(db(grnd(-20, 20)), db(grnd(-20, 20)), db(grnd(-20, 20))));
+            for(int i = 0; i < n; ++i) a.push_back(P3(db(grnd(-20, 20)), db(grnd(-20, 20)), db(grnd(-20, 20))));
             vector<face3> f = convex3d(a);
             if(f.size() < 4) continue;
             db V = hull_volume(a, f), mc = mcVolume(a, f, 20000);
@@ -307,7 +307,7 @@ int main() {
     {
         // 立方体/四面体的蒙卡体积(手算值已知)
         vector<p3> cube;
-        ForD(i, 0, 2) ForD(j, 0, 2) ForD(k, 0, 2) cube.push_back(P3(i, j, k));
+        for(int i = 0; i < 2; ++i) for(int j = 0; j < 2; ++j) for(int k = 0; k < 2; ++k) cube.push_back(P3(i, j, k));
         vector<face3> fc = convex3d(cube);
         db mc = mcVolume(cube, fc, 20000);
         printf("  [note] 单位立方体的蒙卡体积 = %.4Lg(真值 1,样本 2 万时标准差 ~0.003)\n", (long double) mc);
@@ -359,7 +359,7 @@ int main() {
     {
         // 立方体 + 面心/棱心/内部点:面积体积不变;立方体 + 面外一点:体积增加(与解析值对照)
         vector<p3> cube;
-        ForD(i, 0, 2) ForD(j, 0, 2) ForD(k, 0, 2) cube.push_back(P3(i, j, k));
+        for(int i = 0; i < 2; ++i) for(int j = 0; j < 2; ++j) for(int k = 0; k < 2; ++k) cube.push_back(P3(i, j, k));
         vector<p3> more = cube;
         more.push_back(P3(0.5L, 0.5L, 1));  // 顶面面心
         more.push_back(P3(0.5L, 0, 0.5L));  // 棱心
@@ -367,7 +367,7 @@ int main() {
         vector<face3> f = convex3d(more);
         CHECK(eq(hull_volume(more, f), 1, 1e-12L) && eq(hull_area(more, f), 6, 1e-12L), "立方体 + 面心/棱心/内部点:体积 1、表面积 6 不变");
         set<int> vs;
-        ForD(t, 0, f.size()) vs.insert(f[t].a), vs.insert(f[t].b), vs.insert(f[t].c);
+        for(int t = 0; t < f.size(); ++t) vs.insert(f[t].a), vs.insert(f[t].b), vs.insert(f[t].c);
         CHECK(vs.size() == 8, "凸包顶点集合仍只有 8 个立方体顶点(面心/棱心不是顶点)");
         vector<p3> out = cube;
         out.push_back(P3(0.5L, 0.5L, 1.25L));  // 顶面正上方
@@ -388,7 +388,7 @@ int main() {
     {
         // n = 300 随机点:性质级断言
         vector<p3> a;
-        ForD(i, 0, 300) a.push_back(P3(db(grnd(-1000, 1000)), db(grnd(-1000, 1000)), db(grnd(-1000, 1000))));
+        for(int i = 0; i < 300; ++i) a.push_back(P3(db(grnd(-1000, 1000)), db(grnd(-1000, 1000)), db(grnd(-1000, 1000))));
         auto t0 = chrono::steady_clock::now();
         vector<face3> f = convex3d(a);
         db ms = chrono::duration<db, milli>(chrono::steady_clock::now() - t0).count();
@@ -400,7 +400,7 @@ int main() {
         CHECK(eq(V, mc, 0.1L * (1 + V)) && ms < 3000, "300 个随机点:蒙卡体积相符(容差 10%)且耗时 < 3s");
         // 球面点:体积/表面积 <= 球体的值(凸包在球内),面数 = 2V-4
         vector<p3> sphere;
-        ForD(i, 0, 200) {
+        for(int i = 0; i < 200; ++i) {
             p3 d{urnd() * 2 - 1, urnd() * 2 - 1, urnd() * 2 - 1};
             if(dis(d) < 1e-6L) continue;
             sphere.push_back(unit(d) * 100);
@@ -415,7 +415,7 @@ int main() {
     {
         // n = 1000:只做性质级断言 + 耗时
         vector<p3> a;
-        ForD(i, 0, 1000) a.push_back(P3(db(grnd(-1000000, 1000000)), db(grnd(-1000000, 1000000)), db(grnd(-1000000, 1000000))));
+        for(int i = 0; i < 1000; ++i) a.push_back(P3(db(grnd(-1000000, 1000000)), db(grnd(-1000000, 1000000)), db(grnd(-1000000, 1000000))));
         auto t0 = chrono::steady_clock::now();
         vector<face3> f = convex3d(a);
         db ms = chrono::duration<db, milli>(chrono::steady_clock::now() - t0).count();

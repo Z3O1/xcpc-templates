@@ -10,8 +10,7 @@ pii f[N];
 void add(int u, int v) { t[u] += v, t2[v] += u; }
 void dfs(int u) {
     dfn[u] = ++dt, pos[dt] = u;
-    for(auto v : t[u])
-        if(!dfn[v]) dfs(v), f1[v] = u;
+    for(auto v : t[u]) if(!dfn[v]) dfs(v), f1[v] = u;
 }
 pii que(int u) {
     if(fa[u] == u) return f[u];
@@ -21,7 +20,6 @@ pii que(int u) {
 }
 void getdom(int _n) {
     n = _n;
-    // 只重置算法自身的状态,不动 t[]/t2[]。
     For(i, 1, n) q1[i].clear(), fa[i] = f1[i] = dfn[i] = pos[i] = sd[i] = dm[i] = 0;
     dt = 0;
     dfs(1);
@@ -30,13 +28,9 @@ void getdom(int _n) {
         int u = pos[i], s = i;
         for(auto x : q1[u]) dm[x] = que(x)[1];
         if(i == 1) break;
-        for(auto x : t2[u])
-            if(dfn[x]) cmin(s, que(x)[0]);
-        sd[u] = pos[s];
-        q1[sd[u]] += u;
-        f[u] = {dfn[sd[u]], u};
-        for(auto v : t[u])
-            if(f1[v] == u) fa[v] = u;
+        for(auto x : t2[u]) if(dfn[x]) cmin(s, que(x)[0]);
+        sd[u] = pos[s], q1[sd[u]] += u, f[u] = {dfn[sd[u]], u};
+        for(auto v : t[u]) if(f1[v] == u) fa[v] = u;
     }
     For(i, 2, dt) {
         int u = pos[i];

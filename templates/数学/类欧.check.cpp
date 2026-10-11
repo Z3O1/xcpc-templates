@@ -16,10 +16,10 @@ static unsigned __int128 ref_floor_sum(u64 n, u64 m, u64 a, u64 b) {
     }
     return ans;
 }
-// Σ_{i=0}^{n} floor((a*i+b)/c) 的 i128 精确值 → 模 MOD
+// Σ_{i=0}^{n} floor((a*i+b)/c) 的 i128 精确值 → 模 M
 static int ref_sum(u64 n, u64 a, u64 b, u64 c) {
     unsigned __int128 s = ref_floor_sum(n + 1, c, a, b);
-    return (int) (s % (unsigned __int128) MOD);
+    return (int) (s % (unsigned __int128) M);
 }
 
 int main() {
@@ -30,7 +30,7 @@ int main() {
             ll bf = 0, bg = 0, bh = 0;
             For(i, 0, n) {
                 ll q = (a * i + b) / c;
-                bf = (bf + q) % MOD, bg = (bg + q * q) % MOD, bh = (bh + q * i) % MOD;
+                bf = (bf + q) % M, bg = (bg + q * q) % M, bh = (bh + q * i) % M;
             }
             nd got = f(n, a, b, c);
             if(got.f != bf || got.g != bg || got.h != bh) {
@@ -57,7 +57,7 @@ int main() {
                 bf += q, bg += q * q, bh += q * i;
             }
             nd got = f(n, a, b, c);
-            if(bf % MOD != got.f || bg % MOD != got.g || bh % MOD != got.h) {
+            if(bf % M != got.f || bg % M != got.g || bh % M != got.h) {
                 printf("  [FAIL] 随机 n=%d a=%d b=%d c=%d\n", n, a, b, c);
                 return 1;
             }
@@ -85,45 +85,45 @@ int main() {
     {
         CHECK(f(0, 7, 5, 3).f == 1 && f(0, 7, 5, 3).g == 1 && f(0, 7, 5, 3).h == 0,
               "n=0 时 f = floor(b/c),g = floor(b/c)^2,h = 0");
-        CHECK(f(5, 0, 1000000000, 3).f == (1000000000LL / 3) * 6 % MOD, "a=0 时 f = (n+1)*floor(b/c)");
+        CHECK(f(5, 0, 1000000000, 3).f == (1000000000LL / 3) * 6 % M, "a=0 时 f = (n+1)*floor(b/c)");
         CHECK(f(0, 0, 0, 7).f == 0, "a=b=n=0 的退化");
         CHECK(f(0, 0, 1000000000, 3).f == 1000000000 / 3, "n=0 且 a=0 时 f = floor(b/c)");
         CHECK(f(5, 5, 5, 5).f == 21, "a=b=c=5,n=5 手算(Σ(i+1))");
         // c=1:a、b 都 >= c,f = a*n(n+1)/2 + b*(n+1)
         {
             int n = 123456, a = 7, b = 11;
-            int want = ((i128) a * n * (n + 1) / 2 + (i128) b * (n + 1)) % MOD;
+            int want = ((i128) a * n * (n + 1) / 2 + (i128) b * (n + 1)) % M;
             CHECK(f(n, a, b, 1).f == want, "c=1 时 f = a*n(n+1)/2 + b*(n+1) 手算");
         }
         // b 恰为 c 的倍数 / a 恰为 c 的倍数(b >= c、a >= c 分支的分界)
         For(n, 0, 40) {
             int bf = 0;
-            For(i, 0, n) bf = (bf + (3 * i + 6) / 3) % MOD;
+            For(i, 0, n) bf = (bf + (3 * i + 6) / 3) % M;
             if(f(n, 3, 6, 3).f != bf) return printf("  [FAIL] a=c,b=2c 分界 n=%d\n", n), 1;
         }
         ok("a=c、b=2c 的整除分界(n <= 40)");
     }
 
     // 5) 模数与 int 上界附近:下取整参数不能先取模,三量都用 i128 精确参考。
-    for(int n : {0, 1, 7, 200}) for(int a : {0, MOD - 1, MOD, MOD + 1, INT_MAX})
-        for(int b : {0, MOD - 1, MOD, INT_MAX}) for(int c : {1, 2, MOD - 1, MOD, INT_MAX}) {
+    for(int n : {0, 1, 7, 200}) for(int a : {0, M - 1, M, M + 1, INT_MAX})
+        for(int b : {0, M - 1, M, INT_MAX}) for(int c : {1, 2, M - 1, M, INT_MAX}) {
             i128 bf = 0, bg = 0, bh = 0;
             For(i, 0, n) {
                 i128 q = ((i128) a * i + b) / c;
                 bf += q, bg += q * q, bh += q * i;
             }
             nd got = f(n, a, b, c);
-            if(got.f != bf % MOD || got.g != bg % MOD || got.h != bh % MOD) {
+            if(got.f != bf % M || got.g != bg % M || got.h != bh % M) {
                 printf("[FAIL] 极端 n=%d a=%d b=%d c=%d got={%d,%d,%d}\n", n, a, b, c, got.f, got.g, got.h);
                 return 1;
             }
         }
-    for(int n : {MOD - 1, MOD, MOD + 1, INT_MAX}) {
+    for(int n : {M - 1, M, M + 1, INT_MAX}) {
         nd got = f(n, 1, 0, 1);
         i128 N = n, s1 = N * (N + 1) / 2, s2 = N * (N + 1) * (2 * N + 1) / 6;
-        CHECK(got.f == s1 % MOD && got.g == s2 % MOD && got.h == s2 % MOD,
-              "n 在 MOD/int 上界附近,c=1 的精确闭式");
-        for(int c : {2, MOD - 1, MOD, INT_MAX})
+        CHECK(got.f == s1 % M && got.g == s2 % M && got.h == s2 % M,
+              "n 在 M/int 上界附近,c=1 的精确闭式");
+        for(int c : {2, M - 1, M, INT_MAX})
             CHECK(f(n, INT_MAX, INT_MAX, c).f == ref_sum(n, INT_MAX, INT_MAX, c), "大 n 的独立 floor_sum");
     }
     PASSED("类欧");

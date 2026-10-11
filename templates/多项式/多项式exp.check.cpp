@@ -19,8 +19,8 @@ static poly naive_exp(const poly &f, int n, bool *okp = nullptr) {
     bool okk = true;
     For(k, 1, n - 1) {
         ll s = 0;
-        For(j, 1, min((int) f.size() - 1, k)) s = (s + (ll) f[j] * j % MOD * b[k - j]) % MOD;
-        b[k] = s * ksm(k, MOD - 2, MOD) % MOD;
+        For(j, 1, min((int) f.size() - 1, k)) s = (s + (ll) f[j] * j % M * b[k - j]) % M;
+        b[k] = s * ksm(k, M - 2, M) % M;
     }
     if(okp) *okp = okk;
     return b;
@@ -32,10 +32,10 @@ static poly naive_exp2(const poly &f, int n) {
     int fac = 1;
     For(t, 1, n - 1) {
         poly nx(n);
-        For(i, 0, n - 1) if(cur[i]) For(j, 0, min((int) f.size(), n - i) - 1) nx[i + j] = (nx[i + j] + (ll) cur[i] * f[j]) % MOD;
-        cur = nx, fac = (ll) fac * t % MOD;
-        int ifac = ksm(fac, MOD - 2, MOD);
-        For(i, 0, n - 1) s[i] = (s[i] + (ll) cur[i] * ifac) % MOD;
+        For(i, 0, n - 1) if(cur[i]) For(j, 0, min((int) f.size(), n - i) - 1) nx[i + j] = (nx[i + j] + (ll) cur[i] * f[j]) % M;
+        cur = nx, fac = (ll) fac * t % M;
+        int ifac = ksm(fac, M - 2, M);
+        For(i, 0, n - 1) s[i] = (s[i] + (ll) cur[i] * ifac) % M;
     }
     return s;
 }
@@ -58,7 +58,7 @@ static int bad(const char *what, const poly &f, int n, const poly &want, const p
 static poly rpoly(int len, int mode) {  // 0 稠密 1 稀疏 2 小值 3 全 0
     poly a(len);
     For(i, 0, len - 1) {
-        int v = (int) rnd(0, MOD - 1);
+        int v = (int) rnd(0, M - 1);
         if(mode == 1 && (i & 1)) v = 0;
         if(mode == 2) v = (int) rnd(0, 3);
         a[i] = v;
@@ -159,7 +159,7 @@ int main() {
             poly f = rpoly((int) rnd(1, 50), t % 3), g = rpoly((int) rnd(1, 50), (t + 1) % 3);
             poly s = f;
             s.resize(max(f.size(), g.size()));
-            For(i, 0, (int) g.size() - 1) s[i] = (s[i] + g[i]) % MOD;
+            For(i, 0, (int) g.size() - 1) s[i] = (s[i] + g[i]) % M;
             s[0] = 0;
             poly lhs = mul(poly_exp(f, n), poly_exp(g, n));
             lhs.resize(n);
@@ -205,8 +205,8 @@ int main() {
             poly f{0, 1}, want(300), got = poly_exp(f, 300);
             int fac = 1;
             For(i, 0, 299) {
-                if(i) fac = (ll) fac * i % MOD;
-                want[i] = ksm(fac, MOD - 2, MOD);
+                if(i) fac = (ll) fac * i % M;
+                want[i] = ksm(fac, M - 2, M);
             }
             int at = firstdiff(want, got);
             if(at >= 0) return bad("exp x = Σ x^i/i!", f, 300, want, got, at);
@@ -215,7 +215,7 @@ int main() {
         // f = -ln(1-x) = Σ_{i>=1} x^i/i → exp f = 1/(1-x) = 全 1
         {
             poly f(200);
-            For(i, 1, 199) f[i] = ksm(i, MOD - 2, MOD);
+            For(i, 1, 199) f[i] = ksm(i, M - 2, M);
             poly want(200), got = poly_exp(f, 200);
             For(i, 0, 199) want[i] = 1;
             int at = firstdiff(want, got);

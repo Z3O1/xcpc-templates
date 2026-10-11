@@ -76,10 +76,8 @@ struct MCMF_t {
     pair<int, ll> mcmf2(int _s, int _t, bool mcf = 0, int _n = 0) {
         s = _s, t = _t, n = _n, cmax(mx, _n + 2);
         static int ex[N];
-        // ex(可行流差额)是 static:不清的话上一次调用留下的差额会被当成这次的初始差额(多测时会算错)
         For(i, 1, _n) ex[i] = 0;
-        int a1 = 0;
-        ll a2 = 0;
+        int a1 = 0; ll a2 = 0;
         For(i, 2, tot)
             if(i % 2 == 0 && e[i].c < 0) {
                 int u = e[i ^ 1].v, v = e[i].v;
@@ -89,11 +87,11 @@ struct MCMF_t {
             }
         For(i, 1, _n) { ex[i] > 0 ? add(_n + 1, i, ex[i], 0) : add(i, _n + 2, -ex[i], 0); }
         add(_t, _s, FL, 0);
-        int aux = tot, oldn = n;
+        int aux = tot, n0 = n;
         a2 += mcmf(_n + 1, _n + 2, 0, _n + 2).second;
         a1 += e[aux].w;
-        tot = aux - 2 * _n - 2, n = oldn;
-        For(i, 1, oldn)
+        tot = aux - 2 * _n - 2, n = n0;
+        For(i, 1, n0)
             while(hd[i] > tot) hd[i] = e[hd[i]].n;
         auto [a3, a4] = mcmf(_s, _t, mcf, _n);
         return {a1 + a3, a2 + a4};

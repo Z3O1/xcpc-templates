@@ -7,40 +7,40 @@ static int fac(int k) { return FA[k]; }
 static int ifac(int k) { return IFA[k]; }
 static void init_fac() {
     FA[0] = 1;
-    For(i, 1, FN) FA[i] = (ll)FA[i - 1] * i % MOD;
-    IFA[FN] = ksm(FA[FN], MOD - 2, MOD);
-    rFor(i, FN, 1) IFA[i - 1] = (ll)IFA[i] * i % MOD;
+    For(i, 1, FN) FA[i] = (ll)FA[i - 1] * i % M;
+    IFA[FN] = ksm(FA[FN], M - 2, M);
+    rFor(i, FN, 1) IFA[i - 1] = (ll)IFA[i] * i % M;
 }
 #include "lagrange.cpp"
 
 static int evalp(const vector<int> &c, int x) {
     ll s = 0;
-    rFor(i, (int)c.size() - 1, 0) s = (s * x + c[i]) % MOD;
+    rFor(i, (int)c.size() - 1, 0) s = (s * x + c[i]) % M;
     return s;
 }
 static int ref_inv(int v) {
-    ll a = v, b = MOD, x = 1, y = 0;
+    ll a = v, b = M, x = 1, y = 0;
     while(b) {
         ll q = a / b;
         swap(a -= q * b, b), swap(x -= q * y, y);
     }
-    return (x % MOD + MOD) % MOD;
+    return (x % M + M) % M;
 }
 static int ref_lag_eval(const vector<int> &a, int x) {
     ll ans = 0;
     For(i, 0, (int)a.size() - 1) {
         ll num = a[i], den = 1;
         For(j, 0, (int)a.size() - 1) if(i != j) {
-            num = num * (x - j + MOD) % MOD;
-            den = den * (i - j + MOD) % MOD;
+            num = num * (x - j + M) % M;
+            den = den * (i - j + M) % M;
         }
-        ans = (ans + num * ref_inv(den)) % MOD;
+        ans = (ans + num * ref_inv(den)) % M;
     }
     return ans;
 }
 static vector<int> random_poly(int n) {
     vector<int> c(n);
-    for(int &x : c) x = rnd(0, MOD - 1);
+    for(int &x : c) x = rnd(0, M - 1);
     return c;
 }
 static void fail(const char *what, const vector<int> &c, int x, int want, int got) {
@@ -59,13 +59,13 @@ static void check_lag(const vector<int> &c, const vector<pair<int, int>> &pts) {
 int main() {
     rng.seed(20040924);
     init_fac();
-    CHECK(fac(10) == 3628800 && (ll)fac(10) * ifac(10) % MOD == 1, "fac/ifac 自洽");
+    CHECK(fac(10) == 3628800 && (ll)fac(10) * ifac(10) % M == 1, "fac/ifac 自洽");
     For(t, 1, 20000) {
         int k = rnd(1, 9);
         vector<int> c = random_poly(k);
         vector<pair<int, int>> pts;
         while((int)pts.size() < k) {
-            int x = (t % 3 == 0 && pts.empty()) ? 0 : rnd(0, MOD - 1);
+            int x = (t % 3 == 0 && pts.empty()) ? 0 : rnd(0, M - 1);
             bool dup = false;
             for(auto p : pts) dup |= p.first == x;
             if(!dup) pts.push_back({x, evalp(c, x)});
@@ -92,8 +92,8 @@ int main() {
         int n = rnd(1, 30), mode = t % 3;
         vector<int> c = random_poly(n), a(n);
         For(i, 0, n - 1) a[i] = evalp(c, i);
-        int x = mode == 0 ? rnd(0, n - 1) : rnd(0, MOD - 1);
-        if(mode == 2) x = (MOD - x) % MOD;
+        int x = mode == 0 ? rnd(0, n - 1) : rnd(0, M - 1);
+        if(mode == 2) x = (M - x) % M;
         int got = lag_p(n, a.data(), x), want = evalp(c, x);
         if(got != want) fail("lag_p", c, x, want, got);
         if(mode && ref_lag_eval(a, x) != got) fail("lag_p 独立公式", a, x, ref_lag_eval(a, x), got);
@@ -102,8 +102,8 @@ int main() {
     CHECK(lag({{5, 9}}) == vector<int>({9, 0}), "单点(5,9)");
     CHECK(lag({{0, 7}}) == vector<int>({7, 0}), "单点横坐标0");
     CHECK(lag({}) == vector<int>({0}), "空点集的原有返回约定");
-    vector<int> c{MOD - 1, MOD - 1, MOD - 1};
-    check_lag(c, {{0, evalp(c, 0)}, {MOD - 1, evalp(c, MOD - 1)}, {MOD - 2, evalp(c, MOD - 2)}});
+    vector<int> c{M - 1, M - 1, M - 1};
+    check_lag(c, {{0, evalp(c, 0)}, {M - 1, evalp(c, M - 1)}, {M - 2, evalp(c, M - 2)}});
     vector<int> a{0, 9};
     lag_i(1, a.data());
     CHECK(a == vector<int>({9, 0}), "lag_i n=1");

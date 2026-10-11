@@ -97,7 +97,7 @@ static MatchOut run_match(int n, const vect<array<int, 2>> &es) {
         close(fd[0]);
         ::n = n;
         For(i, 1, n) t[i].clear();
-        ForD(i, 0, n + 2) MAT[i] = 0;
+        for(int i = 0; i < n + 2; ++i) MAT[i] = 0;
         for(auto &e : es) t[e[0]] += e[1], t[e[1]] += e[0];
         Rec r{};
         For(i, 1, n) if(!MAT[i]) {
@@ -175,11 +175,11 @@ static MatchOut run_match(int n, const vect<array<int, 2>> &es) {
 static int brute_edges(int, const vect<array<int, 2>> &es) {   // n 用不到(只按边枚举), 保留参数是为了两个暴力接口一致
     int m = (int) es.size(), best = 0;
     if(m > 20) return -1;
-    ForD(mask, 0, 1 << m) {
+    for(int mask = 0; mask < 1 << m; ++mask) {
         int mt[CHK_MAXN + 2] = {};
         bool okk = true;
         int c = 0;
-        ForD(i, 0, m) if(mask >> i & 1) {
+        for(int i = 0; i < m; ++i) if(mask >> i & 1) {
             int a = es[i][0], b = es[i][1];
             if(a == b || mt[a] || mt[b]) {
                 okk = false;
@@ -198,7 +198,7 @@ static int brute_dp(int n, const vect<array<int, 2>> &es) {
     vect<int> adj(n + 2, 0);
     for(auto &e : es) if(e[0] != e[1]) adj[e[0]] |= 1 << (e[1] - 1), adj[e[1]] |= 1 << (e[0] - 1);
     vect<int> dp(1 << n, 0);
-    ForD(mask, 1, 1 << n) {
+    for(int mask = 1; mask < 1 << n; ++mask) {
         int v = __builtin_ctz(mask);
         int rest = mask ^ (1 << v);
         dp[mask] = dp[rest];
@@ -371,9 +371,9 @@ int main() {
             vect<array<int, 2>> all;
             For(u, 1, n) For(v, u + 1, n) all.push_back({u, v});
             int m = (int) all.size();
-            ForD(mask, 0, 1 << m) {
+            for(int mask = 0; mask < 1 << m; ++mask) {
                 vect<array<int, 2>> es;
-                ForD(i, 0, m) if(mask >> i & 1) es.push_back(all[i]);
+                for(int i = 0; i < m; ++i) if(mask >> i & 1) es.push_back(all[i]);
                 Verdict v = check_case(n, es);
                 ++cnt, ++n_case;
                 if(v.kind != K_OK) {
@@ -411,7 +411,7 @@ int main() {
                     int k = (int) rnd(2, 4);
                     if(i + k - 1 > n) k = n - i + 1;
                     if(k < 2) break;
-                    ForD(a, 0, k) es.push_back({i + a, i + (a + 1) % k});
+                    for(int a = 0; a < k; ++a) es.push_back({i + a, i + (a + 1) % k});
                     i += k;
                 }
             } else if(style == 2) {                // 稀疏随机 + 生成树

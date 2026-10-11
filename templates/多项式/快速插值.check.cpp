@@ -18,22 +18,22 @@
 static poly lagrange(const poly &xs, const poly &ys) {
     int m = xs.size();
     if(!m) return poly();
-    poly M{1};
-    For(j, 0, m - 1) {  // M *= (x - xs[j])
-        poly t(M.size() + 1);
-        ForD(k, 0, (int) M.size()) t[k] = (t[k] - (ll) M[k] * xs[j] % MOD + MOD) % MOD, t[k + 1] = (t[k + 1] + M[k]) % MOD;
-        M = t;
+    poly prod{1};
+    For(j, 0, m - 1) {  // prod *= (x - xs[j])
+        poly t(prod.size() + 1);
+        for(int k = 0; k < (int) prod.size(); ++k) t[k] = (t[k] - (ll) prod[k] * xs[j] % M + M) % M, t[k + 1] = (t[k + 1] + prod[k]) % M;
+        prod = t;
     }
     poly res(m);
     For(i, 0, m - 1) {
         int r = xs[i];
-        poly q(m);  // M / (x - r)
-        q[m - 1] = M[m];
-        rFor(k, m - 1, 1) q[k - 1] = (M[k] + (ll) r * q[k]) % MOD;
+        poly q(m);  // prod / (x - r)
+        q[m - 1] = prod[m];
+        rFor(k, m - 1, 1) q[k - 1] = (prod[k] + (ll) r * q[k]) % M;
         ll den = 1;
-        For(j, 0, m - 1) if(j != i) den = den * (r - xs[j] + MOD) % MOD;
-        int c = (ll) ys[i] * ksm(den, MOD - 2, MOD) % MOD;
-        For(k, 0, m - 1) res[k] = (res[k] + (ll) c * q[k]) % MOD;
+        For(j, 0, m - 1) if(j != i) den = den * (r - xs[j] + M) % M;
+        int c = (ll) ys[i] * ksm(den, M - 2, M) % M;
+        For(k, 0, m - 1) res[k] = (res[k] + (ll) c * q[k]) % M;
     }
     return res;
 }
@@ -80,7 +80,7 @@ int main() {
         For(t, 1, 500) {
             int m = (int) rnd(1, 12);
             poly xs = rxs(m), ys(m);
-            For(i, 0, m - 1) ys[i] = (int) rnd(0, MOD - 1);
+            For(i, 0, m - 1) ys[i] = (int) rnd(0, M - 1);
             if(cmp("随机小规模", xs, ys)) return 1;
         }
         ok("500 组随机 m ≤ 12 的 (xs, ys):与 O(m²) 拉格朗日插值逐位相同");
@@ -97,7 +97,7 @@ int main() {
             int m = (1 << k) + d;
             if(m < 1) continue;
             poly xs = rxs(m), ys(m);
-            For(i, 0, m - 1) ys[i] = (int) rnd(0, MOD - 1);
+            For(i, 0, m - 1) ys[i] = (int) rnd(0, M - 1);
             if(cmp("跨 2 的幂的 m", xs, ys)) return 1;
         }
         ok("m = 2^k-1 / 2^k / 2^k+1(k ≤ 7)一致");
@@ -108,7 +108,7 @@ int main() {
         For(t, 1, 300) {
             int m = (int) rnd(1, 60);
             poly f((int) rnd(0, m - 1));  // deg f < m
-            For(i, 0, (int) f.size() - 1) f[i] = (int) rnd(0, MOD - 1);
+            For(i, 0, (int) f.size() - 1) f[i] = (int) rnd(0, M - 1);
             poly xs = rxs(m), ys = poly_eval(f, xs);
             poly back = poly_interp(xs, ys);
             poly ff = f;
@@ -126,12 +126,12 @@ int main() {
         For(t, 1, 100) {
             int m = (int) rnd(1, 40);
             poly xs = rxs(m), ys(m);
-            For(i, 0, m - 1) ys[i] = (int) rnd(0, MOD - 1);
+            For(i, 0, m - 1) ys[i] = (int) rnd(0, M - 1);
             poly f = poly_interp(xs, ys);
             poly zs = rxs((int) rnd(1, 20));
             For(i, 0, (int) zs.size() - 1) {
                 ll s = 0;
-                rFor(j, (int) f.size() - 1, 0) s = (s * zs[i] + f[j]) % MOD;
+                rFor(j, (int) f.size() - 1, 0) s = (s * zs[i] + f[j]) % M;
                 if(s != poly_eval(f, zs)[i]) {
                     printf("  [FAIL] poly_interp 的结果与 poly_eval 自相矛盾(x = %d)\n", zs[i]);
                     return 1;
@@ -156,7 +156,7 @@ int main() {
         // m = 1 → {y0}
         {
             For(t, 1, 100) {
-                int x = (int) rnd(0, MOD - 1), y = (int) rnd(0, MOD - 1);
+                int x = (int) rnd(0, M - 1), y = (int) rnd(0, M - 1);
                 poly xs{x}, ys{y}, got = poly_interp(xs, ys);
                 if(got.size() != 1 || got[0] != y) {
                     printf("  [FAIL] m = 1 时应返回 {%d},得到 %s(x = %d)\n", y, pstr(got).c_str(), x);
@@ -182,9 +182,9 @@ int main() {
             For(t, 1, 100) {
                 int m = (int) rnd(2, 20);
                 poly xs = rxs(m), ys(m);
-                xs[0] = 0, xs[1] = MOD - 1;  // 0 与 -1
+                xs[0] = 0, xs[1] = M - 1;  // 0 与 -1
                 For(i, 2, m - 1) xs[i] = 100 + i;      // 2 起用小值,保证互异(契约要求两两不同)
-                For(i, 0, m - 1) ys[i] = (int) rnd(0, MOD - 1);
+                For(i, 0, m - 1) ys[i] = (int) rnd(0, M - 1);
                 if(cmp("xs 含 0 与 P-1", xs, ys)) return 1;
             }
             ok("100 组 xs 含 0 与 P-1(即 -1):一致");
@@ -194,7 +194,7 @@ int main() {
             For(t, 1, 100) {
                 int m = (int) rnd(1, 30);
                 poly xs = rxs(m), f(m);  // deg = m-1(取到上界)
-                For(i, 0, m - 1) f[i] = (int) rnd(0, MOD - 1);
+                For(i, 0, m - 1) f[i] = (int) rnd(0, M - 1);
                 poly ys = poly_eval(f, xs);
                 poly back = poly_interp(xs, ys);
                 int at = firstdiff(f, back);
@@ -214,7 +214,7 @@ int main() {
         For(t, 1, 3) {
             int m = 300;
             poly xs = rxs(m), f(299);
-            For(i, 0, 298) f[i] = (int) rnd(0, MOD - 1);
+            For(i, 0, 298) f[i] = (int) rnd(0, M - 1);
             poly ys = poly_eval(f, xs);
             poly back = poly_interp(xs, ys);
             CHECK(back.size() == (size_t) m, "m = 300:插值结果长度恰为 300");

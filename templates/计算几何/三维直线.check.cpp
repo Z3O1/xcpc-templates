@@ -68,7 +68,7 @@ db refDisSS(seg3 a, seg3 b) {
 db bruteDisSS(seg3 a, seg3 b) {
     const int G = 64;
     db bs = 0, bt = 0, best = 1e100L;
-    ForD(i, 0, G + 1) ForD(j, 0, G + 1) {
+    for(int i = 0; i < G + 1; ++i) for(int j = 0; j < G + 1; ++j) {
         db s = (db) i / G, t = (db) j / G;
         db d = dis(a.x + a.dir() * s - (b.x + b.dir() * t));
         if(d < best) best = d, bs = s, bt = t;
@@ -77,7 +77,7 @@ db bruteDisSS(seg3 a, seg3 b) {
     db h = 1.0L / G;
     while(h > 1e-15L) {
         bool imp = false;
-        ForD(di, -1, 2) ForD(dj, -1, 2) {
+        for(int di = -1; di < 2; ++di) for(int dj = -1; dj < 2; ++dj) {
             db s = max((db) 0, min((db) 1, bs + di * h)), t = max((db) 0, min((db) 1, bt + dj * h));
             db d = dis(a.x + a.dir() * s - (b.x + b.dir() * t));
             if(d < best - 1e-17L) best = d, bs = s, bt = t, imp = true;
@@ -102,7 +102,7 @@ ll icomp(I3 a, int i) { return i == 0 ? a.x : (i == 1 ? a.y : a.z); }
 bool iOnSeg(I3 a, I3 b, I3 c) {
     I3 u = isub(b, a);
     if(!izero(icross(u, isub(c, a)))) return false;
-    ForD(i, 0, 3) {
+    for(int i = 0; i < 3; ++i) {
         ll p = icomp(a, i), q = icomp(b, i), r = icomp(c, i);
         if(!(min(p, q) <= r && r <= max(p, q))) return false;
     }
@@ -117,13 +117,13 @@ bool refChkss(I3 p1, I3 p2, I3 q1, I3 q2) {
         if(izero(u) && !izero(icross(v, isub(p1, q1)))) return false;   // p 这个点不在 q 的直线上
         I3 dir = !izero(u) ? u : v;   // 共线(或退化成点):沿 dir 的主轴比一维区间
         int ax = 0;
-        ForD(i, 1, 3) if(abs(icomp(dir, i)) > abs(icomp(dir, ax))) ax = i;
+        for(int i = 1; i < 3; ++i) if(abs(icomp(dir, i)) > abs(icomp(dir, ax))) ax = i;
         ll a = icomp(p1, ax), b = icomp(p2, ax), c = icomp(q1, ax), d = icomp(q2, ax);
         return max(min(a, b), min(c, d)) <= min(max(a, b), max(c, d));
     }
     if(idet(u, v, isub(q1, p1)) != 0) return false;  // 异面
     int drop = 0;                                    // 沿 |n| 最大的分量投影(保持 orientation 符号)
-    ForD(i, 1, 3) if(abs(icomp(n, i)) > abs(icomp(n, drop))) drop = i;
+    for(int i = 1; i < 3; ++i) if(abs(icomp(n, i)) > abs(icomp(n, drop))) drop = i;
     int c1 = (drop + 1) % 3, c2 = (drop + 2) % 3;
     auto ori = [&](I3 a, I3 b, I3 c) {
         return (icomp(b, c1) - icomp(a, c1)) * (icomp(c, c2) - icomp(a, c2)) -
@@ -143,7 +143,7 @@ bool refChkssS(I3 p1, I3 p2, I3 q1, I3 q2) {
     if(izero(n)) return false;
     if(idet(u, v, isub(q1, p1)) != 0) return false;
     int drop = 0;
-    ForD(i, 1, 3) if(abs(icomp(n, i)) > abs(icomp(n, drop))) drop = i;
+    for(int i = 1; i < 3; ++i) if(abs(icomp(n, i)) > abs(icomp(n, drop))) drop = i;
     int c1 = (drop + 1) % 3, c2 = (drop + 2) % 3;
     auto ori = [&](I3 a, I3 b, I3 c) {
         return (icomp(b, c1) - icomp(a, c1)) * (icomp(c, c2) - icomp(a, c2)) -

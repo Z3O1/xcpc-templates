@@ -320,7 +320,7 @@ int main() {
             vi want;
             if(!a.empty() && !b.empty()) {
                 want.resize(a.size() + b.size() - 1);
-                ForD(i, 0, (int)a.size()) ForD(j, 0, (int)b.size())
+                for(int i = 0; i < (int)a.size(); ++i) for(int j = 0; j < (int)b.size(); ++j)
                     want[i + j] = (want[i + j] + 1ll * a[i] * b[j]) % mod;
             }
             got = (poly(a) * poly(b)).c;

@@ -21,13 +21,12 @@ struct fgcd_t {
                 if(i % z == 0) break;
             }
         }
-        For(i, 0, B)
-            For(j, 0, i) s[i][j] = !j ? i : s[j][i % j];
+        For(i, 0, B) For(j, 0, i) s[i][j] = !j ? i : s[j][i % j];
     }
     int operator()(int x, int y) const {
         if(!x || !y) return x | y;
         if(x == 1 || y == 1) return 1;
-        auto g1 = [&](int u, int v) { // u 中可被 v 整除的那部分
+        auto g1 = [&](int u, int v) {
             if(v == 1) return 1;
             int t = u % v;
             return t == 0 ? v : (v > B ? 1 : s[v][t]);

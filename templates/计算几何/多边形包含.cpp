@@ -13,7 +13,7 @@
 int wn_contain(int n, p2 *a, const p2 &p) {
     if(n < 3) return 0;
     int wn = 0;
-    ForD(i, 0, n) {
+    for(int i = 0; i < n; ++i) {
         p2 u = a[i], v = a[(i + 1) % n];
         if(u == v) continue; // 退化边(相邻重复点):跳过,否则 ons 会认为任意点都在它上面
         if(ons({u, v}, p)) return 1;

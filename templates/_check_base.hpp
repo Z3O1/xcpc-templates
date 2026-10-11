@@ -10,7 +10,7 @@ using s64 = long long;
 using i128 = __int128_t;
 using u128 = unsigned __int128;
 using db = long double;
-constexpr int MOD = 998244353;
+constexpr int M = 998244353;
 // vect<T>:house header 里的自定义容器(带 += 追加、substr、operator+)。
 // 为了让 wqs.cpp 这类用了 substr/operator+ 的模板能编译,这里做成 vector 的薄派生类:
 // 既有 std::vector 的全部接口(下标/迭代器/resize/sort/all(...)),又补上 house 的额外接口。
@@ -39,10 +39,9 @@ using pll = pair<ll, ll>;
 #define cmax(a, b) ((a) < (b) ? (a) = (b), 0 : 0)
 #define For(i, l, r) for(int i = l, i##_e = r; i <= i##_e; ++i)
 #define rFor(i, r, l) for(int i = r, i##_e = l; i >= i##_e; --i)
-#define ForD(i, l, r) for(int i = l, i##_e = r; i < i##_e; ++i)
 
 // 快速幂(模乘按 ll,模数 > 2^32 会溢出 —— 大模数请像 Miller-Rabin 那样自带模乘)
-ll ksm(ll a, ll b, ll p = MOD) {
+ll ksm(ll a, ll b, ll p = M) {
     ll s = 1;
     a %= p;
     for(; b; b >>= 1, a = a * a % p)

@@ -16,17 +16,17 @@
 static poly naive_ln(const poly &f, int n) {
     if(n <= 0) return poly();
     poly g(n);
-    int i0 = ksm(f[0], MOD - 2, MOD);
+    int i0 = ksm(f[0], M - 2, M);
     For(i, 0, n - 1) {
         ll s = 0;
-        For(j, 1, i) if(j < (int) f.size()) s = (s + (ll) f[j] * g[i - j]) % MOD;
-        g[i] = (i == 0 ? i0 : (MOD - s) * i0 % MOD);
+        For(j, 1, i) if(j < (int) f.size()) s = (s + (ll) f[j] * g[i - j]) % M;
+        g[i] = (i == 0 ? i0 : (M - s) * i0 % M);
     }
     poly r(n);
     For(k, 0, n - 2) {  // [(f'·g)]_k → ln 的 k+1 次项
         ll s = 0;
-        For(j, 1, min((int) f.size() - 1, k + 1)) s = (s + (ll) f[j] * j % MOD * g[k + 1 - j]) % MOD;
-        r[k + 1] = s * ksm(k + 1, MOD - 2, MOD) % MOD;
+        For(j, 1, min((int) f.size() - 1, k + 1)) s = (s + (ll) f[j] * j % M * g[k + 1 - j]) % M;
+        r[k + 1] = s * ksm(k + 1, M - 2, M) % M;
     }
     return r;
 }
@@ -34,14 +34,14 @@ static poly naive_ln(const poly &f, int n) {
 static poly naive_ln2(const poly &f, int n) {
     poly s(n), cur(n), u(n);
     For(i, 0, min((int) f.size(), n) - 1) u[i] = f[i];
-    u[0] = (u[0] - 1 + MOD) % MOD;
+    u[0] = (u[0] - 1 + M) % M;
     cur = u;
     For(m, 1, n - 1) {
-        int c = ksm(m, MOD - 2, MOD);
-        if(!(m & 1)) c = MOD - c;
-        For(i, 0, n - 1) s[i] = (s[i] + (ll) cur[i] * c) % MOD;
+        int c = ksm(m, M - 2, M);
+        if(!(m & 1)) c = M - c;
+        For(i, 0, n - 1) s[i] = (s[i] + (ll) cur[i] * c) % M;
         poly t(n);  // cur *= u(O(n²) 朴素卷积,截到 n 项)
-        For(i, 0, n - 1) if(cur[i]) For(j, 0, n - 1 - i) t[i + j] = (t[i + j] + (ll) cur[i] * u[j]) % MOD;
+        For(i, 0, n - 1) if(cur[i]) For(j, 0, n - 1 - i) t[i + j] = (t[i + j] + (ll) cur[i] * u[j]) % M;
         cur = t;
     }
     return s;
@@ -65,7 +65,7 @@ static int bad(const char *what, const poly &f, int n, const poly &want, const p
 static poly rpoly(int len, int mode) {  // 0 稠密 1 稀疏 2 小值 3 全 1 4 首项 1 且其余稠密
     poly a(len);
     For(i, 0, len - 1) {
-        int v = (int) rnd(0, MOD - 1);
+        int v = (int) rnd(0, M - 1);
         if(mode == 1 && (i & 1)) v = 0;
         if(mode == 2) v = (int) rnd(0, 3);
         if(mode == 3 && i > 0) v = 0;
@@ -134,9 +134,9 @@ int main() {
             poly f = rpoly((int) rnd(1, 120), t % 4);
             poly g = poly_ln(f, n);
             poly dg(n - 1);
-            For(i, 1, n - 1) dg[i - 1] = (ll) g[i] * i % MOD;
+            For(i, 1, n - 1) dg[i - 1] = (ll) g[i] * i % M;
             poly lhs = mul(dg, f), df(n - 1);
-            For(i, 1, min((int) f.size(), n) - 1) df[i - 1] = (ll) f[i] * i % MOD;
+            For(i, 1, min((int) f.size(), n) - 1) df[i - 1] = (ll) f[i] * i % M;
             lhs.resize(n - 1), df.resize(n - 1);
             For(i, 0, n - 2) if(lhs[i] != df[i]) {
                 printf("  [FAIL] (ln f)'·f ≠ f' 于第 %d 位:n = %d, f = %s\n", i, n, pstr(f).c_str());
@@ -153,7 +153,7 @@ int main() {
             fg.resize(n, 0);
             fg[0] = 1;
             poly lhs = poly_ln(fg, n), lf = poly_ln(f, n), lg = poly_ln(g, n);
-            For(i, 0, n - 1) if(lhs[i] != (lf[i] + lg[i]) % MOD) {
+            For(i, 0, n - 1) if(lhs[i] != (lf[i] + lg[i]) % M) {
                 printf("  [FAIL] ln(f·g) ≠ ln f + ln g 于第 %d 位:n = %d, f = %s, g = %s\n", i, n, pstr(f).c_str(), pstr(g).c_str());
                 return 1;
             }
@@ -191,8 +191,8 @@ int main() {
         }
         // f = 1 - x → ln = -Σ x^i/i
         {
-            poly f{1, MOD - 1}, want(200), got = poly_ln(f, 200);
-            For(i, 1, 199) want[i] = MOD - ksm(i, MOD - 2, MOD);
+            poly f{1, M - 1}, want(200), got = poly_ln(f, 200);
+            For(i, 1, 199) want[i] = M - ksm(i, M - 2, M);
             int at = firstdiff(want, got);
             if(at >= 0) return bad("ln(1-x) = -Σ x^i/i", f, 200, want, got, at);
             ok("f = 1-x → ln f = -x - x²/2 - x³/3 - ...(n = 200)");
@@ -226,7 +226,7 @@ int main() {
             poly g = poly_ln(f, n);
             CHECK(g.size() == (size_t) n && g[0] == 0, "n = 1000:长度恰为 n 且常数项为 0");
             poly dg(n - 1), df(n - 1);
-            For(i, 1, n - 1) dg[i - 1] = (ll) g[i] * i % MOD, df[i - 1] = (ll) f[i] * i % MOD;
+            For(i, 1, n - 1) dg[i - 1] = (ll) g[i] * i % M, df[i - 1] = (ll) f[i] * i % M;
             poly lhs = mul(dg, f);
             lhs.resize(n - 1);
             bool allok = true;

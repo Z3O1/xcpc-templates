@@ -6,7 +6,6 @@ ll CRT(ll a1, ll p1, ll a2, ll p2) {
     ll x, y, g = exgcd(p1, p2, x, y);
     if((a2 - a1) % g) return -1;
     ll m1 = p1 / g, m2 = p2 / g, L = m1 * p2; // L = lcm(p1, p2)
-    // p1 * t ≡ a2 - a1 (mod p2) 约去 g 后:p1 / g * t ≡ (a2 - a1) / g (mod m2)
     ll k = (a2 - a1) / g % m2 * (x % m2 + m2) % m2;
     ll ans = ((i128)k * p1 + a1) % L; // mod lcm 得到 [0, lcm) 内的解
     return (ans + L) % L;

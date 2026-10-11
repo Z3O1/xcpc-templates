@@ -63,6 +63,6 @@ poly mul(poly a, poly b, int P) {
     return d;
 }
 } // namespace Mul
-// 普通卷积使用 base header 的常量 MOD;任意模数用 Mul::mul(a, b, P)。
+// 普通卷积使用 base header 的常量 M;任意模数用 Mul::mul(a, b, P)。
 using poly = vector<int>;
-poly mul(poly a, poly b) { return Mul::mul(move(a), move(b), MOD); }
+poly mul(poly a, poly b) { return Mul::mul(move(a), move(b), M); }

@@ -5,12 +5,12 @@
 // 做法:分治建出每段的乘积多项式 Π(x - xs[i]);从根往下令 f ← f mod 该段乘积
 //       (余式度数 < 段长),走到叶子时余式是常数,即该点的值。
 // 复杂度:O((|f| + m) log²(|f| + m)),m = |xs|;额外空间 O(m log m)(线段树上的多项式)。
-// 依赖:poly_mod、poly_inv、mul(ntt.cpp)、常量 MOD = 998244353;系数与点在 [0, MOD)。
+// 依赖:poly_mod、poly_inv、mul(ntt.cpp)、常量 M = 998244353;系数与点在 [0, M)。
 // 注意:xs 可重复(叶子 (x - xs[l]) 重根也无所谓)。
 
 using poly = vector<int>;
 static void _eval_build(poly *t, int k, int l, int r, const poly &xs) {
-    if(l == r) return void(t[k] = poly{(MOD - xs[l]) % MOD, 1}); // x - xs[l]
+    if(l == r) return void(t[k] = poly{(M - xs[l]) % M, 1}); // x - xs[l]
     int mid = (l + r) >> 1;
     _eval_build(t, k + k, l, mid, xs), _eval_build(t, k + k + 1, mid + 1, r, xs);
     t[k] = mul(t[k + k], t[k + k + 1]);

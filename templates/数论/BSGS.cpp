@@ -7,7 +7,7 @@
 ll BSGS(ll a, ll b, ll p) {
     a %= p, b %= p;
     if(p == 1) return 0;
-    if(b == 1) return 0; // a^0 = 1
+    if(b == 1) return 0;
     if(!a) return -1;
     // l = a 的阶:l | p - 1,从 p - 1 出发按素因子反复试除
     ll l = p - 1;
@@ -22,7 +22,6 @@ ll BSGS(ll a, ll b, ll p) {
         if(w == b) return y;
         w = (i128)w * a % p;
     }
-    // 大解写成 y = i * m + j(i >= 1, 0 <= j < m):a^j = b * a^(-i * m),查表命中即得
     unordered_map<ll, ll> pos;
     pos.reserve(m + 2);
     for(ll j = 0, w = 1 % p; j < m; ++j) {
