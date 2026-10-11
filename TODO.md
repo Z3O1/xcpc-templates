@@ -5,11 +5,11 @@
 ## 要加的板子
 
 - [ ] 二区间合并
-- [ ] 线性四边形不等式(SMAWK + Wilber)
 - [ ] 环上最优分割
 - [ ] k 短路
 - [ ] 拟阵交
 - [ ] det(Ax + B)
+- [ ] 万能欧几里得算法
 - [ ] https://codeforces.com/topic/112249
 
 每个新模板的流程:片段丢进 `templates/<章>/`(写法见 `AGENTS.md` §4)→ 配一份 `X.check.cpp`(§5)→
