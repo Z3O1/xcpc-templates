@@ -5,7 +5,9 @@ namespace DS {
 const int S = 1e7 + 10;
 pll tr[S];
 int ls[S], rs[S], tot;
-ll eval(pll f, ll x) { return f[0] * x + f[1]; }
+ll eval(pll f, ll x) {
+    return f[0] * x + f[1];
+}
 void bd() {
     memset(ls, 0, sizeof(ls)), memset(rs, 0, sizeof(rs));
     tot = 0;
@@ -27,4 +29,4 @@ ll que(int x, int k, int l = 1, int r = 1e6) {
     int m = (l + r) >> 1;
     return min(eval(tr[k], x), x <= m ? que(x, ls[k], l, m) : que(x, rs[k], m + 1, r));
 }
-} // namespace DS
+}  // namespace DS

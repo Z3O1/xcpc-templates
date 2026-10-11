@@ -9,7 +9,7 @@
 using poly = vector<int>;
 static const poly &_ln_inv_num(int n) { // 1..n 的模逆元表
     static poly iv{0, 1};
-    if((int)iv.size() <= n) {
+    if((int) iv.size() <= n) {
         int m = iv.size();
         iv.resize(n + 1);
         For(i, m, n) iv[i] = M - 1ll * (M / i) * iv[M % i] % M;
@@ -19,11 +19,11 @@ static const poly &_ln_inv_num(int n) { // 1..n 的模逆元表
 poly poly_ln(const poly &f, int n) {
     if(n <= 0) return poly();
     poly d(n - 1);
-    For(i, 1, min((int)f.size(), n) - 1) d[i - 1] = 1ll * f[i] * i % M; // f'
+    For(i, 1, min((int) f.size(), n) - 1) d[i - 1] = 1ll * f[i] * i % M;  // f'
     d = mul(d, poly_inv(f, n));                                           // f'/f
     d.resize(n - 1);
     const poly &iv = _ln_inv_num(n);
     poly g(n);
-    For(i, 1, n - 1) g[i] = 1ll * d[i - 1] * iv[i] % M; // 积分:系数除以 i
+    For(i, 1, n - 1) g[i] = 1ll * d[i - 1] * iv[i] % M;                   // 积分:系数除以 i
     return g;
 }

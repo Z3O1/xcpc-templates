@@ -11,6 +11,7 @@
 //   For(i, 1, n) apply(i);                             // 沿祖先链合并
 // 之后每次 upd(p, y - a[p]), a[p] = y; 再 getans() 即可。
 
+
 const int N = 1e6 + 10;
 const int INF = 1e9;
 struct mat {
@@ -71,9 +72,9 @@ int build(int l, int r) {
     For(i, l, r) {
         s2 += wt[i];
         if(s2 * 2 > s1) {
-            m = i;
-            break;
-        }
+        m = i;
+        break;
+    }
     }
     if(m == r) --m;
     int k = m << 1 | 1;

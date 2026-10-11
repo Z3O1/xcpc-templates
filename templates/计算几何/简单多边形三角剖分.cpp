@@ -35,7 +35,7 @@ vector<array<int, 3>> ear_clip(int n, p2 *a) {
     vector<int> prv(n), nxt(n);
     for(int i = 0; i < n; ++i) prv[i] = (i + n - 1) % n, nxt[i] = (i + 1) % n; // for(int i = l; i < r; ++i) 即 i = l..r-1
     int cnt = n;
-    auto live = [&](int x) { return prv[nxt[x]] == x && nxt[prv[x]] == x; }; // 还在环上
+    auto live = [&](int x) { return prv[nxt[x]] == x && nxt[prv[x]] == x; };  // 还在环上
     auto drop = [&](int x) {
         int p = prv[x], q = nxt[x];
         nxt[p] = q, prv[q] = p;
@@ -59,14 +59,14 @@ vector<array<int, 3>> ear_clip(int n, p2 *a) {
                 ch = 1;
             }
     }
-    if(cnt < 3) return ret; // 全是共线点: 面积 0, 没有合法三角形
+    if(cnt < 3) return ret;  // 全是共线点: 面积 0, 没有合法三角形
     for(; cnt > 2;) {
         int ear = -1;
         for(int cur = 0; cur < n; ++cur) {
             if(!live(cur)) continue;
             int p = prv[cur], q = nxt[cur];
             if(p == cur || q == cur || p == q) continue;
-            if((a[cur] - a[p]).det(a[q] - a[cur]) <= 0) continue; // 该顶点不是严格凸的
+            if((a[cur] - a[p]).det(a[q] - a[cur]) <= 0) continue;  // 该顶点不是严格凸的
             bool ok = 1;
             for(int i = nxt[q]; i != p && ok; i = nxt[i])
                 if(inside(a[i], a[p], a[cur], a[q])) ok = 0;
@@ -75,9 +75,9 @@ vector<array<int, 3>> ear_clip(int n, p2 *a) {
                 break;
             }
         }
-        if(ear < 0) break; // 一个耳都没有(输入不满足前置条件): 剩下的切不动, 直接停
+        if(ear < 0) break;  // 一个耳都没有(输入不满足前置条件): 剩下的切不动, 直接停
         int p = prv[ear], q = nxt[ear];
-        ret.push_back({p, ear, q}); // (prev, cur, next) 左转, 按逆时针输出
+        ret.push_back({p, ear, q});  // (prev, cur, next) 左转, 按逆时针输出
         drop(ear);
     }
     // 只剩 3 个点时上面那个循环不再进入: 若这三点共线(整个多边形面积 0), 没有合法三角形

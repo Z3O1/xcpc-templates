@@ -7,7 +7,9 @@ int n;
 vect<int> t[N], t2[N], q1[N];
 int fa[N], f1[N], dfn[N], pos[N], dt, sd[N], dm[N];
 pii f[N];
-void add(int u, int v) { t[u] += v, t2[v] += u; }
+void add(int u, int v) {
+    t[u] += v, t2[v] += u;
+}
 void dfs(int u) {
     dfn[u] = ++dt, pos[dt] = u;
     for(auto v : t[u]) if(!dfn[v]) dfs(v), f1[v] = u;
@@ -38,4 +40,4 @@ void getdom(int _n) {
     }
 }
 
-} // namespace DOM
+}  // namespace DOM

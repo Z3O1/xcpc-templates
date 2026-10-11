@@ -10,8 +10,12 @@ class Dinic_t {
         ll w;
     } e[N];
     int n, hd[N], cur[N], d[N], tot = 1, s, t;
-    void _add(int u, int v, ll w) { e[++tot] = {v, hd[u], w}, hd[u] = tot; }
-    void add(int u, int v, ll w) { _add(u, v, w), _add(v, u, 0); }
+    void _add(int u, int v, ll w) {
+        e[++tot] = {v, hd[u], w}, hd[u] = tot;
+    }
+    void add(int u, int v, ll w) {
+        _add(u, v, w), _add(v, u, 0);
+    }
     void clear() {
         For(i, 1, n) hd[i] = 0;
         n = s = t = 0, tot = 1;
@@ -23,32 +27,34 @@ class Dinic_t {
         d[s] = 0;
         queue<int> q;
         q.push(s);
-        while(q.size()) {
+        while (q.size()) {
             int u = q.front();
             q.pop();
-            if(u == t) return 1;
-            for(int i = cur[u]; i; i = e[i].n)
-                if(e[i].w && d[e[i].v] == -1) { d[e[i].v] = d[u] + 1, q.push(e[i].v); }
+            if (u == t) return 1;
+            for (int i = cur[u]; i; i = e[i].n)
+                if (e[i].w && d[e[i].v] == -1) {
+                    d[e[i].v] = d[u] + 1, q.push(e[i].v);
+                }
         }
         return 0;
     }
     ll dfs(int u, ll in) {
-        if(u == t) return in;
+        if (u == t) return in;
         ll out = 0;
-        for(int &i = cur[u]; i; i = e[i].n)
-            if(e[i].w && d[e[i].v] == d[u] + 1) {
+        for (int &i = cur[u]; i; i = e[i].n)
+            if (e[i].w && d[e[i].v] == d[u] + 1) {
                 ll fl = dfs(e[i].v, min(in, e[i].w));
                 e[i].w -= fl, e[i ^ 1].w += fl;
                 in -= fl, out += fl;
-                if(!in) break;
+                if (!in) break;
             }
-        if(!out) d[u] = -1;
+        if (!out) d[u] = -1;
         return out;
     }
     ll solve(int _s, int _t, int _n) {
         s = _s, t = _t, n = _n;
         ll ans = 0;
-        while(bfs()) ans += dfs(s, Z);
+        while (bfs()) ans += dfs(s, Z);
         return ans;
     }
     void cut(int *c) {
@@ -56,11 +62,11 @@ class Dinic_t {
         queue<int> q;
         c[s] = 0;
         q.push(s);
-        while(q.size()) {
+        while (q.size()) {
             int u = q.front();
             q.pop();
-            for(int i = hd[u]; i; i = e[i].n)
-                if(e[i].w && c[e[i].v]) {
+            for (int i = hd[u]; i; i = e[i].n)
+                if (e[i].w && c[e[i].v]) {
                     c[e[i].v] = 0;
                     q.push(e[i].v);
                 }

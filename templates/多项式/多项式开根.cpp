@@ -13,11 +13,11 @@ poly poly_sqrt(const poly &f, int n) {
     poly g{1};
     for(int m = 1; m < n; m <<= 1) {
         int t = min(m << 1, n);
-        poly c(f.begin(), f.begin() + min((int)f.size(), t)); // f mod x^t
-        poly d = mul(c, poly_inv(g, t));                      // f/g
+        poly c(f.begin(), f.begin() + min((int) f.size(), t));  // f mod x^t
+        poly d = mul(c, poly_inv(g, t));                        // f/g
         d.resize(t);
         g.resize(t);
-        For(i, 0, t - 1) g[i] = (g[i] + 1ll * d[i]) * ih % M; // (g + f/g)/2
+        For(i, 0, t - 1) g[i] = (g[i] + 1ll * d[i]) * ih % M;             // (g + f/g)/2
     }
     g.resize(n);
     return g;

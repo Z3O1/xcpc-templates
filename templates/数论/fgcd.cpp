@@ -14,8 +14,7 @@ struct fgcd_t {
                 a[i] = {i, 1, 1};
             }
             for(auto z : p) {
-                int x = i * z;
-                if(x > n) break;
+                int x = i * z; if(x > n) break;
                 b[x] = 1, a[x] = a[i];
                 *min_element(all(a[x])) *= z;
                 if(i % z == 0) break;

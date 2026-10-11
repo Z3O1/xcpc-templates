@@ -15,14 +15,14 @@ struct circle {
     p2 o;
     db r;
 };
-circle cir(p2 a, p2 b) { return {(a + b) / 2, dis(a - b) / 2}; } // 以 ab 为直径的圆
+circle cir(p2 a, p2 b) { return {(a + b) / 2, dis(a - b) / 2}; }  // 以 ab 为直径的圆
 bool in_circle(const circle &c, const p2 &x) { return cmp(dis(c.o - x), c.r) <= 0; }
 circle mcc(vector<p2> a) {
     if(a.empty()) return {{0, 0}, -1};
     static mt19937_64 mcc_rng(chrono::steady_clock::now().time_since_epoch().count());
     shuffle(a.begin(), a.end(), mcc_rng);
     circle c = {a[0], 0};
-    for(int i = 1; i < (int)a.size(); ++i) {
+    for(int i = 1; i < (int) a.size(); ++i) {
         if(in_circle(c, a[i])) continue;
         c = cir(a[0], a[i]);
         for(int j = 0; j < i; ++j) {
@@ -30,11 +30,14 @@ circle mcc(vector<p2> a) {
             c = cir(a[i], a[j]);
             for(int k = 0; k < j; ++k) {
                 if(in_circle(c, a[k])) continue;
-                if(!crossop({a[i], a[j]}, a[k])) { // 三点共线:最小圆取最远两点的直径
+                if(!crossop({a[i], a[j]}, a[k])) {  // 三点共线:最小圆取最远两点的直径
                     db dij = dis2(a[i] - a[j]), dik = dis2(a[i] - a[k]), djk = dis2(a[j] - a[k]);
-                    if(dij >= dik && dij >= djk) c = cir(a[i], a[j]);
-                    else if(dik >= djk) c = cir(a[i], a[k]);
-                    else c = cir(a[j], a[k]);
+                    if(dij >= dik && dij >= djk)
+                        c = cir(a[i], a[j]);
+                    else if(dik >= djk)
+                        c = cir(a[i], a[k]);
+                    else
+                        c = cir(a[j], a[k]);
                 } else {
                     auto o = circumcenter(a[i], a[j], a[k]);
                     p2 oc = {o[0], o[1]};

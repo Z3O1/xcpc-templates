@@ -11,10 +11,10 @@ poly poly_inv(const poly &f, int n) {
     poly g{int(ksm(f[0], M - 2, M))};
     for(int m = 1; m < n; m <<= 1) {
         int t = min(m << 1, n);
-        poly c(f.begin(), f.begin() + min((int)f.size(), t)); // f mod x^t
+        poly c(f.begin(), f.begin() + min((int) f.size(), t));  // f mod x^t
         poly d = mul(g, c);
         d.resize(t);
-        For(i, 0, t - 1) d[i] = ((i == 0 ? 2 : 0) - d[i] + M) % M; // 2 - f*g
+        For(i, 0, t - 1) d[i] = ((i == 0 ? 2 : 0) - d[i] + M) % M;  // 2 - f*g
         g = mul(g, d);
         g.resize(t);
     }

@@ -22,7 +22,7 @@ constexpr bool chkp(ll n) {
     return 1;
 }
 ll PR(ll n) {
-    mt19937_64 rng(114514);
+	mt19937_64 rng(114514);
     if(n % 2 == 0) return 2;
     static constexpr int S = 127;
     uniform_int_distribution<ll> rnd(1, n - 1);

@@ -8,9 +8,9 @@ int minmod(int n, int m, int a, ll b) {
         a %= m;
         b %= m;
         if(b < 0) b += m;
-        cmin(ans, (int)b);
-        n = ((ll)(n - 1) * a + b) / m;
-        b -= (ll)m * n;
+        cmin(ans, (int) b);
+        n = ((ll) (n - 1) * a + b) / m;
+        b -= (ll) m * n;
         swap(a, m);
     }
     return ans;

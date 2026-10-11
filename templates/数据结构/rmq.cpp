@@ -1,6 +1,7 @@
 // rmq_t: 数据结构 · O(1) RMQ(四毛子)
 
-template <typename T, typename cmp = less<T>, int dt = 1> struct rmq_t {
+template <typename T, typename cmp = less<T>, int dt = 1>
+struct rmq_t {
     static constexpr int B = 20;
     vector<T> a, pre, suf;
     vector<vector<T>> st;

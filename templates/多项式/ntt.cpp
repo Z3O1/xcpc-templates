@@ -7,12 +7,7 @@
 namespace Mul {
 using poly = vector<int>;
 template <int M, int G> static void NTT(poly &a, const int k) {
-    auto ksm = [&](ll a, int b) {
-        ll ans = 1;
-        for(; b; b >>= 1, a = a * a % M)
-            if(b & 1) ans = ans * a % M;
-        return ans;
-    };
+    auto ksm = [&](ll a, int b) {ll ans=1;for(;b;b>>=1,a=a*a%M)if(b&1)ans=ans*a%M;return ans; };
     static poly r, w;
     int n = a.size();
     if(n != r.size()) {
@@ -20,8 +15,7 @@ template <int M, int G> static void NTT(poly &a, const int k) {
         r.resize(n);
         For(i, 0, n - 1) r[i] = (r[i >> 1] >> 1) | ((i & 1) << (l - 1));
     }
-    For(i, 0, n - 1)
-        if(i < r[i]) swap(a[r[i]], a[i]);
+    For(i, 0, n - 1) if(i < r[i]) swap(a[r[i]], a[i]);
     ll wi = ksm(G, ((M - 1) >> 1) / n * k + M - 1);
     w.resize(n), w[0] = 1;
     For(i, 1, n - 1) w[i] = w[i - 1] * wi % M;
@@ -62,7 +56,7 @@ poly mul(poly a, poly b, int P) {
     }
     return d;
 }
-} // namespace Mul
+}  // namespace Mul
 // 普通卷积使用 base header 的常量 M;任意模数用 Mul::mul(a, b, P)。
 using poly = vector<int>;
 poly mul(poly a, poly b) { return Mul::mul(move(a), move(b), M); }

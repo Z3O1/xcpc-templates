@@ -14,8 +14,7 @@ vector<int> lag(vector<pair<int, int>> a) {
     For(i, 1, n) {
         auto [x, y] = a[i - 1];
         int w = 1, z = 0;
-        For(j, 1, n)
-            if(i != j) w = 1ll * w * (x - a[j - 1].first + M) % M;
+        For(j, 1, n) if(i != j) w = 1ll * w * (x - a[j - 1].first + M) % M;
         w = ksm(w, M - 2, M) * y % M;
         rFor(j, n - 1, 0) z = (f[j + 1] + 1ll * x * z) % M, ans[j] = (ans[j] + 1ll * z * w) % M;
     }
@@ -26,8 +25,7 @@ vector<int> lag(vector<pair<int, int>> a) {
 void lag_i(int n, int *a) {
     vector<int> f(n + 1, 0), g(n, 0);
     f[0] = 1;
-    For(i, 1, n)
-        rFor(j, i - 1, 0) f[j + 1] = (f[j + 1] + f[j]) % M, f[j] = 1ll * f[j] * (M - i) % M;
+    For(i, 1, n) rFor(j, i - 1, 0) f[j + 1] = (f[j + 1] + f[j]) % M, f[j] = 1ll * f[j] * (M - i) % M;
     For(i, 1, n) {
         int w = 1ll * a[i] * ifac(n - i) % M * ifac(i - 1) % M, s = 0;
         if((i ^ n) & 1) w = (M - w) % M;

@@ -8,8 +8,8 @@ void zfunc(int n, const int *const s, int *const z) {
     fill(z + 1, z + n + 1, 0), z[1] = n;
     int l = 1, r = 1;
     For(i, 2, n) {
-        if(i < r) z[i] = min(z[i - l + 1], r - i);
-        while(i + z[i] <= n && s[z[i] + 1] == s[i + z[i]]) ++z[i];
-        if(i + z[i] > r) l = i, r = i + z[i];
+        if (i < r) z[i] = min(z[i - l + 1], r - i);
+        while (i + z[i] <= n && s[z[i] + 1] == s[i + z[i]]) ++z[i];
+        if (i + z[i] > r) l = i, r = i + z[i];
     }
 }

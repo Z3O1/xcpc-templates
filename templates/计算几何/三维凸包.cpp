@@ -33,31 +33,18 @@ vector<face3> convex3d(const vector<p3> &a) {
     if(n < 4) return ret;
     // ---- 1. 找一个不共面的初始四面体 A,B,C,D ----
     int A = 0, B = -1, C = -1, D = -1;
-    for(int i = 0; i < n; ++i)
-        if(sign(dis(a[i] - a[A]))) {
-            B = i;
-            break;
-        }                 // 与 A 不重合
-    if(B < 0) return ret; // 全部点重合
+    for(int i = 0; i < n; ++i) if(sign(dis(a[i] - a[A]))) { B = i; break; }  // 与 A 不重合
+    if(B < 0) return ret;                                       // 全部点重合
     p3 w0 = a[B] - a[A];
-    for(int i = 0; i < n; ++i)
-        if(sign(dis(cross(a[i] - a[A], w0)) / dis(w0))) {
-            C = i;
-            break;
-        }                 // 不共线
-    if(C < 0) return ret; // 全部点共线
+    for(int i = 0; i < n; ++i) if(sign(dis(cross(a[i] - a[A], w0)) / dis(w0))) { C = i; break; }  // 不共线
+    if(C < 0) return ret;                                                            // 全部点共线
     plane p0(a[A], a[B], a[C]);
-    for(int i = 0; i < n; ++i)
-        if(sign(abs(p0.side(a[i])))) {
-            D = i;
-            break;
-        }                 // 离开 A,B,C 所在平面
-    if(D < 0) return ret; // 全部点共面
+    for(int i = 0; i < n; ++i) if(sign(abs(p0.side(a[i])))) { D = i; break; }  // 离开 A,B,C 所在平面
+    if(D < 0) return ret;                                         // 全部点共面
     // ---- 2. 把四个种子点排到前面,后面按顺序插入 ----
-    vector<int> id; // 局部下标 -> 原下标
+    vector<int> id;  // 局部下标 -> 原下标
     id.push_back(A), id.push_back(B), id.push_back(C), id.push_back(D);
-    for(int i = 0; i < n; ++i)
-        if(i != A && i != B && i != C && i != D) id.push_back(i);
+    for(int i = 0; i < n; ++i) if(i != A && i != B && i != C && i != D) id.push_back(i);
     vector<p3> b(n);
     for(int i = 0; i < n; ++i) b[i] = a[id[i]];
     struct F {
@@ -65,29 +52,29 @@ vector<face3> convex3d(const vector<p3> &a) {
         plane p;
     };
     vector<F> f;
-    f.push_back(F{0, 1, 2, plane(b[0], b[1], b[2])}); // 两个朝向的初始三角形,
-    f.push_back(F{0, 2, 1, plane(b[0], b[2], b[1])}); // 插入第 4 个点时朝向会自动定好
-    unordered_map<ll, int> vis;                       // 有向边 (u,v) -> 最后一次被删的轮次
+    f.push_back(F{0, 1, 2, plane(b[0], b[1], b[2])});  // 两个朝向的初始三角形,
+    f.push_back(F{0, 2, 1, plane(b[0], b[2], b[1])});  // 插入第 4 个点时朝向会自动定好
+    unordered_map<ll, int> vis;                        // 有向边 (u,v) -> 最后一次被删的轮次
     For(i, 3, n - 1) {
         vector<F> keep, kill;
         for(int t = 0; t < f.size(); ++t) {
-            if(f[t].p.side(b[i]) > eps) kill.push_back(f[t]); // 严格在外侧 -> 可见,删掉重连
+            if(f[t].p.side(b[i]) > eps) kill.push_back(f[t]);  // 严格在外侧 -> 可见,删掉重连
             else keep.push_back(f[t]);
         }
-        if(kill.empty()) continue; // 点在凸包内(或离面不超过 eps):不产生新顶点
+        if(kill.empty()) continue;  // 点在凸包内(或离面不超过 eps):不产生新顶点
         int e[3][2];
-        for(int t = 0; t < kill.size(); ++t) { // 先把被删面的三条有向边打上本轮标记
+        for(int t = 0; t < kill.size(); ++t) {  // 先把被删面的三条有向边打上本轮标记
             e[0][0] = kill[t].a, e[0][1] = kill[t].b;
             e[1][0] = kill[t].b, e[1][1] = kill[t].c;
             e[2][0] = kill[t].c, e[2][1] = kill[t].a;
-            for(int k = 0; k < 3; ++k) vis[(ll)e[k][0] * n + e[k][1]] = i;
+            for(int k = 0; k < 3; ++k) vis[(ll) e[k][0] * n + e[k][1]] = i;
         }
-        for(int t = 0; t < kill.size(); ++t) { // 反向边没被标记的边就是地平线,与新点连成新面
+        for(int t = 0; t < kill.size(); ++t) {  // 反向边没被标记的边就是地平线,与新点连成新面
             e[0][0] = kill[t].a, e[0][1] = kill[t].b;
             e[1][0] = kill[t].b, e[1][1] = kill[t].c;
             e[2][0] = kill[t].c, e[2][1] = kill[t].a;
             for(int k = 0; k < 3; ++k)
-                if(vis[(ll)e[k][0] * n + e[k][1]] == i && vis[(ll)e[k][1] * n + e[k][0]] != i)
+                if(vis[(ll) e[k][0] * n + e[k][1]] == i && vis[(ll) e[k][1] * n + e[k][0]] != i)
                     keep.push_back(F{e[k][0], e[k][1], i, plane(b[e[k][0]], b[e[k][1]], b[i])});
         }
         f.swap(keep);
@@ -109,5 +96,5 @@ db hull_volume(const vector<p3> &a, const vector<face3> &f) {
     return abs(s) / 6;
 }
 
-} // namespace Geo
+}  // namespace Geo
 using namespace Geo;

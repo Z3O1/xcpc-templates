@@ -11,7 +11,7 @@ u64 floor_sum(u64 n, u64 m, u64 a, u64 b) {
             ans += (unsigned __int128)n * (b / m);
             b %= m;
         }
-        u64 y = (i128)a * n + b;
+        u64 y = (i128) a * n + b;
         if(y < m) break;
         n = y / m;
         b = y % m;

@@ -26,8 +26,7 @@ void getmat(int rt) {
     };
     vis[rt] = 2, q.push(rt);
     while(q.size()) {
-        int u = q.front();
-        q.pop();
+        int u = q.front(); q.pop();
         for(auto v : t[u]) {
             if(fd(u) == fd(v)) continue;
             if(!vis[v]) pr[v] = u, vis[v] = 1, vis[mat[v]] = 2, q.push(mat[v]);

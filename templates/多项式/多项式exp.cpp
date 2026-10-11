@@ -11,9 +11,9 @@ poly poly_exp(const poly &f, int n) {
     poly g{1};
     for(int m = 1; m < n; m <<= 1) {
         int t = min(m << 1, n);
-        poly c = poly_ln(g, t); // ln g(mod x^t),g 只有 m 项、高次按 0 参与运算
-        For(i, 0, t - 1) c[i] = ((i < (int)f.size() ? f[i] : 0) - c[i] + M) % M;
-        c[0] = (c[0] + 1) % M; // 1 - ln g + f
+        poly c = poly_ln(g, t);  // ln g(mod x^t),g 只有 m 项、高次按 0 参与运算
+        For(i, 0, t - 1) c[i] = ((i < (int) f.size() ? f[i] : 0) - c[i] + M) % M;
+        c[0] = (c[0] + 1) % M;               // 1 - ln g + f
         g = mul(g, c);
         g.resize(t);
     }

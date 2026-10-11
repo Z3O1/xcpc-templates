@@ -25,10 +25,10 @@ p2 centroid(int n, p2 *a) {
         s += c;
         ret = ret + (u + v) * c;
     }
-    if(!sign(s)) { // 退化:退回顶点平均
+    if(!sign(s)) {  // 退化:退回顶点平均
         p2 av = {0, 0};
         for(int i = 0; i < n; ++i) av = av + a[i];
-        return av / (db)n;
+        return av / (db) n;
     }
     return ret / (3 * s);
 }

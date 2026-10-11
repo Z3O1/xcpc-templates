@@ -10,16 +10,15 @@ int bostan_mori(poly P, poly Q, ll n) {
     if(Q.size() == 1) return n < (ll)P.size() ? 1ll * P[n] * ksm(Q[0], M - 2, M) % M : 0;
     while(n) {
         // 只求第 n 项,高于 n 次的分子/分母项可安全丢弃。
-        if(n < (ll)P.size()) P.resize(n + 1);
-        if(n < (ll)Q.size()) Q.resize(n + 1);
+        if(n < (ll) P.size()) P.resize(n + 1);
+        if(n < (ll) Q.size()) Q.resize(n + 1);
         poly Qm = Q;
-        For(i, 1, (int)Qm.size() - 1)
-            if(i & 1) Qm[i] = (M - Qm[i]) % M; // Q(-x)
+        For(i, 1, (int) Qm.size() - 1) if(i & 1) Qm[i] = (M - Qm[i]) % M; // Q(-x)
         poly U = mul(P, Qm), V = mul(Q, Qm);
         P.clear();
-        for(int i = n & 1; i < (int)U.size(); i += 2) P.push_back(U[i]); // 取偶数/奇数项
+        for(int i = n & 1; i < (int) U.size(); i += 2) P.push_back(U[i]); // 取偶数/奇数项
         Q.clear();
-        for(int i = 0; i < (int)V.size(); i += 2) Q.push_back(V[i]);
+        for(int i = 0; i < (int) V.size(); i += 2) Q.push_back(V[i]);
         n >>= 1;
     }
     return 1ll * P[0] * ksm(Q[0], M - 2, M) % M;

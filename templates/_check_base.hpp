@@ -50,18 +50,18 @@ ll ksm(ll a, ll b, ll p = M) {
 }
 // —— check 通用小工具 ——
 mt19937_64 rng(chrono::steady_clock::now().time_since_epoch().count());
-inline ll rnd(ll l, ll r) { return l + (ll)(rng() % (u64)(r - l + 1)); }
+inline ll rnd(ll l, ll r) { return l + (ll) (rng() % (u64) (r - l + 1)); }
 inline void ok(const char *what) { printf("  [ok] %s\n", what); }
-#define CHECK(cond, name)                                                                                    \
-    do {                                                                                                     \
-        if(!(cond)) {                                                                                        \
-            printf("  [FAIL] %s (%s:%d)\n", name, __FILE__, __LINE__);                                       \
-            exit(1);                                                                                         \
-        }                                                                                                    \
-        ok(name);                                                                                            \
-    } while(0)
-#define PASSED(name)                                                                                         \
-    do {                                                                                                     \
-        printf("PASSED %s\n", name);                                                                         \
-        return 0;                                                                                            \
-    } while(0)
+#define CHECK(cond, name)                                                      \
+    do {                                                                       \
+        if(!(cond)) {                                                          \
+            printf("  [FAIL] %s (%s:%d)\n", name, __FILE__, __LINE__);         \
+            exit(1);                                                           \
+        }                                                                      \
+        ok(name);                                                              \
+    } while (0)
+#define PASSED(name)                                                           \
+    do {                                                                       \
+        printf("PASSED %s\n", name);                                           \
+        return 0;                                                              \
+    } while (0)

@@ -36,7 +36,9 @@ void init() {
 }
 ll lim, n0;
 int g1[N * 2], g2[N * 2];
-int id(ll n) { return n <= lim ? n : n0 / n + lim; }
+int id(ll n) {
+    return n <= lim ? n : n0 / n + lim;
+}
 void solveg(ll _n0) {
     n0 = _n0;
     lim = sqrt(n0);

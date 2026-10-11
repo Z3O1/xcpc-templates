@@ -10,7 +10,7 @@
 
 using poly = vector<int>;
 static void _eval_build(poly *t, int k, int l, int r, const poly &xs) {
-    if(l == r) return void(t[k] = poly{(M - xs[l]) % M, 1}); // x - xs[l]
+    if(l == r) return void(t[k] = poly{(M - xs[l]) % M, 1});  // x - xs[l]
     int mid = (l + r) >> 1;
     _eval_build(t, k + k, l, mid, xs), _eval_build(t, k + k + 1, mid + 1, r, xs);
     t[k] = mul(t[k + k], t[k + k + 1]);

@@ -8,7 +8,9 @@ struct MCMF_t {
         ll c;
     } e[N];
     int n, mx, hd[N], tot = 1, s, t, p[N];
-    void _add(int u, int v, int w, ll c) { e[++tot] = {v, hd[u], w, c}, hd[u] = tot; }
+    void _add(int u, int v, int w, ll c) {
+        e[++tot] = {v, hd[u], w, c}, hd[u] = tot;
+    }
     void add(int u, int v, int w, ll c) {
         // mx 是 clear() 的清零点,add() 就得抬它(只靠 mcmf() 抬的话,建完图没跑过就 clear() 会残留)
         cmax(mx, u), cmax(mx, v);
@@ -56,8 +58,7 @@ struct MCMF_t {
                     if(nd < d[v]) d[v] = nd, p[v] = i, q.emplace(-nd, v);
                 }
         }
-        For(i, 1, n)
-            if(d[i] != Z) d[i] += h[i], h[i] = d[i];
+        For(i, 1, n) if(d[i] != Z) d[i] += h[i], h[i] = d[i];
         return d[t] != Z;
     }
     pair<int, ll> mcmf(int _s, int _t, bool mcf = 0, int _n = 0) {
@@ -78,21 +79,20 @@ struct MCMF_t {
         static int ex[N];
         For(i, 1, _n) ex[i] = 0;
         int a1 = 0; ll a2 = 0;
-        For(i, 2, tot)
-            if(i % 2 == 0 && e[i].c < 0) {
-                int u = e[i ^ 1].v, v = e[i].v;
-                swap(e[i].w, e[i ^ 1].w);
-                ex[u] -= e[i ^ 1].w, ex[v] += e[i ^ 1].w;
-                a2 += e[i ^ 1].w * e[i].c;
-            }
-        For(i, 1, _n) { ex[i] > 0 ? add(_n + 1, i, ex[i], 0) : add(i, _n + 2, -ex[i], 0); }
+        For(i, 2, tot) if(i % 2 == 0 && e[i].c < 0) {
+            int u = e[i ^ 1].v, v = e[i].v;
+            swap(e[i].w, e[i ^ 1].w);
+            ex[u] -= e[i ^ 1].w, ex[v] += e[i ^ 1].w;
+            a2 += e[i ^ 1].w * e[i].c;
+        }
+        For(i, 1, _n) { ex[i] > 0 ? add(_n + 1, i, ex[i], 0) : add(i, _n + 2, -ex[i], 0);
+        }
         add(_t, _s, FL, 0);
         int aux = tot, n0 = n;
         a2 += mcmf(_n + 1, _n + 2, 0, _n + 2).second;
         a1 += e[aux].w;
         tot = aux - 2 * _n - 2, n = n0;
-        For(i, 1, n0)
-            while(hd[i] > tot) hd[i] = e[hd[i]].n;
+        For(i, 1, n0) while(hd[i] > tot) hd[i] = e[hd[i]].n;
         auto [a3, a4] = mcmf(_s, _t, mcf, _n);
         return {a1 + a3, a2 + a4};
     }
