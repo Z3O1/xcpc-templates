@@ -6,6 +6,7 @@ int mu[N + 1], phi[N + 1];
 ll smu[N + 1], sphi[N + 1];
 #include "杜教筛.cpp"
 
+// 运行杜教筛契约自测；覆盖查表、递推分支和记忆化稳定性；失败返回 1。
 int main() {
     // 自测自行用埃氏筛预处理,不依赖已删除的模板。
     For(i, 1, N) mu[i] = 1, phi[i] = i;
