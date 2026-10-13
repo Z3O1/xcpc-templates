@@ -6,10 +6,12 @@
 #include "../_check_base.hpp"
 #include "barrett.cpp"
 
+// 生成 u64 全域随机数；返回 rng 的 64 位输出。
 static u64 rnd_u64() { return rng(); }
-// 模数取 [2, 2^63](再大也行,但 2M 相关用例会溢出,单独测)
+// 生成测试模数；返回 [2,2^63) 内数值,便于构造 2M 周边用例。
 static u64 rnd_mod() { return 2 + rng() % ((1ull << 63) - 2); }
 
+// 运行 Barrett 约简自测；覆盖小模数穷举、u64 随机、倍数边界与固有 M=1 限制说明。
 int main() {
     // 1) 小模数 × 小值穷举:顺便压 x >= M 时那次条件减法
     {
