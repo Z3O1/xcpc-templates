@@ -3,6 +3,7 @@
 #include "sa.cpp"
 #include <unistd.h>
 
+// 暴力构造后缀数组；要求 a[1..n] 为待排序串；返回 1-indexed 排名数组。
 static vector<int> brute_sa(const vector<int> &a) {
     int n = (int)a.size() - 1;
     vector<int> p(n + 1);
@@ -15,11 +16,13 @@ static vector<int> brute_sa(const vector<int> &a) {
     });
     return p;
 }
+// 暴力求两个后缀 LCP；要求 x,y 为 1-indexed 合法起点；返回公共前缀长度。
 static int common_prefix(const vector<int> &a, int x, int y) {
     int n = (int)a.size() - 1, k = 0;
     while(x + k <= n && y + k <= n && a[x + k] == a[y + k]) ++k;
     return k;
 }
+// 打印失败上下文并退出；要求 a 为 1-indexed 测试串；不返回。
 static void fail(const char *what, const vector<int> &a, int at, int want, int got) {
     cerr << "[FAIL] " << what << " n=" << a.size() - 1 << " i=" << at
          << " want=" << want << " got=" << got << "\na=";
@@ -27,6 +30,7 @@ static void fail(const char *what, const vector<int> &a, int at, int want, int g
     cerr << endl;
     exit(1);
 }
+// 检查全局 sa/rk/height 结构不变量；要求刚对 a 调用过 SA。
 static void check_struct(const vector<int> &a) {
     int n = (int)a.size() - 1;
     vector<bool> seen(n + 1);
@@ -38,6 +42,7 @@ static void check_struct(const vector<int> &a) {
     }
     if(n && height[1]) fail("height[1] 应为0", a, 1, 0, height[1]);
 }
+// 小中规模完整对拍；要求 a[1..n] 合法；验证输入只读、sa/rk 和 height。
 static void check_small(const vector<int> &a) {
     vector<int> saved = a, want = brute_sa(a);
     int n = (int)a.size() - 1;
@@ -56,6 +61,7 @@ struct RH {
     static constexpr int K = 2;
     const u64 B[K]{0x9E3779B97F4A7C15ull, 0xC2B2AE3D27D4EB4Full};
     vector<u64> f[K], pw[K];
+    // 构建 1-indexed 双基前缀哈希；要求 a[1..n] 为待测串；覆盖内部数组。
     void build(const vector<int> &a) {
         For(k, 0, K - 1) {
             f[k].assign(a.size(), 0), pw[k].assign(a.size(), 1);
@@ -63,12 +69,14 @@ struct RH {
                 f[k][i] = f[k][i - 1] * B[k] + a[i] + 1, pw[k][i] = pw[k][i - 1] * B[k];
         }
     }
+    // 判断两个等长子串是否哈希相等；要求区间不越界；返回双基哈希比较结果。
     bool same(int x, int y, int len) const {
         For(k, 0, K - 1)
             if(f[k][x + len - 1] - f[k][x - 1] * pw[k][len] !=
                f[k][y + len - 1] - f[k][y - 1] * pw[k][len]) return false;
         return true;
     }
+    // 二分求两个后缀的 LCP；要求先 build 且 x,y 为 1-indexed 起点；返回长度。
     int prefix(int n, int x, int y) const {
         int lo = 0, hi = n - max(x, y) + 1;
         while(lo < hi) {
@@ -79,6 +87,7 @@ struct RH {
         return lo;
     }
 };
+// 运行 SA 回归；覆盖暴力对拍、空串、字符值边界、重复构建和 1e6 极端串。
 int main() {
     signal(SIGALRM, [](int) {
         constexpr char msg[] = "[FAIL] SA watchdog timeout\n";
