@@ -13,6 +13,7 @@ vect<int> fac_of(int x) {
     if(x > 1) fac += x;
     return fac;
 }
+// 求模素数 p 的最小原根；要求 p 为素数；无原根时返回 -1。
 int root(int p) {
     if(p == 2) return 1;
     auto fac = fac_of(p - 1);

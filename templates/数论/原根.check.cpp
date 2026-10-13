@@ -2,7 +2,7 @@
 #include "../_check_base.hpp"
 #include "原根.cpp"
 
-// 暴力:最小原根(枚举 g 并检查其所有幂是否覆盖全部非零剩余)
+// 暴力求最小原根；要求 p 为小素数；枚举幂覆盖全部非零剩余,无解返回 -1。
 int brute_root(int p) {
     if(p == 2) return 1;
     For(g, 2, p - 1) {
@@ -17,7 +17,7 @@ int brute_root(int p) {
     }
     return -1;
 }
-// 暴力:阶 —— 最小的 d 使 a^d ≡ 1
+// 暴力求阶；要求 gcd(a,p)=1 且 p 为小素数；返回最小 d>0,未找到返回 -1。
 int brute_ord(int a, int p) {
     ll cur = 1;
     For(d, 1, p - 1) {
@@ -27,6 +27,7 @@ int brute_ord(int a, int p) {
     return -1;
 }
 
+// 运行原根与阶契约自测；覆盖最小性、大素数和 fac_of 上界；失败返回 1。
 int main() {
     // 1) 小素数全量:root 与 ord 都跟暴力对照
     vect<int> primes;
