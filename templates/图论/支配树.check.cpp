@@ -41,6 +41,7 @@ static_assert(sizeof(DOM::f1) == sizeof(int) * (size_t) DOM::N, "DOM::f1 必须�
 
 // ———— 各用例隔离输入图/参考状态;另有不清算法状态的重复调用回归 ————
 static vect<int> adj[MX];   // check 自己的邻接表(与模板的 t[] 无关, 暴力用)
+// 清空模板图和参考图状态；要求用例点号小于 MX；覆盖算法数组与邻接表。
 static void reset_dom() {
     For(i, 0, MX - 1) {
         DOM::t[i].clear(), DOM::t2[i].clear();
@@ -50,15 +51,14 @@ static void reset_dom() {
     }
     DOM::dt = 0;
 }
+// 构造模板图与暴力参考图；n 参数不用；先清空再加边，保留输入边供 getdom 读取。
 static void build(int, const vect<array<int, 2>> &es) {   // n 用不到, 保留参数为了调用处对称
-    // 注意顺序:模板的 getdom() 现在会自己清 t[]/t2[]/q1[]/dfn[] 等状态,所以必须在
-    // 调 getdom 之前把边加进去 —— 原来的写法是"先 add 再 reset"(依赖旧的不自重置行为),
-    // 模板修好之后这样会把刚加的边清掉。
     reset_dom();
     for(auto &e : es) DOM::add(e[0], e[1]), adj[e[0]].push_back(e[1]);
 }
 
 // ———— 暴力: 删点可达性 ————
+// 判断删 ban 后 1 是否还能到 v；要求 adj 已按当前图构造；返回可达性。
 static bool reach(int v, int ban, int n) {
     vect<char> vis(n + 2, 0);
     deque<int> q;
@@ -74,6 +74,7 @@ static bool reach(int v, int ban, int n) {
 // ———— 暴力 idom: 定义法 ————
 // idom[v] = 严格支配点里"最近"的那个(偏序链的最大元), 并断言唯一
 static int n_ambig = 0;
+// 按定义求 v 的直接支配点；要求 v 从 1 可达且 v!=1；返回唯一最近支配点。
 static int brute_idom(int n, int v) {
     vect<int> D;
     For(u, 1, n) if(u != v && !reach(v, u, n)) D.push_back(u);   // u 支配 v(删 u 后 v 不可达)
@@ -88,6 +89,7 @@ static int brute_idom(int n, int v) {
     return best;
 }
 // 某图是否存在"可达点的不可达前驱"(已知 bug (A) 的触发条件)
+// 检查历史缺陷触发形态；要求 adj 已建好；返回是否有可达点带不可达前驱。
 static bool has_unreach_pred(int n, const vect<array<int, 2>> &es) {
     For(v, 1, n) if(reach(v, 0, n))
         for(auto &e : es) if(e[1] == v && !reach(e[0], 0, n)) return true;
@@ -95,6 +97,7 @@ static bool has_unreach_pred(int n, const vect<array<int, 2>> &es) {
 }
 
 static long long n_case = 0;
+// 输出反例边集；要求点编号 1..n；只打印诊断信息。
 static void dump_edges(int n, const vect<array<int, 2>> &es) {
     printf("  (n=%d, 边:", n);
     for(auto &e : es) printf(" %d>%d", e[0], e[1]);
@@ -103,6 +106,7 @@ static void dump_edges(int n, const vect<array<int, 2>> &es) {
 
 // ———— 单用例 ————
 // hard: true 表示"该用例必须全对"(全图从 1 可达 / 穷举里全可达的那些 / 手算用例)
+// 构建并校验单图支配树；要求点编号 1..n；失败直接退出。
 static void run_case(const char *tag, int n, const vect<array<int, 2>> &es, bool hard) {
     build(n, es);
     DOM::getdom(n);
@@ -157,11 +161,13 @@ static void run_case(const char *tag, int n, const vect<array<int, 2>> &es, bool
     }
 }
 
+// 判断当前参考图是否全从 1 可达；要求 adj 已建好；返回全可达标记。
 static bool all_reach(int n) {
     For(v, 1, n) if(!reach(v, 0, n)) return false;
     return true;
 }
 
+// 运行支配树手算、穷举和随机对拍；返回 0 表示全部通过。
 int main() {
     rng.seed(20240515);   // 固定种子: 每次跑同一批随机用例, 出问题可复现
     puts("— 手算用例 —");
