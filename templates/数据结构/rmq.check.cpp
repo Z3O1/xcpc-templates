@@ -8,6 +8,7 @@
 #include "../_check_base.hpp"
 #include "rmq.cpp"
 
+// 覆盖三种构建入口与 dt=0/1 下标约定；失败返回非 0。
 int main() {
     // 1) 1-based(dt=1):n = 1..80 与 2B±1 等块边界,全区间对穷举
     {
