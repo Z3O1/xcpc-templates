@@ -19,11 +19,16 @@ struct Brute {
     int n;
     vector<set<int>> g;
     vector<int> val;
+    // 构造 n 点空森林；点号 1-based；点权初始为 0。
     Brute(int n) : n(n), g(n + 1), val(n + 1, 0) {}
+    // 加入无向边；要求调用方不重复插入同一条边。
     void add(int u, int v) { g[u].insert(v), g[v].insert(u); }
+    // 删除无向边；边不存在时按 set::erase 静默处理。
     void del(int u, int v) { g[u].erase(v), g[v].erase(u); }
+    // 判断无向边是否存在；要求点号在 [1,n]。
     bool has(int u, int v) const { return g[u].count(v); }
-    bool path(int u, int v, int &res) { // 不连通时返回 false
+    // 暴力查询路径异或；要求点号 1-based；不连通时返回 false。
+    bool path(int u, int v, int &res) {
         vector<int> par(n + 1, 0), seen(n + 1, 0), q{u};
         seen[u] = 1;
         for(int h = 0; h < (int) q.size(); ++h) {
@@ -37,6 +42,7 @@ struct Brute {
         return true;
     }
 };
+// 打印失败信息并退出子进程；要求格式串与参数匹配；不返回。
 [[noreturn]] static void die(const char *fmt, ...) {
     va_list ap;
     va_start(ap, fmt);
@@ -166,6 +172,7 @@ static void case_relink() {
     _exit(0);
 }
 
+// 在干净子进程运行无参用例；返回 0 表示通过，非 0 表示崩溃或断言失败。
 static int forked(void (*fn)()) {
     fflush(stdout);
     pid_t pid = fork();
@@ -179,6 +186,7 @@ static int forked(void (*fn)()) {
     printf("  [FAIL] 子进程%s\n", WIFSIGNALED(st) ? "崩溃(SIGSEGV 等)" : "断言不通过");
     return 1;
 }
+// 在干净子进程运行带轮次参数的用例；父进程推进随机种子以避免继承同序列。
 template <class F> static int forked_arg(F fn, int arg) {
     fflush(stdout);
     u64 seed = rng(); // 在父进程推进状态,不能让各 fork 继承同一条随机序列。
@@ -198,6 +206,7 @@ template <class F> static int forked_arg(F fn, int arg) {
     return 1;
 }
 
+// 运行随机与结构化回归；任一子进程失败则返回非 0。
 int main() {
     int bad = 0;
     const int ROUNDS = 300;
