@@ -21,6 +21,7 @@ static vect<int> brute_z(int n, const int *s) {
     return z;
 }
 
+// 构造测试缓冲；要求 t[1..n] 是小写字母；写入 S[1..n] 并设置哨兵/canary。
 static void setup(int n, const char *t, int sentinel = 0) {   // t 1-indexed 的 0/1/2 字母
     S[0] = sentinel, S[n + 1] = 0;                            // 哨兵 0,字符集取 >= 1
     For(i, 1, n) S[i] = t[i] - 'a' + 1;
@@ -32,6 +33,7 @@ struct RH {
     static const int K = 2;
     u64 B[K];
     vect<u64> f[K], pw[K];
+    // 构建 1-indexed 双基前缀哈希；要求 s[1..n] 已填好；覆盖内部数组。
     void build(const int *s, int n) {
         B[0] = 0x9E3779B97F4A7C15ull, B[1] = 0xC2B2AE3D27D4EB4Full;
         For(k, 0, K - 1) {
@@ -39,15 +41,19 @@ struct RH {
             For(i, 1, n) f[k][i] = f[k][i - 1] * B[k] + (u64) (unsigned) s[i], pw[k][i] = pw[k][i - 1] * B[k];
         }
     }
+    // 取单个基的闭区间哈希；要求先 build 且 1 <= l <= r <= n；返回自然溢出值。
     u64 get(int k, int l, int r) { return f[k][r] - f[k][l - 1] * pw[k][r - l + 1]; }
+    // 比较两个闭区间是否哈希相同；要求区间长度一致且不越界；返回双基结果。
     bool same(int l1, int r1, int l2, int r2) {
         if(r1 - l1 != r2 - l2) return false;
         For(k, 0, K - 1) if(get(k, l1, r1) != get(k, l2, r2)) return false;
         return true;
     }
+    // 判断前缀与后缀片段是否相同；要求先 build 且 i+L-1 不越界；L<=0 视为真。
     bool pref(int i, int L) { return L <= 0 || same(1, L, i, i + L - 1); }   // s[1..L] 与 s[i..i+L-1]
 };
 
+// 运行 Z 函数回归；覆盖空串、脏缓冲、特殊结构和 1e6 极端串。
 int main() {
     zfunc(0, nullptr, nullptr);
     For(t, 1, 2000) {
