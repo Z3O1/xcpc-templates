@@ -11,7 +11,9 @@ const ll Z = 0x3f3f3f3f3f3f3f3fLL; // 模板里「没有直线」时的返回值
 // 不动物模板、也不动公共 header(结构化绑定 / 聚合初始化 / first-second 都保留)。
 struct pll2 {
     ll first, second;
+    // 按模板约定访问斜率/截距；i=0 返回 first，非 0 返回 second。
     ll &operator[](int i) { return i ? second : first; }
+    // 按模板约定只读访问斜率/截距；i=0 返回 first，非 0 返回 second。
     const ll &operator[](int i) const { return i ? second : first; }
 };
 #define pll pll2
@@ -19,10 +21,12 @@ struct pll2 {
 #undef pll
 
 static const int LO = 1, HI = 1000000;
+// 参考计算直线值；要求测试生成的乘加结果落在 ll 内。
 static ll eval_ref(const pll2 &l, ll x) {
     return (ll) ((i128) l.first * x + l.second); // 取样范围内在 ll 中,不调用 DS::eval。
 }
 
+// 覆盖随机直线、边界点与空树契约；失败返回非 0。
 int main() {
     DS::bd();
 
