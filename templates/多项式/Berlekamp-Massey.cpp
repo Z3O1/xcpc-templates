@@ -9,6 +9,7 @@
 // 复杂度:O(n²)。依赖:base header 的 For/ll/ksm/常量 M。
 
 using poly = vector<int>;
+// 求给定前缀的最短线性递推；要求系数在 [0,M)；返回按 a[i]=Σ c[j-1]a[i-j] 使用的系数。
 poly BM(const poly &a) {
     int n = a.size();
     if(!n) return poly();

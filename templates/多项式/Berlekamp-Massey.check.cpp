@@ -2,7 +2,7 @@
 #include "../_check_base.hpp"
 #include "Berlekamp-Massey.cpp"
 
-// 独立参考逆元:扩欧,不复用模板的快速幂。
+// 独立参考逆元；要求 v 非 0；返回 v 在模 M 下的乘法逆元。
 static int ref_inv(int v) {
     ll a = v, b = M, x = 1, y = 0;
     while(b) {
@@ -15,6 +15,7 @@ struct LS {
     bool cons, uniq;
     poly sol;
 };
+// 解固定阶数递推的线性方程组；要求 0 <= k <= |a|；返回是否相容、是否唯一及一组解。
 static LS brute_order(const poly &a, int k) {
     vector<poly> A;
     poly b;
@@ -45,16 +46,19 @@ static LS brute_order(const poly &a, int k) {
     For(i, 0, k - 1) if(where[i] >= 0) sol[i] = b[where[i]];
     return {true, row == k, sol};
 }
+// 格式化多项式前若干项；要求系数已可打印；返回带长度的调试字符串。
 static string pstr(const poly &a) {
     string s = "[" + to_string(a.size()) + "]";
     For(i, 0, min(20, (int)a.size()) - 1) s += " " + to_string(a[i]);
     return s;
 }
+// 打印失败现场并退出；要求参数为当前用例；不返回。
 static void fail(const char *what, const poly &a, const poly &got, const poly &want = {}) {
     cerr << "[FAIL] " << what << "\na=" << pstr(a) << "\ngot=" << pstr(got)
          << "\nwant=" << pstr(want) << endl;
     exit(1);
 }
+// 校验递推系数能拟合整段序列；要求 c 使用 BM 的符号约定；失败时退出。
 static void fits(const poly &a, const poly &c) {
     For(i, 0, (int)c.size() - 1) if(c[i] < 0 || c[i] >= M) fail("系数未归一", a, c);
     if(c.size() > a.size()) fail("阶数超过项数", a, c);
@@ -64,6 +68,7 @@ static void fits(const poly &a, const poly &c) {
         if(s != a[i]) fail("递推不能拟合", a, c);
     }
 }
+// 用暴力最小阶参考校验 BM；要求序列系数在 [0,M)；失败时退出。
 static void verify(const poly &a) {
     poly got = BM(a);
     fits(a, got);
@@ -76,11 +81,13 @@ static void verify(const poly &a) {
     }
     fail("参考无解", a, got);
 }
+// 生成随机序列；要求 n >= 0；返回长度为 n、系数在 [0,M) 的向量。
 static poly random_poly(int n) {
     poly a(n);
     for(int &x : a) x = rnd(0, M - 1);
     return a;
 }
+// 按递推扩展前缀；要求 a 至少提供所需初值或可补零；返回截到 n 项的序列。
 static poly gen(poly a, const poly &c, int n) {
     int k = c.size();
     a.resize(max(n, k));
@@ -92,6 +99,7 @@ static poly gen(poly a, const poly &c, int n) {
     a.resize(n);
     return a;
 }
+// 运行 BM 随机、暴力和边界自测；失败返回非零。
 int main() {
     rng.seed(20040924);
     For(t, 1, 3000) {
