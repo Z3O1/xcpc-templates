@@ -34,6 +34,7 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
+// 打印回归缺陷说明；要求 fmt 与实参匹配；仅输出诊断不终止。
 static void bug(const char *fmt, ...) {
     va_list ap;
     va_start(ap, fmt);
@@ -42,6 +43,7 @@ static void bug(const char *fmt, ...) {
     va_end(ap);
     fflush(stdout);
 }
+// 打印非致命扫描警告；要求 fmt 与实参匹配；仅输出诊断不终止。
 static void warn(const char *fmt, ...) {
     va_list ap;
     va_start(ap, fmt);
@@ -58,6 +60,7 @@ static const int MAXV = 200;   // check 里用到的最大点数(足以覆盖所
 // ———— 复位到"全新实例"的状态 ————
 // 注意: 不能直接用 mf.clear() —— 它靠 mx 决定清哪些 hd[](第 7 节守的就是这个)。
 // 这里手工复位, 并把 mx 也归零: 全新实例的 mx 本来就是 0(没调用过 mcmf()/mcmf2())。
+// 覆盖测试实例的图和势能状态；要求 MAXV 覆盖用例点号；不调用模板 clear()。
 static void reset() {
     For(i, 0, MAXV + 2) mf.hd[i] = 0, mf.h[i] = 0, mf.d[i] = 0, mf.p[i] = 0;
     mf.tot = 1, mf.n = mf.s = mf.t = 0, mf.mx = 0;
@@ -73,14 +76,17 @@ struct RefMCMF {
     int flow = 0;
     ll cost = 0;
     vect<pair<int, ll>> steps;   // 每次增广后的 (流量, 累计费用)
+    // 初始化参考图；要求点编号 1..n_；覆盖旧边和答案。
     void init(int n_) {
         n = n_, tot = 1, e.assign(2, E{});
         For(i, 0, MAXV + 7) hd[i] = 0;
     }
+    // 加一条参考有向费用容量边；要求已 init 且容量非负；加入反向残量边。
     void add(int u, int v, int w, ll c) {
         e.push_back({v, hd[u], w, c}), hd[u] = ++tot;
         e.push_back({u, hd[v], 0, -c}), hd[v] = ++tot;
     }
+    // 跑 SPFA 逐次最短路；要求无负环；覆盖 flow/cost/steps 并修改参考残量。
     void run(int s, int t, bool mcf) {
         const ll INF = LLONG_MAX / 4;
         flow = 0, cost = 0, steps.clear();
@@ -114,8 +120,11 @@ struct RefMCMF {
 struct EK {
     int n;
     vect<vect<ll>> c;
+    // 初始化矩阵容量图；要求点编号 1.._n；覆盖旧状态。
     void init(int _n) { n = _n, c.assign(n + 1, vect<ll>(n + 1, 0)); }
+    // 加一条有向容量；要求已 init 且容量非负；平行边累加。
     void add(int u, int v, ll w) { c[u][v] += w; }
+    // 求矩阵 Edmonds-Karp 最大流；要求 s,t 在 1..n；修改容量矩阵并返回流量。
     ll maxflow(int s, int t) {
         ll res = 0;
         while(1) {
@@ -138,6 +147,7 @@ struct EK {
 };
 
 // 原图是否有负环(有负环时"最小费用"无定义, 模板的 spfa() 也会死循环 → 这类用例必须剔除)
+// Bellman-Ford 判负环；要求 es/cs 等长且点编号 1..n；返回是否存在负费用环。
 static bool has_neg_cycle(int n, const vect<array<int, 3>> &es, const vect<ll> &cs) {
     vect<ll> d(n + 2, 0);
     For(it, 1, n) {
@@ -153,6 +163,7 @@ static bool has_neg_cycle(int n, const vect<array<int, 3>> &es, const vect<ll> &
 // 扫描前先剥掉 // 行注释: mcmf.cpp 的注释里也写着 "mcmf2()" / "mcmf(" / "e[...].w",
 // 带着注释扫的话断点会落到注释上(实测: mcmf2 的函数体被截成 spfa() 的, 两条判定全变 WARN,
 // 等于没有牙)。源码里没有字符串字面量, 所以简单按 "//" 切就够。
+// 去掉源码行注释；要求源码里无需保留字符串内的 //；返回供静态扫描的文本。
 static string strip_line_comments(const string &s) {
     string out;
     out.reserve(s.size());
@@ -166,12 +177,14 @@ static string strip_line_comments(const string &s) {
     }
     return out;
 }
+// 计算位置所在行号；要求 pos 不超过字符串长度；返回 1 开始的行号。
 static int line_of(const string &s, size_t pos) {
     int ln = 1;
     for(int i = 0; i < pos; ++i) if(s[i] == '\n') ++ln;
     return ln;
 }
 // 取从 '(' 开始到配对 ')' 之间的顶层逗号个数 + 1
+// 统计调用实参数；要求 lp 指向左括号；返回实参数，解析失败返回 -1。
 static int count_args(const string &s, size_t lp) {
     int dep = 0, cnt = 1;
     bool any = false;
@@ -185,6 +198,7 @@ static int count_args(const string &s, size_t lp) {
     }
     return -1;
 }
+// 静态扫描 mcmf2 历史缺陷；要求可读到 mcmf.cpp；返回是否命中回归。
 static bool scan_mcmf2() {
     static const char *paths[] = {"mcmf.cpp", "../图论/mcmf.cpp", "templates/图论/mcmf.cpp"};
     string src;
@@ -270,6 +284,7 @@ static bool scan_mcmf2() {
 
 // ———— clear() 的后果复现: 子进程 + 看门狗(不挂住 check) ————
 struct MfRes { int f; ll c; };
+// 子进程运行 clear() 回归复现；要求 which 为 0..2、ms 为毫秒超时；成功时写出结果。
 static bool run_child_mcmf(int which, MfRes &out, int ms) {
     int fd[2];
     if(pipe(fd)) return false;
@@ -304,6 +319,7 @@ static bool run_child_mcmf(int which, MfRes &out, int ms) {
     return !killed && got == (ssize_t) sizeof out;
 }
 
+// 运行费用流回归、静态扫描和随机对拍；返回 0 表示全部通过。
 int main() {
     rng.seed(20240513);   // 固定种子: 每次跑同一批随机用例, 出问题可复现
     long long ncase = 0;

@@ -1,5 +1,6 @@
 // MCMF_t: 图论 · 费用流 (势优化 + mcmf2 负环/下界修正)
 
+// 点编号 1..n；容量为非负 int、费用为 ll；要求无可增广负环且总流量/费用在返回类型内。
 struct MCMF_t {
     static constexpr int N = 1e6 + 10, FL = 1e9;
     static constexpr ll Z = 1e18;
@@ -8,14 +9,17 @@ struct MCMF_t {
         ll c;
     } e[N];
     int n, mx, hd[N], tot = 1, s, t, p[N];
+    // 加一条残量边；要求容量非负；只修改邻接表和边池。
     void _add(int u, int v, int w, ll c) {
         e[++tot] = {v, hd[u], w, c}, hd[u] = tot;
     }
+    // 加一条有向费用容量边；要求端点为正、容量非负；平行边保留为多条边。
     void add(int u, int v, int w, ll c) {
         // mx 是 clear() 的清零点,add() 就得抬它(只靠 mcmf() 抬的话,建完图没跑过就 clear() 会残留)
         cmax(mx, u), cmax(mx, v);
         _add(u, v, w, c), _add(v, u, 0, -c);
     }
+    // 清空用过点的邻接表；要求边已不再需要；重置边池和源汇但保留 mx 作为清零上界。
     void clear() {
         // 清到"用过的最大点数" mx:mcmf2() 的内层会用 _n + 2 个点跑,
         // 只清到当前 n 的话,超级源/汇那几条残留 hd[] 会让下一次调用拿陈旧前驱、
@@ -24,6 +28,7 @@ struct MCMF_t {
         tot = 1, s = t = 0;
     }
     ll h[N], d[N];
+    // 求初始势能；要求 s,n 已设置且不存在可达负环；覆盖 h[1..n]。
     void spfa() {
         static bool vis[N];
         For(i, 1, n) h[i] = Z;
@@ -42,6 +47,7 @@ struct MCMF_t {
             }
         }
     }
+    // 用非负约化费用找最短增广路；要求势能 h 有效；修改 d,p,h，返回 t 是否可达。
     bool dij() {
         For(i, 1, n) d[i] = Z;
         priority_queue<pair<ll, int>> q;
@@ -61,6 +67,7 @@ struct MCMF_t {
         For(i, 1, n) if(d[i] != Z) d[i] += h[i], h[i] = d[i];
         return d[t] != Z;
     }
+    // 求最小费用最大流；要求图无负环、点编号 1.._n；mcf=1 时只推负费用增广，返回(流量,费用)。
     pair<int, ll> mcmf(int _s, int _t, bool mcf = 0, int _n = 0) {
         s = _s, t = _t, n = _n, cmax(mx, _n);
         spfa();
@@ -74,6 +81,7 @@ struct MCMF_t {
         }
         return {a1, a2};
     }
+    // 先饱和负费用边再求费用流；要求无负环且 _n+2 不越界；会临时加辅助点并返回(流量,费用)。
     pair<int, ll> mcmf2(int _s, int _t, bool mcf = 0, int _n = 0) {
         s = _s, t = _t, n = _n, cmax(mx, _n + 2);
         static int ex[N];
