@@ -2,7 +2,7 @@
 #include "../_check_base.hpp"
 #include "BSGS.cpp"
 
-// 暴力:最小 x >= 0 使 a^x ≡ b (mod p);不存在返回 -1
+// 暴力求离散对数；要求 p > 0；返回最小 x >= 0,不存在返回 -1。
 ll brute(ll a, ll b, ll p) {
     ll w = 1 % p;
     for(ll x = 0; x <= 2 * p + 5; ++x) {
@@ -13,6 +13,7 @@ ll brute(ll a, ll b, ll p) {
     return w == b % p ? 0 : -1;
 }
 
+// 运行 BSGS 契约自测；覆盖最小解、无解和退化底数；失败返回 1。
 int main() {
     // 1) 小素数全量:(a, b) 所有组合与暴力对照
     long long cnt = 0;
