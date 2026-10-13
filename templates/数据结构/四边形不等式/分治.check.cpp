@@ -10,14 +10,17 @@ static ll pre[N];
 struct W {
     ll w = 0, sm = 0;
     int c[130] = {};
+    // 把下标 x 加入窗口右/左侧；要求 MODE 与 a[x] 值域已设置；更新 w。
     void add(int x) {
         if(MODE == 0) sm += a[x], w = sm * sm;
         else w += c[a[x]]++;
     }
+    // 从窗口移除下标 x；要求 x 当前在窗口内；更新 w。
     void del(int x) {
         if(MODE == 0) sm -= a[x], w = sm * sm;
         else w -= --c[a[x]];
     }
+    // 清空窗口状态；可重复调用；重置 w、sm 与计数桶。
     void clear() {
         w = sm = 0;
         memset(c, 0, sizeof c);
@@ -25,7 +28,7 @@ struct W {
 };
 #include "分治.cpp"
 
-// 直接算 w(k, i),与窗口无关
+// 直接算 w(k, i),与窗口无关；要求 0 <= k <= i <= n。
 static ll w_of(int k, int i) {
     if(MODE == 0) {
         ll s = pre[i] - pre[k];
@@ -37,6 +40,7 @@ static ll w_of(int k, int i) {
     For(t, k + 1, i) r += cc[a[t]]++;
     return r;
 }
+// 对照模板 f/p 与朴素 DP；要求 work(n) 已运行；失败返回 false 并打印。
 static bool same() {
     vector<ll> g(n + 1, (ll) 4e18);
     g[0] = 0;
@@ -51,6 +55,7 @@ static bool same() {
     }
     return true;
 }
+// 由 a[1..n] 重建前缀和；覆盖 pre[0..n]。
 static void set_pre() {
     pre[0] = 0;
     For(i, 1, n) pre[i] = pre[i - 1] + a[i];
@@ -67,6 +72,7 @@ static void legacy_globals_probe() {
     CHECK(s.l == 0 && s.r == 0 && t.l == 0 && t.r == 0 && Wa.w == 0 && Wb.w == 0, "旧全局 s/t 可复位");
 }
 
+// 覆盖两种窗口代价、重复调用与边界；失败返回非 0。
 int main() {
     rng.seed(20250921);
     legacy_globals_probe();

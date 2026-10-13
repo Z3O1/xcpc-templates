@@ -14,16 +14,21 @@ int p[N];
 struct wcur {
     W &w;
     int l, r;
+    // 移动左端点到 x，维护窗口 (l,r]；要求移动过程中下标在调用方有效范围内。
     void ml(int x) { while(l > x) w.add(l--); while(l < x) w.del(++l); }
+    // 移动右端点到 x，维护窗口 (l,r]；要求移动过程中下标在调用方有效范围内。
     void mr(int x) { while(r < x) w.add(++r); while(r > x) w.del(r--); }
+    // 清空游标窗口到 (0,0]；可重复调用；同时清空底层 W 状态。
     void rs() { w.clear(), l = r = 0; }
 };
 W Wa, Wb;
 wcur s{Wa, 0, 0}, t{Wb, 0, 0};
+// 用候选前驱 k 更新 f[i]；要求 w 是区间 (k,i] 的代价。
 void relax(ll w, int i, int k) {
     ll v = f[k] + w;
     if(v < f[i]) f[i] = v, p[i] = k;
 }
+// 分治填充开区间 (l,r) 的 DP；要求 p[l]..p[r] 决策单调且 f[l],f[r] 已可用。
 void dnc(int l, int r) {
     if(r - l == 1) return;
     int m = (l + r) >> 1;
@@ -42,6 +47,7 @@ void dnc(int l, int r) {
     t.ml(m), t.mr(m);
     dnc(m, r);
 }
+// 计算 f[0..n] 与决策 p[0..n]；可重复调用，会先清空两个滑动窗口。
 void work(int n) {
     s.rs(), t.rs();
     f[0] = 0, p[0] = 0;
