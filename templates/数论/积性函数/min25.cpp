@@ -2,10 +2,12 @@
 
 // 1 <= n <= 1e10;solve 可重复调用,init 只筛一次;func 是素数幂处的函数值。
 constexpr int i6 = (M + 1) / 6;
+// 模 M 加法；要求 0 <= a,b < M；原地把 a 加上 b。
 void add(int &a, int b) {
     a += b;
     a >= M && (a -= M);
 }
+// 模 M 减法；要求 0 <= a,b < M；原地把 a 减去 b。
 void sub(int &a, int b) {
     a -= b;
     a < 0 && (a += M);
@@ -13,6 +15,7 @@ void sub(int &a, int b) {
 const int N = 1e5 + 10;
 int p[N], pc, p2[N];
 int s1[N], s2[N], s[N];
+// 初始化 1e5 内素数及前缀表；可重复调用,已初始化时不再累加。
 void init() {
     if(pc) return;
     static const int n = 1e5;
@@ -36,9 +39,11 @@ void init() {
 }
 ll lim, n0;
 int g1[N * 2], g2[N * 2];
+// 映射 n0/i 的取值到数组下标；要求已调用 solveg 设置 n0 与 lim。
 int id(ll n) {
     return n <= lim ? n : n0 / n + lim;
 }
+// 预处理 g 表；要求 1 <= _n0 <= 1e10 且 init 已完成；覆盖当前 n0 的全部除法块。
 void solveg(ll _n0) {
     n0 = _n0;
     lim = sqrt(n0);
@@ -60,11 +65,14 @@ void solveg(ll _n0) {
         rFor(j, lim, min(lim + 1, y)) doit(j, i, j, j / x);
     }
 }
+// 查询筛后素数贡献前缀；要求 solveg(n0) 后且 n 是 n0 的除法块取值；返回模 M 结果。
 int g(ll n) { return (g2[id(n)] - g1[id(n)] + M) % M; }
+// 计算素数幂处函数值；要求 n >= 1；返回 n*(n-1) mod M。
 ll func(ll n) {
     n %= M;
     return n * (n - 1) % M;
 }
+// 递归计算 Min_25 剩余贡献；要求 solveg(n) 已建表且 p[m] 以下素数已剔除；返回模 M 结果。
 int f(ll n, int m) {
     if(p[m] > n) return 0;
     ll ans = g(n) - s[m] + M;
@@ -75,6 +83,7 @@ int f(ll n, int m) {
     }
     return ans % M;
 }
+// 求 1 + sum_{2<=i<=n} F(i)；要求 1 <= n <= 1e10；可重复调用并返回模 M 结果。
 ll solve(ll n) {
     init();
     solveg(n);

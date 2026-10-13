@@ -14,6 +14,7 @@ static const int REFN = 2000000;
 static vector<int> ref_pre; // ref_pre[i] = 1 + Σ_{2..i} F
 static vector<int> ref_primes;
 
+// 构造独立线性筛参考前缀；覆盖 [1,REFN]；写入 ref_pre 与 ref_primes。
 static void build_ref() {
     static vector<int> lp(REFN + 1, 0), low(REFN + 1, 0), F(REFN + 1, 0);
     For(i, 2, REFN) {
@@ -36,6 +37,7 @@ static void build_ref() {
     For(i, 2, REFN) s = (s + F[i]) % M, ref_pre[i] = (int) s;
 }
 // 单个 F(n):n <= 1e10 时试除到 1e5 就够(剩下的因子必为素数)
+// 试除计算单点乘性函数 F；要求 1 <= n <= 1e10 且 ref_primes 已构建；返回模 M 值。
 static ll F_of(ll n) {
     ll res = 1;
     for(int p : ref_primes) {
@@ -49,11 +51,13 @@ static ll F_of(ll n) {
     return res;
 }
 // 模板侧:一次 init 之后,对任意 n 取 solveg(n) + f(n,0)
+// 调用模板内部路径求前缀；要求 init 已完成；返回 solveg(n)+f(n,0) 的模 M 值。
 static ll via(ll n) {
     solveg(n);
     return ((f(n, 0) + 1) % M + M) % M;
 }
 
+// 运行 min25 契约自测；覆盖小值前缀、大值差分和重复调用；失败返回 1。
 int main() {
     build_ref();
     CHECK(ref_pre[10] == 263, "参考侧自检:F 前缀和在 n=10 等于 263(乘性延拓,非 Σi(i−1)=331)");
