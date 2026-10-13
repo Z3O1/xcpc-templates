@@ -2,14 +2,14 @@
 #include "../_check_base.hpp"
 #include "二次剩余.cpp"
 
-// 暴力:枚举所有 y 判断 x 是否有平方根
+// 暴力判定二次剩余；要求奇素数 p 且小规模；返回是否存在平方根。
 bool brute_qr(ll x, ll p) {
     if(x == 0) return true;
     For(y, 1, p - 1) if((i128) y * y % p == x % p) return true;
     return false;
 }
 
-// 大 p 下的独立欧拉判别参考:用 i128 乘法,不复用可能溢出的 base ksm。
+// 用独立欧拉判别参考二次剩余；要求 signed 乘法不超过 i128；返回是否为剩余。
 bool euler_ref(ll x, ll p) {
     if(x == 0) return true;
     ll r = 1, a = x % p, e = (p - 1) / 2;
@@ -17,6 +17,7 @@ bool euler_ref(ll x, ll p) {
     return r == 1;
 }
 
+// 用完整 u64 模乘参考二次剩余；要求 p 为奇素数；返回是否为剩余。
 bool euler_ref_u64(u64 x, u64 p) {
     if(!x) return true;
     u64 r = 1, e = (p - 1) / 2;
@@ -28,6 +29,7 @@ bool euler_ref_u64(u64 x, u64 p) {
     return r == 1;
 }
 
+// 运行二次剩余契约自测；覆盖判别、开根和完整 u64 模数；失败返回 1。
 int main() {
     // 小素数全量:quadres 与暴力一致、sqrtp 结果验证
     for(ll p : {3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 97, 101, 103, 107, 109, 113, 127, 131, 193}) {
