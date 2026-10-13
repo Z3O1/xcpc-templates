@@ -2,7 +2,7 @@
 #include "../../_check_base.hpp"
 #include "SMAWK.cpp"
 
-// 与暴力对照:返回 false 并打印
+// 与暴力对照；要求 que 定义在 [1,n]×[1,m]；失败返回 false 并打印。
 template <typename Q> static bool cmp(int n, int m, Q &&que) {
     auto [f, fp] = SMAWK<ll>(n, m, que);
     For(i, 1, n) {
@@ -16,6 +16,7 @@ template <typename Q> static bool cmp(int n, int m, Q &&que) {
     return true;
 }
 
+// 覆盖随机 Monge、平局与退化矩阵；失败返回非 0。
 int main() {
     rng.seed(20250921);
 

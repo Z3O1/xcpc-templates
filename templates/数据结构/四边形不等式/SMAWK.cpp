@@ -1,5 +1,6 @@
 // SMAWK(): 数据结构 · SMAWK (全单调矩阵行最值)
 
+// 求全单调矩阵每行最小值；行列均 1-based，要求 que(i,j) 可比较；返回 f 与最小列 fp。
 template <typename T, typename Q> pair<vect<T>, vect<int>> SMAWK(int n0, int m, Q &&que) {
     vect<T> f(n0 + 1, T());
     vect<int> fp(n0 + 1, 0), b(m + 1, 0);
