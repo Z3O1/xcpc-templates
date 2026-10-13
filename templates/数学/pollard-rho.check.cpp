@@ -9,6 +9,7 @@
 static_assert(!chkp(0) && !chkp(1) && chkp(2) && chkp(3) && !chkp(4) && chkp(73), "constexpr 判素边界");
 static const int SN = 1000000;
 static vector<int> is_c, primes;
+// 构造线性筛参考表；覆盖 [0,SN] 合数标记并追加所有素数。
 static void build_sieve() {
     is_c.assign(SN + 1, 0);
     For(i, 2, SN) {
@@ -20,6 +21,7 @@ static void build_sieve() {
         }
     }
 }
+// 试除分解参考；要求 n >= 1 且 primes 已覆盖到 sqrt(n)；返回升序去重质因子。
 static vect<ll> trial(ll n) {
     vect<ll> r;
     for(int p : primes) {
@@ -32,6 +34,7 @@ static vect<ll> trial(ll n) {
     if(n > 1) r += n;
     return r;
 }
+// 格式化因子列表；不修改输入；返回逗号分隔字符串。
 static string str(const vect<ll> &a) {
     string s;
     for(ll x : a) {
@@ -40,6 +43,7 @@ static string str(const vect<ll> &a) {
     }
     return s;
 }
+// 校验 fact 结果；要求 want 已升序去重；失败时打印 n 与结果并退出。
 static void test_fact(ll n, const vect<ll> &want) {
     vect<ll> got = fact(n);
     if(got.size() != want.size() || !equal(all(got), want.begin())) {
@@ -61,6 +65,7 @@ static void test_fact(ll n, const vect<ll> &want) {
     }
 }
 
+// 运行 Pollard-Rho 自测；覆盖判素全域、MR 回归、大半素数与升序去重分解约定。
 int main() {
     alarm(50); // 即使单独运行,错误判素导致的分解死循环也不能卡住测试。
     build_sieve();

@@ -3,6 +3,7 @@
 // hide
 
 // chkp 接受 ll;PR 要求 n 为正合数,fact 要求 n >= 1,返回升序去重质因子。
+// 判定素数；接受 signed ll 全范围输入；返回 n 是否为素数。
 constexpr bool chkp(ll n) {
     if(n < 2) return 0;
     if(n % 2 == 0) return n == 2;
@@ -23,6 +24,7 @@ constexpr bool chkp(ll n) {
     }
     return 1;
 }
+// 寻找 Pollard-Rho 因子；要求 n 为正合数；返回一个非平凡因子,偶数直接返回 2。
 ll PR(ll n) {
 	mt19937_64 rng(114514);
     if(n % 2 == 0) return 2;
@@ -45,6 +47,7 @@ ll PR(ll n) {
         }
     }
 }
+// 分解质因数；要求 n >= 1；返回升序去重质因子。
 vect<ll> fact(ll n) {
     if(n == 1) return {};
     vect<ll> f;
