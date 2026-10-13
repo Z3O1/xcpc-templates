@@ -6,6 +6,7 @@
 //   旧 bug 的最小复现:add(1,2,3) add(2,3,4) add(1,3,1); solve(1,3,3) → 0(应为 4)。
 #include "../_check_base.hpp"
 #include "dinic.cpp"
+// 打印回归缺陷说明；要求 fmt 与实参匹配；仅输出诊断不终止。
 static void bug(const char *fmt, ...) {
     va_list ap;
     va_start(ap, fmt);
@@ -16,6 +17,7 @@ static void bug(const char *fmt, ...) {
 }
 
 // ———— 独立暴力 1:枚举所有割(s 侧子集),min cut == max flow ————
+// 枚举最小割容量；要求 n 小且点编号 1..n、容量非负；返回 s-t 割最小容量。
 static ll brute_mincut(int n, int s, int t, const vect<array<int, 3>> &es) {
     ll best = LLONG_MAX;
     for(int mask = 0; mask < 1 << n; ++mask) {
@@ -33,8 +35,11 @@ static ll brute_mincut(int n, int s, int t, const vect<array<int, 3>> &es) {
 struct EK {
     int n;
     vect<vect<ll>> c;
+    // 初始化矩阵容量图；要求点编号 1.._n；覆盖旧状态。
     void init(int _n) { n = _n, c.assign(n + 1, vect<ll>(n + 1, 0)); }
+    // 加一条有向容量；要求已 init 且容量非负；平行边累加。
     void add(int u, int v, ll w) { c[u][v] += w; }
+    // 求矩阵 Edmonds-Karp 最大流；要求 s,t 在 1..n；修改容量矩阵并返回流量。
     ll maxflow(int s, int t) {
         ll res = 0;
         while(1) {
@@ -57,6 +62,7 @@ struct EK {
 };
 
 // ———— 从模板自身残余网络重算 s 可达集(独立于 cut()) ————
+// 重算 f.s 的残余可达集；要求 f 已 solve；返回 1..f.n 的可达标记。
 static vect<char> residual_reach() {
     vect<char> vis(f.n + 2, 0);
     vect<int> st;
@@ -71,6 +77,7 @@ static vect<char> residual_reach() {
 }
 
 // 对当前 f 中已建好的图做割集检查;cap 由调用方按原图容量算
+// 校验 cut() 输出与残量可达性、割容量一致；要求 f 保留求流后的残量；失败直接退出。
 static void cut_checks(int n, int s, int t, ll flow, const vect<array<int, 3>> &es, const char *tag) {
     static vect<int> cut;
     cut.assign(n + 2, 0);
@@ -95,6 +102,7 @@ static void cut_checks(int n, int s, int t, ll flow, const vect<array<int, 3>> &
         return (void) printf("  [FAIL] %s 割容量 %lld < 流值 %lld\n", tag, cap, flow), exit(1);
 }
 
+// 运行 Dinic 回归与随机对拍；返回 0 表示全部通过，非 0 表示发现缺陷。
 int main() {
     // ———— 0) 旧 bug(「最大流恒为 0」)回归探测 + 基础用例 ————
     f.clear();
