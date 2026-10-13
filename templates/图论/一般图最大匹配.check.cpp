@@ -48,6 +48,7 @@ static const int CHK_MAXN = 24;   // check 自己用到的最大点数
 extern int MAT[] asm("_ZZ6getmatiE3mat");
 
 static const int WATCHDOG_MS = 60;   // 单个用例的看门狗上限(正确实现跑 n<=10 只花微秒)
+// 打印回归缺陷说明；要求 fmt 与实参匹配；仅输出诊断不终止。
 static void bug(const char *fmt, ...) {
     va_list ap;
     va_start(ap, fmt);
@@ -56,6 +57,7 @@ static void bug(const char *fmt, ...) {
     va_end(ap);
     fflush(stdout);
 }
+// 打印非致命观测警告；要求 fmt 与实参匹配；仅输出诊断不终止。
 static void warn(const char *fmt, ...) {
     va_list ap;
     va_start(ap, fmt);
@@ -64,6 +66,7 @@ static void warn(const char *fmt, ...) {
     va_end(ap);
     fflush(stdout);
 }
+// 输出反例边集；要求点编号 1..n；只打印诊断信息。
 static void dump_edges(int n, const vect<array<int, 2>> &es) {
     printf("  (n=%d, 边:", n);
     for(auto &e : es) printf(" %d-%d", e[0], e[1]);
@@ -88,6 +91,7 @@ struct MatchOut {
 };
 
 // 在子进程里跑标准驱动; done = false 表示挂死/异常
+// 隔离运行模板标准驱动；要求 n<=CHK_MAXN；返回匹配、轨迹和是否超时。
 static MatchOut run_match(int n, const vect<array<int, 2>> &es) {
     MatchOut out;
     int fd[2];
@@ -172,6 +176,7 @@ static MatchOut run_match(int n, const vect<array<int, 2>> &es) {
 }
 
 // ———— 独立暴力 1: 枚举所有边子集 ————
+// 枚举边子集求最大匹配；要求边数不大于 20；过大返回 -1。
 static int brute_edges(int, const vect<array<int, 2>> &es) {   // n 用不到(只按边枚举), 保留参数是为了两个暴力接口一致
     int m = (int) es.size(), best = 0;
     if(m > 20) return -1;
@@ -193,6 +198,7 @@ static int brute_edges(int, const vect<array<int, 2>> &es) {   // n 用不到(�
 }
 
 // ———— 独立暴力 2: 子集 DP(与带花树/增广路算法完全无关) ————
+// 子集 DP 求最大匹配；要求 n<=20 且简单无向语义；过大返回 -1。
 static int brute_dp(int n, const vect<array<int, 2>> &es) {
     if(n > 20) return -1;
     vect<int> adj(n + 2, 0);
@@ -212,6 +218,7 @@ static int brute_dp(int n, const vect<array<int, 2>> &es) {
 
 // ———— 单用例结果 ————
 enum Kind { K_OK, K_HANG, K_SUBOPT, K_INVALID, K_OVERSIZE };
+// 转换判定枚举为中文说明；要求 k 为 Kind 之一；返回静态字符串。
 static const char *kind_name(Kind k) {
     switch(k) {
         case K_HANG: return "死循环";
@@ -227,6 +234,7 @@ struct Verdict {
     int bad_i = 0, bad_j = 0, bad_jj = 0;
     bool polluted = false;
 };
+// 对单图运行模板并与暴力比较；要求 n<=CHK_MAXN；返回分类结论和反例信息。
 static Verdict check_case(int n, const vect<array<int, 2>> &es) {
     Verdict v;
     MatchOut o = run_match(n, es);
@@ -270,6 +278,7 @@ static Verdict check_case(int n, const vect<array<int, 2>> &es) {
 static long long n_case = 0, n_ok = 0, n_hang = 0, n_sub = 0, n_invalid = 0, n_bug = 0;
 static int n_printed = 0;   // [BUG] 用例明细最多打印几条
 
+// 运行一般图匹配回归、穷举和随机对拍；返回 0 表示全部通过。
 int main() {
     rng.seed(20240514);   // 固定种子: 每次跑同一批随机用例, 出问题可复现
     puts("— 观测窗口自检(getmat 内 static mat[] 的符号别名) —");

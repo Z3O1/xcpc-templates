@@ -1,10 +1,12 @@
 // getmat(): 图论 · 一般图最大匹配
 
-// n: 点数，t: 无向边
+// n: 点数，t: 无向边；点编号 1..n，匹配状态 mat 为 getmat 内部静态数组。
 
 int n, fa[N];
 vect<int> t[N];
+// 查询并压缩并查集代表；要求 fa 已在本次搜索初始化；返回 u 所在花的代表。
 int fd(int u) { return fa[u] == u ? u : fa[u] = fd(fa[u]); }
+// 从未匹配根 rt 尝试一次增广；要求外层按未匹配点反复调用；修改内部静态 mat 和搜索状态。
 void getmat(int rt) {
     static int vis[N], mat[N], pr[N];
     For(i, 1, n) vis[i] = pr[i] = 0, fa[i] = i;
