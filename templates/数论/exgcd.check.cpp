@@ -2,6 +2,7 @@
 #include "../_check_base.hpp"
 #include "exgcd.cpp"
 
+// 运行 exgcd 契约自测；覆盖零值、大正数与逆元用法；失败返回 1。
 int main() {
     // 小范围穷举(含 0)
     For(a, 0, 60) For(b, 0, 60) {
