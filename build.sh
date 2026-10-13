@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# 一键生成 sections.typ 并编译 xcpc.pdf;--watch 监听已有模板的内容变化。
+# 生成 sections.typ 并编译/覆盖 xcpc.pdf；额外参数原样传给 Typst。
+# --watch 仅在启动时扫描模板；增删文件、改 manifest/隐藏标记后须重启。
 set -euo pipefail
 cd "$(dirname "$0")"
 
