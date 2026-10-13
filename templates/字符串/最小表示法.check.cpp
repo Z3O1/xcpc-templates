@@ -6,7 +6,7 @@
 #include "../_check_base.hpp"
 #include "最小表示法.cpp"
 
-// 把容器 a 从 p 开始的循环移位拼出来
+// 把容器 a 从 p 开始的循环移位拼出来；要求 0 <= p < |a|；返回新序列。
 template <class T> static vect<T> rot(const vect<T> &a, int p) {
     int n = (int) a.size();
     vect<T> r;
@@ -14,6 +14,7 @@ template <class T> static vect<T> rot(const vect<T> &a, int p) {
     For(i, 0, n - 1) r.push_back(a[(p + i) % n]);
     return r;
 }
+// 把字符串 a 从 p 开始循环移位；要求 0 <= p < |a|；返回新字符串。
 static string rot_s(const string &a, int p) {
     int n = (int) a.size();
     string r;
@@ -21,7 +22,7 @@ static string rot_s(const string &a, int p) {
     For(i, 0, n - 1) r += a[(p + i) % n];
     return r;
 }
-// 暴力:枚举所有起点取字典序最小的循环移位,并数出并列最小值的个数
+// 暴力枚举最小循环移位；要求 a 非空且元素可比较；返回最小序列并写入并列个数。
 template <class T> static vect<T> brute_min_rot(const vect<T> &a, int &ties) {
     int n = (int) a.size();
     vect<T> best = rot(a, 0);
@@ -33,6 +34,7 @@ template <class T> static vect<T> brute_min_rot(const vect<T> &a, int &ties) {
     }
     return best;
 }
+// 暴力枚举字符串最小循环移位；要求 a 非空；返回最小字符串并写入并列个数。
 static string brute_min_rot_s(const string &a, int &ties) {
     int n = (int) a.size();
     string best = rot_s(a, 0);
@@ -45,7 +47,7 @@ static string brute_min_rot_s(const string &a, int &ties) {
     return best;
 }
 
-// Booth 最小表示法(Wikipedia 版,O(n),与模板完全不同的推导):独立预言机
+// Booth 独立预言机；要求整数序列可随机访问；返回一个最小循环移位起点，空/单元素为 0。
 static int booth(const vect<int> &s) {
     int n = (int) s.size();
     if(n <= 1) return 0;
@@ -74,6 +76,7 @@ struct RotCmp {
     vect<int> a;              // 原始串(比较两个起点的下一个元素时要用值,不是下标)
     u64 B[2];
     vect<u64> f[2], pw[2];
+    // 构建双倍串哈希；要求 s 非空；覆盖 n/a/f/pw。
     void build(const vect<int> &s) {
         n = (int) s.size(), a = s;
         B[0] = 0x9E3779B97F4A7C15ull, B[1] = 0xC2B2AE3D27D4EB4Full;
@@ -85,6 +88,7 @@ struct RotCmp {
             }
         }
     }
+    // 比较双倍串两个片段是否相同；要求起点 1-indexed 且长度不越界；返回双基哈希结果。
     bool same(int a, int b, int L) {   // ss[a..a+L-1] == ss[b..b+L-1](1-indexed 起点)
         if(L <= 0) return true;
         For(k, 0, 1) {
@@ -94,6 +98,7 @@ struct RotCmp {
         }
         return true;
     }
+    // 比较两个循环移位字典序；要求先 build 且 p,q 为 0-indexed 合法起点；<0 表示 p 更小。
     int cmp_rot(int p, int q) {   // <0 表示 p 的循环移位更小
         int lo = 0, hi = n;
         while(lo < hi) {
@@ -106,6 +111,7 @@ struct RotCmp {
     }
 };
 
+// 运行最小表示法回归；覆盖边界、并列最小、容器类型和 1e6 大串。
 int main() {
     // ---------- 1) 退化/边界:空、单字符、两字符 ----------
     {
