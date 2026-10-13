@@ -33,7 +33,9 @@
 // (没有 operator[])。这里就地补一个等价局部类型,不动物模板、也不动公共 header。
 struct gbt_pll {
     ll first, second;
+    // 按模板约定访问第 0/1 个分量；非 0 下标返回 second。
     ll &operator[](int i) { return i ? second : first; }
+    // 按模板约定只读访问第 0/1 个分量；非 0 下标返回 second。
     const ll &operator[](int i) const { return i ? second : first; }
 };
 #define pll gbt_pll
@@ -43,6 +45,7 @@ static int a[N];
 
 // ———————— 固定种子的随机数(_check_base 的 rnd 用 steady_clock 播种,不可复现)————————
 static mt19937_64 FRng(0x20240911ULL);
+// 生成闭区间 [l,r] 内的可复现随机数；要求 l <= r。
 static ll frnd(ll l, ll r) { return l + (ll) (FRng() % (u64) (r - l + 1)); }
 
 struct Case {
@@ -57,6 +60,7 @@ struct Naive {
     int n;
     vector<vector<int>> g;
     vector<int> par, ord; // ord 是 1 为根的 DFS 前序,倒过来就是「孩子先算」的顺序
+    // 构造以 1 为根的参考树；要求 es 为 n-1 条连通无向边；填充父亲与遍历序。
     Naive(int n, const vector<pair<int, int>> &es) : n(n), g(n + 1), par(n + 1), ord() {
         for(auto &[u, v] : es) g[u].push_back(v), g[v].push_back(u);
         vector<char> vis(n + 1, 0);
@@ -68,6 +72,7 @@ struct Naive {
             for(int v : g[u]) if(!vis[v]) vis[v] = 1, par[v] = u, st.push_back(v);
         }
     }
+    // 计算当前点权的最大权独立集；要求 w[1..n] 可读；不修改内部树。
     ll solve(const vector<int> &w) const {
         vector<ll> f0(n + 1, 0), f1(n + 1, 0);
         for(int k = (int) ord.size() - 1; k >= 0; --k) {
@@ -80,6 +85,7 @@ struct Naive {
 };
 
 // ———————— 驱动:照抄模板 main 的调度(模板 main 不能调用,原因见文件头)————————
+// 按模板头注释初始化全局树；要求在干净子进程中只调用一次。
 static void setup_tree(const Case &c) {
     n = c.n;
     For(i, 1, n) t[i].clear();
@@ -89,6 +95,7 @@ static void setup_tree(const Case &c) {
     For(i, 1, n) if(tp[i] == i) rt[i] = build(dfn[tp[i]], dfn[dw[tp[i]]]);
     For(i, 1, n) apply(i);
 }
+// 执行一组改权操作并收集模板答案；out 只追加，不会先清空。
 static void tmpl_answers(const Case &c, vector<int> &out) {
     setup_tree(c);
     int ans = 0;
@@ -278,6 +285,7 @@ static void case_stable() {
 static const int WATCHDOG = 10; // 秒;单用例正常 <= 0.2s,真死循环就让它在这一行炸出来
 static int g_killed = 0;        // 有子进程被信号杀死 -> 立刻收工,别让整轮 check 逼近 60s 上限
 
+// 在带看门狗的子进程运行一个 Case；失败时打印 name 并返回非 0。
 static int run_case(const char *name, const Case &c, void (*fn)(const Case &) = compare_case) {
     fflush(stdout);
     pid_t pid = fork();
@@ -299,6 +307,7 @@ static int run_case(const char *name, const Case &c, void (*fn)(const Case &) = 
     return 1;
 }
 
+// 在带看门狗的子进程运行无参用例；失败时打印 name 并返回非 0。
 static int run_fn(const char *name, void (*fn)()) {
     fflush(stdout);
     pid_t pid = fork();
@@ -319,6 +328,7 @@ static int run_fn(const char *name, void (*fn)()) {
     return 1;
 }
 
+// 随机矩阵对照全部子区间；要求在干净子进程中运行以避免 build 状态残留。
 static void case_subranges() {
     For(t, 1, 200) {
         int n = frnd(2, 30);
@@ -349,6 +359,7 @@ static void case_subranges() {
     }
 }
 
+// 顺序运行边界、随机与矩阵子区间回归；任一失败返回非 0。
 int main() {
     int bad = 0;
     char name[128];
