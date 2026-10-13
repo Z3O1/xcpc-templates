@@ -2,13 +2,14 @@
 #include "../_check_base.hpp"
 #include "下取整和.cpp"
 
-// 逐项暴力(i128 累加,避免答案本身溢出)
+// 逐项暴力求和；要求 m > 0；用 u128 累加并返回精确值。
 u128 brute(u64 n, u64 m, u64 a, u64 b) {
     u128 s = 0;
     for(u64 i = 0; i < n; ++i) s += ((u128) a * i + b) / m;
     return s;
 }
 
+// 运行 floor_sum 契约自测；覆盖分支剥离、高 n 与返回上界；失败返回 1。
 int main() {
     // 小范围穷举
     For(n, 0, 40) For(m, 1, 40) For(a, 0, 40) For(b, 0, 40) {

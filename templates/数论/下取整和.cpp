@@ -1,5 +1,6 @@
 // floor_sum(): 数论 · 下取整和 (sum floor((a * i + b) / m))
 
+// 求 sum_{0<=i<n} floor((a*i+b)/m)；要求 m > 0 且 a*n+b 能放入 u64；返回值须不超过 u64 上界。
 u64 floor_sum(u64 n, u64 m, u64 a, u64 b) {
     unsigned __int128 ans = 0;
     for(;;) {
