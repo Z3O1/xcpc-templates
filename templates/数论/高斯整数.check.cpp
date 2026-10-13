@@ -3,15 +3,19 @@
 #include "高斯整数.cpp"
 
 // ---- 独立参考实现与工具 ----
+// 计算高斯整数范数；要求坐标平方和放入 u128；返回 a^2+b^2。
 u128 nrm(gi x) { return (u128) x.a * x.a + (u128) x.b * x.b; }
+// 归一化高斯整数；按模板同一单位元规则；返回唯一代表用于比较。
 gi canon(gi x) {  // 同一套归一规则, 用来比较"差一个单位"的两个结果
     if(x.a < 0 || (x.a == 0 && x.b < 0)) x = {-x.a, -x.b};
     if(x.b < 0) x = {-x.b, x.a}; else if(x.a == 0) x = {x.b, 0};
     return x;
 }
+// 相乘两个高斯整数；要求结果坐标放入 ll；返回乘积。
 gi gmul(gi x, gi y) {
     return {(ll) ((i128) x.a * y.a - (i128) x.b * y.b), (ll) ((i128) x.a * y.b + (i128) x.b * y.a)};
 }
+// 判定整除；要求 g 非零才可能成功；可整除时写入商 q 并返回 true。
 bool exact_div(gi x, gi g, gi &q) {  // g | x ? 顺便给出商
     i128 ra = (i128) x.a * g.a + (i128) x.b * g.b;
     i128 rb = (i128) x.b * g.a - (i128) x.a * g.b;
@@ -20,6 +24,7 @@ bool exact_div(gi x, gi g, gi &q) {  // g | x ? 顺便给出商
     q = {(ll) (ra / d), (ll) (rb / d)};
     return true;
 }
+// 暴力求 gcd；要求小坐标；返回归一化的最大范数公因子。
 gi brute(gi x, gi y) {  // 暴力: 在盒子里找范数最大、同时整除 x 与 y 的高斯整数
     if(nrm(x) == 0 && nrm(y) == 0) return {0, 0};
     u128 lim = min(nrm(x) == 0 ? nrm(y) : nrm(x), nrm(y) == 0 ? nrm(x) : nrm(y));
@@ -34,6 +39,7 @@ gi brute(gi x, gi y) {  // 暴力: 在盒子里找范数最大、同时整除 x 
     return canon(best);
 }
 
+// 运行高斯整数 gcd 契约自测；覆盖暴力对拍、大坐标和退化值；失败返回 1。
 int main() {
     // 1) 小坐标随机对拍: 跟暴力参考比(归一后必须完全相等)
     int bad = 0;

@@ -6,7 +6,9 @@
 // 拆 4k+1 型素数 p: 取 r = g^((p-1)/4) 是模 p 的 -1 的平方根, gcd(p, r + i) 的模长平方就是 p。
 
 struct gi { ll a, b; };
+// 对 p/d 四舍五入到最近整数；要求 d > 0；负数按远离 0 的半数处理。
 i128 rd(i128 p, i128 d) { return (p >= 0 ? p + d / 2 : p - d / 2) / d; }  // 四舍五入
+// 求高斯整数 gcd；要求坐标绝对值 <= 1e18；返回按单位元归一后的 gcd。
 gi gi_gcd(gi x, gi y) {
     while(y.a || y.b) {
         i128 d = (i128) y.a * y.a + (i128) y.b * y.b;                 // |y|^2
