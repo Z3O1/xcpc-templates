@@ -17,6 +17,7 @@ cd "$(dirname "$0")" || exit 1
 
 timeout_s="${XCPC_CHECK_TIMEOUT:-60}"   # 单个 check 的墙钟上限(卡死=FAIL,不再挂住整轮)
 
+# 将帮助写到标准输出；调用方可自行重定向到标准错误。
 usage() {
     cat <<'EOF'
 用法:
@@ -70,7 +71,7 @@ if [[ ${#all[@]} -eq 0 ]]; then
     exit 1
 fi
 
-# 按名字精确解析成 check 路径:接受 模板名 / xxx.check.cpp / 章/模板名 等写法
+# 将模板名/文件名/路径解析为唯一的仓库相对 check 路径；无匹配或有歧义返回 1。
 resolve_exact() {
     local name=$1 target src candidate
     if [[ -f "$name" && "$name" == *.check.cpp ]]; then
@@ -95,6 +96,7 @@ resolve_exact() {
 # —— 选定要跑的 check 列表(保持 find 的顺序,去重) ——
 declare -A seen=()
 checks=()
+# 将非空路径去重追加到 checks，保持首次加入顺序；共享 seen 须已初始化。
 add_check() {
     [[ -n "${seen[$1]:-}" ]] && return 0
     seen[$1]=1; checks+=("$1")
@@ -135,16 +137,18 @@ mkdir -p tmp || exit 1
 tmpdir=$(mktemp -d "$PWD/tmp/check.XXXXXX") || exit 1
 trap 'rm -rf "$tmpdir"' EXIT
 
-# /proc/uptime 不受系统校时影响,避免 WSL 时钟回拨使耗时出现负数。
+# 返回秒数时间戳；优先读单调的 /proc/uptime，不可读时退回系统时钟。
 now() {
     local uptime rest
     if [[ -r /proc/uptime ]]; then read -r uptime rest < /proc/uptime; echo "$uptime";
     else date +%s.%N; fi
 }
+# 输出 b-a 秒（1 位小数）；两参数须为同一时钟的数值时间戳。
 elapsed() { awk -v a="$1" -v b="$2" 'BEGIN{printf "%.1f", b - a}'; }
 
-# run_check <src> <log>:编译并运行一个 check,把结果写进 <log>
-# 退出码:0 = ok,1 = FAIL(含超时),2 = 编译失败
+# 编译并运行 src，结果写入 log；log 须为绝对路径，父目录已存在。
+# 仅运行阶段按 timeout_s 限时，编译不受此限时限制。
+# 返回 0 成功、1 运行失败/超时、2 编译失败。
 run_check() {
     local src=$1 log=$2 bin t0 t1 rc r line output="$2.out" body=''
     bin="$log.bin"
