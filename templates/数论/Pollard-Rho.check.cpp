@@ -3,6 +3,7 @@
 #include "Miller-Rabin.cpp"
 #include "Pollard-Rho.cpp"
 
+// 运行 Pollard-Rho 契约自测；覆盖升序带重数追加和大整数分解；失败返回 1。
 int main() {
     auto trial = [](u64 x) {
         vect<u64> r;

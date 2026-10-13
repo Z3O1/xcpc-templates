@@ -1,6 +1,6 @@
 // fact(): 数论 · Pollard-Rho 分解质因数 (配合 chkp 使用)
 
-// 整数平方根(Newton 法),用来摘掉完全平方数
+// 求整数平方根；要求 x 为 u64；返回最大 r 使 r^2 <= x,乘法用 u128 防溢出。
 u64 isqrt(u64 x) {
     if(x < 2) return x;
     u64 r = sqrtl((long double) x);
@@ -39,6 +39,7 @@ u64 rho(u64 x) {
         }
     }
 }
+// 递归分解质因数；要求 x >= 1 且 chkp 可用；把未排序质因子带重数追加到 res。
 static void fact_rec(u64 x, vect<u64> &res) {
     if(x == 1) return;
     if(chkp(x)) return res += x, void();
