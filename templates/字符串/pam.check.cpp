@@ -15,6 +15,7 @@ int tot;                // 节点数(含两个根)
 char *a;                // 串缓冲(模板直接用的名字)
 int m;                  // 串数(模板 cin >> m 读的就是它)
 
+// 分配模板依赖的全局数组；要求 cap 覆盖总字符数加根节点；释放旧缓冲并更新容量。
 static void pam_alloc(int cap) {
     free(len), free(fa), free(t), free(a);
     pam_cap = cap;
@@ -24,16 +25,17 @@ static void pam_alloc(int cap) {
     a = (char *) malloc(cap + 8);
     if(!len || !fa || !t || !a) { printf("  [FAIL] 分配失败(cap=%d)\n", cap); exit(1); }
 }
-// 每个测试文件前复位:节点都是 ++tot 新建的(len/fa 由模板赋值),只需清转移表 + tot 复位
+// 每个测试文件前复位；节点由模板 ++tot 新建，清空转移表并恢复两个根。
 static void pam_reset() {
     memset(t, 0, sizeof(int) * 26 * (pam_cap + 1));
     tot = 2, len[0] = -1, len[1] = 0, fa[1] = 0;
 }
+// 运行被测代码片段；要求 cin 已指向测试输入，直接修改全局 PAM 数组。
 // ↓↓↓ pam.cpp 一字不改地放在函数体里 ↓↓↓
 static void run_template() {
 #include "pam.cpp"
 }
-// 喂 m 个串进 cin,跑一遍模板
+// 喂 m 个小写串进 cin 并跑一遍模板；必要时扩容，覆盖重建全局 PAM。
 static void pam_run(const vect<string> &strs) {
     int total = 0;
     for(auto &s : strs) total += (int) s.size();
@@ -64,6 +66,7 @@ static void brute_pals(const vect<string> &strs, set<string> &S, long long &tota
 struct H2 {
     u64 B[2];
     vect<u64> f[2], pw[2];
+    // 构建 1-indexed 前缀哈希；要求 s 为普通 0-indexed 字符串；覆盖内部数组。
     void build(const string &s) {
         B[0] = 0x9E3779B97F4A7C15ull, B[1] = 0xC2B2AE3D27D4EB4Full;
         int n = (int) s.size();
@@ -72,10 +75,12 @@ struct H2 {
             For(i, 1, n) f[k][i] = f[k][i - 1] * B[k] + (u64) (unsigned char) s[i - 1], pw[k][i] = pw[k][i - 1] * B[k];
         }
     }
+    // 取闭区间 [l,r] 的双哈希；要求先 build 且 1 <= l <= r <= |s|；返回自然溢出哈希。
     pair<u64, u64> get(int l, int r) {   // 1-indexed 闭区间
         return {f[0][r] - f[0][l - 1] * pw[0][r - l + 1], f[1][r] - f[1][l - 1] * pw[1][r - l + 1]};
     }
 };
+// 用中心扩展和哈希统计不同回文串数；要求字符串为小写普通串；返回去重后的数量。
 static long long brute_pal_count_hash(const vect<string> &strs) {
     vect<pair<u64, u64>> hs;
     for(auto &s : strs) {
@@ -96,7 +101,7 @@ static long long brute_pal_count_hash(const vect<string> &strs) {
 }
 
 // ---------- 把模板建出来的自动机"读出来"并核对 ----------
-// 每个非根节点的回文串(BFS:偶根为空串,奇根的子节点是单字符)
+// 从全局 PAM 还原每个非根节点的回文串；要求已建图；覆盖 ns/reach，失败返回 false。
 static bool collect_nodes(vect<string> &ns, int &reach) {
     ns.assign(tot + 1, string());
     vect<int> q;
@@ -118,7 +123,7 @@ static bool collect_nodes(vect<string> &ns, int &reach) {
     For(u, 3, tot) if(ns[u].empty()) return false;   // 有节点不可达(节点 2 是模板 tot=2 起步留的洞)
     return reach == tot - 1;   // q = {偶根 1} + 真节点(编号 3..tot,共 tot-2 个)
 }
-// 节点数目/长度/回文串集合 与暴力对照
+// 核对节点数、长度和 fail 链；要求全局 PAM 对应 strs，exact=true 时逐节点对照集合。
 static bool check_against_brute(const vect<string> &strs, bool exact) {
     set<string> S;
     long long total = 0;
@@ -169,6 +174,7 @@ static bool check_against_brute(const vect<string> &strs, bool exact) {
     return true;
 }
 
+// 运行广义 PAM 回归；覆盖单串/多串、精确集合、哈希计数和 1e6 极端输入。
 int main() {
     pam_alloc(64);
     // ---------- 1) 穷举:单串 {a,b} 长 1..10、{a,b,c} 长 1..6 ----------
