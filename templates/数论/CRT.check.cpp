@@ -3,6 +3,7 @@
 #include "exgcd.cpp"
 #include "CRT.cpp"
 
+// 运行 CRT 契约自测；覆盖有解最小非负解、无解与多方程串联；失败返回 1。
 int main() {
     // 小范围穷举:有解时必须等于 [0, lcm) 内最小解;无解必须都判无解
     int ok_cnt = 0, none_cnt = 0;
