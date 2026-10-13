@@ -7,6 +7,7 @@ const int N = 2005;
 
 // ---- 独立参考:同一套规则(邻居去重 = 平行边合并;度 1 删点;度 2 并边),但每轮重算度数 ----
 static vector<set<int>> ref_adj;
+// 计算约简后的核点集合；要求 edges 无自环；覆盖 ref_adj 并返回度 >= 3 的点。
 static set<int> ref_core(int n, const vector<pii> &edges) {
     ref_adj.assign(n + 1, {});
     for(auto [u, v] : edges) ref_adj[u].insert(v), ref_adj[v].insert(u);
@@ -28,11 +29,13 @@ static set<int> ref_core(int n, const vector<pii> &edges) {
     For(u, 1, n) if(ref_adj[u].size() >= 3) s.insert(u);
     return s;
 }
+// 从模板残留邻接表读取核点集合；要求 d1.build(n) 已执行。
 static set<int> tpl_core(int n) {
     set<int> s;
     For(u, 1, n) if(d1.t[u].size() >= 3) s.insert(u);
     return s;
 }
+// 格式化点集；返回末尾带空格的调试字符串。
 static string show(const set<int> &s) {
     string r;
     for(int x : s) r += to_string(x) + " ";
@@ -72,11 +75,13 @@ static bool check_forest(const vector<pii> &edges) {
     CHECK(fa == d1.fa && typ == d1.typ && &m == &d1.m, "公开别名共享实例状态");
     return true;
 }
+// 重置模板实例；要求 leaves 为原边数；设置 m 使原边编号与内部结点编号不重叠。
 static void reset_tree(int leaves) {
     d1 = SPQR_tree();
     d1.m = leaves;
 }
 
+// 覆盖约简核与导出森林语义；失败返回非 0。
 int main() {
     // 1) add 的记账:双向、平行边新建 node 并同时改指向、m 单调递增
     {
