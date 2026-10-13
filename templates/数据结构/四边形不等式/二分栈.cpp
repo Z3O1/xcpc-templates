@@ -3,11 +3,14 @@
 struct nd {
     ll x;
     int c;
+    // 按 (总代价,段数) 字典序比较；返回当前状态是否更优。
     bool operator<(const nd b) const {
         return x < b.x || (x == b.x && c < b.c);
     }
+    // 合并两个 DP 状态；要求代价相加不溢出 ll。
     nd operator+(const nd b) const { return {x + b.x, c + b.c}; }
 };
+// 计算带罚分 dt 的最优划分；要求全局 n 与 calc(l,r) 已设置；返回 f[n] 的值和段数。
 nd work(ll dt) {
     static nd f[N];
     deque<pii> q;

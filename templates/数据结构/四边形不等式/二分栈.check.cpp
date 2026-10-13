@@ -7,7 +7,9 @@
 
 struct pii2 {
     int first, second;
+    // 按模板约定访问左右端信息；i=0 返回 first，非 0 返回 second。
     int &operator[](int i) { return i ? second : first; }
+    // 按模板约定只读访问左右端信息；i=0 返回 first，非 0 返回 second。
     const int &operator[](int i) const { return i ? second : first; }
 };
 #define pii pii2
@@ -16,7 +18,8 @@ const int N = 4005;
 int n;
 static ll pre[N];
 static int max_r_seen = 0;
-static ll calc(int l, int r) { // 区间和的平方(非负数据下满足四边形不等式)
+// 计算闭区间 [l,r] 的平方和；要求 1 <= l <= r <= n，越界直接失败。
+static ll calc(int l, int r) {
     if(l < 1 || l > r || r > n) {
         printf("  [FAIL] calc(%d,%d) 越出合法区间 n=%d\n", l, r, n);
         exit(1);
@@ -28,7 +31,7 @@ static ll calc(int l, int r) { // 区间和的平方(非负数据下满足四边
 #include "二分栈.cpp"
 #undef pii
 
-// 朴素 DP:dp[i] = min_j { dp[j] + nd{calc(j+1,i) - dt, 1} },比较用 nd::operator<((x,c) 字典序)
+// 朴素 DP；要求 n/pre 已设置；返回带罚分 dt 下的最优 (值,段数)。
 static nd naive_work(ll dt) {
     static nd f[N];
     f[0] = {0, 0};
@@ -43,7 +46,7 @@ static nd naive_work(ll dt) {
     }
     return f[n];
 }
-// 穷举所有划分(只对小 n 用,作为独立于 DP 的第三方参考)
+// 穷举所有划分；只对小 n 调用；返回带罚分 dt 下的最优 (值,段数)。
 static nd brute_all(ll dt) {
     nd best{0, 0};
     bool first = true;
@@ -58,18 +61,21 @@ static nd brute_all(ll dt) {
     }
     return best;
 }
+// 设置测试数组并重建前缀和；覆盖 n、pre 与 max_r_seen。
 static void set_data(const vector<int> &v) {
     n = (int) v.size();
     max_r_seen = 0;
     pre[0] = 0;
     For(i, 1, n) pre[i] = pre[i - 1] + v[i - 1];
 }
+// 格式化数据数组；返回末尾带空格的调试字符串。
 static string show(const vector<int> &v) {
     string s;
     for(int x : v) s += to_string(x) + " ";
     return s;
 }
 
+// 覆盖随机、结构化、单调性与残留越界回归；失败返回非 0。
 int main() {
     // 0) 参考实现自检:DP 与穷举一致
     {
