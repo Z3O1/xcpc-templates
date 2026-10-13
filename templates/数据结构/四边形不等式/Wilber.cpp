@@ -1,5 +1,6 @@
 // Wilber(): 数据结构 · Wilber (在线 1D1D 线性决策单调)
 
+// 求在线 1D1D DP；要求 que(k,i) 定义于 0 <= k < i <= n 且决策单调；返回 f 与前驱 fp。
 template <typename T, int B = 16, typename Q>
 pair<vect<T>, vect<int>> Wilber(int n, Q &&que, const T Z = numeric_limits<T>::max()) {
     vect<T> f(n + 1, Z);

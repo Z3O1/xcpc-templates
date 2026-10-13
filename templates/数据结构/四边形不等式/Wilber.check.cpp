@@ -10,6 +10,7 @@ static int arr[N];
 static int MODE = 0;
 
 // MODE 0: (pre[i]-pre[k])^2;MODE 1: (i-k)^2;MODE 2: 区间中位数距离和(位置已排序)
+// 计算区间代价；要求 0 <= k < i <= n，相关全局数组已按 MODE 初始化。
 static ll que(int k, int i) {
     if(MODE == 0) {
         ll d = pre[i] - pre[k];
@@ -28,16 +29,19 @@ static ll que(int k, int i) {
     For(t, 0, len - 1) s += abs(tmp[t] - med);
     return s;
 }
+// 由 arr[1..n] 重建 1-based 前缀和；覆盖 pre[0..n]。
 static void set_pre() {
     pre[0] = 0;
     For(i, 1, n) pre[i] = pre[i - 1] + arr[i];
 }
+// 朴素计算 1D1D DP 最优值；要求 n 与 que 的输入已设置；返回 g[0..n]。
 static vector<ll> naive() {
     vector<ll> g(n + 1, (ll) 4e18);
     g[0] = 0;
     For(i, 1, n) For(j, 0, i - 1) g[i] = min(g[i], g[j] + que(j, i));
     return g;
 }
+// 对照模板返回值与朴素 DP；要求 res 含 first/second；失败返回 false 并打印。
 template <class R> static bool same(R &&res) {
     auto &f = res.first, &fp = res.second;
     vector<ll> g = naive();
@@ -54,6 +58,7 @@ template <class R> static bool same(R &&res) {
     return true;
 }
 
+// 覆盖多种代价、B 两分支与退化边界；失败返回非 0。
 int main() {
     rng.seed(20250921);
     const ll Z = LLONG_MAX / 4;
