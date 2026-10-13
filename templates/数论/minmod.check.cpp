@@ -2,6 +2,7 @@
 #include "../_check_base.hpp"
 #include "minmod.cpp"
 
+// 运行 minmod 契约自测；覆盖负 b、退化参数与大参数；失败返回 1。
 int main() {
     // 1) 小范围穷举
     For(n, 1, 30) For(m, 1, 30) For(a, 0, 30) For(b, -30, 30) {
