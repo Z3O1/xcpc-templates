@@ -3,6 +3,7 @@
 #include "../_check_base.hpp"
 #include "分数还原.cpp"
 
+// 运行分数还原契约自测；覆盖最小非零分母、同余代表和端点；失败返回 1。
 int main() {
     // 完整小域:不要求q可逆,包括A=0、模1、零/负q及非规范代表。
     int expanded = 0;
