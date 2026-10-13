@@ -6,6 +6,7 @@ const int i2 = (M + 1) / 2, i6 = ksm(6, M - 2, M);
 struct nd {
     int f, g, h;
 };
+// 计算 Σ floor((a*i+b)/c) 及平方、乘 i 和；要求 n/a/b >= 0,c > 0；返回三量模 M。
 nd f(int n_, int a, int b, int c) {
     if(n_ < 0) return {0, 0, 0};
     ll n = n_ % M, x = (a / c) % M, y = (b / c) % M;
