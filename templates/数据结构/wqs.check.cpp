@@ -12,6 +12,7 @@
 template <class T> struct Wilber {
     vector<T> first;    // f:dp 值(已打包段数)
     vector<int> second; // fp:前驱边界,链 n → ... → 0
+    // 朴素构造区间 DP；要求 w(l,r) 接受 1-based 闭区间；覆盖 first/second。
     template <class W> Wilber(int n, W w, double INF) {
         (void) INF;
         first.assign(n + 1, T(0)), second.assign(n + 1, 0);
@@ -37,11 +38,12 @@ namespace real_wqs {
 
 static int gn;
 static vector<ll> gpre;
-static i128 que(int l, int r) { // 区间代价 =(区间和)²(全正数据下 OPT(k) 关于 k 凸,WQS 前提成立)
+// 计算闭区间 [l,r] 的平方和代价；要求 gpre 已按 1-based 前缀和设置。
+static i128 que(int l, int r) {
     ll s = gpre[r] - gpre[l - 1];
     return (i128) s * s;
 }
-// 恰好 k 段的最优代价:朴素 O(n²k) DP
+// 恰好 k 段的最优代价；要求 1 <= k <= gn；返回朴素 O(n²k) DP 结果。
 static i128 opt_k(int k) {
     const i128 INF = (i128) 1 << 100;
     vector<i128> dp(gn + 1, INF), nx(gn + 1, INF);
@@ -56,6 +58,7 @@ static i128 opt_k(int k) {
     }
     return dp[gn];
 }
+// 校验边界序列是否合法且恰好 k 段；返回真实代价到 cost。
 static bool check_partition(const vect<int> &pt, int k, i128 &cost) {
     if((int) pt.size() != k + 1) return false;
     if(pt.front() != 0 || pt.back() != gn) return false;
@@ -66,12 +69,14 @@ static bool check_partition(const vect<int> &pt, int k, i128 &cost) {
     }
     return true;
 }
+// 格式化边界序列；返回末尾带空格的调试字符串。
 static string show(const vect<int> &v) {
     string s;
     for(int x : v) s += to_string(x) + " ";
     return s;
 }
 
+// 覆盖打包约定、随机划分与真实依赖链；失败返回非 0。
 int main() {
     // 0) 先确认模板内部打包约定与我的理解一致:dt = 1 时全正数据的段数应是 n
     {
