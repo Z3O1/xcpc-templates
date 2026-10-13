@@ -63,6 +63,7 @@ static bool verify_radii(int n, const char *s, const int *d, bool verbose) {
     return true;
 }
 
+// 运行模板回归；覆盖奇偶回文、小规模暴力、特殊结构和 1e6 极端串。
 int main() {
     // ---------- 1) 小规模穷举:{a,b} 长 1..12、{a,b,c} 长 1..9 ----------
     {
