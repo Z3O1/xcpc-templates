@@ -24,6 +24,7 @@ CODE_TOKEN = re.compile(
 )
 
 
+# 按区分大小写的后缀返回语法名；未知后缀原样返回，无后缀返回空串。
 def lang_of(path: pathlib.Path) -> str:
     suffix = path.suffix.lstrip('.')
     return LANG.get(suffix, suffix)
@@ -35,6 +36,7 @@ def norm(text: str) -> str:
                      if not token.startswith(('//', '/*')))
 
 
+# 按 UTF-8 读取；文件没有空行时返回空列表。
 def codelines(path: pathlib.Path) -> list[str]:
     """迁移前的代码匹配规则:去掉第一个空行之前的头部。"""
     lines = path.read_text(encoding='utf-8').splitlines()
@@ -62,6 +64,7 @@ def strip_trailing_parens(title: str) -> str:
     return title
 
 
+# 只检查物理首行，不跳过开头空行；文件读取错误向上传递。
 def title_from_comment(path: pathlib.Path) -> str:
     """首行格式:// 接口(): 章节 · 标题 (备注);不匹配则用文件名。"""
     with path.open(encoding='utf-8') as source:
@@ -88,10 +91,12 @@ def header_lines(path: pathlib.Path) -> list[str]:
     return lines
 
 
+# 判断头部是否有独立的 hide/隐藏标记；正文中的标记无效。
 def hidden_from_header(path: pathlib.Path) -> bool:
     return any(re.match(r'^[/#]+\s*(hide|隐藏)\b', line) for line in header_lines(path))
 
 
+# directory 须为存在的模板根目录；文件头隐藏状态留给 reconcile 对账。
 def scan_templates(directory: pathlib.Path) -> tuple[dict, dict]:
     """返回章→代码路径与章→介绍路径;忽略自测和隐藏目录。"""
     files, intros = {}, {}
@@ -115,6 +120,7 @@ def scan_templates(directory: pathlib.Path) -> tuple[dict, dict]:
     return files, intros
 
 
+# 只接受唯一源码匹配；不能唯一匹配的旧代码块打印提示并跳过。
 def parse_backup(path: pathlib.Path, files: dict) -> dict:
     """按旧内联版代码内容恢复条目顺序与标题。"""
     lines = path.read_text(encoding='utf-8').splitlines()
@@ -167,6 +173,7 @@ def parse_state(path: pathlib.Path, intros: dict) -> dict:
     return state
 
 
+# 校验状态结构，不修改 data；无效时抛 ValueError。
 def validate_manifest(data: dict) -> None:
     """拒绝损坏的状态文件,避免对账时覆盖掉原有顺序。"""
     if not isinstance(data, dict) or not isinstance(data.get('sections'), list) or not isinstance(data.get('entries'), list):
@@ -187,6 +194,7 @@ def validate_manifest(data: dict) -> None:
         keys.add(key)
 
 
+# 优先读取并校验 manifest；缺失才依次从备份、sections.typ 恢复，否则返回空状态，不写文件。
 def load_manifest(root: pathlib.Path, files: dict, intros: dict) -> dict:
     manifest = root / '.manifest.json'
     if manifest.exists():
@@ -213,6 +221,7 @@ def load_manifest(root: pathlib.Path, files: dict, intros: dict) -> dict:
     return data
 
 
+# 原地对账并返回同一 data：新项追加、历史项标记 missing/hidden，已转为介绍的条目移出。
 def reconcile(data: dict, files: dict, intros: dict) -> dict:
     intro_keys = {f'{chapter}/{stem}.typ' for chapter, entries in intros.items() for stem in entries}
     for entry in data['entries']:
@@ -273,11 +282,13 @@ PREAMBLE = r'''// 由 gen.py 自动生成 —— 请勿手动修改; 改动 temp
 '''
 
 
+# 判断章内 POSIX 相对路径是否为“同名小节/同名小节.typ”的小节正文。
 def group_body(relative: str) -> bool:
     parts = relative.split('/')
     return len(parts) == 2 and parts[1] == parts[0] + '.typ'
 
 
+# data 须先完成对账；返回正文文本、非空章节数、可见条目数，不写文件。
 def render_sections(data: dict, files: dict, intros: dict) -> tuple[str, int, int]:
     out = PREAMBLE.splitlines() + ['']
     total, chapters = 0, 0
@@ -292,6 +303,7 @@ def render_sections(data: dict, files: dict, intros: dict) -> tuple[str, int, in
             if '/' in relative and not group_body(relative):
                 groups.setdefault(relative.split('/', 1)[0], []).append(entry)
 
+        # 按 level 渲染一个可见条目，将未隐藏的介绍及代码追加到 out。
         def emit(entry: dict, level: int) -> None:
             if entry['title'] is not None:
                 out.extend(['', f'{"=" * level} {entry["title"]}'])
@@ -330,6 +342,7 @@ def render_sections(data: dict, files: dict, intros: dict) -> tuple[str, int, in
     return '\n'.join(out).rstrip('\n') + '\n', chapters, total
 
 
+# 已含 include 时原样返回，否则替换首个一级标题及其后的正文；无一级标题抛 ValueError。
 def include_main(text: str) -> str:
     if '#include "sections.typ"' in text:
         return text
@@ -340,12 +353,15 @@ def include_main(text: str) -> str:
     return '\n'.join(lines[:index]).rstrip('\n') + '\n\n#include "sections.typ"\n'
 
 
+# 父目录须存在；按 UTF-8 写入，读写错误向上传递。
 def write_if_changed(path: pathlib.Path, text: str) -> None:
     """内容不变时不触碰时间戳,避免 watch 无谓重编译。"""
     if not path.exists() or path.read_text(encoding='utf-8') != text:
         path.write_text(text, encoding='utf-8')
 
 
+# root 须含 templates/ 与 xcpc.typ；先生成并验证主文件，再按需写状态和正文。
+# 写入期间发生 I/O 错误可能已部分落盘，异常向上传递。
 def main(root: pathlib.Path = ROOT) -> None:
     files, intros = scan_templates(root / 'templates')
     data = reconcile(load_manifest(root, files, intros), files, intros)
