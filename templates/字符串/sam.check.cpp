@@ -5,7 +5,7 @@
 constexpr int N = 2000005;
 #include "sam.cpp"
 
-// 暴力:不同子串个数
+// 暴力统计不同子串数；要求 s 长度较小；返回去重后的子串个数。
 ll brute_distinct(const string &s) {
     set<string> st;
     For(i, 0, (int) s.size() - 1) {
@@ -14,12 +14,13 @@ ll brute_distinct(const string &s) {
     }
     return st.size();
 }
-// 用 SAM 数不同子串:Σ (l[v] - l[fa[v]])(v 为真节点)
+// 用全局 SAM 统计不同子串数；要求已构建自动机；返回 Σ(l[v]-l[fa[v]])。
 ll sam_distinct() {
     ll s = 0;
     For(v, 2, tot) s += l[v] - l[f[v]];
     return s;
 }
+// 复位全局 SAM；清理上一轮用到的节点并恢复根，容量 N 不变。
 void reset() {
     // 必须把上一轮用到的状态全部清干净(只清 tot 个,别全清 2e6*26)
     for(int v = 1; v <= tot; ++v) {
@@ -29,6 +30,7 @@ void reset() {
     lst = 1, tot = 1;
 }
 
+// 运行隐藏 SAM 回归；覆盖暴力子串数、结构性质、连续追加和中等随机串。
 int main() {
     // 1) 与暴力对照不同子串数(小串全量 + 随机)
     long long cases = 0;
