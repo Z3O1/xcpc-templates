@@ -26,9 +26,12 @@ int cmp(db x, db y) { return sign(x - y); }
 
 // ===================== check 自写的独立参考实现 =====================
 static mt19937_64 g_rng(20240906);
+// 生成 [l, r] 闭区间随机整数(固定种子,可复现)。
 static ll grnd(ll l, ll r) { return l + (ll) (g_rng() % (u64) (r - l + 1)); }
 
-p3 P3(db x, db y, db z) { return {x, y, z}; }  // CHECK 宏参数里不能出现花括号,统一用工厂函数
+// 构造 p3;用工厂函数是因为 CHECK 宏参数里不能出现花括号。
+p3 P3(db x, db y, db z) { return {x, y, z}; }
+// p3 转字符串(诊断打印用)。
 string ps(p3 a) {
     char buf[128];
     snprintf(buf, sizeof buf, "(%.12Lg,%.12Lg,%.12Lg)", (long double) a.x, (long double) a.y, (long double) a.z);
@@ -46,7 +49,9 @@ db refDet3b(db m[3][3]) {
 }
 // 9 个参数的入口(CHECK 宏参数里不能带花括号)
 db refDet9(db a, db b, db c, db d, db e, db f, db g, db h, db i) { db m[3][3] = {{a, b, c}, {d, e, f}, {g, h, i}}; return refDet3(m); }
+// 9 参数入口,走 refDet3b(另一条展开路径)。
 db refDet9b(db a, db b, db c, db d, db e, db f, db g, db h, db i) { db m[3][3] = {{a, b, c}, {d, e, f}, {g, h, i}}; return refDet3b(m); }
+// 以三个 p3 为行的 3x3 行列式。
 db refDetRows(p3 a, p3 b, p3 c) {
     db m[3][3] = {{a.x, a.y, a.z}, {b.x, b.y, b.z}, {c.x, c.y, c.z}};
     return refDet3(m);
@@ -82,8 +87,10 @@ db refVolume6BaseHeight(p3 a, p3 b, p3 c, p3 d) {
     db h = abs(n * (d - a)) / area2v;  // |高| = |(d-a)·n̂|
     return area2v / 2 * h * 2;        // 体积*6 = 底面积 * 高 * 2
 }
+// 带容差的标量判等。
 db eq(db x, db y, db tol) { return abs(x - y) <= tol; }
 
+// 手算/参考对照与退化用例;通过则 PASSED("三维向量")。
 int main() {
     // ===== 1. 手算常数用例 =====
     p3 X{1, 0, 0}, Y{0, 1, 0}, Z{0, 0, 1}, O{0, 0, 0};

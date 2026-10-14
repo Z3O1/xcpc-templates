@@ -20,10 +20,13 @@ namespace Geo {
 
 struct p3 {
     db x, y, z;
+    // 按 eps 容差判等。
     bool operator==(const p3 &b) const {
         return !cmp(x, b.x) && !cmp(y, b.y) && !cmp(z, b.z);
     }
+    // 按 eps 容差判不等。
     bool operator!=(const p3 &b) const { return !(*this == b); }
+    // 字典序(x,y,z),用于排序/二分。
     bool operator<(const p3 &b) const {
         int c = cmp(x, b.x);
         if(c) return c < 0;
@@ -32,23 +35,37 @@ struct p3 {
         return cmp(z, b.z) < 0;
     }
 };
+// 向量相加。
 p3 operator+(p3 a, p3 b) { return {a.x + b.x, a.y + b.y, a.z + b.z}; }
+// 向量相减。
 p3 operator-(p3 a, p3 b) { return {a.x - b.x, a.y - b.y, a.z - b.z}; }
+// 取负。
 p3 operator-(p3 a) { return {-a.x, -a.y, -a.z}; }
+// 数乘(标量在右)。
 p3 operator*(p3 a, db k) { return {a.x * k, a.y * k, a.z * k}; }
+// 数乘(标量在左)。
 p3 operator*(db k, p3 a) { return {a.x * k, a.y * k, a.z * k}; }
+// 除以标量;要求 k 非零。
 p3 operator/(p3 a, db k) { return {a.x / k, a.y / k, a.z / k}; }
+// 向量自加,返回新值。
 p3 operator+=(p3 &a, p3 b) { return a = a + b; }
+// 向量自减,返回新值。
 p3 operator-=(p3 &a, p3 b) { return a = a - b; }
+// 向量自乘标量,返回新值。
 p3 operator*=(p3 &a, db k) { return a = a * k; }
+// 向量自除标量,返回新值;要求 k 非零。
 p3 operator/=(p3 &a, db k) { return a = a / k; }
 db operator*(p3 a, p3 b) { return a.x * b.x + a.y * b.y + a.z * b.z; }  // 点积
+// 三维叉积(右手法则),模长为两向量张成平行四边形面积。
 p3 cross(p3 a, p3 b) {
     return {a.y * b.z - a.z * b.y, a.z * b.x - a.x * b.z, a.x * b.y - a.y * b.x};
 }
 db det(p3 a, p3 b, p3 c) { return a * cross(b, c); }  // 混合积
+// 模长平方。
 db dis2(p3 a) { return a.x * a.x + a.y * a.y + a.z * a.z; }
+// 模长。
 db dis(p3 a) { return sqrt(dis2(a)); }
+// 单位化;要求 a 非零(零向量得 inf/nan)。
 p3 unit(p3 a) { return a / dis(a); }
 db cosang(p3 a, p3 b) { return (a * b) / (dis(a) * dis(b)); }          // 夹角余弦(要求都非零)
 db sinang(p3 a, p3 b) { return dis(cross(a, b)) / (dis(a) * dis(b)); }  // 夹角正弦,恒 >= 0
@@ -58,7 +75,9 @@ db volume6(p3 a, p3 b, p3 c, p3 d) { return det(b - a, c - a, d - a); }  // 四�
 p3 perp(p3 a) {  // 与 a 垂直的向量(a 非零时结果也非零):取绝对值最小的那个分量来叉
     return abs(a.x) > abs(a.z) ? p3{a.y, -a.x, 0} : p3{0, -a.z, a.y};
 }
+// 三点是否共线。
 bool colinear(p3 a, p3 b, p3 c) { return cmp(dis(cross(b - a, c - a)), 0) == 0; }
+// 四点是否共面。
 bool coplanar(p3 a, p3 b, p3 c, p3 d) { return sign(abs(det(b - a, c - a, d - a))) == 0; }
 
 }  // namespace Geo
