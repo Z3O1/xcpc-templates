@@ -8,6 +8,7 @@
 // 每轮:g ← (g + f/g)/2 mod x^m,精度翻倍。
 
 using poly = vector<int>;
+// 求 g 使 g² ≡ f (mod x^n)；要求 f 非空且 f[0]==1、n >= 1；返回长度 n、g[0]=1 的唯一解。
 poly poly_sqrt(const poly &f, int n) {
     const int ih = (M + 1) / 2;
     poly g{1};

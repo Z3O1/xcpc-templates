@@ -12,7 +12,7 @@
 #include "多项式开根.cpp"
 
 static const int ih2 = ksm(2, M - 2, M);
-// ——— 暴力:由 g² = f 逐项解 g(g[0] = 1) ———
+// 由 g² = f 逐项解 g；要求 f[0]==1、n >= 1；返回长度 n 的平方根。
 static poly naive_sqrt(const poly &f, int n) {
     poly g(n);
     if(n) g[0] = 1;
@@ -24,22 +24,26 @@ static poly naive_sqrt(const poly &f, int n) {
     }
     return g;
 }
+// 格式化多项式前 k 项；要求 k >= 0；返回“长度 + 前若干项”的调试字符串。
 static string pstr(const poly &a, int k = 12) {
     string s = "[" + to_string(a.size()) + "]";
     For(i, 0, min((int) a.size(), k) - 1) s += " " + to_string(a[i]);
     return s + ((int) a.size() > k ? " ..." : "");
 }
+// 返回两向量首个不同的下标；长度不同返回 0，完全一致返回 -1。
 static int firstdiff(const poly &want, const poly &got) {
     if(want.size() != got.size()) return 0;
     For(i, 0, (int) want.size() - 1) if(want[i] != got[i]) return i;
     return -1;
 }
+// 打印失败现场（含首个不符位）并返回 1；用于对拍失败时给出可复现信息。
 static int bad(const char *what, const poly &f, int n, const poly &want, const poly &got, int at = -1) {
     printf("  [FAIL] %s\n    n = %d, f = %s\n", what, n, pstr(f).c_str());
     if(at >= 0) printf("    首个不符: k = %d, want = %d, got = %d\n", at, want[at], got[at]);
     printf("    want = %s\n    got  = %s\n", pstr(want).c_str(), pstr(got).c_str());
     return 1;
 }
+// 生成随机多项式；要求 len >= 0；返回长度 len、f[0]=1、其余系数在 [0,M) 的向量。
 static poly rpoly(int len, int mode) {  // 0 稠密 1 稀疏 2 小值
     poly a(len);
     For(i, 0, len - 1) {
@@ -52,6 +56,7 @@ static poly rpoly(int len, int mode) {  // 0 稠密 1 稀疏 2 小值
     a[0] = 1;  // sqrt 的契约:f[0] == 1
     return a;
 }
+// 用 poly_sqrt 与逐项解参考对拍；一致返回 0，否则打印失败现场返回 1。
 static int cmp(const char *what, const poly &f, int n) {
     poly want = naive_sqrt(f, n), got = poly_sqrt(f, n);
     if(got.size() != (size_t) n) {
@@ -62,6 +67,7 @@ static int cmp(const char *what, const poly &f, int n) {
     if(at >= 0) return bad(what, f, n, want, got, at);
     return 0;
 }
+// 运行多项式开根自测；覆盖随机/平方性质/完全平方还原/边界/稍大规模；失败返回非零。
 int main() {
     // ——— 0) 随机对拍 ———
     {
