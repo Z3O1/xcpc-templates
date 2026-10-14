@@ -2,11 +2,6 @@
 
 // 1 <= n <= 1e10;solve 可重复调用,init 只筛一次;func 是素数幂处的函数值。
 constexpr int i6 = (M + 1) / 6;
-// 模 M 加法；要求 0 <= a,b < M；原地把 a 加上 b。
-void add(int &a, int b) {
-    a += b;
-    a >= M && (a -= M);
-}
 // 模 M 减法；要求 0 <= a,b < M；原地把 a 减去 b。
 void sub(int &a, int b) {
     a -= b;
@@ -53,7 +48,7 @@ void solveg(ll _n0) {
         sub(g1[slot] = k * (k + 1) / 2 % M, 1);
         sub(g2[slot] = k * (k + 1) % M * (k + k + 1) % M * i6 % M, 1);
     };
-    auto doit = [&](ll n, int m, int i1, int i2) {
+    auto doit = [&](int m, int i1, int i2) {
         sub(g1[i1], 1ll * (g1[i2] - s1[m - 1] + M) * p[m] % M);
         sub(g2[i1], 1ll * (g2[i2] - s2[m - 1] + M) * p2[m] % M);
     };
@@ -61,8 +56,8 @@ void solveg(ll _n0) {
     For(i, 1, lim - fl) put(n0 / i, i + lim);
     For(i, 1, pc) {
         ll x = p[i], y = x * x, z = n0 / x;
-        For(j, 1, min(lim - fl, n0 / y)) doit(n0 / j, i, j + lim, id(z / j));
-        rFor(j, lim, min(lim + 1, y)) doit(j, i, j, j / x);
+        For(j, 1, min(lim - fl, n0 / y)) doit(i, j + lim, id(z / j));
+        rFor(j, lim, min(lim + 1, y)) doit(i, j, j / x);
     }
 }
 // 查询筛后素数贡献前缀；要求 solveg(n0) 后且 n 是 n0 的除法块取值；返回模 M 结果。
