@@ -2,8 +2,8 @@
 #include "../_check_base.hpp"
 #include "类欧.cpp"
 
-// 独立参考:Σ_{i=0}^{n-1} floor((a*i+b)/m),经典欧几里得式,与模板实现无关
-// 计算半开区间 floor_sum；要求 m > 0；返回 i128 精确和。
+// 独立求 Σ_{i=0}^{n-1} floor((a*i+b)/m)，返回 unsigned __int128。
+// 要求 m>0，所有中间乘积与累计和不溢出 u128。
 static unsigned __int128 ref_floor_sum(u64 n, u64 m, u64 a, u64 b) {
     unsigned __int128 ans = 0;
     for(;;) {
@@ -17,8 +17,8 @@ static unsigned __int128 ref_floor_sum(u64 n, u64 m, u64 a, u64 b) {
     }
     return ans;
 }
-// Σ_{i=0}^{n} floor((a*i+b)/c) 的 i128 精确值 → 模 M
-// 计算闭区间下取整和参考值；要求 c > 0；返回模 M 的 f 分量。
+// 求 Σ_{i=0}^{n} floor((a*i+b)/c) mod M；要求 c>0，n+1 不溢出 u64。
+// 复用上述 u128 参考求和，要求所有中间乘积与累计和不溢出。
 static int ref_sum(u64 n, u64 a, u64 b, u64 c) {
     unsigned __int128 s = ref_floor_sum(n + 1, c, a, b);
     return (int) (s % (unsigned __int128) M);
