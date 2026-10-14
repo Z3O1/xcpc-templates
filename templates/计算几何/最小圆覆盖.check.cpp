@@ -18,11 +18,17 @@
 #include "geo.cpp"
 #include "最小圆覆盖.cpp"
 
+// 构造点。
 static p2 P(db x, db y) { return {x, y}; }
+// 绝对值。
 static db Abs(db x) { return x < 0 ? -x : x; }
+// 带容差的标量判等。
 static bool eqd(db a, db b, db tol = 1e-9) { return Abs(a - b) < tol; }
+// 打印点(诊断用)。
 static void pr(p2 a) { printf("(%g,%g)", (double) a.x, (double) a.y); }
+// 打印圆(诊断用)。
 static void prc(circle c) { printf("圆心 "), pr(c.o), printf(" r=%.17Lg", c.r); }
+// 打印点集(诊断用)。
 static void prv(const char *s, const vector<p2> &v) {
     printf("      %s(%zu):", s, v.size());
     for(p2 x : v) printf(" "), pr(x);
@@ -31,6 +37,7 @@ static void prv(const char *s, const vector<p2> &v) {
 static db coverTol(circle c, p2 p) {  // 覆盖判定的相对容差
     return 1e-9L * (1 + Abs(c.o.x) + Abs(c.o.y) + c.r + Abs(p.x) + Abs(p.y));
 }
+// 圆是否覆盖所有点(带相对容差)。
 static bool covers(circle c, const vector<p2> &v) {
     for(p2 x : v)
         if(dis(c.o - x) > c.r + coverTol(c, x)) return false;
@@ -44,6 +51,7 @@ static p2 refCircum(p2 A, p2 B, p2 C) {  // 外接圆圆心(行列式公式,与 
     db uy = ((A.x * A.x + A.y * A.y) * (C.x - B.x) + (B.x * B.x + B.y * B.y) * (A.x - C.x) + (C.x * C.x + C.y * C.y) * (B.x - A.x)) / d;
     return {ux, uy};
 }
+// 两点叉积(精确)。
 static db refDet(p2 a, p2 b) { return a.x * b.y - a.y * b.x; }
 static circle bruteMCC(const vector<p2> &v) {  // O(n^4):枚举点对/点三组
     int n = v.size();
@@ -120,6 +128,7 @@ static int oneCase(const vector<p2> &v, int full) {
     return 1;
 }
 
+// 模板 vs 暴力(全点/凸包);通过则 PASSED("最小圆覆盖")。
 int main() {
     printf("== 最小圆覆盖.check:枚举两点/三点暴力对拍 + 退化/极端用例 ==\n");
 
