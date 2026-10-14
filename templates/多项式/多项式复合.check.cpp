@@ -15,6 +15,7 @@
 #include "多项式复合.cpp"
 #undef main
 
+// 把 vi 包装成模板的 poly；返回 c 为 v 的 poly。
 static poly P(const vi &v) { poly p; p.c = v; return p; }
 // comp 的调用口:契约要求 G.c.size() >= n(n >= 2),否则模板内部越界读(见第 8 段)。
 // 这里做一次自检,免得 check 自己写错用例 —— 本 check 的 bug 不该伪装成模板的 bug。
@@ -25,20 +26,21 @@ static vi C2(const vi &F, const vi &G, int n) {
     }
     return comp(P(F), P(G), n).c;
 }
+// 判断两向量长度与内容是否完全一致；返回布尔值。
 static bool same(const vi &a, const vi &b) { return a.size() == b.size() && equal(all(a), b.begin()); }
+// 格式化向量前 k 项；要求 k >= 0；返回“长度 + 前若干项”的调试字符串。
 static string str(const vi &a, int k = 12) {
     string s = "[" + to_string(a.size()) + "]";
     For(i, 0, min((int) a.size(), k) - 1) s += " " + to_string(a[i]);
     return s + ((int) a.size() > k ? " ..." : "");
 }
-// 失败现场:把 n、F、G、期望、实际全打出来,可直接复现
+// 打印失败现场（n、F、G、期望、实际）并返回 1；用于对拍失败时给出可复现信息。
 static int bad(const char *what, const vi &F, const vi &G, int n, const vi &want, const vi &got) {
     printf("  [FAIL] %s\n    n = %d, F = %s, G = %s\n    want = %s\n    got  = %s\n", what, n, str(F).c_str(), str(G).c_str(),
            str(want).c_str(), str(got).c_str());
     return 1;
 }
-// ——— 参考实现:Horner 展开 r ← r·G + F[i],按模板约定忽略 G[0] ———
-// 只做到 F 的最后一个非零系数,所以 F 稀疏时也就快(sparse-G 大 n 用例靠这一点)。
+// Horner 展开求 F(G) mod x^n；要求 G 长度 >= n 且忽略 G[0]；返回长度 n 的结果。
 static vi naive_comp(const vi &f, const vi &g, int n) {
     vi r(n, 0);
     int last = -1;
@@ -52,8 +54,7 @@ static vi naive_comp(const vi &f, const vi &g, int n) {
     }
     return r;
 }
-// ——— 参考实现 2(写法完全不同):F(G) = Σ_i F[i]·G^i,逐次把 cur 乘上 G ———
-// 用来校验参考实现本身:两者必须处处一致。
+// 用 Σ F[i]·G^i 展开求 F(G) mod x^n；要求忽略 G[0]；返回长度 n 的结果，与 naive_comp 一致。
 static vi naive_comp2(const vi &f, const vi &g, int n) {
     vi res(n, 0), cur(n, 0);
     cur[0] = 1;
@@ -66,7 +67,7 @@ static vi naive_comp2(const vi &f, const vi &g, int n) {
     }
     return res;
 }
-// 朴素多项式幂:G^k mod x^n
+// 朴素多项式幂；要求 n >= 0、k >= 0；返回 G^k mod x^n。
 static vi naive_pow(const vi &g, int k, int n) {
     vi r(n, 0);
     r[0] = 1;
@@ -77,8 +78,8 @@ static vi naive_pow(const vi &g, int k, int n) {
     }
     return r;
 }
-// mode: 0 稠密 1 稀疏(一半 0) 2 全 0 3 全 mod-1(即全 -1) 4 小值 5 只有一个非零项
-static vi rnd_poly(int len, int hi, int mode) {
+// 生成随机多项式；要求 len >= 0、0 <= hi；返回长度 len、系数在 [0,hi] 的向量。
+static vi rnd_poly(int len, int hi, int mode) {  // mode: 0 稠密 1 稀疏(一半 0) 2 全 0 3 全 mod-1(即全 -1) 4 小值 5 只有一个非零项
     vi a(len);
     For(i, 0, len - 1) {
         int v = (int) rnd(0, hi);
@@ -91,7 +92,7 @@ static vi rnd_poly(int len, int hi, int mode) {
     if(mode == 5) { For(i, 0, len - 1) a[i] = 0; if(len) a[(int) rnd(0, len - 1)] = (int) rnd(1, hi); }
     return a;
 }
-// 对拍一组(comp 结果长度也必须恰好是 n)
+// 对拍一组 comp 与朴素参考；一致返回 0，否则打印失败现场返回 1。
 static int cmp(const char *what, const vi &F, const vi &G, int n) {
     vi got = C2(F, G, n), want = naive_comp(F, G, n);
     if((int) got.size() != n) {
@@ -101,13 +102,14 @@ static int cmp(const char *what, const vi &F, const vi &G, int n) {
     if(!same(want, got)) return bad(what, F, G, n, want, got);
     return 0;
 }
-// 生成满足契约的 G:长度 n,g[0] = 0
+// 生成满足契约的 G；要求 n >= 0；返回长度 n、g[0]=0 的向量。
 static vi rnd_G(int n, int hi, int mode) {
     vi g = rnd_poly(n, hi, mode);
     if(n) g[0] = 0;
     return g;
 }
 
+// 运行多项式复合自测；覆盖参考自检/随机/结构/代数性质/大 n；失败返回非零。
 int main() {
     prep(18);
 

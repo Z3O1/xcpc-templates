@@ -12,6 +12,7 @@ const int N = 4.4e6 + 15, mod = 998244353;
 int F[N], X[N], Y[N], W[N];
 ull Z[N];
 int rev[N * 2], omg[N * 2];
+// 快速幂；要求 y >= 0；返回 x^y mod mod 在 [0, mod) 的值。
 int qpow(int x, int y)
 {
 	int ans = 1;
@@ -24,6 +25,7 @@ int qpow(int x, int y)
 	}
 	return ans;
 }
+// 预处理 NTT 的 rev/omg 表；要求 n >= 0（按 2^n 长度上界）；用 NTT 前必须先调用一次。
 void prep(int n)
 {
 	int i, j, w;
@@ -38,7 +40,8 @@ void prep(int n)
 	}
 }
 ull tmp[N * 2];
-inline void ntt(int *A, int n, bool t) // 0 DFT 1 IDFT
+// 原地做长度 2^n 的 NTT；要求 A 有 >= 2^n 个元素、已调用 prep(>= n)；t=false 正变换、t=true 逆变换。
+inline void ntt(int *A, int n, bool t)
 {
 	int i, j, k, q, x;
 	for(i = 0; i < (1 << n); i++)
@@ -74,8 +77,11 @@ inline void ntt(int *A, int n, bool t) // 0 DFT 1 IDFT
 struct poly
 {
 	vector<int> c;
+	// 默认构造：空多项式。
 	poly() = default;
+	// 由系数向量构造；d 为低次在前的系数。
 	poly(vector<int> d) : c(move(d)) {}
+	// 模 mod 卷积；任一为空返回空；返回长度 |f|+|g|-1 的乘积。
 	friend poly operator * (poly f, poly g)
 	{
 		if(f.c.empty() || g.c.empty())
@@ -101,7 +107,8 @@ struct poly
 		return h;
 	}
 };
-vv solve(vi F, vv G, int n, int m) // [x^[0, n)y^(-m, 0]], [x^0]G = 1
+// 复合的递归分治核心，提取双变量级数的 [x^[0,n)) y^(-m,0] 系数；要求 G 的 x 常数项为 1；返回分治合并结果。
+vv solve(vi F, vv G, int n, int m)
 {
 	int i, j, S, T, a, b, d = 2 * n - 1;
 	vv ans;
@@ -150,7 +157,8 @@ vv solve(vi F, vv G, int n, int m) // [x^[0, n)y^(-m, 0]], [x^0]G = 1
 	}
 	return ans;
 }
-poly comp(poly F, poly G, int n) // [x^0]G = 0
+// 求 F(G(x)) mod x^n；要求 G[0]=0（实现忽略 G[0]）；F、G 短于 n 会补零；返回长度 n 的结果。
+poly comp(poly F, poly G, int n)
 {
 	int i;
 	vv Gp(2, vi(n)); // 2×n:第一行 1,第二行 -G
