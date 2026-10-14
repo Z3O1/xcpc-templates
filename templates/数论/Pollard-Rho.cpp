@@ -8,10 +8,9 @@ u64 isqrt(u64 x) {
     for(; (unsigned __int128) (r + 1) * (r + 1) <= x; ++r);
     return r;
 }
-// 返回 x 的一个非平凡因子;依赖 chkp(即「Miller-Rabin」模板),x 为素数时原样返回。
-// 先摘掉小因子与完全平方数:这两种情形会让 rho 只给出平凡因子、空转。
-// 判环用 Floyd,但不逐步求 gcd:每 127 步把 |t - r| 累乘进 w 再对 w 求一次 gcd,
-// 中途 w 变 0 说明这一批里就有非平凡因子。比逐步 gcd 快近一个数量级。
+// 返回 x 的一个非平凡因子；要求 x>=2 且 chkp 可用，x 为素数时返回 x。
+// 先试除至 20 并检查完全平方，其余用 Floyd；每 127 步对差积求一次 gcd。
+// 差积为 0 等退化批次会重启；随机过程不保证固定运行时间。
 u64 rho(u64 x) {
     if(x % 2 == 0) return 2;
     if(x % 3 == 0) return 3;
@@ -46,7 +45,8 @@ static void fact_rec(u64 x, vect<u64> &res) {
     u64 d = rho(x);
     fact_rec(d, res), fact_rec(x / d, res);
 }
-// 把 x 的质因子按从小到大存入 res(带重数)。期望复杂度 O(x^{1/4})。
+// 分解 x>=1，将升序带重数的质因子追加到 res，保留原有前缀。
+// 依赖 chkp；期望复杂度 O(x^(1/4))。
 void fact(u64 x, vect<u64> &res) {
     int s = res.size();
     fact_rec(x, res);
