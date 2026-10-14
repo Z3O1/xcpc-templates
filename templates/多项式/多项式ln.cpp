@@ -7,6 +7,7 @@
 // 依赖:poly_inv、mul(ntt.cpp)、常量 M = 998244353;系数在 [0, M),n < M。
 
 using poly = vector<int>;
+// 返回 1..n 模逆元表（静态缓存）；要求 n >= 0；索引 i 处为 i 在模 M 下的逆元。
 static const poly &_ln_inv_num(int n) { // 1..n 的模逆元表
     static poly iv{0, 1};
     if((int) iv.size() <= n) {
@@ -16,6 +17,7 @@ static const poly &_ln_inv_num(int n) { // 1..n 的模逆元表
     }
     return iv;
 }
+// 求 ln f = ∫f'/f (mod x^n)；要求 f 非空且 f[0]==1；n<=0 返回空，否则返回长度 n、常数项为 0 的向量。
 poly poly_ln(const poly &f, int n) {
     if(n <= 0) return poly();
     poly d(n - 1);

@@ -12,7 +12,7 @@
 #include "多项式求逆.cpp"
 #include "多项式ln.cpp"
 
-// ——— 暴力 A:按定义算 ln f = ∫ f'/f(1/f 用系数递推) ———
+// 按定义算 ln f = ∫f'/f；要求 f 非空且 f[0]!=0、n >= 0；返回长度 n 的 ln f（n<=0 返回空）。
 static poly naive_ln(const poly &f, int n) {
     if(n <= 0) return poly();
     poly g(n);
@@ -30,7 +30,7 @@ static poly naive_ln(const poly &f, int n) {
     }
     return r;
 }
-// ——— 暴力 B(完全不同):u = f-1,ln(1+u) = Σ_{m>=1} (-1)^{m+1} u^m / m,O(n³) ———
+// 用 ln(1+u) 的 O(n³) 展开求 ln f；要求 f[0]==1、n >= 1；返回长度 n 的 ln f。
 static poly naive_ln2(const poly &f, int n) {
     poly s(n), cur(n), u(n);
     For(i, 0, min((int) f.size(), n) - 1) u[i] = f[i];
@@ -46,22 +46,26 @@ static poly naive_ln2(const poly &f, int n) {
     }
     return s;
 }
+// 格式化多项式前 k 项；要求 k >= 0；返回“长度 + 前若干项”的调试字符串。
 static string pstr(const poly &a, int k = 12) {
     string s = "[" + to_string(a.size()) + "]";
     For(i, 0, min((int) a.size(), k) - 1) s += " " + to_string(a[i]);
     return s + ((int) a.size() > k ? " ..." : "");
 }
+// 返回两向量首个不同的下标；长度不同返回 0，完全一致返回 -1。
 static int firstdiff(const poly &want, const poly &got) {
     if(want.size() != got.size()) return 0;
     For(i, 0, (int) want.size() - 1) if(want[i] != got[i]) return i;
     return -1;
 }
+// 打印失败现场（含首个不符位）并返回 1；用于对拍失败时给出可复现信息。
 static int bad(const char *what, const poly &f, int n, const poly &want, const poly &got, int at = -1) {
     printf("  [FAIL] %s\n    n = %d, f = %s\n", what, n, pstr(f).c_str());
     if(at >= 0) printf("    首个不符: k = %d, want = %d, got = %d\n", at, want[at], got[at]);
     printf("    want = %s\n    got  = %s\n", pstr(want).c_str(), pstr(got).c_str());
     return 1;
 }
+// 生成随机多项式；要求 len >= 0；返回长度 len、f[0]=1、其余系数在 [0,M) 的向量。
 static poly rpoly(int len, int mode) {  // 0 稠密 1 稀疏 2 小值 3 全 1 4 首项 1 且其余稠密
     poly a(len);
     For(i, 0, len - 1) {
@@ -75,6 +79,7 @@ static poly rpoly(int len, int mode) {  // 0 稠密 1 稀疏 2 小值 3 全 1 4 
     a[0] = 1;  // ln 的契约:f[0] == 1
     return a;
 }
+// 用 poly_ln 与递推参考对拍；一致返回 0，否则打印失败现场返回 1。
 static int cmp(const char *what, const poly &f, int n, const char *extra = "") {
     poly want = naive_ln(f, n), got = poly_ln(f, n);
     if(got.size() != (size_t) n) {
@@ -85,6 +90,7 @@ static int cmp(const char *what, const poly &f, int n, const char *extra = "") {
     if(at >= 0) return bad(extra, f, n, want, got, at);
     return 0;
 }
+// 运行多项式 ln 自测；覆盖参考自检/随机/代数性质/边界/稍大规模；失败返回非零。
 int main() {
     // ——— 0) 参考实现自检 + 常数项恒 0 ———
     {
