@@ -14,7 +14,7 @@
 #include "多点求值.cpp"
 #include "快速插值.cpp"
 
-// ——— O(m²) 拉格朗日插值(独立参考实现)———
+// O(m²) 拉格朗日插值；要求 xs、ys 等长且 xs 互异；返回过所有点的 deg < m 多项式。
 static poly lagrange(const poly &xs, const poly &ys) {
     int m = xs.size();
     if(!m) return poly();
@@ -37,23 +37,26 @@ static poly lagrange(const poly &xs, const poly &ys) {
     }
     return res;
 }
+// 格式化多项式前 k 项；要求 k >= 0；返回“长度 + 前若干项”的调试字符串。
 static string pstr(const poly &a, int k = 12) {
     string s = "[" + to_string(a.size()) + "]";
     For(i, 0, min((int) a.size(), k) - 1) s += " " + to_string(a[i]);
     return s + ((int) a.size() > k ? " ..." : "");
 }
+// 返回两向量首个不同的下标；长度不同返回 0，完全一致返回 -1。
 static int firstdiff(const poly &want, const poly &got) {
     if(want.size() != got.size()) return 0;
     For(i, 0, (int) want.size() - 1) if(want[i] != got[i]) return i;
     return -1;
 }
-// 互异点:等差数列(必然互异,且值不会溢出 int)
+// 生成互异求值点（等差数列）；要求 m >= 0；返回长度 m、两两互异的点集。
 static poly rxs(int m) {
     poly xs(m);
     int start = (int) rnd(0, 100), step = (int) rnd(1, 1000);
     For(i, 0, m - 1) xs[i] = start + i * step;
     return xs;
 }
+// 用 poly_interp 与拉格朗日参考对拍并复算点值；一致返回 0，否则打印失败现场返回 1。
 static int cmp(const char *what, const poly &xs, const poly &ys) {
     poly want = lagrange(xs, ys), got = poly_interp(xs, ys);
     if(got.size() != xs.size()) {
@@ -74,6 +77,7 @@ static int cmp(const char *what, const poly &xs, const poly &ys) {
     }
     return 0;
 }
+// 运行快速插值自测；覆盖随机/往返/边界/较大规模；失败返回非零。
 int main() {
     // ——— 1) 随机点值对拍 ———
     {
