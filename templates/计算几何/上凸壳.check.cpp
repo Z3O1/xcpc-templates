@@ -19,9 +19,13 @@
 #include "geo.cpp"
 #include "上凸壳.cpp"
 
+// 构造点。
 static p2 P(db x, db y) { return {x, y}; }
+// 绝对值。
 static db Abs(db x) { return x < 0 ? -x : x; }
+// 打印点(诊断用)。
 static void pr(p2 a) { printf("(%g,%g)", (double) a.x, (double) a.y); }
+// 打印点集(诊断用,最多前 30 个)。
 static void prv(const char *s, const vector<p2> &v) {
     printf("      %s(%zu):", s, v.size());
     for(int i = 0; i < (int) min<size_t>(v.size(), 30); ++i) printf(" "), pr(v[i]);
@@ -142,11 +146,13 @@ static int chainProps(const vector<p2> &v, const vector<p2> &h, bool nos, db sca
     }
     return 1;
 }
+// 两条链是否逐点相等。
 static bool sameChain(const vector<p2> &x, const vector<p2> &y) {
     if(x.size() != y.size()) return false;
     for(int i = 0; i < (int) x.size(); ++i) if(!(x[i] == y[i])) return false;
     return true;
 }
+// 对单个用例跑模板并与两条参考对照;返回 0/1。
 static int oneCase(const vector<p2> &v, int verbose) {
     int k0 = 0, k1 = 0;
     vector<p2> h0 = runUpper(v, 0, k0), h1 = runUpper(v, 1, k1);
@@ -169,6 +175,7 @@ static int oneCase(const vector<p2> &v, int verbose) {
     return 1;
 }
 
+// 与两条参考对拍 + 性质断言;通过则 PASSED("上凸壳")。
 int main() {
     printf("== 上凸壳.check:与「翻转 y 求下凸壳」「凸包截上半圈」两条参考对拍 + 性质断言 ==\n");
 
