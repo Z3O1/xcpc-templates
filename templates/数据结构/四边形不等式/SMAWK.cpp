@@ -29,11 +29,11 @@ template <typename T, typename Q> pair<vect<T>, vect<int>> SMAWK(int n0, int m, 
         For(i, 1, n) if (i % 2 == 1) {
             T &s = f[i << d];
             int &p = fp[i << d];
-                p = b[j];
-                s = que(i << d, p);
+            p = b[j];
+            s = que(i << d, p);
             while (j < m && (i == n || b[j + 1] <= fp[(i + 1) << d])) {
                 T s2 = que(i << d, b[++j]);
-                    if(s2 < s) s = s2, p = b[j];
+                if(s2 < s) s = s2, p = b[j];
             }
         }
     };
