@@ -1,15 +1,7 @@
 // line3(): 计算几何 · 三维直线与线段 (点线距/线线距/线段相交)
 
-// 依赖:p3 / cross / det / dis / dis2 / unit / cosang / sinang 与 eps / sign / cmp
-//      (见本目录 三维向量.cpp 与 geo.cpp)。
-// 两条线段分别用 seg3{x, y} 表示;直线用参数式 line3{o, d}(o + t·d),d 非零即可、不必单位。
-//
-// 点与直线:proj / reflect / dis / ons(点是否在直线上,按距离 <= eps 判)
-// 两直线:  dis(含平行、相交、异面)/ closest_on(a, b)(a 上离 b 最近的点)/ ispara / isperp
-// 点与线段:proj(最近点,参数夹到 [0,1])/ dis / ons(点是否在线段上)/ ons_s(严格在内部)
-// 两线段:  dis(a, b, pa, pb)(最近点对)/ dis(a, b) / chkss(相交,含端点相接与共线重叠)
-//          chkss_s(严格相交:交点同时在两段内部,共线不算)/ isss(交于唯一一点时输出交点)
-//
+// 依赖 geo.cpp 与三维向量.cpp。
+// 线段用 seg3{x, y}，直线用 line3{o, d} 表示 o+t·d；d 非零，不必单位化。
 // 前置条件与约定:
 //   - 零长线段(退化成点)被当作点处理:proj/dis/ons/两线段距离都成立(不会出 NaN)。
 //   - 平行/共线的两线段最近点对不唯一,只保证「距离」正确。
