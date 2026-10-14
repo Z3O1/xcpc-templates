@@ -18,10 +18,15 @@
 #include "geo.cpp"
 #include "最近点对.cpp"
 
+// 构造点。
 static p2 P(db x, db y) { return {x, y}; }
+// 绝对值。
 static db Abs(db x) { return x < 0 ? -x : x; }
+// 带容差的标量判等。
 static bool eqd(db a, db b, db tol) { return Abs(a - b) < tol; }
+// 打印点(诊断用)。
 static void pr(p2 a) { printf("(%g,%g)", (double) a.x, (double) a.y); }
+// 打印点集(诊断用,最多前 20 个)。
 static void prv(const char *s, const vector<p2> &v) {
     printf("      %s(%zu):", s, v.size());
     for(int i = 0; i < (int) min<size_t>(v.size(), 20); ++i) printf(" "), pr(v[i]);
@@ -29,6 +34,7 @@ static void prv(const char *s, const vector<p2> &v) {
 }
 
 // ---------- 独立参考实现:O(n²) 暴力 ----------
+// O(n^2) 暴力最近距离;n < 2 返回 -1。
 static db bruteClosest(const vector<p2> &v) {
     int n = v.size();
     if(n < 2) return -1;
@@ -37,6 +43,7 @@ static db bruteClosest(const vector<p2> &v) {
     return ans;
 }
 
+// 暴力对拍 + 退化/大规模用例;通过则 PASSED("最近点对")。
 int main() {
     printf("== 最近点对.check:O(n^2) 暴力对拍 + 退化/大规模用例 ==\n");
 
