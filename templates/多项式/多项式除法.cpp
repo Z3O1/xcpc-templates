@@ -10,6 +10,7 @@
 // 依赖:poly_inv、mul(ntt.cpp)、常量 M = 998244353;系数在 [0, M)。
 
 using poly = vector<int>;
+// 带余除法；要求 g 非空且 g.back()!=0（f 可为空）；返回 {q, r} 满足 f=q*g+r 且 deg r < deg g。
 pair<poly, poly> poly_divmod(const poly &f, const poly &g) {
     int n = f.size(), m = g.size();
     if(n < m) return {poly(), f};
@@ -24,4 +25,5 @@ pair<poly, poly> poly_divmod(const poly &f, const poly &g) {
     r.resize(m - 1);
     return {q, r};
 }
+// 求 f mod g；要求同 poly_divmod；返回带余除法的余式。
 poly poly_mod(const poly &f, const poly &g) { return poly_divmod(f, g).second; }

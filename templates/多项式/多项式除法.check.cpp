@@ -11,7 +11,7 @@
 #include "多项式求逆.cpp"
 #include "多项式除法.cpp"
 
-// ——— 朴素长除法(从最高次往下消)———
+// 朴素长除法；要求 g 非空且首项非 0；返回 {q, r} 满足 f=q*g+r 且 deg r < deg g。
 static pair<poly, poly> naive_divmod(poly f, const poly &g) {
     int n = f.size(), m = g.size();
     if(n < m) return {poly(), f};
@@ -26,21 +26,25 @@ static pair<poly, poly> naive_divmod(poly f, const poly &g) {
     For(i, 0, m - 2) r[i] = f[i];
     return {q, r};
 }
+// 格式化多项式前 k 项；要求 k >= 0；返回“长度 + 前若干项”的调试字符串。
 static string pstr(const poly &a, int k = 12) {
     string s = "[" + to_string(a.size()) + "]";
     For(i, 0, min((int) a.size(), k) - 1) s += " " + to_string(a[i]);
     return s + ((int) a.size() > k ? " ..." : "");
 }
+// 返回两向量首个不同的下标；长度不同返回 0，完全一致返回 -1。
 static int firstdiff(const poly &want, const poly &got) {
     if(want.size() != got.size()) return 0;
     For(i, 0, (int) want.size() - 1) if(want[i] != got[i]) return i;
     return -1;
 }
+// 打印失败现场（两组输入、期望、实际）并返回 1；用于对拍失败时给出可复现信息。
 static int bad(const char *what, const poly &f, const poly &g, const poly &wf, const poly &gf) {
     printf("  [FAIL] %s\n    |f| = %d, f = %s\n    |g| = %d, g = %s\n    want = %s\n    got  = %s\n", what, (int) f.size(),
            pstr(f).c_str(), (int) g.size(), pstr(g).c_str(), pstr(wf).c_str(), pstr(gf).c_str());
     return 1;
 }
+// 生成任意随机多项式；要求 len >= 0；返回长度 len、系数在 [0,M) 的向量。
 static poly rpoly_any(int len, int mode) {  // 0 稠密 1 稀疏 2 小值 3 全 0
     poly a(len);
     For(i, 0, len - 1) {
@@ -52,13 +56,14 @@ static poly rpoly_any(int len, int mode) {  // 0 稠密 1 稀疏 2 小值 3 全 
     }
     return a;
 }
-// 契约内随机用例:f 任意,g 非空且首项非 0
+// 生成契约内随机对 (f,g)；要求 maxn,maxm >= 0；f 任意、g 非空且首项非 0，写入 f、g。
 static void rpair(int maxn, int maxm, int t, poly &f, poly &g) {
     f = rpoly_any((int) rnd(0, maxn), t % 4);
     g = rpoly_any((int) rnd(1, maxm), (t + 1) % 4);
     if(g.empty()) g.resize(1);
     if(g.back() == 0) g.back() = (int) rnd(1, M - 1);  // 契约:g.back() != 0
 }
+// 用 poly_divmod 与长除法参考对拍并校验 f=q*g+r；一致返回 0，否则打印失败现场返回 1。
 static int cmp(const char *what, const poly &f, const poly &g) {
     auto want = naive_divmod(f, g);
     auto got = poly_divmod(f, g);
@@ -87,6 +92,7 @@ static int cmp(const char *what, const poly &f, const poly &g) {
     }
     return 0;
 }
+// 运行带余除法自测；覆盖参考自检/随机/边界/一致性与较大规模；失败返回非零。
 int main() {
     // ——— 0) 参考实现自检:长除法给出的 q 确实满足 f = q*g + r ———
     {
