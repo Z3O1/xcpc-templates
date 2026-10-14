@@ -15,7 +15,8 @@ struct circle {
     p2 o;
     db r;
 };
-circle cir(p2 a, p2 b) { return {(a + b) / 2, dis(a - b) / 2}; }  // 以 ab 为直径的圆
+// 返回以 ab 为直径的圆；允许 a=b，此时半径为 0。
+circle cir(p2 a, p2 b) { return {(a + b) / 2, dis(a - b) / 2}; }
 // 点 x 是否在圆 c 内(含边界,eps 容差)。
 bool in_circle(const circle &c, const p2 &x) { return cmp(dis(c.o - x), c.r) <= 0; }
 // 最小圆覆盖(随机增量法);返回圆心与半径,空输入返回 { (0,0), -1 } 作无解标记。
