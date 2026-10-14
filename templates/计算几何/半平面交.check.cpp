@@ -23,21 +23,29 @@
 #include "geo.cpp"
 #include "半平面交.cpp"
 
+// 构造点。
 static p2 P(db x, db y) { return {x, y}; }
+// 绝对值。
 static db Abs(db x) { return x < 0 ? -x : x; }
+// 带容差的标量判等。
 static bool eqd(db a, db b, db tol = 1e-9) { return Abs(a - b) < tol; }
+// 带容差的点判等。
 static bool eqp(p2 a, p2 b, db tol = 1e-9) { return eqd(a.x, b.x, tol) && eqd(a.y, b.y, tol); }
+// 打印点(诊断用)。
 static void pr(p2 a) { printf("(%.21Lg,%.21Lg)", a.x, a.y); }
+// 打印点集(诊断用)。
 static void prp(const char *s, const vector<p2> &v) {
     printf("      %s(%zu):", s, v.size());
     for(p2 x : v) printf(" "), pr(x);
     printf("\n");
 }
+// 打印有向线段集(诊断用)。
 static void prl(const char *s, const vector<seg> &v) {
     printf("      %s(%zu):", s, v.size());
     for(seg x : v) printf(" "), pr(x.x), printf("->"), pr(x.y);
     printf("\n");
 }
+// 多边形带号面积。
 static db polyArea(const vector<p2> &v) {
     db s = 0;
     for(int i = 0; i < (int) v.size(); ++i) s += v[i].det(v[(i + 1) % v.size()]);
@@ -70,6 +78,7 @@ static vector<p2> refHPI(const vector<seg> &ls, db B) {  // 只裁剪 B 方框(�
     if(cur.size() < 3) return {};
     return cur;
 }
+// 点字典序比较(精确,不用 eps)。
 static int refCmpP(p2 a, p2 b) {
     if(a.x != b.x) return a.x < b.x ? -1 : 1;
     if(a.y != b.y) return a.y < b.y ? -1 : 1;
@@ -100,6 +109,7 @@ static db nearTol(const vector<p2> &v) {  // 与坐标规模相关的容差(仅�
     for(p2 x : v) s = max(s, max(Abs(x.x), Abs(x.y)));
     return 1e-11 * s;  // 相对 1e-11(交叉点坐标可到 1e4,long double 上 ~1e-12 的绝对差是两套公式的正常舍入差)
 }
+// 规范化:去重/去共线中间点,并按 (x,y) 排序。
 static vector<p2> canon(vector<p2> v) {
     db tol = nearTol(v);
     vector<p2> r;
@@ -193,6 +203,7 @@ static int cmpOut(const vector<seg> &inp, const vector<p2> &got, const vector<p2
 }
 
 // ---------- 用例 1:解析用例 ----------
+// 解析与退化用例。
 static void analytic() {
     {
         vector<seg> sq = {{P(0, 0), P(4, 0)}, {P(4, 0), P(4, 4)}, {P(4, 4), P(0, 4)}, {P(0, 4), P(0, 0)}};
@@ -318,6 +329,7 @@ static int runRandom(int groups, int mode) {  // mode 0:极角均匀 1:完全随
 }
 
 // ---------- 用例 4:凸包的每条逆时针边当半平面 -> 必须回到凸包 ----------
+// 凸包每条边当半平面,交回凸包本身。
 static int runHull(int groups) {
     int bad = 0;
     For(t, 1, groups) {
@@ -339,6 +351,7 @@ static int runHull(int groups) {
 }
 
 // ---------- 用例 7:±1e9 大坐标只做性质断言 + 与「巨大方框裁剪」核对空/非空 ----------
+// ±1e9 大坐标只做性质断言 + 与巨大方框裁剪核对空/非空。
 static int runBig(int groups) {
     int bad = 0, nonempty = 0, empty = 0;
     const db HB = 1e13;  // 参考裁剪用的巨大方框:直线偏移 ~1e9,真交集若存在必定落在 ±1e10 内
@@ -445,6 +458,7 @@ static int runPatho(int groups) {
     return bad;
 }
 
+// 暴力裁剪/凸包/解析用例;通过则 PASSED("半平面交")。
 int main() {
     printf("== 半平面交.check:暴力裁剪对拍 + 凸包对拍 + 解析/退化用例 ==\n");
     analytic();
