@@ -7,7 +7,8 @@
 struct sieve_t {
     int p[N / 10 + 5], tot, mn[N + 1], phi[N + 1], mu[N + 1], d[N + 1], cnt[N + 1], lpf[N + 1];
     ll s[N + 1];
-    // 线性筛预处理 [1,N]；要求全局 N 已定义且数组足够；覆盖写入全部函数表。
+    // 在初始全零对象上筛 [1,N]，同一对象仅调用一次；要求 N>=1、2N<=INT_MAX。
+    // 素数表使用 1-based 下标，须满足 π(N) <= N/10+4。
     void work() {
         tot = 0;
         phi[1] = mu[1] = d[1] = s[1] = 1;
@@ -44,7 +45,7 @@ struct sieve_t {
             }
         }
     }
-    // 判断素数；要求 0 <= x <= N；返回 x 是否为素数。
+    // work() 完成后判断素数；要求 0 <= x <= N；返回 x 是否为素数。
     bool isp(int x) const { return x >= 2 && mn[x] == x; }
 } S;
 // 莫比乌斯/欧拉函数的前缀和(杜教筛要用):筛完后
