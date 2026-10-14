@@ -44,7 +44,8 @@ db dis(const line3 &l, p3 p) { return dis(p - proj(l, p)); }
 bool ons(const line3 &l, p3 p) { return !sign(dis(l, p)); }
 // 两直线是否平行。
 bool ispara(const line3 &a, const line3 &b) { return !sign(sinang(a.d, b.d)); }
-bool ispara(const seg3 &a, const seg3 &b) {  // 线段方向:某条退化成点时约定为「平行」
+// 判断线段方向是否平行；按 eps 判为零长的线段约定与任意线段平行。
+bool ispara(const seg3 &a, const seg3 &b) {
     return !sign(dis(a.dir())) || !sign(dis(b.dir())) || !sign(sinang(a.dir(), b.dir()));
 }
 // 两直线是否垂直。
