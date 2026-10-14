@@ -49,20 +49,28 @@
 #include "geo.cpp"
 
 // ---- 小工具 ----
+// 构造点。
 static p2 P(db x, db y) { return {x, y}; }
+// 绝对值。
 static db Abs(db x) { return x < 0 ? -x : x; }
+// 带容差的标量判等。
 static bool eqd(db a, db b, db tol = 1e-9) { return Abs(a - b) < tol; }
+// 带容差的点判等。
 static bool eqp(p2 a, p2 b, db tol = 1e-9) { return eqd(a.x, b.x, tol) && eqd(a.y, b.y, tol); }
+// 两点距离平方。
 static db dd(p2 a, p2 b) { return dis2(a - b); }
+// 打印点(诊断用)。
 static void pr(p2 a) { printf("(%g,%g)", (double) a.x, (double) a.y); }
 
 // 失败时把细节打出来的小工具:bad 计数 + 第一条反例的现场
 struct Probe {
     int bad = 0, shown = 0;
+    // 记录标量反例,只打印第一条。
     void hit(const char *what, db got, db want) {
         if(!bad) printf("      首个反例:%s:实测 %.17Lg,期望 %.17Lg\n", what, got, want);
         ++bad;
     }
+    // 记录点反例,只打印第一条。
     void hitp(const char *what, p2 got, p2 want) {
         if(!bad) {
             printf("      首个反例:%s:实测 ", what);
@@ -81,6 +89,7 @@ template <class T, class = void> struct has_diveq_db : std::false_type {};
 template <class T> struct has_diveq_db<T, std::void_t<decltype(std::declval<T &>() /= std::declval<db>())>> : std::true_type {};
 template <class T, class = void> struct has_diveq_p2 : std::false_type {};
 template <class T> struct has_diveq_p2<T, std::void_t<decltype(std::declval<T &>() /= std::declval<p2>())>> : std::true_type {};
+// 探测并(存在时)执行 T /= db;返回该重载是否存在,存在时把结果写入 out。
 // 真正调用也必须放在模板里,而且操作数类型要依赖模板参数:否则表达式在模板定义时就被解析,
 // 被 if constexpr 丢弃的分支照样报 "no match for operator/="
 template <class T = p2> bool run_diveq_db(T a, db s, T &out) {
@@ -104,11 +113,13 @@ template <class T = p2, class Y = p2> bool run_diveq_p2(T a, Y y, T &out) {  // 
 
 // ================= 独立参考实现(自写,不依赖模板的凸包/包含/裁剪) =================
 // Andrew 单调链:精确整数比较(bits/stdc++ 的 sort,不用模板的 eps 版 operator<)
+// 点字典序比较(精确,不用 eps):a < b 为 -1,a == b 为 0,a > b 为 1。
 static int refCmpP(p2 a, p2 b) {
     if(a.x != b.x) return a.x < b.x ? -1 : 1;
     if(a.y != b.y) return a.y < b.y ? -1 : 1;
     return 0;
 }
+// 两点叉积(精确,不用 eps)。
 static db refDet(p2 a, p2 b) { return a.x * b.y - a.y * b.x; }
 static vector<p2> refHull(vector<p2> v) {  // 去重 + 去共线,逆时针,首位为最小点
     sort(v.begin(), v.end(), [](p2 a, p2 b) { return refCmpP(a, b) < 0; });
@@ -181,6 +192,7 @@ static bool refChkss(p2 a, p2 b, p2 c, p2 e) {  // 闭线段相交(参数法 + �
     if(q1 > q2) swap(q1, q2);
     return !(p2v < q1 - 1e-12 || q2 < p1 - 1e-12);
 }
+// 两线段间最近距离平方(参考实现);相交返回 0。
 static db refDisss(p2 a, p2 b, p2 c, p2 e) {
     if(refChkss(a, b, c, e)) return 0;
     return min({refNearest(a, b, c), refNearest(a, b, e), refNearest(c, e, a), refNearest(c, e, b)});
@@ -307,6 +319,7 @@ static bool hullCheckOne(const vector<p2> &v, bool verbose = false) {
 // convex_cut 后的多边形面积(用带号面积 -> 绝对值)
 static db cutArea(const vector<p2> &v) { return Abs(refArea(v)); }
 
+// 全量随机对拍与极端/退化用例;通过则 PASSED("geo"),否则打印反例并 FAIL。
 int main() {
     printf("== geo.check:强化版随机对拍 + 极端/退化用例(独立参考实现见文件头部)==\n");
 
