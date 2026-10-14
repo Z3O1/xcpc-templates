@@ -16,7 +16,7 @@
 
 using vi = vector<int>;
 
-// ——— 参考实现 1:O(n·m) 朴素卷积,__int128 精确累加后再取模 ———
+// 朴素参考卷积；要求系数非负 int；用 i128 精确累加后按 P 取模，空输入返回空。
 static vi naive(const vi &a, const vi &b, int P) {
     if(a.empty() || b.empty()) return {};
     vector<i128> s(a.size() + b.size() - 1, 0);
@@ -25,31 +25,34 @@ static vi naive(const vi &a, const vi &b, int P) {
     For(i, 0, (int) s.size() - 1) r[i] = (int) (s[i] % P);
     return r;
 }
-// ——— 参考实现 2:边加边取模(P < 2^31 时 a[i]*b[j] < 2^62,r < P,ll 内不溢出) ———
-// 用来校验参考实现 1 本身没写错:两者必须处处一致。
+// 边加边取模的朴素卷积；要求 P < 2^31 保证 ll 不溢出；返回与 naive 一致的卷积，空输入返回空。
 static vi naive2(const vi &a, const vi &b, int P) {
     if(a.empty() || b.empty()) return {};
     vi r(a.size() + b.size() - 1, 0);
     For(i, 0, (int) a.size() - 1) For(j, 0, (int) b.size() - 1) r[i + j] = (int) ((r[i + j] + (ll) a[i] * b[j]) % P);
     return r;
 }
+// 判断两向量长度与内容是否完全一致；返回布尔值。
 static bool same(const vi &a, const vi &b) { return a.size() == b.size() && equal(all(a), b.begin()); }
+// 格式化向量前 k 项；要求 k >= 0；返回“长度 + 前若干项”的调试字符串。
 static string pstr(const vi &a, int k = 10) {
     string s = "[" + to_string(a.size()) + "]";
     For(i, 0, min((int) a.size(), k) - 1) s += " " + to_string(a[i]);
     return s + ((int) a.size() > k ? " ..." : "");
 }
-// 失败现场:把 n(P)、两组输入、期望、实际全打出来,可直接复现
+// 打印失败现场（两组输入、期望、实际）并返回 1；用于对拍失败时给出可复现信息。
 static int bad(const char *what, const vi &a, const vi &b, int P, const vi &want, const vi &got, const char *extra = "") {
     printf("  [FAIL] %s\n    %sP = %d, n = %d, m = %d\n    a    = %s\n    b    = %s\n    want = %s\n    got  = %s\n",
            what, extra, P, (int) a.size(), (int) b.size(), pstr(a).c_str(), pstr(b).c_str(), pstr(want).c_str(), pstr(got).c_str());
     return 1;
 }
+// 用 Mul::mul 与 naive 参考对拍；一致返回 0，否则打印失败现场返回 1。
 static int cmp(const char *what, const vi &a, const vi &b, int P, const char *extra = "") {
     vi want = naive(a, b, P), got = Mul::mul(a, b, P);
     if(!same(want, got)) return bad(what, a, b, P, want, got, extra);
     return 0;
 }
+// 生成随机测试多项式；要求 0 <= n、P >= 2、mode ∈ [0,4]；返回长度 n、系数在 [0,P) 的向量。
 static vi rpoly(int n, int P, int mode) {  // mode: 0 稠密 1 稀疏(一半 0) 2 全 P-1 3 小值 4 全 0
     vi a(n);
     For(i, 0, n - 1) {
@@ -63,6 +66,7 @@ static vi rpoly(int n, int P, int mode) {  // mode: 0 稠密 1 稀疏(一半 0) 
     return a;
 }
 
+// 运行任意模数 NTT 自测；覆盖模数表、长度扫描、边界、代数性质与大长度；失败返回非零。
 int main() {
     // 覆盖「模板支持模数范围」的模数表:P 任意 int,含极小、合数、三个 NTT 模数本身及其 ±1、2^31-1
     const vi mods{2,      3,       4,        5,         6,       7,       8,     9,      10,       11,

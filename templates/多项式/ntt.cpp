@@ -6,6 +6,7 @@
 
 namespace Mul {
 using poly = vector<int>;
+// 原地做模 M 的 NTT；要求 a 长度为 2 的幂且符合长度上限，k=1 正变换、k=-1 逆变换；结果覆盖 a。
 template <int M, int G> static void NTT(poly &a, const int k) {
     auto ksm = [&](ll a, int b) {ll ans=1;for(;b;b>>=1,a=a*a%M)if(b&1)ans=ans*a%M;return ans; };
     static poly r, w;
@@ -31,13 +32,14 @@ template <int M, int G> static void NTT(poly &a, const int k) {
         For(i, 0, n - 1) a[i] = a[i] * inv % M;
     }
 }
-// 只用一个模数做卷积:两侧正向 NTT、点乘、逆变换;l 是变换长度。
+// 单一模数下做卷积；要求 a、b 已补零到变换长度 l（2 的幂）；返回长度 l 的卷积结果。
 template <int M, int G> static poly conv(poly a, poly b, int l) {
     NTT<M, G>(a, 1), NTT<M, G>(b, 1);
     For(i, 0, l - 1) a[i] = 1ll * a[i] * b[i] % M;
     NTT<M, G>(a, -1);
     return a;
 }
+// 任意模数卷积；要求系数非负 int、P ∈ [2, 2^31-1] 且满足 CRT 精度界；返回长度 n+m-1，空输入返回空。
 poly mul(poly a, poly b, int P) {
     int n = a.size(), m = b.size();
     if(!n || !m) return poly();
@@ -59,4 +61,5 @@ poly mul(poly a, poly b, int P) {
 }  // namespace Mul
 // 普通卷积使用 base header 的常量 M;任意模数用 Mul::mul(a, b, P)。
 using poly = vector<int>;
+// 模 M=998244353 的普通卷积；要求系数非负（负数请先归一）；返回长度 n+m-1，空输入返回空。
 poly mul(poly a, poly b) { return Mul::mul(move(a), move(b), M); }
