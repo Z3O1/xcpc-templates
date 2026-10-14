@@ -7,6 +7,7 @@ static_assert(!chkp(0) && !chkp(1) && chkp(2) && chkp(3) && !chkp(4) && chkp(73)
 static_assert(chkp(193) && chkp(407521) && chkp(299210837), "MR 底数的素因子必须判为素数");
 static_assert(!chkp(4294967297ULL) && chkp(18446744073709551557ULL), "constexpr 大合数/大素数");
 
+// 运行筛法/独立试除及强伪素数回归，覆盖 u64 判素与大模数模乘。
 int main() {
     // 小值全量与试除对照
     vect<char> isp(2000001, 1);
