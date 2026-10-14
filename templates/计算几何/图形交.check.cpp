@@ -23,17 +23,27 @@
 #include "图形交.cpp"
 
 // ============ 打印/比较工具(失败时把输入与实测值打出来) ============
+// 构造点。
 static p2 P(db x, db y) { return {x, y}; }
+// 绝对值。
 static db Absd(db x) { return x < 0 ? -x : x; }
+// 平方。
 static db sq(db x) { return x * x; }
+// 返回 pi。
 static db PI2() { return acosl(-1.0L); }
+// 生成 [l, r] 闭区间随机整数。
 static int rndi(int l, int r) { return (int) rnd(l, r); }
+// 生成 [l, r] 区间随机 db。
 static db rndd(db l, db r) { return l + (r - l) * (db) (rng() % 10000001) / 10000000; }
 
+// 相对偏差。
 static db dev_of(db got, db want) { return Absd(got - want) / (1 + Absd(want)); }
+// 相对偏差判等。
 static bool near(db got, db want, db tol) { return dev_of(got, want) <= tol; }
+// 点相对偏差判等。
 static bool nearp(p2 a, p2 b, db tol) { return Absd(a.x - b.x) <= tol * (1 + Absd(b.x)) && Absd(a.y - b.y) <= tol * (1 + Absd(b.y)); }
 
+// db 转字符串(环形缓冲,诊断用)。
 static const char *f2s(db v) {
     static char buf[4][48];
     static int k = 0;
@@ -41,20 +51,25 @@ static const char *f2s(db v) {
     snprintf(buf[k], 48, "%.15Lg", v);
     return buf[k];
 }
+// 打印圆(诊断用)。
 static void prC(const circle &c, const char *tag) { printf("    %s: o = (%s, %s), r = %s\n", tag, f2s(c.o.x), f2s(c.o.y), f2s(c.r)); }
+// 打印线段(诊断用)。
 static void prS(const seg &s, const char *tag) {
     printf("    %s: (%s, %s)-(%s, %s)\n", tag, f2s(s.x.x), f2s(s.x.y), f2s(s.y.x), f2s(s.y.y));
 }
+// 打印多边形(诊断用)。
 static void prPoly(int n, p2 *a, const char *tag) {
     printf("    %s (%d 点):", tag, n);
     for(int i = 0; i < n; ++i) printf(" (%s,%s)", f2s(a[i].x), f2s(a[i].y));
     printf("\n");
 }
+// 打印点集(诊断用)。
 static void prPs(const vector<p2> &v) {
     printf("    got %d:", (int) v.size());
     for(p2 p : v) printf(" (%s,%s)", f2s(p.x), f2s(p.y));
     printf("\n");
 }
+// 打印失败信息并退出。
 static void die(const char *name, int line) {
     printf("  [FAIL] %s (%s:%d)\n", name, __FILE__, line);
     exit(1);
@@ -103,9 +118,11 @@ static int ref_line_pts(const circle &c, const seg &l, p2 *o) {
     o[1] = l.x + l.dir() * t1;
     return 2;
 }
+// 点是否在圆边界上(相对容差)。
 static bool ref_on_circle_boundary(const circle &c, const p2 &p, db tol = 2e-9L) {
     return Absd(dis2(p - c.o) - c.r * c.r) <= tol * (1 + c.r * c.r);
 }
+// 点是否严格在圆内(相对容差)。
 static bool ref_strict_inside(const circle &c, const p2 &p) { return dis2(p - c.o) < c.r * c.r - 1e-12L * (1 + c.r * c.r); }
 
 // 线段与圆的交点(参考):直线交点里参数落在 [0, |dir|^2] 的部分,并按 ons 复核
@@ -176,6 +193,7 @@ static db mc_stat(db box, ll cnt, int M) {
     db p = max((db) cnt, (db) 1) / M;
     return box * sqrtl(p * (1 - p) / M);
 }
+// 两圆交面积(蒙特卡洛);se 输出标准误差。
 static db ref_area_mc(const circle &c1, const circle &c2, int M, db &se) {
     db mnx = max(c1.o.x - c1.r, c2.o.x - c2.r), mxx = min(c1.o.x + c1.r, c2.o.x + c2.r);
     db mny = max(c1.o.y - c1.r, c2.o.y - c2.r), mxy = min(c1.o.y + c1.r, c2.o.y + c2.r);
@@ -257,9 +275,11 @@ static vector<p2> ref_hull(vector<p2> v) {
 }
 
 // ============ 随机对象生成 ============
+// 随机圆。
 static circle rnd_circle(db lim = 1000, db rmax = 1000) {
     return {P((db) rnd(-(ll) lim, (ll) lim), (db) rnd(-(ll) lim, (ll) lim)), rndd(0, rmax)};
 }
+// 随机线段。
 static seg rnd_seg(db lim = 1000) {
     return {P((db) rnd(-(ll) lim, (ll) lim), (db) rnd(-(ll) lim, (ll) lim)), P((db) rnd(-(ll) lim, (ll) lim), (db) rnd(-(ll) lim, (ll) lim))};
 }
@@ -329,6 +349,7 @@ static bool is_simple_poly(int n, p2 *a) {
     return true;
 }
 
+// 梳子形凹多边形:底边 + 若干向上的齿,专门压凹多边形分支。
 static vector<p2> comb_poly(int T, db W, db D, db hu, db hd, db L, db dx) {
     vector<p2> v;
     For(t, 1, T) {
@@ -364,8 +385,10 @@ static bool pts_eq(const vector<p2> &got, const vector<p2> &want, db tol) {
 const db CPA_EPS = 1e-9;
 
 static ll tick0;
+// 已运行秒数。
 static double el() { return (double) (clock() - tick0) / CLOCKS_PER_SEC; }
 
+// 手算/解析/数值参考对照;通过则 PASSED("图形交")。
 int main() {
     tick0 = clock();
     printf("== 图形交 自测开始 ==\n");

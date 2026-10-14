@@ -58,6 +58,7 @@ int cir_line2(const circle &c, const seg &l, p2 *o) {
     } else o[n++] = f; // 相切:1 个点
     return n;
 }
+// 圆与直线交点的向量返回版,按参数 t = dir*(p - l.x) 递增;退化直线返回空。
 vector<p2> cir_line(const circle &c, const seg &l) {
     p2 t[2];
     int n = cir_line2(c, l, t);
