@@ -8,7 +8,6 @@ namespace Mul {
 using poly = vector<int>;
 // 原地做模 M 的 NTT；要求 a 长度为 2 的幂且符合长度上限，k=1 正变换、k=-1 逆变换；结果覆盖 a。
 template <int M, int G> static void NTT(poly &a, const int k) {
-    auto ksm = [&](ll a, int b) {ll ans=1;for(;b;b>>=1,a=a*a%M)if(b&1)ans=ans*a%M;return ans; };
     static poly r, w;
     int n = a.size();
     if(n != r.size()) {
@@ -17,7 +16,7 @@ template <int M, int G> static void NTT(poly &a, const int k) {
         For(i, 0, n - 1) r[i] = (r[i >> 1] >> 1) | ((i & 1) << (l - 1));
     }
     For(i, 0, n - 1) if(i < r[i]) swap(a[r[i]], a[i]);
-    ll wi = ksm(G, ((M - 1) >> 1) / n * k + M - 1);
+    ll wi = ksm(G, ((M - 1) >> 1) / n * k + M - 1, M);
     w.resize(n), w[0] = 1;
     For(i, 1, n - 1) w[i] = w[i - 1] * wi % M;
     for(int m = 1, l = __lg(n); m < n; m <<= 1, --l)
@@ -28,7 +27,7 @@ template <int M, int G> static void NTT(poly &a, const int k) {
                 a[i + j + m] = x - y < 0 ? x - y + M : x - y;
             }
     if(k == -1) {
-        ll inv = ksm(n, M - 2);
+        ll inv = ksm(n, M - 2, M);
         For(i, 0, n - 1) a[i] = a[i] * inv % M;
     }
 }
