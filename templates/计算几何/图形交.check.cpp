@@ -319,7 +319,6 @@ static vector<p2> rnd_star(int maxn, db lim) {
     if(!ccw(r.size(), r.data())) reverse(r.begin(), r.end());
     return r;
 }
-// 梳子形凹多边形:底边 + 若干向上的齿(t 个齿有 4t 个反射角,专门压凹多边形分支)
 // 用竖直直线 x = X 切多边形,保留左半(keepLeft=1)或右半:标准的 Sutherland-Hodgman 裁剪,
 // 保序保向 —— 直接往顶点表后面「拼接」一个矩形来当半平面是不可靠的(多边形跨过切线时那会自交)。
 static vector<p2> clip_x(const vector<p2> &p, db X, int keepLeft) {
