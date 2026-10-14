@@ -20,24 +20,34 @@ namespace Geo {
 
 struct line3 {
     p3 o, d;  // 参数式 o + t·d
+    // 默认构造:成员未初始化。
     line3() {}
+    // 由两点构造直线(o=a,d=b-a)。
     line3(p3 a, p3 b) : o(a), d(b - a) {}
+    // 参数 t 对应的点。
     p3 at(db t) const { return o + d * t; }
 };
 struct seg3 {
     p3 x, y;
+    // 方向向量 y - x。
     p3 dir() const { return y - x; }
 };
 
 // ---------- 点与直线 ----------
+// 点在直线上的投影。
 p3 proj(const line3 &l, p3 p) { return l.o + l.d * ((l.d * (p - l.o)) / dis2(l.d)); }
+// 点关于直线的对称点。
 p3 reflect(const line3 &l, p3 p) { return proj(l, p) * 2 - p; }
+// 点到直线的距离。
 db dis(const line3 &l, p3 p) { return dis(p - proj(l, p)); }
+// 点是否在直线上。
 bool ons(const line3 &l, p3 p) { return !sign(dis(l, p)); }
+// 两直线是否平行。
 bool ispara(const line3 &a, const line3 &b) { return !sign(sinang(a.d, b.d)); }
 bool ispara(const seg3 &a, const seg3 &b) {  // 线段方向:某条退化成点时约定为「平行」
     return !sign(dis(a.dir())) || !sign(dis(b.dir())) || !sign(sinang(a.dir(), b.dir()));
 }
+// 两直线是否垂直。
 bool isperp(const line3 &a, const line3 &b) { return !sign(cosang(a.d, b.d)); }
 
 // ---------- 两直线:最近点对与距离 ----------
@@ -54,18 +64,24 @@ db dis(const line3 &a, const line3 &b, p3 &pa, p3 &pb) {
     pb = b.o + b.d * ((A * E - B * D) / den);
     return dis(pa - pb);
 }
+// 两直线距离(忽略最近点)。
 db dis(const line3 &a, const line3 &b) { p3 pa, pb; return dis(a, b, pa, pb); }
+// a 上离 b 最近的点。
 p3 closest_on(const line3 &a, const line3 &b) { p3 pa, pb; return dis(a, b, pa, pb), pa; }
 
 // ---------- 点与线段 ----------
+// 点在线段上的最近点(参数夹到 [0,1]);线段可退化为点。
 p3 proj(const seg3 &s, p3 p) {
     p3 d = s.dir();
     if(!sign(dis2(d))) return s.x;  // 退化成点
     db t = (d * (p - s.x)) / dis2(d);
     return s.x + d * max((db) 0, min((db) 1, t));
 }
+// 点到线段的距离。
 db dis(const seg3 &s, p3 p) { return dis(proj(s, p) - p); }
+// 点是否在线段上(含端点)。
 bool ons(const seg3 &s, p3 p) { return !sign(dis(s, p)); }
+// 点是否严格在线段内部(不含端点)。
 bool ons_s(const seg3 &s, p3 p) { return ons(s, p) && sign((p - s.x) * (p - s.y)) < 0; }
 
 // ---------- 两线段:最近点对与距离 ----------
@@ -95,6 +111,7 @@ db dis(const seg3 &a, const seg3 &b, p3 &pa, p3 &pb) {
     pa = a.x + u * s, pb = b.x + v * t;
     return dis(pa - pb);
 }
+// 两线段间距离(忽略最近点)。
 db dis(const seg3 &a, const seg3 &b) { p3 pa, pb; return dis(a, b, pa, pb); }
 
 // 两线段是否相交(公共点存在即真,含端点相接、共线重叠)。

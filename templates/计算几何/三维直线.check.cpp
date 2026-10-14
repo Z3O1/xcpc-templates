@@ -25,15 +25,20 @@ int cmp(db x, db y) { return sign(x - y); }
 
 // ===================== check 自写的独立参考实现 =====================
 static mt19937_64 g_rng(20240907);
+// 生成 [l, r] 闭区间随机整数(固定种子,可复现)。
 static ll grnd(ll l, ll r) { return l + (ll) (g_rng() % (u64) (r - l + 1)); }
 
+// p3 转字符串(诊断打印用)。
 string ps(p3 a) {
     char buf[128];
     snprintf(buf, sizeof buf, "(%.12Lg,%.12Lg,%.12Lg)", (long double) a.x, (long double) a.y, (long double) a.z);
     return buf;
 }
+// seg3 转字符串(诊断打印用)。
 string ps(seg3 s) { return "[" + ps(s.x) + "," + ps(s.y) + "]"; }
+// line3 转字符串(诊断打印用)。
 string ps(line3 l) { return ps(l.o) + "+t" + ps(l.d); }
+// 带容差的标量判等。
 bool eq(db x, db y, db tol) { return abs(x - y) <= tol; }
 
 // 点到直线距离:解析式 |cross(d, p-o)| / |d|
@@ -51,6 +56,7 @@ db refDisLL(line3 a, line3 b) {
     if(dis(n) <= 1e-11L * dis(a.d) * dis(b.d)) return refDisLP(b, a.o);  // 平行(相对判据)
     return abs(det(a.d, b.d, b.o - a.o)) / dis(n);
 }
+// 两直线方向夹角的正弦(|cross| / 模长积)。
 db sinLL(line3 a, line3 b) { return dis(cross(a.d, b.d)) / (dis(a.d) * dis(b.d)); }
 // 两线段距离:端点特例 + 「直线内点特例」的闭式参考(结构上与模板不同)
 db refDisSS(seg3 a, seg3 b) {
@@ -91,12 +97,19 @@ db bruteDisSS(seg3 a, seg3 b) {
 struct I3 {
     ll x, y, z;
 };
+// 三维整数点字典序差。
 ll icmp(I3 a, I3 b) { return a.x == b.x ? (a.y == b.y ? a.z - b.z : a.y - b.y) : a.x - b.x; }
+// 三维整数点相减。
 I3 isub(I3 a, I3 b) { return {a.x - b.x, a.y - b.y, a.z - b.z}; }
+// 三维整数点积。
 ll idot(I3 a, I3 b) { return a.x * b.x + a.y * b.y + a.z * b.z; }
+// 三维整数叉积。
 I3 icross(I3 a, I3 b) { return {a.y * b.z - a.z * b.y, a.z * b.x - a.x * b.z, a.x * b.y - a.y * b.x}; }
+// 三维整数混合积。
 ll idet(I3 a, I3 b, I3 c) { return idot(a, icross(b, c)); }
+// 是否零向量。
 ll izero(I3 a) { return !a.x && !a.y && !a.z; }
+// 取第 i 个分量(i = 0,1,2)。
 ll icomp(I3 a, int i) { return i == 0 ? a.x : (i == 1 ? a.y : a.z); }
 // c 是否落在线段 ab 上(全部精确)
 bool iOnSeg(I3 a, I3 b, I3 c) {
@@ -152,16 +165,21 @@ bool refChkssS(I3 p1, I3 p2, I3 q1, I3 q2) {
     return ori(p1, p2, q1) * ori(p1, p2, q2) < 0 && ori(q1, q2, p1) * ori(q1, q2, p2) < 0;
 }
 
-p3 P3(db x, db y, db z) { return {x, y, z}; }  // CHECK 宏参数里不能带花括号,统一用工厂函数
+// 构造 p3;用工厂函数是因为 CHECK 宏参数里不能出现花括号。
+p3 P3(db x, db y, db z) { return {x, y, z}; }
+// 构造 seg3。
 seg3 SG(p3 x, p3 y) { return {x, y}; }
 line3 LN(p3 o, p3 d) {  // 参数式 o + t·d(不能用 {o, d}:那是两点式构造函数)
     line3 l;
     l.o = o, l.d = d;
     return l;
 }
+// 整数三维点转 p3。
 p3 IP3(I3 a) { return {db(a.x), db(a.y), db(a.z)}; }
+// 整数线段转 seg3。
 seg3 ISG(I3 a, I3 b) { return {IP3(a), IP3(b)}; }
 
+// 手算/参考对照与退化用例;通过则 PASSED("三维直线")。
 int main() {
     p3 X{1, 0, 0}, Y{0, 1, 0}, Z{0, 0, 1}, O{0, 0, 0};
 
