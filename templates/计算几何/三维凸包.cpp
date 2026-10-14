@@ -27,6 +27,7 @@ struct face3 {
     int a, b, c;
 };
 
+// 三维凸包(增量法);返回三角面片(法向朝外,下标为输入数组下标),退化输入返回空。
 vector<face3> convex3d(const vector<p3> &a) {
     int n = a.size();
     vector<face3> ret;

@@ -30,20 +30,26 @@ int cmp(db x, db y) { return sign(x - y); }
 
 // ===================== check 自写的独立参考实现 =====================
 static mt19937_64 g_rng(20240909);
+// 生成 [l, r] 闭区间随机整数(固定种子,可复现)。
 static ll grnd(ll l, ll r) { return l + (ll) (g_rng() % (u64) (r - l + 1)); }
+// 生成 [0, 1) 均匀随机 db。
 static db urnd() { return (db) (g_rng() >> 11) / (db) (1ull << 53); }
 
+// p3 转字符串(诊断打印用)。
 string ps(p3 a) {
     char buf[128];
     snprintf(buf, sizeof buf, "(%.12Lg,%.12Lg,%.12Lg)", (long double) a.x, (long double) a.y, (long double) a.z);
     return buf;
 }
+// 点集转字符串(诊断打印用)。
 string ps(const vector<p3> &a) {
     string s = "[";
     for(int i = 0; i < a.size(); ++i) s += (i ? " " : "") + ps(a[i]);
     return s + "]";
 }
+// 带容差的标量判等。
 bool eq(db x, db y, db tol) { return abs(x - y) <= tol; }
+// 构造 p3。
 p3 P3(db x, db y, db z) { return {x, y, z}; }
 
 // ---- 暴力:枚举所有三点组成的三角形,保留「所有点都在同一侧」的支撑三角形 ----
@@ -52,6 +58,7 @@ struct Facet {
     bool flip;   // 顶点顺序给出的法向是否与朝外法向相反
     p3 n;        // 朝外的法向(未归一化)
 };
+// 暴力枚举所有支撑三角面,返回面片(含朝外法向)。
 vector<Facet> bruteFacets(const vector<p3> &a, db tol) {
     int n = a.size();
     vector<Facet> fs;
@@ -71,16 +78,19 @@ vector<Facet> bruteFacets(const vector<p3> &a, db tol) {
     }
     return fs;
 }
+// 由支撑面求凸包表面积(暴力参考)。
 db bruteArea(const vector<p3> &a, const vector<Facet> &fs) {
     db s = 0;
     for(int t = 0; t < fs.size(); ++t) s += dis(fs[t].n);
     return s / 2;
 }
+// 由支撑面求凸包体积(暴力参考)。
 db bruteVolume(const vector<p3> &a, const vector<Facet> &fs) {
     db s = 0;
     for(int t = 0; t < fs.size(); ++t) s += fs[t].flip ? -det(a[fs[t].i], a[fs[t].j], a[fs[t].k]) : det(a[fs[t].i], a[fs[t].j], a[fs[t].k]);
     return abs(s) / 6;
 }
+// 支撑面覆盖到的顶点集合。
 set<int> bruteVerts(const vector<Facet> &fs) {
     set<int> v;
     for(int t = 0; t < fs.size(); ++t) v.insert(fs[t].i), v.insert(fs[t].j), v.insert(fs[t].k);
@@ -98,6 +108,7 @@ bool generalPosition(const vector<p3> &a) {
 }
 
 // ---- 模板输出的性质检查 ----
+// 面片的(未归一化)法向。
 p3 fnorm(const vector<p3> &a, face3 f) { return cross(a[f.b] - a[f.a], a[f.c] - a[f.a]); }
 // 每个点都在每个面的内侧(返回最大越界距离,<= 0 表示全部满足)
 db maxOutside(const vector<p3> &a, const vector<face3> &f) {
@@ -173,6 +184,7 @@ db mcVolume(const vector<p3> &a, const vector<face3> &f, int N) {
     return box * cnt / N;
 }
 
+// 手算/暴力参考对照与拓扑性质检查;通过则 PASSED("三维凸包")。
 int main() {
     // ===== 1. 手算常数用例 =====
     {
