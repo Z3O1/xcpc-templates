@@ -15,15 +15,13 @@ struct MCMF_t {
     }
     // 加一条有向费用容量边；要求端点为正、容量非负；平行边保留为多条边。
     void add(int u, int v, int w, ll c) {
-        // mx 是 clear() 的清零点,add() 就得抬它(只靠 mcmf() 抬的话,建完图没跑过就 clear() 会残留)
+        // 新建但尚未求流的点也要计入 clear 的清零范围。
         cmax(mx, u), cmax(mx, v);
         _add(u, v, w, c), _add(v, u, 0, -c);
     }
     // 清空用过点的邻接表；要求边已不再需要；重置边池和源汇但保留 mx 作为清零上界。
     void clear() {
-        // 清到"用过的最大点数" mx:mcmf2() 的内层会用 _n + 2 个点跑,
-        // 只清到当前 n 的话,超级源/汇那几条残留 hd[] 会让下一次调用拿陈旧前驱、
-        // dijkstra 回退时在 e[] 里乱跳 → 死循环。
+        // 包括 mcmf2 的超级源/汇，不能只清到当前 n。
         For(i, 1, mx) hd[i] = 0;
         tot = 1, s = t = 0;
     }
