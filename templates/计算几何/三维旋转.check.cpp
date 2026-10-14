@@ -24,14 +24,18 @@ int cmp(db x, db y) { return sign(x - y); }
 
 // ===================== check 自写的独立参考实现 =====================
 static mt19937_64 g_rng(20240910);
+// 生成 [l, r] 闭区间随机整数(固定种子,可复现)。
 static ll grnd(ll l, ll r) { return l + (ll) (g_rng() % (u64) (r - l + 1)); }
 
+// p3 转字符串(诊断打印用)。
 string ps(p3 a) {
     char buf[128];
     snprintf(buf, sizeof buf, "(%.12Lg,%.12Lg,%.12Lg)", (long double) a.x, (long double) a.y, (long double) a.z);
     return buf;
 }
+// 带容差的标量判等。
 bool eq(db x, db y, db tol) { return abs(x - y) <= tol; }
+// 构造 p3。
 p3 P3(db x, db y, db z) { return {x, y, z}; }
 const db PI = acos((db) -1);
 
@@ -55,6 +59,7 @@ mat3 refRotmat(p3 axis, db ang) {
     return m;
 }
 
+// 手算/四元数参考对照与性质断言;通过则 PASSED("三维旋转")。
 int main() {
     p3 X{1, 0, 0}, Y{0, 1, 0}, Z{0, 0, 1}, O{0, 0, 0};
 
