@@ -12,7 +12,7 @@
 #include "多项式ln.cpp"
 #include "多项式exp.cpp"
 
-// ——— 暴力 A:b = exp f 满足 b' = f'·b,逐项递推 k·b[k] = Σ_{j=1..k} j·f[j]·b[k-j] ———
+// 递推求 exp f（b'=f'·b）；要求 f[0]==0、n >= 1；返回 mod x^n 的 exp f。
 static poly naive_exp(const poly &f, int n, bool *okp = nullptr) {
     poly b(n);
     if(n) b[0] = 1;
@@ -25,7 +25,7 @@ static poly naive_exp(const poly &f, int n, bool *okp = nullptr) {
     if(okp) *okp = okk;
     return b;
 }
-// ——— 暴力 B(完全不同):exp f = Σ_{t>=0} f^t / t!,O(n³) 的朴素幂级数展开 ———
+// 用 Σ f^t/t! 的 O(n³) 展开求 exp f；要求 f[0]==0、n >= 1；返回 mod x^n 的 exp f。
 static poly naive_exp2(const poly &f, int n) {
     poly s(n), cur(n);
     if(n) s[0] = 1, cur[0] = 1;
@@ -39,22 +39,26 @@ static poly naive_exp2(const poly &f, int n) {
     }
     return s;
 }
+// 格式化多项式前 k 项；要求 k >= 0；返回“长度 + 前若干项”的调试字符串。
 static string pstr(const poly &a, int k = 12) {
     string s = "[" + to_string(a.size()) + "]";
     For(i, 0, min((int) a.size(), k) - 1) s += " " + to_string(a[i]);
     return s + ((int) a.size() > k ? " ..." : "");
 }
+// 返回两向量首个不同的下标；长度不同返回 0，完全一致返回 -1。
 static int firstdiff(const poly &want, const poly &got) {
     if(want.size() != got.size()) return 0;
     For(i, 0, (int) want.size() - 1) if(want[i] != got[i]) return i;
     return -1;
 }
+// 打印失败现场（含首个不符位）并返回 1；用于对拍失败时给出可复现信息。
 static int bad(const char *what, const poly &f, int n, const poly &want, const poly &got, int at = -1) {
     printf("  [FAIL] %s\n    n = %d, f = %s\n", what, n, pstr(f).c_str());
     if(at >= 0) printf("    首个不符: k = %d, want = %d, got = %d\n", at, want[at], got[at]);
     printf("    want = %s\n    got  = %s\n", pstr(want).c_str(), pstr(got).c_str());
     return 1;
 }
+// 生成随机多项式；要求 len >= 0；返回长度 len、f[0]=0、其余系数在 [0,M) 的向量。
 static poly rpoly(int len, int mode) {  // 0 稠密 1 稀疏 2 小值 3 全 0
     poly a(len);
     For(i, 0, len - 1) {
@@ -67,6 +71,7 @@ static poly rpoly(int len, int mode) {  // 0 稠密 1 稀疏 2 小值 3 全 0
     a[0] = 0;  // exp 的契约:f[0] == 0
     return a;
 }
+// 用 poly_exp 与递推参考对拍；一致返回 0，否则打印失败现场返回 1。
 static int cmp(const char *what, const poly &f, int n) {
     poly want = naive_exp(f, n), got = poly_exp(f, n);
     if(got.size() != (size_t) n) {
@@ -77,6 +82,7 @@ static int cmp(const char *what, const poly &f, int n) {
     if(at >= 0) return bad(what, f, n, want, got, at);
     return 0;
 }
+// 运行多项式 exp 自测；覆盖参考自检/随机/代数性质/边界/稍大规模；失败返回非零。
 int main() {
     // ——— 0) 参考实现自检 ———
     {

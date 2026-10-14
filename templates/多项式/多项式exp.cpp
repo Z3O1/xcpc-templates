@@ -7,6 +7,7 @@
 // 每轮:g ← g*(1 - ln g + f) mod x^m,精度翻倍。
 
 using poly = vector<int>;
+// 求 exp f (mod x^n)；要求 f 非空且 f[0]==0、n >= 1；返回长度 n、常数项为 1 的向量。
 poly poly_exp(const poly &f, int n) {
     poly g{1};
     for(int m = 1; m < n; m <<= 1) {
