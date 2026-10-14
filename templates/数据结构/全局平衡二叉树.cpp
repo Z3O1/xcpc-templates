@@ -78,9 +78,9 @@ int build(int l, int r) {
     For(i, l, r) {
         s2 += wt[i];
         if(s2 * 2 > s1) {
-        m = i;
-        break;
-    }
+            m = i;
+            break;
+        }
     }
     if(m == r) --m;
     int k = m << 1 | 1;
