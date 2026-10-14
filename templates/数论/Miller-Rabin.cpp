@@ -2,9 +2,10 @@
 
 // 模乘用 unsigned __int128 覆盖完整 u64 乘积；不要换成普通 ksm。
 // 模乘与快速幂沿用 lambda，保持 C++17 constexpr 调用兼容。
-// 内部模乘/模幂要求 p>0，模幂指数为 0 时原样返回累乘器 r。
 namespace MR {
+    // 返回 (a*b) mod p，覆盖完整 u64；要求 p>0。
     auto mul = [](u64 a, u64 b, u64 p) { return (unsigned __int128) a * b % p; };
+    // 求 r*a^x mod p；要求 p>0；x=0 时原样返回 r，不额外取模。
     auto pw = [](u64 a, u64 x, u64 p, u64 r = 1) {
         for(; x; x >>= 1, a = mul(a, a, p))
             if(x & 1) r = mul(r, a, p);
