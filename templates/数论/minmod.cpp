@@ -1,7 +1,7 @@
 // minmod(): 数论 · 最小模线性值
 
-// 返回 min_{0 <= i < n} (a * i + b) mod m,共 n 项;要求 m > 0。
-// 复杂度 O(log m),比逐项枚举快;n、m 可到 1e18(int 参数时按 int 上限)。
+// 返回 min_{0<=i<n} (a*i+b) mod m；要求 n>=0、m>0；n=0 时返回 m。
+// O(log m)；n,m,a 按 int 范围，b 按 ll 范围，a、b 均可负。
 int minmod(int n, int m, int a, ll b) {
     int ans = m;
     while(n) {
