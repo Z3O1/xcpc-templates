@@ -40,20 +40,25 @@ void rm(int t) { live[t] = 0, fre += t; }
 bool lt(p2 u, p2 v) { return u.x != v.x ? u.x < v.x : u.y < v.y; }
 // 三点叉积符号(精确,不用 eps)。
 int ori(int a, int b, int c) { return sign((pts[b] - pts[a]).det(pts[c] - pts[a])); }
-int ill(int p, int a, int b, int c) {  // p 是否严格落在逆时针三角形 (a,b,c) 的外接圆内
+// 按相对容差判断 p 是否在外接圆内；要求 a,b,c 按逆时针排列。
+int ill(int p, int a, int b, int c) {
     p2 A = pts[a] - pts[p], B = pts[b] - pts[p], C = pts[c] - pts[p];
     db t1 = dis2(A) * B.det(C), t2 = dis2(B) * C.det(A), t3 = dis2(C) * A.det(B);
     return t1 + t2 + t3 > 1e-12L * (abs(t1) + abs(t2) + abs(t3));
 }
-int finde(int t, int a, int b) {  // 三角形 t 中「有序边 (a,b)」的编号
+// 返回三角形 t 中有向边 (a,b) 的编号 [0,2]，不存在返回 -1。
+int finde(int t, int a, int b) {
     for(int i = 0; i < 3; ++i) if(tri[t].v[(i + 1) % 3] == a && tri[t].v[(i + 2) % 3] == b) return i;
     return -1;
 }
-void lnk(int t, int i, int g) {  // 把 t 的第 i 条边和 g 连起来(双向);g = -1 表示凸包边
+// 将 t 的边 i 与三角形 g 双向相连；须共享反向边，0 <= i < 3。
+// g=-1 时仅将该边标为凸包边。
+void lnk(int t, int i, int g) {
     tri[t].f[i] = g;
     if(g >= 0) tri[g].f[finde(g, tri[t].v[(i + 2) % 3], tri[t].v[(i + 1) % 3])] = t;
 }
-int mk(int a, int b, int c) {  // 新建逆时针三角形 (a,b,c)
+// 创建逆时针三角形并返回编号；要求 a,b,c 非共线，必要时交换 b,c。
+int mk(int a, int b, int c) {
     if(ori(a, b, c) < 0) swap(b, c);
     int t = nw();
     tri[t].v[0] = a, tri[t].v[1] = b, tri[t].v[2] = c;
@@ -61,7 +66,8 @@ int mk(int a, int b, int c) {  // 新建逆时针三角形 (a,b,c)
     return t;
 }
 typedef array<int, 3> Tst;  // 待检查的边:(三角形, 该边对面顶点在三角形里的下标, 三角形版本号)
-void flipall(vector<Tst> &st) {  // 反复翻非法边,直到栈空(凸包边永不翻)
+// 消耗待检边栈并翻转非法边，更新邻接；凸包边不翻，过期版本跳过。
+void flipall(vector<Tst> &st) {
     while(!st.empty()) {
         Tst e = st.back();
         st.pop_back();
