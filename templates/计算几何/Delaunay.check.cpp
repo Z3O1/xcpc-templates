@@ -22,17 +22,24 @@
 
 // ================= 工具 =================
 static mt19937_64 grng(20240915);
+// 生成 [l, r] 闭区间随机整数(固定种子,可复现)。
 static ll frnd(ll l, ll r) { return l + (ll) (grng() % (u64) (r - l + 1)); }
+// 整数坐标转 p2。
 static p2 IP(ll x, ll y) { return p2{(db) x, (db) y}; }
+// 三角形带号面积。
 static db ar3(p2 a, p2 b, p2 c) { return (b - a).det(c - a) / 2; }
 typedef pair<ll, ll> K;  // 点坐标(整数)当键
+// 点坐标转整数键(仅用于坐标恰为整数的点)。
 static K key(p2 a) { return {ll(a.x), ll(a.y)}; }
+// 无序边的规范化键。
 static pair<K, K> ekey(p2 a, p2 b) { return key(a) < key(b) ? make_pair(key(a), key(b)) : make_pair(key(b), key(a)); }
 
 // ---- 独立参考:精确整数叉积/凸包(Andrew 单调链,去掉共线点,逆时针) ----
+// 精确整数叉积(i128,|坐标| <= 1e9 内安全)。
 static i128 det3(p2 a, p2 b, p2 c) {
     return ((i128) b.x - (i128) a.x) * ((i128) c.y - (i128) a.y) - ((i128) b.y - (i128) a.y) * ((i128) c.x - (i128) a.x);
 }
+// Andrew 凸包(去重去共线,逆时针)。
 static vector<p2> refHull(vector<p2> v) {
     sort(v.begin(), v.end(), [](p2 a, p2 b) { return a.x != b.x ? a.x < b.x : a.y < b.y; });
     v.erase(unique(v.begin(), v.end(), [](p2 a, p2 b) { return a.x == b.x && a.y == b.y; }), v.end());
@@ -51,12 +58,14 @@ static vector<p2> refHull(vector<p2> v) {
     h.pop_back();
     return h;
 }
+// 凸包面积。
 static db hullArea(const vector<p2> &h) {
     db s = 0;
     for(int i = 0; i < (int) h.size(); ++i) s += h[i].det(h[(i + 1) % h.size()]);
     return abs(s / 2);
 }
 // ---- 独立参考:解析外心/半径(写法与模板的 4x4 行列式不同) ----
+// 解析外心与半径平方;要求三点不共线。
 static void circum(p2 A, p2 B, p2 C, p2 &O, db &R2) {
     db d = 2 * (A.x * (B.y - C.y) + B.x * (C.y - A.y) + C.x * (A.y - B.y));
     O.x = ((A.x * A.x + A.y * A.y) * (B.y - C.y) + (B.x * B.x + B.y * B.y) * (C.y - A.y) + (C.x * C.x + C.y * C.y) * (A.y - B.y)) / d;
@@ -64,6 +73,7 @@ static void circum(p2 A, p2 B, p2 C, p2 &O, db &R2) {
     R2 = dis2(A - O);
 }
 // ---- 独立参考:精确外接圆行列式(i128,要求 |坐标| <= 1e4,否则会溢出) ----
+// p 相对 (a,b,c) 外接圆的精确行列式符号;>0 圆内,=0 圆上,<0 圆外。
 static i128 exactInC(p2 p, p2 a, p2 b, p2 c) {
     i128 ax = (i128) a.x - (i128) p.x, ay = (i128) a.y - (i128) p.y;
     i128 bx = (i128) b.x - (i128) p.x, by = (i128) b.y - (i128) p.y;
@@ -229,6 +239,7 @@ static vector<p2> rndPts(int n, ll R) {
     }
     return v;
 }
+// vector<p2> 转 vect<p2>。
 static vect<p2> V(const vector<p2> &v) { return vect<p2>(v.begin(), v.end()); }
 
 // 一般位置:没有三点共线、没有四点共圆(小坐标下用 i128 精确判断)
@@ -242,6 +253,7 @@ static bool generalPosition(const vector<p2> &v) {
     return true;
 }
 
+// 空圆性质/剖分合法性与暴力 Delaunay 对照;通过则 PASSED("Delaunay")。
 int main() {
     printf("== Delaunay.check:空圆性质 + 剖分合法性 + 暴力 Delaunay 对照 + 退化输入 ==\n");
 

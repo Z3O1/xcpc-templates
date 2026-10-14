@@ -24,6 +24,7 @@ vect<char> live;
 vect<int> fre;
 int verc;
 
+// 分配一个新三角形(优先复用空闲槽),返回其下标。
 int nw() {
     if(!fre.empty()) {
         int t = fre.back();
@@ -33,8 +34,11 @@ int nw() {
     tri.push_back(Tri()), live += 1;
     return (int) tri.size() - 1;
 }
+// 释放三角形 t(标记死亡并回收下标)。
 void rm(int t) { live[t] = 0, fre += t; }
+// 按 (x, y) 精确字典序比较。
 bool lt(p2 u, p2 v) { return u.x != v.x ? u.x < v.x : u.y < v.y; }
+// 三点叉积符号(精确,不用 eps)。
 int ori(int a, int b, int c) { return sign((pts[b] - pts[a]).det(pts[c] - pts[a])); }
 int ill(int p, int a, int b, int c) {  // p 是否严格落在逆时针三角形 (a,b,c) 的外接圆内
     p2 A = pts[a] - pts[p], B = pts[b] - pts[p], C = pts[c] - pts[p];
@@ -83,6 +87,7 @@ void flipall(vector<Tst> &st) {  // 反复翻非法边,直到栈空(凸包边永
     }
 }
 
+// 计算 Delaunay 三角剖分;返回拼平的逆时针三角形,顶点为去重后点集的下标。
 vect<p2> delaunay(vect<p2> a) {
     pts.clear();
     tri.clear();
