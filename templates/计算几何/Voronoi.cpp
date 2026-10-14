@@ -28,6 +28,7 @@ seg bisector(p2 a, p2 b) {
     return {m, m + r90(b - a)};
 }
 
+// 求各站点的 Voronoi 区域(半平面交逐站点裁剪包围盒);返回第 i 个元素为站点 i 的逆时针区域。
 vect<vect<p2>> voronoi(vect<p2> a) {
     int n = (int) a.size();
     vect<vect<p2>> res;

@@ -20,7 +20,9 @@
 
 // ================= 工具 =================
 static mt19937_64 vrng(19980831);
+// 生成 [l, r] 闭区间随机整数(固定种子,可复现)。
 static ll vrnd(ll l, ll r) { return l + (ll) (vrng() % (u64) (r - l + 1)); }
+// 整数坐标转 p2。
 static p2 VIP(ll x, ll y) { return p2{(db) x, (db) y}; }
 typedef pair<ll, ll> K;
 static db myArea(const vect<p2> &p) {  // 自己的 shoelace(不用模板的 area)
@@ -28,7 +30,9 @@ static db myArea(const vect<p2> &p) {  // 自己的 shoelace(不用模板的 are
     for(int i = 0; i < (int) p.size(); ++i) s += p[i].det(p[(i + 1) % p.size()]);
     return abs(s / 2);
 }
+// 边 (u,v) 关于点 q 的容差(与坐标量级适配)。
 static db edgeTol(p2 u, p2 v, p2 q) { return 1e-9L * (1 + abs(u.x) + abs(u.y) + abs(v.x) + abs(v.y) + abs(q.x) + abs(q.y)); }
+// 逐位判等(精确)。
 static bool sameP(p2 u, p2 v) { return u.x == v.x && u.y == v.y; }
 static bool inConv(const vect<p2> &p, p2 q, db mul = 1) {  // 闭区域
     for(int i = 0; i < (int) p.size(); ++i) {
@@ -57,6 +61,7 @@ static void nearest2(const vect<p2> &a, p2 q, db &d1, int &i1, db &d2) {
 }
 // ---------------- 验证器:返回空串 = 通过 ----------------
 static int gSamples = 0;
+// 验证 Voronoi 区域划分性质;返回空串表示通过,否则为失败原因。
 static string verifyCells(const vect<p2> &a, const vect<vect<p2>> &c, bool allowOverlap, bool sample = true) {
     char buf[512];
     int n = a.size();
@@ -130,9 +135,12 @@ static string verifyCells(const vect<p2> &a, const vect<vect<p2>> &c, bool allow
     if(bad) return first;
     return "";
 }
+// vector<p2> 转 vect<p2>。
 static vect<p2> VA(const vector<p2> &v) { return vect<p2>(v.begin(), v.end()); }
+// 用模板求 Voronoi 并验证(verifyCells 的便捷封装)。
 static string verifyVoronoi(const vect<p2> &a, bool allowOverlap, bool sample = true) { return verifyCells(a, voronoi(a), allowOverlap, sample); }
 
+// 暴力最近站点对照与划分性质验证;通过则 PASSED("Voronoi")。
 int main() {
     printf("== Voronoi.check:暴力最近站点对照(格点+随机采样)+ 划分性质 + Delaunay 对偶交叉验证 ==\n");
     char buf[512];
