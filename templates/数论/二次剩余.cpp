@@ -1,7 +1,7 @@
 // quadres(): 数论 · 二次剩余 (欧拉判别法 + 模素数开根)
 
 // 不复用 base header 的 ksm:它按 ll 相乘,不能保证大模数下不溢出。
-// 这里自带 u128 模乘与快速幂,与 Miller-Rabin 的 MR::mul 同理。
+// 这里自带 u128 模乘与快速幂，与 Miller-Rabin 的内部模乘同理。
 namespace QR {
     // 计算 a*b mod p；要求 p > 0；用 u128 支持完整 u64 乘法。
     auto mul = [](u64 a, u64 b, u64 p) { return (u64) ((unsigned __int128) a * b % p); };
