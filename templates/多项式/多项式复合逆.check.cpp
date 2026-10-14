@@ -89,7 +89,7 @@ static int cmp_fg(const char *what, const vi &F, int n, bool check_other_way) {
     vi got = naive_comp(F, g, n);
     if(!same(w, got)) return bad("f(g(x)) != x", F, g, n, w, got);
     if(n > 1) {
-        int want1 = (int) qpow(F[1], mod - 2);
+        int want1 = (int) ksm(F[1], mod - 2, mod);
         if(g[1] != want1) return bad("G[1] 应为 1/F[1]", F, g, n, vi{0, want1}, vi{g[0], g[1]});
     }
     if(check_other_way) {
@@ -103,16 +103,13 @@ static int cmp_fg(const char *what, const vi &F, int n, bool check_other_way) {
 int main() {
     prep(18);
 
-    // ——— 0) 公开缓冲符号回归:F 是模板对外公开的 int[N] 缓冲,老代码按原用法
-    //        F[0]=0; F[1]=1; poly input(vector<int>(F, F+2)); 直接构造输入,
-    //        删掉这个符号就编译不过 —— 固定在这里不让它退回去 ———
+    // ——— 0) 系数向量直接构造输入，不依赖遗留的全局 F 缓冲 ———
     {
-        static_assert(std::is_same<decltype(F[0]), int &>::value, "F 应是公开的 int[N] 缓冲");
-        F[0] = 0, F[1] = 1;  // F(x) = x,它的复合逆还是 x
-        poly input(vector<int>(F, F + 2));
-        vi want = CIV(vi{0, 1}, 2), got = comp_inv(input, 2).c;
-        if(!same(want, got)) return bad("公开缓冲 F 构造的 poly 参与 comp_inv", vi{0, 1}, got, 2, want, got);
-        ok("公开缓冲 F 存在且类型为 int[N];poly input(vector<int>(F,F+2)) 可直接喂给 comp_inv");
+        poly input(vi{0, 1});
+        vi want{0, 1}, got = comp_inv(input, 2).c;
+        if(!same(want, got) || !same(input.c, vi{0, 1}))
+            return bad("向量构造输入且 comp_inv 不修改输入", vi{0, 1}, got, 2, want, got);
+        ok("poly 直接由系数向量构造，comp_inv 返回正确且不修改输入");
     }
 
     // ——— 1) 参考实现自检(手算 + 两种写法互校) ———
@@ -182,7 +179,7 @@ int main() {
     // ——— 5) 结构用例(手算闭式) ———
     {
         CHECK(same(CIV({0, 1}, 2), vi{0, 1}), "F = x → 逆还是 x");
-        CHECK(same(CIV({0, 5}, 2), vi{0, (int) qpow(5, mod - 2)}), "F = 5x → 逆 = (1/5)x");
+        CHECK(same(CIV({0, 5}, 2), vi{0, (int) ksm(5, mod - 2, mod)}), "F = 5x → 逆 = (1/5)x");
         CHECK(same(CIV({0, mod - 1}, 2), vi{0, mod - 1}), "F = -x → 逆 = -x");
         CHECK(same(CIV({0, 1, 0, 0, 0, 0}, 6), serX(6)), "F = x(补零到长度 6)→ 逆 = x");
         CHECK(same(CIV({0, 1, 1, 0}, 4), vi{0, 1, mod - 1, 2}), "F = x + x² → 逆 = x - x² + 2x³(手算)");
@@ -202,7 +199,7 @@ int main() {
         // n = 1 退化:仍须提供非零一次项以定义复合逆,只返回常数项0。
         CHECK(same(CIV({0, 7}, 1), vi{0}), "n = 1 → {0}(仍需非零一次项)");
         // n = 2:g = x/F[1]
-        CHECK(same(CIV({0, 3, 5}, 2), vi{0, (int) qpow(3, mod - 2)}), "n = 2 只用到 F[1]");
+        CHECK(same(CIV({0, 3, 5}, 2), vi{0, (int) ksm(3, mod - 2, mod)}), "n = 2 只用到 F[1]");
         ok("结构/退化用例(F = x / c·x / -x / x+x² / -(x+x²+x³+x⁴) / x(1-x)^{-1} / n = 1,2)全部一致");
     }
 
@@ -253,7 +250,7 @@ int main() {
         // 7c) 变量缩放对称性:h(x) = c·F(x/c) ⟹ h^{<-1>}(y) = c·G(y/c),即系数乘 c^{1-i}。
         //     稠密 F 也能上大 n,O(n) 校验(不用朴素 O(n³))。
         for(int n : {1024, 2048}) {
-            const int c = 13, ic = (int) qpow(c, mod - 2);
+            const int c = 13, ic = (int) ksm(c, mod - 2, mod);
             vi F = rnd_F(n, 0), F2(n, 0);
             ll pw = 1;  // c^{1-i},i 从 1 开始
             For(i, 1, n - 1) {

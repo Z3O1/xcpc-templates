@@ -1,29 +1,14 @@
 // comp_inv(): 多项式 · 多项式复合逆 (复合逆, O(n log n))
 
-// 接口:comp_inv(F, n) 求 G 使 F(G(x)) ≡ x (mod x^n),返回 n 个系数;要求 F[1] != 0。
-// 使用前必须先调用一次 prep(22)(初始化 NTT 的 rev/omg;长度上界按 2^22 准备),
-// 否则内部 NTT 用的是未初始化的单位根 —— 原来这一步写在模板自带的 main 里。
+// 系数低次在前且在 [0, mod)；使用前须 prep(22)，初始化 NTT 与阶乘/逆元表。
+// 两份复合模板独立使用；静态缓冲约 202 MiB，不含临时向量。
 
 typedef vector<int> vi;
 typedef vector<vi> vv;
-typedef long long ll;
 typedef unsigned long long ull;
 const int N = 4.4e6 + 15, mod = 998244353;
-int F[N], X[N], fac[N], inv[N], Inv[N];
+int X[N], fac[N], inv[N], Inv[N];
 int rev[N * 2], omg[N * 2];
-// 快速幂；要求 y >= 0；返回 x^y mod mod 在 [0, mod) 的值。
-int qpow(int x, int y)
-{
-	int ans = 1;
-	while(y)
-	{
-		if(y & 1)
-			ans = (ll)ans * x % mod;
-		x = (ll)x * x % mod;
-		y >>= 1;
-	}
-	return ans;
-}
 // 预处理 NTT 的 rev/omg 与阶乘/逆元表；要求 n >= 0（按 2^n 长度上界）；用 NTT 前必须先调用一次。
 void prep(int n)
 {
@@ -32,7 +17,7 @@ void prep(int n)
 	{
 		for(j = 1; j < (1 << i); j++)
 			rev[(1 << i) + j] = rev[(1 << (i - 1)) + (j >> 1)] | ((j & 1) << (i - 1));
-		w = qpow(3, (mod - 1) >> i);
+		w = ksm(3, (mod - 1) >> i, mod);
 		omg[1 << i] = 1;
 		for(j = 1; j < (1 << i); j++)
 			omg[(1 << i) + j] = (ll)omg[(1 << i) + j - 1] * w % mod;
@@ -40,7 +25,7 @@ void prep(int n)
 	fac[0] = 1;
 	for(i = 1; i <= m; i++)
 		fac[i] = (ll)fac[i - 1] * i % mod;
-	inv[m] = qpow(fac[m], mod - 2);
+	inv[m] = ksm(fac[m], mod - 2, mod);
 	for(i = m; i >= 1; i--)
 		inv[i - 1] = (ll)inv[i] * i % mod;
 	for(i = 1; i <= m; i++)
@@ -76,7 +61,7 @@ inline void ntt(int *A, int n, bool t)
 		for(i = 1; i < (1 << n); i++)
 			if(i < (1 << n) - i)
 				swap(A[i], A[(1 << n) - i]);
-		q = qpow(1 << n, mod - 2);
+		q = ksm(1 << n, mod - 2, mod);
 		for(i = 0; i < (1 << n); i++)
 			A[i] = (ll)A[i] * q % mod;
 	}
@@ -178,8 +163,7 @@ poly pw_pj(poly F, int n)
 			}
 		}
 	}
-	F.c.resize(n); // 必须截到 n:否则调用方传进来的更长多项式会把高次项留在后面,
-	               // 接着 comp_inv 里的 reverse 会把它们倒到低次位置参与运算 → 静默算错
+	F.c.resize(n); // 截去高次项，避免随后 reverse 把它们倒到低次位置。
 	for(i = 0; i < n; i++)
 		F.c[i] = A[i][0];
 	return F;
@@ -188,9 +172,8 @@ poly pw_pj(poly F, int n)
 // 按值补齐不足系数，不改调用方输入；返回恰好 n 项，须先 prep 覆盖内部 NTT 长度。
 poly comp_inv(poly F, int n)
 {
-	// 补齐系数:下面要读 F.c[1](n == 1 时也得有),pw_pj 也要求 size >= n
 	if((int) F.c.size() < std::max(n, 2)) F.c.resize(std::max(n, 2));
-	int i, r, p = qpow(F.c[1], mod - 2), c;
+	int i, r, p = ksm(F.c[1], mod - 2, mod), c;
 	for(i = 0, c = 1; i < n; i++, c = (ll)c * p % mod)
 		F.c[i] = (ll)F.c[i] * c % mod;
 	poly G;
