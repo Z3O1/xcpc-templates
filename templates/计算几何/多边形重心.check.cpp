@@ -23,11 +23,17 @@
 #include "geo.cpp"
 #include "多边形重心.cpp"
 
+// 构造点。
 static p2 P(db x, db y) { return {x, y}; }
+// 绝对值。
 static db Abs(db x) { return x < 0 ? -x : x; }
+// 带容差的标量判等。
 static bool eqd(db a, db b, db tol = 1e-9) { return Abs(a - b) < tol; }
+// 带容差的点判等。
 static bool eqp(p2 a, p2 b, db tol = 1e-9) { return eqd(a.x, b.x, tol) && eqd(a.y, b.y, tol); }
+// 打印点(诊断用)。
 static void pr(p2 a) { printf("(%.17Lg,%.17Lg)", a.x, a.y); }
+// 打印点集(诊断用,最多前 30 个)。
 static void prv(const char *s, const vector<p2> &v) {
     printf("      %s(%zu):", s, v.size());
     for(int i = 0; i < (int) min<size_t>(v.size(), 30); ++i) printf(" "), pr(v[i]);
@@ -54,6 +60,7 @@ static array<db, 3> refCentroidEdge(const vector<p2> &a) {  // 返回 {x̄, ȳ, 
     }
     return {ax / ar, ay / ar, ar};
 }
+// 蒙特卡洛重心参考(采样含在多边形内部的点取平均)。
 static p2 refCentroidMC(const vector<p2> &a, int N) {
     int n = a.size();
     db mnx = 1e30L, mxx = -1e30L, mny = 1e30L, mxy = -1e30L;
@@ -69,6 +76,7 @@ static p2 refCentroidMC(const vector<p2> &a, int N) {
     return P(sx / cnt, sy / cnt);
 }
 
+// 解析/蒙特卡洛参考对照;通过则 PASSED("多边形重心")。
 int main() {
     printf("== 多边形重心.check:逐边积分/蒙特卡洛/已知形状三方对照 ==\n");
 

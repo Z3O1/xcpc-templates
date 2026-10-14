@@ -10,11 +10,13 @@
 //   依赖:geo.cpp 的 p2 / eps / sign / dis(带号面积也可以直接复用 area(n, a))。
 //   配套:db perimeter(int n, p2 *a) 返回闭合周长,同样 O(n)。
 
+// 多边形闭合周长(顶点顺序任意)。
 db perimeter(int n, p2 *a) {
     db s = 0;
     for(int i = 0; i < n; ++i) s += dis(a[(i + 1) % n] - a[i]);
     return s;
 }
+// 面积重心(形心);要求简单多边形,退化(A == 0)返回顶点算术平均。
 p2 centroid(int n, p2 *a) {
     if(n == 0) return {0, 0};
     p2 ret = {0, 0};
