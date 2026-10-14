@@ -1,17 +1,6 @@
 // p3(): 计算几何 · 三维向量 (加减/点积/叉积/模长/混合积)
 
-// 依赖:Geo 里的 eps / sign / cmp / db(见本目录 geo.cpp),以及 house 的 db(long double)。
-// p3 的接口与 geo.cpp 的 p2 平行(都是命名空间 Geo 里的自由函数):
-//   a + b, a - b, -a, a * k, k * a, a / k      基础运算
-//   a * b                                      点积(p2 的 * 也是点积)
-//   cross(a, b)                                三维叉积(右手法则);|cross| = 平行四边形面积
-//   det(a, b, c) = a · (b × c)                 混合积 = 平行六面体带号体积
-//   area2(a, b, c)   = |(b-a) × (c-a)|         三角形面积的 2 倍
-//   volume6(a, b, c, d) = det(b-a, c-a, d-a)   四面体带号体积的 6 倍
-//   单位化 / 判等 / 字典序 / 垂直向量           unit / == / != / < / perp
-//   夹角:cosang(a, b) 余弦、sinang(a, b) 正弦(>= 0)、angle(a, b) = atan2(sin, cos) ∈ [0, pi]
-//   退化判定:colinear(a, b, c) 三点共线、coplanar(a, b, c, d) 四点共面
-//
+// 依赖 geo.cpp 的 eps / sign / cmp，与 p2 同在 Geo 命名空间。
 // 前置条件:unit(a) 要求 a 非零(零向量会得到 inf/nan)。
 // eps 是绝对容差：colinear / coplanar 直接将叉积模长/混合积与 eps 比较。
 // 坐标缩放会改变判定尺度，应按数据尺度调整容差或另用相对判据。
