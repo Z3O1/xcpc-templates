@@ -11,7 +11,7 @@
 #include "ntt.cpp"
 #include "多项式求逆.cpp"
 
-// ——— 参考实现 1:按定义解 Σ_{j=0..i} f[j]·g[i-j] = [i=0] ———
+// 按定义解系数递推求逆；要求 f 非空且 f[0]!=0、n >= 1；返回长度 n 的逆。
 static poly naive_inv(const poly &f, int n) {
     poly g(n);
     int i0 = ksm(f[0], M - 2, M);
@@ -22,8 +22,7 @@ static poly naive_inv(const poly &f, int n) {
     }
     return g;
 }
-// ——— 参考实现 2(写法完全不同):先把 f 截到 n,再用 mul 逐项判 g 是否可作逆 ———
-// 只在小 n 上跑,纯粹用来校验参考实现 1 没写错。
+// 用 mul 验证 f*naive_inv(f,n) ≡ 1 (mod x^n)；要求 f[0]!=0；满足返回 true。
 static bool naive_inv_ok(const poly &f, int n) {
     poly g = naive_inv(f, n);
     poly h = mul(f, g);
@@ -31,17 +30,20 @@ static bool naive_inv_ok(const poly &f, int n) {
     For(i, 0, n - 1) if(h[i] != (i == 0)) return false;
     return true;
 }
+// 格式化多项式前 k 项；要求 k >= 0；返回“长度 + 前若干项”的调试字符串。
 static string pstr(const poly &a, int k = 12) {
     string s = "[" + to_string(a.size()) + "]";
     For(i, 0, min((int) a.size(), k) - 1) s += " " + to_string(a[i]);
     return s + ((int) a.size() > k ? " ..." : "");
 }
+// 打印失败现场（含首个不符位）并返回 1；用于对拍失败时给出可复现信息。
 static int bad(const char *what, const poly &f, int n, const poly &want, const poly &got, int at = -1) {
     printf("  [FAIL] %s\n    n = %d, f = %s\n", what, n, pstr(f).c_str());
     if(at >= 0) printf("    首个不符: k = %d, want = %d, got = %d\n", at, want[at], got[at]);
     printf("    want = %s\n    got  = %s\n", pstr(want).c_str(), pstr(got).c_str());
     return 1;
 }
+// 生成随机多项式；要求 len >= 0；返回长度 len、f[0]!=0、其余系数在 [0,M) 的向量。
 static poly rpoly(int len, int mode) {  // 0 稠密 1 稀疏 2 小值 3 全 1 4 首项 1
     poly a(len);
     For(i, 0, len - 1) {
@@ -62,6 +64,7 @@ static int firstdiff(const poly &want, const poly &got) {
     For(i, 0, (int) want.size() - 1) if(want[i] != got[i]) return i;
     return -1;
 }
+// 用 poly_inv 与递推参考对拍；一致返回 0，否则打印失败现场返回 1。
 static int cmp(const char *what, const poly &f, int n, const char *extra = "") {
     poly want = naive_inv(f, n), got = poly_inv(f, n);
     if(got.size() != (size_t) n) {
@@ -76,6 +79,7 @@ static int cmp(const char *what, const poly &f, int n, const char *extra = "") {
     return 0;
 }
 
+// 运行多项式求逆自测；覆盖参考自检/全枚举/随机/代数性质/边界/大规模；失败返回非零。
 int main() {
     // ——— 0) 参考实现自检 ———
     {

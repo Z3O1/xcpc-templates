@@ -7,6 +7,7 @@
 //       系数均须在 [0, M),所有运算按 M 取模。
 
 using poly = vector<int>;
+// 求 g 使 f*g ≡ 1 (mod x^n)；要求 f 非空且 f[0]!=0、n >= 1；返回长度 n 的逆。
 poly poly_inv(const poly &f, int n) {
     poly g{int(ksm(f[0], M - 2, M))};
     for(int m = 1; m < n; m <<= 1) {
