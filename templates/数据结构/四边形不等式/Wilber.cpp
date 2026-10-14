@@ -12,7 +12,7 @@ pair<vect<T>, vect<int>> Wilber(int n, Q &&que, const T Z = numeric_limits<T>::m
         if (c - r + 1 <= B) {
             For(j, c + 1, p) For(i, fp[j - 1], j - 1) {
                 T v = f[i] + que(i, j);
-                    if(v < f[j]) f[j] = v, fp[j] = i;
+                if(v < f[j]) f[j] = v, fp[j] = i;
             }
             c = p;
             continue;
