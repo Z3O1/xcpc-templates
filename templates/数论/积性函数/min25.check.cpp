@@ -50,8 +50,8 @@ static ll F_of(ll n) {
     if(n > 1) res = res * (n % M) % M * ((n - 1) % M) % M;
     return res;
 }
-// 模板侧:一次 init 之后,对任意 n 取 solveg(n) + f(n,0)
-// 调用模板内部路径求前缀；要求 init 已完成；返回 solveg(n)+f(n,0) 的模 M 值。
+// 复用已完成的 init 预筛；要求 1 <= n <= 1e10。
+// 先 solveg(n) 建表，返回 (f(n,0)+1) mod M 的乘性函数前缀和。
 static ll via(ll n) {
     solveg(n);
     return ((f(n, 0) + 1) % M + M) % M;
