@@ -28,19 +28,24 @@ int cmp(db x, db y) { return sign(x - y); }
 
 // ===================== check 自写的独立参考实现 =====================
 static mt19937_64 g_rng(20240908);
+// 生成 [l, r] 闭区间随机整数(固定种子,可复现)。
 static ll grnd(ll l, ll r) { return l + (ll) (g_rng() % (u64) (r - l + 1)); }
 
+// p3 转字符串(诊断打印用)。
 string ps(p3 a) {
     char buf[128];
     snprintf(buf, sizeof buf, "(%.12Lg,%.12Lg,%.12Lg)", (long double) a.x, (long double) a.y, (long double) a.z);
     return buf;
 }
+// plane 转字符串(诊断打印用)。
 string ps(plane p) {
     char buf[192];
     snprintf(buf, sizeof buf, "n=%s d=%.12Lg", ps(p.n).c_str(), (long double) p.d);
     return buf;
 }
+// line3 转字符串(诊断打印用)。
 string ps(line3 l) { return ps(l.o) + "+t" + ps(l.d); }
+// 带容差的标量判等。
 bool eq(db x, db y, db tol) { return abs(x - y) <= tol; }
 
 // 点到平面距离:体积 / 底面积(完全不经过单位法向量)
@@ -58,14 +63,18 @@ db refPlaneAngle(plane a, plane b) {
     db t = angle(u, v);
     return min(t, acos((db) -1) - t);
 }
+// 构造 p3。
 p3 P3(db x, db y, db z) { return {x, y, z}; }
+// 过三点构造 plane。
 plane PL(p3 a, p3 b, p3 c) { return plane(a, b, c); }
+// 由点和方向构造 line3。
 line3 LN(p3 o, p3 d) {
     line3 l;
     l.o = o, l.d = d;
     return l;
 }
 
+// 手算/参考对照与退化用例;通过则 PASSED("三维平面")。
 int main() {
     p3 X{1, 0, 0}, Y{0, 1, 0}, Z{0, 0, 1}, O{0, 0, 0};
 

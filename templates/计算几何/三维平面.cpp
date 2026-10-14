@@ -23,7 +23,9 @@ namespace Geo {
 struct plane {
     p3 n;  // 单位法向量
     db d;  // n · x = d
+    // 默认构造:成员未初始化,使用前须赋值。
     plane() {}
+    // 过三点的平面,法向 (b-a)×(c-a);三点共线时退化为 n=0。
     plane(p3 a, p3 b, p3 c) {
         p3 t = cross(b - a, c - a);
         db l = sqrt(t * t);  // 注意:这里不能写 dis(t) —— 会被解析成成员 dis(p3)(遮蔽自由函数)
@@ -33,6 +35,7 @@ struct plane {
             n = t / l, d = n * a;
         }
     }
+    // 过点 o、法向 nor 的平面(nor 非零,内部单位化)。
     static plane from(p3 o, p3 nor) {
         plane r;
         r.n = unit(nor), r.d = r.n * o;
@@ -41,10 +44,14 @@ struct plane {
     db side(p3 p) const { return n * p - d; }        // 带号距离(n 单位)
     db dis(p3 p) const { return abs(side(p)); }      // 点到平面距离
     p3 proj(p3 p) const { return p - n * side(p); }  // 投影到平面
+    // 关于平面的对称点。
     p3 reflect(p3 p) const { return p - n * (2 * side(p)); }
+    // 点是否在平面上。
     bool ons(p3 p) const { return !sign(side(p)); }
 };
+// 两平面是否平行(含重合)。
 bool ispara(const plane &a, const plane &b) { return !sign(sinang(a.n, b.n)); }
+// 两平面是否垂直。
 bool isperp(const plane &a, const plane &b) { return !sign(cosang(a.n, b.n)); }
 // 两平面夹角:法向量夹角的锐角部分,取值 [0, pi/2]
 db angle(const plane &a, const plane &b) { return acos(max((db) -1, min((db) 1, abs(a.n * b.n)))); }
@@ -62,7 +69,9 @@ p3 islp(const plane &p, const line3 &l) { return l.o + l.d * ((p.d - p.n * l.o) 
 line3 perpthrough(const plane &p, p3 o) { return line3(o, o + p.n); }
 // 直线是否整个在平面内
 bool ons(const plane &p, const line3 &l) { return !sign(p.side(l.o)) && !sign(p.n * l.d); }
+// 点到平面距离(转发成员版)。
 db dis(const plane &p, p3 x) { return p.dis(x); }
+// 点在平面上的投影(转发成员版)。
 p3 proj(const plane &p, p3 x) { return p.proj(x); }
 
 }  // namespace Geo
