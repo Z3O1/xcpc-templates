@@ -2,6 +2,7 @@
 #include "../_check_base.hpp"
 #include "FFT.cpp"
 
+// 运行 FFT 卷积自测；覆盖随机对拍、长度/空输入/精度边界；失败返回非零。
 int main() {
     // 1) 随机对拍(系数小,double 精度足够)
     For(t, 1, 30000) {
