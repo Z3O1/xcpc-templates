@@ -157,7 +157,9 @@ vv solve(vi F, vv G, int n, int m)
 	}
 	return ans;
 }
-// 求 F(G(x)) mod x^n；要求 G[0]=0（实现忽略 G[0]）；F、G 短于 n 会补零；返回长度 n 的结果。
+// 求 F(G(x)) mod x^n；要求 n>=1、G[0]=0（实现忽略 G[0]）。
+// F、G 按值传入，低阶不足按零补齐；返回恰好 n 项，不改调用方输入。
+// 须先 prep(k) 使预处理覆盖内部 NTT 长度。
 poly comp(poly F, poly G, int n)
 {
 	int i;

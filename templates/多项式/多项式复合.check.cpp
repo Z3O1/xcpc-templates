@@ -1,13 +1,12 @@
 // 多项式复合.cpp 自测:F(G(x)) mod x^n 与 O(n³) 朴素参考大规模对拍 + 复合的代数性质
 //
-// 说明:模板自带 main,这里用 #define main 把它改名后再自己写 main 调 comp()。
+// #define main 仅保留对旧内联版的兼容；当前模板片段本身不带 main。
 //
 // ===== 模板契约(读 多项式复合.cpp + 本 check 实测) =====
 //   1. comp(F, G, n) = F(G(x)) mod x^n,返回长度恰为 n。
 //   2. 要求 [x^0]G = 0(接口注释)。实测:comp 完全忽略 G[0],传 G[0]≠0 与 G[0]=0 结果相同。
-//   3. 输入长度要求:G.c.size() >= n。G 短于 n 时 comp 里 `Gp[1][i] = mod - G.c[i]`(多项式复合.cpp:166)
-//      是越界读 —— ASAN 已复现(heap-buffer-overflow)。本 check 一律给满 n 个系数。
-//   4. F 无长度要求:F 短于 n 按补零、多于 n 的部分被忽略,两者本 check 都断言过。
+//   3. F、G 短于 n 时模板会补零，多余高次不影响低 n 项；不再因 G 短而越界。
+//   4. 本地 C2 包装器仍给 n>=2 的 G 满 n 项，属于样例构造限制，不是模板前提。
 //   5. 前置:必须先 prep(k),k >= log2(内部 NTT 长度)。本 check 用 prep(18),实测 n <= 2000 够用。
 // ======================================================
 #include "../_check_base.hpp"
@@ -17,8 +16,8 @@
 
 // 把 vi 包装成模板的 poly；返回 c 为 v 的 poly。
 static poly P(const vi &v) { poly p; p.c = v; return p; }
-// comp 的调用口:契约要求 G.c.size() >= n(n >= 2),否则模板内部越界读(见第 8 段)。
-// 这里做一次自检,免得 check 自己写错用例 —— 本 check 的 bug 不该伪装成模板的 bug。
+// 本地旧用例包装器：n>=2 时要求 G.size()>=n，否则退出；这不是 comp 本体的长度要求。
+// 拒绝短 G 时的诊断文案沿用历史记录，当前模板本身已补齐不足系数。
 static vi C2(const vi &F, const vi &G, int n) {
     if(n >= 2 && (int) G.size() < n) {
         printf("  [INTERNAL] check 用例违规:G.size() = %d < n = %d(会越界读)\n", (int) G.size(), n);
@@ -304,7 +303,8 @@ int main() {
         }
     }
 
-    // ——— 8) 记录契约外/易踩的点 ———
+    // ——— 8) 历史诊断与约束提示 ———
+    // 下列 printf 保留修复前的短 G 诊断；当前行为以文件头契约与模板源码为准。
     {
         printf("  [note] G.c.size() < n 是越界读:comp 里 `Gp[1][i] = mod - G.c[i]`(多项式复合.cpp:166)。"
                "ASAN 实测:comp(F, G, 6) 传 G.c.size() == 3 → heap-buffer-overflow。调用方必须给满 n 个系数(不足要补 0)\n");
