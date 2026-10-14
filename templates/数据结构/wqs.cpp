@@ -2,7 +2,8 @@
 
 // n >= 1,1 <= k <= n;up >= 0,二分范围须覆盖所需惩罚值,OPT(k) 关于 k 凸。
 // 打包值与 DP 中间和须在 i128 及内层 Wilber 的无穷大范围内。
-// 构造恰好 k 段的最优划分；要求 que(l,r) 为 1-based 闭区间代价；返回 0 起点、n 终点的边界序列。
+// 构造恰好 k 段的最优划分；que(l,r) 为 (l,r] 的代价，0 <= l < r <= n。
+// 返回以 0 开始、n 结束的划分边界序列。
 template <typename Q> vect<int> wqs(int n, int k, Q &&que, i128 up) {
     int B = __lg(n) + 1;
     ll T = (1ll << B) - 1;
