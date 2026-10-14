@@ -5,7 +5,7 @@
 namespace QR {
     // 计算 a*b mod p；要求 p > 0；用 u128 支持完整 u64 乘法。
     auto mul = [](u64 a, u64 b, u64 p) { return (u64) ((unsigned __int128) a * b % p); };
-    // 计算 a^x mod p；要求 p > 0；返回 [0,p) 内结果。
+    // 求 r*a^x mod p；要求 p>0；x=0 时原样返回 r，不额外取模。
     auto pw = [](u64 a, u64 x, u64 p, u64 r = 1) {
         for(a %= p; x; x >>= 1, a = mul(a, a, p))
             if(x & 1) r = mul(r, a, p);
