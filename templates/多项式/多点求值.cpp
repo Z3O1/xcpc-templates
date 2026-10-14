@@ -9,18 +9,21 @@
 // 注意:xs 可重复(叶子 (x - xs[l]) 重根也无所谓)。
 
 using poly = vector<int>;
+// 分治建线段树，节点存该段 Π(x - xs[i])；要求 t 已分配 4m、l..r 为当前段；返回时 t[k] 为该段乘积。
 static void _eval_build(poly *t, int k, int l, int r, const poly &xs) {
     if(l == r) return void(t[k] = poly{(M - xs[l]) % M, 1});  // x - xs[l]
     int mid = (l + r) >> 1;
     _eval_build(t, k + k, l, mid, xs), _eval_build(t, k + k + 1, mid + 1, r, xs);
     t[k] = mul(t[k + k], t[k + k + 1]);
 }
+// 从根向下对 f 取模，叶子处余式常数即该点值；要求 t 已建好、f 为原多项式；结果写入 res。
 static void _eval_solve(const poly *t, int k, int l, int r, const poly &f, poly &res) {
     poly g = poly_mod(f, t[k]);
     if(l == r) return void(res[l] = g.empty() ? 0 : g[0]);
     int mid = (l + r) >> 1;
     _eval_solve(t, k + k, l, mid, g, res), _eval_solve(t, k + k + 1, mid + 1, r, g, res);
 }
+// 求 f 在 xs 各点的值；xs 可为空或含重复点；返回长度 |xs| 的向量，空 xs 返回空。
 poly poly_eval(const poly &f, const poly &xs) {
     int m = xs.size();
     if(!m) return poly();

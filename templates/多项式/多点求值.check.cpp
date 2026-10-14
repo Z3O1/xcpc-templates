@@ -13,7 +13,7 @@
 #include "多项式除法.cpp"
 #include "多点求值.cpp"
 
-// ——— 暴力:逐点 Horner ———
+// 逐点 Horner 暴力求值；返回长度 |xs| 的点值向量。
 static poly naive_eval(const poly &f, const poly &xs) {
     poly r(xs.size());
     For(i, 0, (int) xs.size() - 1) {
@@ -23,7 +23,7 @@ static poly naive_eval(const poly &f, const poly &xs) {
     }
     return r;
 }
-// ——— O(m²) 拉格朗日插值(用于"求值后再插值应还原 f"的性质校验;要求点互异)———
+// O(m²) 拉格朗日插值；要求 xs 互异；返回过 (xs[i],ys[i]) 的 deg < m 多项式。
 static poly lagrange(const poly &xs, const poly &ys) {
     int m = xs.size();
     if(!m) return poly();
@@ -46,16 +46,19 @@ static poly lagrange(const poly &xs, const poly &ys) {
     }
     return res;
 }
+// 格式化多项式前 k 项；要求 k >= 0；返回“长度 + 前若干项”的调试字符串。
 static string pstr(const poly &a, int k = 12) {
     string s = "[" + to_string(a.size()) + "]";
     For(i, 0, min((int) a.size(), k) - 1) s += " " + to_string(a[i]);
     return s + ((int) a.size() > k ? " ..." : "");
 }
+// 返回两向量首个不同的下标；长度不同返回 0，完全一致返回 -1。
 static int firstdiff(const poly &want, const poly &got) {
     if(want.size() != got.size()) return 0;
     For(i, 0, (int) want.size() - 1) if(want[i] != got[i]) return i;
     return -1;
 }
+// 用 poly_eval 与 Horner 参考对拍；一致返回 0，否则打印失败现场返回 1。
 static int cmp(const char *what, const poly &f, const poly &xs) {
     poly want = naive_eval(f, xs), got = poly_eval(f, xs);
     if(got.size() != xs.size()) {
@@ -70,6 +73,7 @@ static int cmp(const char *what, const poly &f, const poly &xs) {
     }
     return 0;
 }
+// 生成随机多项式；要求 len >= 0；返回长度 len、系数在 [0,M) 的向量。
 static poly rpoly(int len, int mode) {  // 0 稠密 1 稀疏 2 小值 3 全 0
     poly a(len);
     For(i, 0, len - 1) {
@@ -81,6 +85,7 @@ static poly rpoly(int len, int mode) {  // 0 稠密 1 稀疏 2 小值 3 全 0
     }
     return a;
 }
+// 生成求值点；要求 m >= 0；返回长度 m、值在 [0,1000] 的点集。
 static poly rxs(int m, int mode) {  // mode 0 任意(可能重复)1 互异 2 含 0
     poly xs(m);
     int start = (int) rnd(0, 100), step = (int) rnd(1, 1000);  // 等差数列 ⇒ 必然互异
@@ -93,6 +98,7 @@ static poly rxs(int m, int mode) {  // mode 0 任意(可能重复)1 互异 2 含
     }
     return xs;
 }
+// 运行多点求值自测；覆盖随机/回代/零点性质/退化/较大规模；失败返回非零。
 int main() {
     // ——— 1) 随机对拍 ———
     {
