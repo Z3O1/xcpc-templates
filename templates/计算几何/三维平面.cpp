@@ -41,9 +41,12 @@ struct plane {
         r.n = unit(nor), r.d = r.n * o;
         return r;
     }
-    db side(p3 p) const { return n * p - d; }        // 带号距离(n 单位)
-    db dis(p3 p) const { return abs(side(p)); }      // 点到平面距离
-    p3 proj(p3 p) const { return p - n * side(p); }  // 投影到平面
+    // 返回点 p 到有效平面的带号距离，单位法向一侧为正。
+    db side(p3 p) const { return n * p - d; }
+    // 返回点 p 到有效平面的距离。
+    db dis(p3 p) const { return abs(side(p)); }
+    // 返回点 p 在有效平面上的正投影。
+    p3 proj(p3 p) const { return p - n * side(p); }
     // 关于平面的对称点。
     p3 reflect(p3 p) const { return p - n * (2 * side(p)); }
     // 点是否在平面上。
