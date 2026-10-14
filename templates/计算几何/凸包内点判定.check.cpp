@@ -19,9 +19,13 @@
 #include "geo.cpp"
 #include "凸包内点判定.cpp"
 
+// 构造点。
 static p2 P(db x, db y) { return {x, y}; }
+// 绝对值。
 static db Abs(db x) { return x < 0 ? -x : x; }
+// 打印点(诊断用)。
 static void pr(p2 a) { printf("(%g,%g)", (double) a.x, (double) a.y); }
+// 打印点集(诊断用,最多前 30 个)。
 static void prv(const char *s, const vector<p2> &v) {
     printf("      %s(%zu):", s, v.size());
     for(int i = 0; i < (int) min<size_t>(v.size(), 30); ++i) printf(" "), pr(v[i]);
@@ -76,6 +80,7 @@ static vector<p2> makeQueries(const vector<p2> &a, int iters) {
     for(int t = 0; t < iters; ++t) q.push_back(P((db) rnd(-2000, 2000) / 100, (db) rnd(-2000, 2000) / 100));
     return q;
 }
+// 模板与参考逐查询对照;返回 0/1。
 static int cmpOne(const vector<p2> &a, const vector<p2> &q, int verbose) {
     int n = a.size();
     if(n < 3) return 1;
@@ -94,6 +99,7 @@ static int cmpOne(const vector<p2> &a, const vector<p2> &q, int verbose) {
     return 1;
 }
 
+// 与 O(n) 半平面参考 + contain 三方对照;通过则 PASSED("凸包内点判定")。
 int main() {
     printf("== 凸包内点判定.check:O(log n) 与 O(n) 半平面参考 + contain 三方对照 ==\n");
 
