@@ -45,9 +45,15 @@ mat3 rotmat(p3 axis, db ang) {
     p3 k = unit(axis);
     db c = cos(ang), s = sin(ang), t = 1 - c;
     mat3 m{};
-    m.a[0][0] = t * k.x * k.x + c, m.a[0][1] = t * k.x * k.y - s * k.z, m.a[0][2] = t * k.x * k.z + s * k.y;
-    m.a[1][0] = t * k.x * k.y + s * k.z, m.a[1][1] = t * k.y * k.y + c, m.a[1][2] = t * k.y * k.z - s * k.x;
-    m.a[2][0] = t * k.x * k.z - s * k.y, m.a[2][1] = t * k.y * k.z + s * k.x, m.a[2][2] = t * k.z * k.z + c;
+    m.a[0][0] = t * k.x * k.x + c;
+    m.a[0][1] = t * k.x * k.y - s * k.z;
+    m.a[0][2] = t * k.x * k.z + s * k.y;
+    m.a[1][0] = t * k.x * k.y + s * k.z;
+    m.a[1][1] = t * k.y * k.y + c;
+    m.a[1][2] = t * k.y * k.z - s * k.x;
+    m.a[2][0] = t * k.x * k.z - s * k.y;
+    m.a[2][1] = t * k.y * k.z + s * k.x;
+    m.a[2][2] = t * k.z * k.z + c;
     return m;
 }
 // 以 n 为第三个基向量造右手正交基(u, v, w 两两垂直、都是单位向量、det(u,v,w) = 1)
