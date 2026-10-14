@@ -7,7 +7,7 @@
 
 struct gi { ll a, b; };
 // 对 p/d 四舍五入到最近整数；要求 d > 0；负数按远离 0 的半数处理。
-i128 rd(i128 p, i128 d) { return (p >= 0 ? p + d / 2 : p - d / 2) / d; }  // 四舍五入
+i128 rd(i128 p, i128 d) { return (p >= 0 ? p + d / 2 : p - d / 2) / d; }
 // 求高斯整数 gcd；要求坐标绝对值 <= 1e18；返回按单位元归一后的 gcd。
 gi gi_gcd(gi x, gi y) {
     while(y.a || y.b) {
