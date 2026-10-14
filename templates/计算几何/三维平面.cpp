@@ -1,20 +1,7 @@
 // plane(): 计算几何 · 三维平面 (点法式/点面距/交线/线面交)
 
-// 依赖:p3 / cross / det / dis / dis2 / unit / cosang / sinang 与 eps / sign / cmp
-//      (见本目录 三维向量.cpp 与 geo.cpp),以及 三维直线.cpp 的 line3。
-// 平面用点法式 n·x = d 表示,n 是**单位**法向量(构造时已归一化),于是:
-//   side(p) = n·p - d 就是 p 到平面的**带号距离**(法向一侧为正),dis(p) = |side(p)|。
-//
-// 接口:
-//   plane(a, b, c)        过三点的平面,法向 = (b-a)×(c-a)(右手法则);三点共线时退化成 n = 0
-//   plane::from(o, nor)   过点 o、法向 nor(nor 非零)
-//   side / dis / proj / reflect / ons(p)(点是否在平面上)
-//   ispara / isperp / angle(a, b)(两平面夹角,取 [0, pi/2] 的锐角)
-//   ispl(a, b)            两平面交线(平行时方向为零向量,结果无意义)
-//   islp(p, l)            直线与平面的交点(要求两者不平行:n·l.d != 0)
-//   perpthrough(p, o)     过点 o 作平面的垂线
-//   ons(p, l)             直线是否整个落在平面内
-//
+// 依赖 geo.cpp、三维向量.cpp 与三维直线.cpp。
+// 点法式 n·x=d，n 是单位法向量；side(p)=n·p-d 为带号距离（法向一侧为正）。
 // 前置条件:from() 的 nor 非零;islp() 要求 n·l.d != 0;ispl() 要求两平面不平行。
 // eps 是绝对容差(1e-10),坐标量级很大时请自行放宽。
 // 复杂度:全部 O(1)。
