@@ -13,6 +13,7 @@ import unittest
 ROOT = Path(__file__).resolve().parents[1]
 
 
+# 从受控 Typst 文本提取 table/ref-table 参数块；识别双引号与括号，未闭合抛 ValueError。
 def table_blocks(text):
     blocks = []
     for match in re.finditer(r'#(?:ref-)?table\(', text):
@@ -41,10 +42,13 @@ def table_blocks(text):
     return blocks
 
 
+# 按原顺序提取单行、不含嵌套方括号的单元格内容。
 def cells(block):
     return re.findall(r'\[([^\[\]\n]*)\]', block)
 
 
+# 解析四列/八列增长表并按上界排序；缺失质数计数记 None，重复上界抛 ValueError。
+# 无法解析的行标签跳过；非缺失的数据列保留原文。
 def growth_rows(block):
     rows = {}
     for line in block.splitlines():
@@ -65,17 +69,20 @@ def growth_rows(block):
     return sorted(rows.items())
 
 
+# 返回紧凑 UTF-8 JSON 编码的 SHA-256 指纹；value 须可 JSON 序列化。
 def digest(value):
     encoded = json.dumps(value, ensure_ascii=False, separators=(',', ':')).encode()
     return hashlib.sha256(encoded).hexdigest()
 
 
 class TableTests(unittest.TestCase):
+    # 读取真实资料表并缓存表块，不修改源文件。
     def setUp(self):
         directory = ROOT / 'templates/通用'
         self.primes = table_blocks((directory / '大质数表.typ').read_text(encoding='utf-8'))
         self.constants = table_blocks((directory / '常数速查表.typ').read_text(encoding='utf-8'))
 
+    # 锁定四张固定数据表的单元格数量与内容摘要。
     def test_prime_sequence_catalan_and_factorization_cells_unchanged(self):
         self.assertEqual(len(self.primes), 1)
         self.assertEqual(len(self.constants), 4)
@@ -91,6 +98,7 @@ class TableTests(unittest.TestCase):
                 self.assertEqual(len(values), count)
                 self.assertEqual(digest(values), checksum)
 
+    # 锁定 10^1..10^18 的增长上界数据及六处质数计数缺项。
     def test_growth_bounds_preserve_values_and_missing_prime_counts(self):
         rows = growth_rows(self.constants[2])
         self.assertEqual([bound for bound, _ in rows], [10 ** k for k in range(1, 19)])
@@ -98,6 +106,7 @@ class TableTests(unittest.TestCase):
         self.assertEqual(sum(values[2] is None for _, values in rows), 6)
         self.assertNotIn('[], []', self.constants[2])
 
+    # 独立编译资料页，核对正文一页及指定中文字体；工具缺失时跳过。
     @unittest.skipUnless(all(shutil.which(tool) for tool in ('typst', 'pdfinfo', 'pdffonts')), '需要 Typst 与 Poppler')
     def test_reference_tables_fit_one_page_with_original_fonts(self):
         (ROOT / 'tmp').mkdir(exist_ok=True)
