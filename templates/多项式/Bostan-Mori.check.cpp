@@ -3,7 +3,7 @@
 #include "ntt.cpp"          // 提供 poly / mul(任意模数卷积)
 #include "Bostan-Mori.cpp"
 
-// 独立参考:Q*f=P,按次数解三角方程;不使用 Bostan-Mori 或卷积。
+// 独立参考幂级数除法；要求 n >= 0 且 Q[0] != 0；返回 P/Q 的 0..n 项。
 static poly series_ref(const poly &P, const poly &Q, int n) {
     poly f(n + 1);
     int iq = ksm(Q[0], M - 2, M);
@@ -15,6 +15,7 @@ static poly series_ref(const poly &P, const poly &Q, int n) {
     return f;
 }
 
+// 运行 Bostan-Mori 与递推、闭式和幂级数除法对拍；失败返回非零。
 int main() {
     // 1) 与直接递推对拍:随机 k 阶递推
     For(t, 1, 4000) {

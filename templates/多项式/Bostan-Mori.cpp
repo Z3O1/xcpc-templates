@@ -5,6 +5,7 @@
 // 复杂度 O(k log k log(n+2)),k 为输入长度上界。依赖:mul、ksm、M = 998244353;系数在 [0, M)。
 
 using poly = vector<int>;
+// 求有理生成函数第 n 项；要求 n >= 0 且 Q[0] != 0；返回 [x^n]P/Q。
 int bostan_mori(poly P, poly Q, ll n) {
     if(P.empty()) return 0;
     if(Q.size() == 1) return n < (ll)P.size() ? 1ll * P[n] * ksm(Q[0], M - 2, M) % M : 0;
