@@ -2,19 +2,17 @@
 
 // 模乘用 unsigned __int128 覆盖完整 u64 乘积；不要换成普通 ksm。
 // 模乘与快速幂沿用 lambda，保持 C++17 constexpr 调用兼容。
-namespace MR {
+// 判定 p 是否为素数；u64 全范围确定性判定，支持编译期调用。
+constexpr bool chkp(u64 p) {
+    if(p < 2) return 0;
     // 返回 (a*b) mod p，覆盖完整 u64；要求 p>0。
     auto mul = [](u64 a, u64 b, u64 p) { return (unsigned __int128) a * b % p; };
     // 求 r*a^x mod p；要求 p>0；x=0 时原样返回 r，不额外取模。
-    auto pw = [](u64 a, u64 x, u64 p, u64 r = 1) {
+    auto pw = [&](u64 a, u64 x, u64 p, u64 r = 1) {
         for(; x; x >>= 1, a = mul(a, a, p))
             if(x & 1) r = mul(r, a, p);
         return r;
     };
-}
-// 判定 p 是否为素数；u64 全范围确定性判定，支持编译期调用。
-constexpr bool chkp(u64 p) {
-    if(p < 2) return 0;
     constexpr u64 small[] = {2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37};
     for(u64 d : small)
         if(p % d == 0) return p == d;
@@ -23,11 +21,11 @@ constexpr bool chkp(u64 p) {
     for(u64 a : B) {
         // 合数底数的素因子会整除底数，须跳过以免误判 73 等素数。
         if(a % p == 0) continue;
-        u64 x = MR::pw(a % p, d, p);
+        u64 x = pw(a % p, d, p);
         if(x == 1 || x == p - 1) continue;
         bool ok = 0;
         For(i, 1, s - 1) {
-            x = MR::mul(x, x, p);
+            x = mul(x, x, p);
             if(x == p - 1) { ok = 1; break; }
         }
         if(!ok) return 0;
