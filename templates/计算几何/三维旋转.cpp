@@ -1,16 +1,6 @@
 // rot3(): 计算几何 · 三维旋转 (罗德里格斯/旋转矩阵/坐标基底)
 
-// 依赖:p3 / cross / dis / dis2 / unit / perp / det 与 eps / sign / cmp(见本目录 三维向量.cpp、geo.cpp)。
-//
-// p3 rot(v, axis, ang)            把 v 绕「过原点、方向 axis」的轴转 ang 弧度(罗德里格斯公式)
-// p3 rot(v, axis, ang, o)         绕「过点 o、方向 axis」的轴转 ang
-// mat3 rotmat(axis, ang)          旋转矩阵(R = I·cos + sin·[k]× + (1-cos)·k kᵀ)
-// m * v / x * y                   矩阵作用到向量 / 矩阵相乘
-// mat3 transpose(m)
-// void basis(p3 n, p3 &u, p3 &v, p3 &w)   由法向 n 造右手正交基(w = n 的单位化)
-// p3 tolocal(x, o, u, v, w)       世界坐标 -> 以 o 为原点、u/v/w 为基的局部坐标
-// p3 toworld(l, o, u, v, w)       局部坐标 -> 世界坐标(tolocal 的逆)
-//
+// 依赖 geo.cpp 与三维向量.cpp（unit / cross / perp）。
 // 约定:轴方向必须非零(内部会单位化);零轴会得到 NaN。
 // 旋转保长度、保夹角;rot 与 rotmat 是同一件事的两种写法(可互相校验)。
 // 复杂度:全部 O(1)。
@@ -30,10 +20,10 @@ mat3 operator*(const mat3 &x, const mat3 &y) {
     mat3 r{};
     for(int i = 0; i < 3; ++i)
         for(int j = 0; j < 3; ++j) {
-        db s = 0;
-        for(int k = 0; k < 3; ++k) s += x.a[i][k] * y.a[k][j];
-        r.a[i][j] = s;
-    }
+            db s = 0;
+            for(int k = 0; k < 3; ++k) s += x.a[i][k] * y.a[k][j];
+            r.a[i][j] = s;
+        }
     return r;
 }
 // 转置。
@@ -50,7 +40,7 @@ p3 rot(p3 v, p3 axis, db ang) {
 }
 // 绕「过点 o、方向 axis」的轴转 ang 弧度;要求 axis 非零。
 p3 rot(p3 v, p3 axis, db ang, p3 o) { return o + rot(v - o, axis, ang); }
-// 旋转矩阵;要求 axis 非零。
+// 旋转矩阵 R=I·cos+sin·[k]×+(1-cos)·k kᵀ；要求 axis 非零，k 为单位轴。
 mat3 rotmat(p3 axis, db ang) {
     p3 k = unit(axis);
     db c = cos(ang), s = sin(ang), t = 1 - c;
