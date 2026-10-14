@@ -29,9 +29,13 @@
 #include "简单多边形三角剖分.cpp"
 
 // ================= 独立参考实现(不依赖被测模板)=================
+// 绝对值。
 static db A_(db x) { return x < 0 ? -x : x; }
+// 精确符号(不用 eps)。
 static int sgnv(db x) { return x > 0 ? 1 : x < 0 ? -1 : 0; }
+// 两点叉积(精确)。
 static db refDet(p2 a, p2 b) { return a.x * b.y - a.y * b.x; }
+// 三角形带号面积。
 static db refArea3(p2 a, p2 b, p2 c) { return refDet(b - a, c - a) / 2; }
 static db refArea(const vector<p2> &a) {  // shoelace 带号面积
     db s = 0;
@@ -74,6 +78,7 @@ static bool refProperCross(p2 a, p2 b, p2 c, p2 d) {
     if(s1 == 0 || s2 == 0 || s3 == 0 || s4 == 0) return false;
     return s1 != s2 && s3 != s4;
 }
+// 多边形是否简单(无规范自交)。
 static bool refIsSimple(int n, const p2 *a) {
     for(int i = 0; i < n; ++i) for(int j = i + 1; j < n; ++j) {
         int i2 = (i + 1) % n, j2 = (j + 1) % n;
@@ -107,24 +112,31 @@ static vector<int> refSurvivors(int n, const p2 *a) {
 }
 
 // ================= 通用工具 =================
+// 多边形包围盒尺度(用于容差)。
 static db polyScale(const vector<p2> &a) {
     db x0 = a[0].x, x1 = a[0].x, y0 = a[0].y, y1 = a[0].y;
     for(int i = 0; i < (int) a.size(); ++i) x0 = min(x0, a[i].x), x1 = max(x1, a[i].x), y0 = min(y0, a[i].y), y1 = max(y1, a[i].y);
     return 1 + max(x1 - x0, y1 - y0);
 }
+// 带容差的标量判等。
 static bool eqd(db got, db want, db tol) { return A_(got - want) <= tol; }
+// 打印点(诊断用)。
 static void prP(p2 p) { printf("(%g,%g)", (double) p.x, (double) p.y); }
+// 打印多边形(诊断用)。
 static void prPoly(const vector<p2> &a) {
     printf("    多边形 n=%d:", (int) a.size());
     for(int i = 0; i < (int) a.size(); ++i) prP(a[i]);
     printf("\n");
 }
+// 打印三角形(诊断用)。
 static void prTri(const char *what, int idx, const vector<p2> &a, const array<int, 3> &t) {
     printf("    %s 第 %d 个三角形: 下标 (%d,%d,%d) 顶点 ", what, idx, t[0], t[1], t[2]);
     prP(a[t[0]]), printf(", "), prP(a[t[1]]), printf(", "), prP(a[t[2]]);
     printf("  带号面积 %Lg\n", refArea3(a[t[0]], a[t[1]], a[t[2]]));
 }
+// 多边形是否逆时针。
 static bool polyCCW(const vector<p2> &a) { return refArea(a) > 0; }
+// 包围盒内随机点。
 static p2 bboxRand(const vector<p2> &a) {
     db x0 = a[0].x, x1 = a[0].x, y0 = a[0].y, y1 = a[0].y;
     for(int i = 0; i < (int) a.size(); ++i) x0 = min(x0, a[i].x), x1 = max(x1, a[i].x), y0 = min(y0, a[i].y), y1 = max(y1, a[i].y);
@@ -349,6 +361,7 @@ static vector<p2> insertCollinear(const vector<p2> &h, int per) {
     return r;
 }
 
+// 性质级断言 + 独立参考判定;通过则 PASSED("简单多边形三角剖分")。
 int main() {
     printf("== 简单多边形三角剖分.check: 耳切法性质级断言 + 独立参考判定 ==\n");
     auto t0 = chrono::steady_clock::now();
