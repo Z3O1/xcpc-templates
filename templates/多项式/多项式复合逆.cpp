@@ -11,6 +11,7 @@ typedef unsigned long long ull;
 const int N = 4.4e6 + 15, mod = 998244353;
 int F[N], X[N], fac[N], inv[N], Inv[N];
 int rev[N * 2], omg[N * 2];
+// 快速幂；要求 y >= 0；返回 x^y mod mod 在 [0, mod) 的值。
 int qpow(int x, int y)
 {
 	int ans = 1;
@@ -23,6 +24,7 @@ int qpow(int x, int y)
 	}
 	return ans;
 }
+// 预处理 NTT 的 rev/omg 与阶乘/逆元表；要求 n >= 0（按 2^n 长度上界）；用 NTT 前必须先调用一次。
 void prep(int n)
 {
 	int i, j, w, m = N - 5;
@@ -45,7 +47,8 @@ void prep(int n)
 		Inv[i] = (ll)inv[i] * fac[i - 1] % mod;
 }
 ull tmp[N * 2];
-inline void ntt(int *A, int n, bool t) // 0 DFT 1 IDFT
+// 原地做长度 2^n 的 NTT；要求 A 有 >= 2^n 个元素、已调用 prep(>= n)；t=false 正变换、t=true 逆变换。
+inline void ntt(int *A, int n, bool t)
 {
 	int i, j, k, q, x;
 	for(i = 0; i < (1 << n); i++)
@@ -78,6 +81,7 @@ inline void ntt(int *A, int n, bool t) // 0 DFT 1 IDFT
 			A[i] = (ll)A[i] * q % mod;
 	}
 }
+// 把 F 补到 2^n 长后做 NTT；要求 F.size() <= 2^n、已调用 prep(>= n)；t=false 正变换、t=true 逆变换；返回变换后的 F。
 vi pv(vi F, int n, bool t)
 {
 	int i;
@@ -92,8 +96,11 @@ vi pv(vi F, int n, bool t)
 struct poly
 {
 	vector<int> c;
+	// 默认构造：空多项式。
 	poly() = default;
+	// 由系数向量构造；d 为低次在前的系数。
 	poly(vector<int> d) : c(move(d)) {}
+	// 模 mod 卷积；任一为空返回空；返回长度 |f|+|g|-1 的乘积。
 	friend poly operator * (poly f, poly g)
 	{
 		if(f.c.empty() || g.c.empty())
@@ -113,7 +120,8 @@ struct poly
 		return h;
 	}
 };
-poly pw_pj(poly F, int n) // [x^{n-1}]1/(1-yF)
+// 复合逆的 Lagrange 反演辅助（提取 [x^{n-1}] 1/(1-yF) 的 y 系数）；要求 F.size() >= n；返回长度 n 的系数。
+poly pw_pj(poly F, int n)
 {
 	int i, j, S, R, m = 1, d = n - 1, l, r;
 	vv A, B;
@@ -176,9 +184,8 @@ poly pw_pj(poly F, int n) // [x^{n-1}]1/(1-yF)
 		F.c[i] = A[i][0];
 	return F;
 }
-// 要求 F.c.size() >= n(n == 1 时至少 2 个系数,内部会读 F.c[1])且 F[1] != 0;
-// 返回长度恰为 n 的复合逆。
-poly comp_inv(poly F, int n) // [x^n]F^k=k/n[x^{n-k}](G/x)^{-n}
+// 求 F 的复合逆 G（F(G(x)) ≡ x mod x^n）；要求 F[0]=0、F[1]!=0；F 短于 n 会补零；返回长度 n 的结果。
+poly comp_inv(poly F, int n)
 {
 	// 补齐系数:下面要读 F.c[1](n == 1 时也得有),pw_pj 也要求 size >= n
 	if((int) F.c.size() < std::max(n, 2)) F.c.resize(std::max(n, 2));

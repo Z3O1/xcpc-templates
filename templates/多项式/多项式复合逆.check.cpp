@@ -7,7 +7,7 @@
 #include "../_check_base.hpp"
 #include "多项式复合逆.cpp"
 
-// 原随机用例使用规范长度;长/短输入另在第8段直接调用模板测试。
+// 调 comp_inv 求复合逆；要求 F.size() >= n（n==1 时至少 2），否则视为用例违规退出；返回长度 n 的系数。
 static vi CIV(const vi &F, int n) {
     if((int) F.size() < n || (n == 1 && (int) F.size() < 2)) {
         printf("  [INTERNAL] 原随机用例长度未规范:F.size() = %d, n = %d\n", (int) F.size(), n);
@@ -17,21 +17,22 @@ static vi CIV(const vi &F, int n) {
     p.c = F;
     return comp_inv(p, n).c;
 }
+// 判断两向量长度与内容是否完全一致；返回布尔值。
 static bool same(const vi &a, const vi &b) { return a.size() == b.size() && equal(all(a), b.begin()); }
+// 格式化向量前 k 项；要求 k >= 0；返回“长度 + 前若干项”的调试字符串。
 static string str(const vi &a, int k = 12) {
     string s = "[" + to_string(a.size()) + "]";
     For(i, 0, min((int) a.size(), k) - 1) s += " " + to_string(a[i]);
     return s + ((int) a.size() > k ? " ..." : "");
 }
-// 失败现场:F、G、期望、实际全打出来
+// 打印失败现场（F、G、期望、实际）并返回 1；用于对拍失败时给出可复现信息。
 static int bad(const char *what, const vi &F, const vi &G, int n, const vi &want, const vi &got) {
     printf("  [FAIL] %s\n    n = %d\n    F = %s\n    G = %s\n    want = %s\n    got  = %s\n", what, n,
            str(F, F.size()).c_str(), str(G, G.size()).c_str(),
            str(want, want.size()).c_str(), str(got, got.size()).c_str());
     return 1;
 }
-// ——— 参考实现 1:F(G) mod x^n,Horner 展开 r ← r·G + F[i](G 是完整幂级数,G[0] 允许非 0) ———
-// 只做到 F 的最后一个非零系数,F 稀疏时也快(大 n 用例靠这一点)。
+// Horner 展开求 F(G) mod x^n；G[0] 允许非 0；返回长度 n 的结果。
 static vi naive_comp(const vi &f, const vi &g, int n) {
     vi r(n, 0);
     int last = -1;
@@ -45,7 +46,7 @@ static vi naive_comp(const vi &f, const vi &g, int n) {
     }
     return r;
 }
-// ——— 参考实现 2(写法不同):F(G) = Σ_i F[i]·G^i,逐次把 cur 乘上 G ———
+// 用 Σ F[i]·G^i 展开求 F(G) mod x^n；与 naive_comp 一致；返回长度 n 的结果。
 static vi naive_comp2(const vi &f, const vi &g, int n) {
     vi res(n, 0), cur(n, 0);
     cur[0] = 1;
@@ -58,13 +59,14 @@ static vi naive_comp2(const vi &f, const vi &g, int n) {
     }
     return res;
 }
-static vi serX(int n) {  // 幂级数 x
+// 幂级数 x；要求 n >= 0；返回长度 n、首两项为 {0,1} 的向量。
+static vi serX(int n) {
     vi v(n, 0);
     if(n > 1) v[1] = 1;
     return v;
 }
-// F[0] = 0、F[1] != 0 的随机 F;mode: 0 稠密 1 稀疏 2 小系数 3 全 mod-1 4 只有 f1
-static vi rnd_F(int n, int mode) {
+// 生成 F[0]=0、F[1]!=0 的随机 F；要求 n >= 1；返回长度 n 的向量。
+static vi rnd_F(int n, int mode) {  // mode: 0 稠密 1 稀疏 2 小系数 3 全 mod-1 4 只有 f1
     vi f(n, 0);
     int hi = (mode == 2) ? 4 : mod - 1;
     For(i, 1, n - 1) f[i] = (int) rnd(0, hi);
@@ -74,7 +76,7 @@ static vi rnd_F(int n, int mode) {
     if(n > 1) f[1] = (mode == 2) ? 1 : (int) rnd(1, mod - 1);  // F[1] != 0
     return f;
 }
-// 主对拍:f(g) ≡ x(必查);G 的长度、G[0]、G[1] 也一起查
+// 主对拍；校验 G 长度、G[0]=0、f(g)≡x（可选反向）；一致返回 0，否则打印失败现场返回 1。
 static int cmp_fg(const char *what, const vi &F, int n, bool check_other_way) {
     vi g = CIV(F, n);
     if((int) g.size() != n) {
@@ -96,6 +98,7 @@ static int cmp_fg(const char *what, const vi &F, int n, bool check_other_way) {
     return 0;
 }
 
+// 运行复合逆自测；覆盖参考自检/随机/结构/大 n/长度与重复调用；失败返回非零。
 int main() {
     prep(18);
 
