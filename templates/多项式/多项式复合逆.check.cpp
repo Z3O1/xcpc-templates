@@ -7,7 +7,8 @@
 #include "../_check_base.hpp"
 #include "多项式复合逆.cpp"
 
-// 调 comp_inv 求复合逆；要求 F.size() >= n（n==1 时至少 2），否则视为用例违规退出；返回长度 n 的系数。
+// 本地包装器仍要求 F.size()>=n（n=1 时至少 2 项），不足直接退出。
+// 仅为旧随机用例的规范检查；comp_inv 本体会补零，不要求输入满 n 项。
 static vi CIV(const vi &F, int n) {
     if((int) F.size() < n || (n == 1 && (int) F.size() < 2)) {
         printf("  [INTERNAL] 原随机用例长度未规范:F.size() = %d, n = %d\n", (int) F.size(), n);

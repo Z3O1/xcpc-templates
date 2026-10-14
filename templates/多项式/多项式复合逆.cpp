@@ -184,7 +184,8 @@ poly pw_pj(poly F, int n)
 		F.c[i] = A[i][0];
 	return F;
 }
-// 求 F 的复合逆 G（F(G(x)) ≡ x mod x^n）；要求 F[0]=0、F[1]!=0；F 短于 n 会补零；返回长度 n 的结果。
+// 求复合逆 G，使 F(G(x)) ≡ x mod x^n；要求 n>=1、F[0]=0、F[1]!=0。
+// 按值补齐不足系数，不改调用方输入；返回恰好 n 项，须先 prep 覆盖内部 NTT 长度。
 poly comp_inv(poly F, int n)
 {
 	// 补齐系数:下面要读 F.c[1](n == 1 时也得有),pw_pj 也要求 size >= n
