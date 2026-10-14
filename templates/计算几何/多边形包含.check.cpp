@@ -19,9 +19,13 @@
 #include "geo.cpp"
 #include "多边形包含.cpp"
 
+// 构造点。
 static p2 P(db x, db y) { return {x, y}; }
+// 绝对值。
 static db Abs(db x) { return x < 0 ? -x : x; }
+// 打印点(诊断用)。
 static void pr(p2 a) { printf("(%g,%g)", (double) a.x, (double) a.y); }
+// 打印点集(诊断用,最多前 30 个)。
 static void prv(const char *s, const vector<p2> &v) {
     printf("      %s(%zu):", s, v.size());
     for(int i = 0; i < (int) min<size_t>(v.size(), 30); ++i) printf(" "), pr(v[i]);
@@ -64,6 +68,7 @@ static bool onAnyEdge(const vector<p2> &a, p2 p) {  // 与模板同约定:跳过
     return false;
 }
 
+// 缠绕数 vs 精确参考/有向角积分/射线法;通过则 PASSED("多边形包含")。
 int main() {
     printf("== 多边形包含.check:缠绕数 vs 精确整数缠绕数/有向角积分/射线法 ==\n");
 
