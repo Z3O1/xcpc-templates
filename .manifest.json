@@ -621,6 +621,12 @@
    "title": "整数凸包与直径",
    "missing": false,
    "hidden": false
+  },
+  {
+   "key": "计算几何/整数/凸包内点判定.cpp",
+   "title": "整数凸包内点判定",
+   "missing": false,
+   "hidden": false
   }
  ]
 }

@@ -372,6 +372,10 @@
 
 #zebraw(lang: false)[#raw(readcode("templates/计算几何/整数/凸包.cpp"), lang: "cpp", block: true)]
 
+=== 整数凸包内点判定
+
+#zebraw(lang: false)[#raw(readcode("templates/计算几何/整数/凸包内点判定.cpp"), lang: "cpp", block: true)]
+
 = 通用
 
 == 大质数表
