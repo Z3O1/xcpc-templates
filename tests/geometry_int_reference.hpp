@@ -45,4 +45,43 @@ bool on(p2i a, p2i b, p2i p) {
            min(a.y, b.y) <= p.y && p.y <= max(a.y, b.y);
 }
 
+// 独立排序去重，不依赖被测点比较运算符。
+vector<p2i> unique_points(vector<p2i> a) {
+    sort(a.begin(), a.end(), [](p2i u, p2i v) { return tie(u.x, u.y) < tie(v.x, v.y); });
+    a.erase(unique(a.begin(), a.end(), [](p2i u, p2i v) { return u.x == v.x && u.y == v.y; }), a.end());
+    return a;
+}
+// Jarvis 礼品包装的严格凸包参考；O(nh)，从字典序最小点逆时针输出。
+vector<p2i> hull(vector<p2i> a) {
+    a = unique_points(a);
+    int n = a.size();
+    if(n <= 1) return a;
+    vector<p2i> h;
+    int p = 0;
+    do {
+        h.push_back(a[p]);
+        int q = (p + 1) % n;
+        for(int r = 0; r < n; ++r) {
+            i128 c = turn(a[p], a[q], a[r]);
+            if(c < 0 || (c == 0 && distance2(a[p], a[r]) > distance2(a[p], a[q]))) q = r;
+        }
+        p = q;
+    } while(p);
+    return h;
+}
+// 按严格凸包的边枚举边界点，作为保留共线点的独立参考。
+vector<p2i> boundary(vector<p2i> a, const vector<p2i> &h) {
+    a = unique_points(a);
+    if(h.size() <= 2) return a;
+    vector<p2i> ret;
+    for(int i = 0; i < (int) h.size(); ++i) {
+        p2i p = h[i], q = h[(i + 1) % h.size()];
+        vector<p2i> edge;
+        for(auto v : a) if(on(p, q, v) && !(v.x == q.x && v.y == q.y)) edge.push_back(v);
+        sort(edge.begin(), edge.end(), [&](p2i u, p2i v) { return distance2(p, u) < distance2(p, v); });
+        ret.insert(ret.end(), edge.begin(), edge.end());
+    }
+    return ret;
+}
+
 }  // namespace IntCheck

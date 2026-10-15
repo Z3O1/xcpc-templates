@@ -368,6 +368,10 @@
 
 #zebraw(lang: false)[#raw(readcode("templates/计算几何/整数/多边形.cpp"), lang: "cpp", block: true)]
 
+=== 整数凸包与直径
+
+#zebraw(lang: false)[#raw(readcode("templates/计算几何/整数/凸包.cpp"), lang: "cpp", block: true)]
+
 = 通用
 
 == 大质数表

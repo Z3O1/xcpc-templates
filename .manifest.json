@@ -615,6 +615,12 @@
    "title": "整数面积与点包含",
    "missing": false,
    "hidden": false
+  },
+  {
+   "key": "计算几何/整数/凸包.cpp",
+   "title": "整数凸包与直径",
+   "missing": false,
+   "hidden": false
   }
  ]
 }
