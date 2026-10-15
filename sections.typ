@@ -246,6 +246,32 @@
 
 #include "templates/计算几何/使用说明.typ"
 
+== 整数
+
+=== 整数点与精确运算
+
+#zebraw(lang: false)[#raw(readcode("templates/计算几何/整数/整数点.cpp"), lang: "cpp", block: true)]
+
+=== 整数线段
+
+#zebraw(lang: false)[#raw(readcode("templates/计算几何/整数/线段.cpp"), lang: "cpp", block: true)]
+
+=== 整数面积与点包含
+
+#zebraw(lang: false)[#raw(readcode("templates/计算几何/整数/多边形.cpp"), lang: "cpp", block: true)]
+
+=== 整数凸包与直径
+
+#zebraw(lang: false)[#raw(readcode("templates/计算几何/整数/凸包.cpp"), lang: "cpp", block: true)]
+
+=== 整数凸包内点判定
+
+#zebraw(lang: false)[#raw(readcode("templates/计算几何/整数/凸包内点判定.cpp"), lang: "cpp", block: true)]
+
+=== 整数最近点对
+
+#zebraw(lang: false)[#raw(readcode("templates/计算几何/整数/最近点对.cpp"), lang: "cpp", block: true)]
+
 == 基础
 
 === 二维点与向量
@@ -353,32 +379,6 @@
 === 三维凸包
 
 #zebraw(lang: false)[#raw(readcode("templates/计算几何/三维/三维凸包.cpp"), lang: "cpp", block: true)]
-
-== 整数
-
-=== 整数点与精确运算
-
-#zebraw(lang: false)[#raw(readcode("templates/计算几何/整数/整数点.cpp"), lang: "cpp", block: true)]
-
-=== 整数线段
-
-#zebraw(lang: false)[#raw(readcode("templates/计算几何/整数/线段.cpp"), lang: "cpp", block: true)]
-
-=== 整数面积与点包含
-
-#zebraw(lang: false)[#raw(readcode("templates/计算几何/整数/多边形.cpp"), lang: "cpp", block: true)]
-
-=== 整数凸包与直径
-
-#zebraw(lang: false)[#raw(readcode("templates/计算几何/整数/凸包.cpp"), lang: "cpp", block: true)]
-
-=== 整数凸包内点判定
-
-#zebraw(lang: false)[#raw(readcode("templates/计算几何/整数/凸包内点判定.cpp"), lang: "cpp", block: true)]
-
-=== 整数最近点对
-
-#zebraw(lang: false)[#raw(readcode("templates/计算几何/整数/最近点对.cpp"), lang: "cpp", block: true)]
 
 = 通用
 

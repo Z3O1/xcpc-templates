@@ -419,6 +419,42 @@
    "hidden": false
   },
   {
+   "key": "计算几何/整数/整数点.cpp",
+   "title": "整数点与精确运算",
+   "missing": false,
+   "hidden": false
+  },
+  {
+   "key": "计算几何/整数/线段.cpp",
+   "title": "整数线段",
+   "missing": false,
+   "hidden": false
+  },
+  {
+   "key": "计算几何/整数/多边形.cpp",
+   "title": "整数面积与点包含",
+   "missing": false,
+   "hidden": false
+  },
+  {
+   "key": "计算几何/整数/凸包.cpp",
+   "title": "整数凸包与直径",
+   "missing": false,
+   "hidden": false
+  },
+  {
+   "key": "计算几何/整数/凸包内点判定.cpp",
+   "title": "整数凸包内点判定",
+   "missing": false,
+   "hidden": false
+  },
+  {
+   "key": "计算几何/整数/最近点对.cpp",
+   "title": "整数最近点对",
+   "missing": false,
+   "hidden": false
+  },
+  {
    "key": "计算几何/基础/二维向量.cpp",
    "title": "二维点与向量",
    "missing": false,
@@ -595,42 +631,6 @@
   {
    "key": "数学/反射容斥.typ",
    "title": "反射容斥",
-   "missing": false,
-   "hidden": false
-  },
-  {
-   "key": "计算几何/整数/整数点.cpp",
-   "title": "整数点与精确运算",
-   "missing": false,
-   "hidden": false
-  },
-  {
-   "key": "计算几何/整数/线段.cpp",
-   "title": "整数线段",
-   "missing": false,
-   "hidden": false
-  },
-  {
-   "key": "计算几何/整数/多边形.cpp",
-   "title": "整数面积与点包含",
-   "missing": false,
-   "hidden": false
-  },
-  {
-   "key": "计算几何/整数/凸包.cpp",
-   "title": "整数凸包与直径",
-   "missing": false,
-   "hidden": false
-  },
-  {
-   "key": "计算几何/整数/凸包内点判定.cpp",
-   "title": "整数凸包内点判定",
-   "missing": false,
-   "hidden": false
-  },
-  {
-   "key": "计算几何/整数/最近点对.cpp",
-   "title": "整数最近点对",
    "missing": false,
    "hidden": false
   }
