@@ -1,4 +1,5 @@
 // 介绍: 圆与外接圆
+// hide
 `circle{o,r}` 的半径非负，零半径表示点圆。`cir(a,b)` 以两点为直径，`in_circle(c,p)` 判圆盘包含。
 `circumcenter` 返回 `{x,y}`，要求三点不共线；`circumcircle_diameter` 返回外接圆直径，共线返回 -1。
 

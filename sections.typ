@@ -242,15 +242,13 @@
 
 = 计算几何
 
-== 选用与约定
+== 选用与依赖
 
 #include "templates/计算几何/使用说明.typ"
 
 == 基础
 
 === 二维点与向量
-
-#include "templates/计算几何/基础/二维向量.typ"
 
 #zebraw(lang: false)[#raw(readcode("templates/计算几何/基础/二维向量.cpp"), lang: "cpp", block: true)]
 
@@ -267,8 +265,6 @@
 == 凸包
 
 === 凸包、直径与裁剪
-
-#include "templates/计算几何/凸包/凸包.typ"
 
 #zebraw(lang: false)[#raw(readcode("templates/计算几何/凸包/凸包.cpp"), lang: "cpp", block: true)]
 
@@ -315,8 +311,6 @@
 == 圆
 
 === 圆与外接圆
-
-#include "templates/计算几何/圆/圆基础.typ"
 
 #zebraw(lang: false)[#raw(readcode("templates/计算几何/圆/圆基础.cpp"), lang: "cpp", block: true)]
 
