@@ -609,6 +609,12 @@
    "title": "整数线段",
    "missing": false,
    "hidden": false
+  },
+  {
+   "key": "计算几何/整数/多边形.cpp",
+   "title": "整数面积与点包含",
+   "missing": false,
+   "hidden": false
   }
  ]
 }
