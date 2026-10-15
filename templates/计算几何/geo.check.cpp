@@ -217,22 +217,18 @@ static bool hullCheckOne(const vector<p2> &v, bool verbose = false) {
     for(int i = 0; i < n; ++i) a[i] = v[i];
     int k = convex_hull(n, a, h);
     vector<p2> H(h, h + k), R = refHull(v);
-    bool allSame = true;
-    for(int i = 0; i < n; ++i) if(refCmpP(v[i], v[0]) != 0) allSame = false;
-    if(n >= 2 && allSame) return k == 2;  // 全同点:模板返回 2 个重复点(第 15 段 [note]),不参与与参考的比对
     if(k > n || k < 0) {
         if(verbose) printf("      k=%d > n=%d\n", k, n);
         return false;
     }
-    if(H.empty()) return false;
+    if(H.empty()) return v.empty();
     p2 mn = v[0];
     for(int i = 0; i < n; ++i) if(refCmpP(v[i], mn) < 0) mn = v[i];
-    if(v.size() == 1) return k == 1;  // n == 1:k 返回 1,但模板不往 b 里写点(见第 10 段 [note]),故只查返回值
     if(!eqp(H[0], mn, 1e-9)) {
         if(verbose) printf("      H[0] 不是最小点\n");
         return false;
     }
-    if(n == 2 && !eqp(H[1], v[0] == mn ? v[1] : v[0], 1e-9)) {
+    if(n == 2 && R.size() == 2 && !eqp(H[1], v[0] == mn ? v[1] : v[0], 1e-9)) {
         if(verbose) printf("      n=2 两端点不对\n");
         return false;
     }
@@ -244,7 +240,7 @@ static bool hullCheckOne(const vector<p2> &v, bool verbose = false) {
             if(verbose) printf("      凸包带号面积(以 h[0] 为原点)= %.17Lg < 0,旋向为顺时针\n", sgn2 / 2);
             return false;
         }
-    } else {  // k == 2:两个顶点必须不同(全同点输入已在上面单独 return)
+    } else if(k == 2) {  // 两个输出顶点必须不同
         if(refCmpP(h[0], h[1]) == 0) {
             if(verbose) printf("      两个输出顶点相同,但输入点并非全同点\n");
             return false;
@@ -312,6 +308,21 @@ int main() {
     CHECK(!(a == P(3 + eps * 10, 4)), "operator== 容差外不等");
     CHECK(P(1, 2) < P(2, 0) && P(-1, 5) < P(0, -100), "operator< 先比 x");
     CHECK(P(1, 2) < P(1, 3) && !(P(1, 3) < P(1, 2)) && !(P(1, 2) < P(1, 2)), "operator< x 相等时比 y");
+    {
+        vector<p2> near;
+        for(int x = -3; x <= 3; ++x) for(int y = -3; y <= 3; ++y)
+            near.push_back(P(x * eps / 2, y * eps / 2));
+        bool exact = true, transitive = true, equiv = true;
+        for(p2 u : near) for(p2 v : near) {
+            exact &= (u < v) == (refCmpP(u, v) < 0);
+            for(p2 w : near) {
+                transitive &= !(u < v && v < w) || u < w;
+                bool uv = !(u < v) && !(v < u), vw = !(v < w) && !(w < v);
+                equiv &= !(uv && vw) || (!(u < w) && !(w < u));
+            }
+        }
+        CHECK(exact && transitive && equiv, "近 eps 坐标精确字典序及严格弱序性质");
+    }
     CHECK(eqp(a + b, P(2, 6)) && eqp(b + a, P(2, 6)), "operator+ 与手算一致");
     CHECK(eqp(a - b, P(4, 2)) && eqp(b - a, P(-4, -2)), "operator- 与手算一致");
     CHECK(eqd(a * b, 5) && eqd(a * b, 3.0L * -1 + 4.0L * 2), "operator*(p2,p2) 点积(手算 3*(-1)+4*2 = 5)");
@@ -728,10 +739,6 @@ int main() {
             for(int i = 0; i < n; ++i) a2[i] = v[i];
             int k = convex_hull(n, a2, h);
             if(k > n) { pb.hit("顶点数超过输入点数", k, n); continue; }
-            if(n == 1) {  // n==1 时模板不写 b(第 10 段 [note]),只查返回值
-                if(k != 1) pb.hit("n=1 返回值应为 1", k, 1);
-                continue;
-            }
             for(int i = 0; i < k; ++i) {  // 排序会重排 a2,所以和 a2 比(而非原始 v)
                 bool found = false;
                 for(int j = 0; j < n; ++j) if(refCmpP(h[i], a2[j]) == 0) found = true;
@@ -752,14 +759,14 @@ int main() {
             p2 a2[64], h[64 * 2 + 2]; // 契约:输出缓冲要 >= 2n+2
             for(int i = 0; i < 37; ++i) a2[i] = allsame[i];
             int k = convex_hull(37, a2, h);
-            CHECK(k == 2 && eqp(h[0], P(-8, 11)) && eqp(h[1], P(-8, 11)), "凸包:37 个完全相同的点 -> 返回 2 个重复的同一个点(k=2,不是 1)");
+            CHECK(k == 1 && eqp(h[0], P(-8, 11)), "凸包:37 个完全相同的点 -> 一个顶点");
         }
         {
             p2 one[1] = {P(7, 8)}, h[8] = {P(-1, -1), P(-1, -1), P(-1, -1), P(-1, -1)};
             int k = convex_hull(1, one, h);
-            printf("  [note] convex_hull(n<=1) 返回 %d 但不写 b(n=1 时 b[0] 仍是哨兵 (-1,-1)=%d;n=0 也返回 %d)"
-                   " —— 调用方必须在 n<=1 时自己处理(不计入失败)。\n",
-                   k, (int) eqp(h[0], P(-1, -1)), convex_hull(0, one, h));
+            CHECK(k == 1 && eqp(h[0], one[0]), "凸包:单点写入输出");
+            h[0] = P(-1, -1);
+            CHECK(convex_hull(0, nullptr, h) == 0 && eqp(h[0], P(-1, -1)), "凸包:空集返回 0 且不写输出");
         }
         {
             vector<p2> two = {P(3, 4), P(0, 0)};
@@ -769,7 +776,7 @@ int main() {
             vector<p2> tri2 = {P(0, 0), P(1, 1), P(2, 2)};
             CHECK(hullCheckOne(tri2), "凸包:n=3 共线 -> 两个端点");
             vector<p2> rep = {P(1, 1), P(1, 1), P(1, 1), P(1, 1), P(1, 1)};
-            CHECK(hullCheckOne(rep), "凸包:5 个同点 -> 两个重复点");
+            CHECK(hullCheckOne(rep), "凸包:5 个同点 -> 一个顶点");
             vector<p2> mixed = {P(0, 0), P(0, 0), P(3, 4), P(3, 4), P(1, 2)};
             CHECK(hullCheckOne(mixed), "凸包:带重复点的共线点集 -> 两个端点");
         }
@@ -1273,14 +1280,13 @@ int main() {
         CHECK(pb.bad == 0, "1e9 量级 + 半径 1e6~1e9 圆上点:凸包不漏点、直径 = 暴搜(500 组)");
     }
 
-    // ===== 15. 边界观察:convex_hull 对「全部点相同」的退化输入(n<=1 不写 b 见上)=
-    {
-        printf("  [note] convex_hull 对完全重合的点集返回 k=2 且两个顶点相同(k=2 而非 1):37 个相同点 -> %d;"
-               "但模板对「含重复点的其它点集」是正确的(如 (0,0)×2+(2,0)+(2,2) -> 3 个顶点)。调用方需自行去重。\n",
-               [] {
-                   p2 s[3] = {P(5, 5), P(5, 5), P(5, 5)}, o[8];
-                   return convex_hull(3, s, o);
-               }());
+    // ===== 15. 保留共线点时仍须去重；全共线点按字典序各输出一次 =====
+    for(int nos = 0; nos <= 1; ++nos) {
+        p2 s[] = {P(2, 2), P(0, 0), P(1, 1), P(2, 2), P(0, 0)}, h[12];
+        int k = convex_hull(5, s, h, nos);
+        CHECK(k == (nos ? 3 : 2), "共线点去重后的顶点数");
+        CHECK(eqp(h[0], P(0, 0)) && eqp(h[k - 1], P(2, 2)), "全共线凸包两端点");
+        if(nos) CHECK(eqp(h[1], P(1, 1)), "全共线保留中间点且不折返");
     }
 
     // ===== 16. operator+= (geo.cpp:32,正确) =====

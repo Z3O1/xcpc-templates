@@ -23,11 +23,9 @@ struct p2 {
     bool operator==(const p2 &b) const {
         return !cmp(x, b.x) && !cmp(y, b.y);
     }
-    // 字典序(x 优先),用于排序/二分。
+    // 精确字典序(x 优先)；排序不能用 eps，否则不满足严格弱序。
     bool operator<(const p2 &b) const {
-        int c = cmp(x, b.x);
-        if(c) return c < 0;
-        return cmp(y, b.y) < 0;
+        return x != b.x ? x < b.x : y < b.y;
     }
 };
 // 逆时针旋转 90 度。
@@ -148,13 +146,27 @@ int contain(int n, p2 *a, const p2 &p) {
     }
     return ret * 2;
 }
-// 求凸包,返回点数,k 个顶点按逆时针存在 b[0..k-1]。nos=0 去掉共线点,nos=1 保留。
-// **前置条件:输出缓冲 b 至少要能放 2n + 2 个点**(不是 n 个!扫下凸壳时会先写满 n 个位置,
-// 之后上凸壳还会再写)。
-// 输入 a 会被原地排序;b 与 a 不能是同一块内存。
+// 求凸包，返回点数，逆时针写入 b[0..k)；nos=0 去共线点，nos=1 保留。
+// a 原地排序并精确去重；b 不得与 a 重叠，容量至少 2n+2；空集返回 0，单点也写入 b。
+// 全共线时 nos=0 只留端点，nos=1 按字典序各输出一次；O(n log n)。
 int convex_hull(int n, p2 *a, p2 *b, bool nos = 0) {
-    if(n <= 1) return 1;
+    if(!n) return 0;
     sort(a, a + n);
+    n = unique(a, a + n, [](p2 x, p2 y) {
+        return x.x == y.x && x.y == y.y;
+    }) - a;
+    if(n == 1) {
+        b[0] = a[0];
+        return 1;
+    }
+    if(nos) {
+        bool collinear = true;
+        For(i, 1, n - 2) if(crossop({a[0], a[n - 1]}, a[i])) collinear = false;
+        if(collinear) {
+            copy(a, a + n, b);
+            return n;
+        }
+    }
     int k = 0;
     For(i, 0, n - 1) {
         while(k > 1 && crossop({b[k - 2], b[k - 1]}, a[i]) <= -nos) --k;
