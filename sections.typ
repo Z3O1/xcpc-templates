@@ -272,6 +272,10 @@
 
 #zebraw(lang: false)[#raw(readcode("templates/计算几何/凸包/凸包.cpp"), lang: "cpp", block: true)]
 
+=== 凸多边形逐点最远点
+
+#zebraw(lang: false)[#raw(readcode("templates/计算几何/凸包/凸多边形最远点.cpp"), lang: "cpp", block: true)]
+
 === 闵可夫斯基和
 
 #include "templates/计算几何/凸包/闵可夫斯基和.typ"
