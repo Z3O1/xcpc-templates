@@ -597,6 +597,12 @@
    "title": "反射容斥",
    "missing": false,
    "hidden": false
+  },
+  {
+   "key": "计算几何/整数/整数点.cpp",
+   "title": "整数点与精确运算",
+   "missing": false,
+   "hidden": false
   }
  ]
 }
