@@ -242,75 +242,113 @@
 
 = 计算几何
 
-== 基础几何库
+== 选用与约定
 
-#include "templates/计算几何/geo.typ"
+#include "templates/计算几何/使用说明.typ"
 
-#zebraw(lang: false)[#raw(readcode("templates/计算几何/geo.cpp"), lang: "cpp", block: true)]
+== 基础
 
-== Delaunay 三角剖分
+=== 二维点与向量
 
-#zebraw(lang: false)[#raw(readcode("templates/计算几何/Delaunay.cpp"), lang: "cpp", block: true)]
+#include "templates/计算几何/基础/geo.typ"
 
-== Voronoi 图
+#zebraw(lang: false)[#raw(readcode("templates/计算几何/基础/geo.cpp"), lang: "cpp", block: true)]
 
-#zebraw(lang: false)[#raw(readcode("templates/计算几何/Voronoi.cpp"), lang: "cpp", block: true)]
+=== 直线与线段
 
-== 三维凸包
+#include "templates/计算几何/基础/直线与线段.typ"
 
-#zebraw(lang: false)[#raw(readcode("templates/计算几何/三维凸包.cpp"), lang: "cpp", block: true)]
+#zebraw(lang: false)[#raw(readcode("templates/计算几何/基础/直线与线段.cpp"), lang: "cpp", block: true)]
 
-== 三维向量
+=== 最近点对
 
-#zebraw(lang: false)[#raw(readcode("templates/计算几何/三维向量.cpp"), lang: "cpp", block: true)]
+#zebraw(lang: false)[#raw(readcode("templates/计算几何/基础/最近点对.cpp"), lang: "cpp", block: true)]
 
-== 三维平面
+== 凸包
 
-#zebraw(lang: false)[#raw(readcode("templates/计算几何/三维平面.cpp"), lang: "cpp", block: true)]
+=== 凸包、直径与裁剪
 
-== 三维旋转
+#include "templates/计算几何/凸包/凸包.typ"
 
-#zebraw(lang: false)[#raw(readcode("templates/计算几何/三维旋转.cpp"), lang: "cpp", block: true)]
+#zebraw(lang: false)[#raw(readcode("templates/计算几何/凸包/凸包.cpp"), lang: "cpp", block: true)]
 
-== 三维直线与线段
+=== 上凸壳
 
-#zebraw(lang: false)[#raw(readcode("templates/计算几何/三维直线.cpp"), lang: "cpp", block: true)]
+#zebraw(lang: false)[#raw(readcode("templates/计算几何/凸包/上凸壳.cpp"), lang: "cpp", block: true)]
 
-== 上凸壳
+=== 凸包内点判定
 
-#zebraw(lang: false)[#raw(readcode("templates/计算几何/上凸壳.cpp"), lang: "cpp", block: true)]
+#zebraw(lang: false)[#raw(readcode("templates/计算几何/凸包/凸包内点判定.cpp"), lang: "cpp", block: true)]
 
-== 凸包内点判定
+=== 半平面交
 
-#zebraw(lang: false)[#raw(readcode("templates/计算几何/凸包内点判定.cpp"), lang: "cpp", block: true)]
+#zebraw(lang: false)[#raw(readcode("templates/计算几何/凸包/半平面交.cpp"), lang: "cpp", block: true)]
 
-== 半平面交
+== 多边形
 
-#zebraw(lang: false)[#raw(readcode("templates/计算几何/半平面交.cpp"), lang: "cpp", block: true)]
+=== 面积与点包含
 
-== 圆相关求交与面积交
+#zebraw(lang: false)[#raw(readcode("templates/计算几何/多边形/多边形基础.cpp"), lang: "cpp", block: true)]
 
-#zebraw(lang: false)[#raw(readcode("templates/计算几何/图形交.cpp"), lang: "cpp", block: true)]
+=== 缠绕数包含
 
-== 多边形包含
+#zebraw(lang: false)[#raw(readcode("templates/计算几何/多边形/多边形包含.cpp"), lang: "cpp", block: true)]
 
-#zebraw(lang: false)[#raw(readcode("templates/计算几何/多边形包含.cpp"), lang: "cpp", block: true)]
+=== 多边形重心
 
-== 最小圆覆盖
+#zebraw(lang: false)[#raw(readcode("templates/计算几何/多边形/多边形重心.cpp"), lang: "cpp", block: true)]
 
-#zebraw(lang: false)[#raw(readcode("templates/计算几何/最小圆覆盖.cpp"), lang: "cpp", block: true)]
+=== 简单多边形三角剖分
 
-== 最近点对
+#zebraw(lang: false)[#raw(readcode("templates/计算几何/多边形/简单多边形三角剖分.cpp"), lang: "cpp", block: true)]
 
-#zebraw(lang: false)[#raw(readcode("templates/计算几何/最近点对.cpp"), lang: "cpp", block: true)]
+== 圆
 
-== 简单多边形三角剖分
+=== 圆与外接圆
 
-#zebraw(lang: false)[#raw(readcode("templates/计算几何/简单多边形三角剖分.cpp"), lang: "cpp", block: true)]
+#include "templates/计算几何/圆/圆基础.typ"
 
-== 多边形重心
+#zebraw(lang: false)[#raw(readcode("templates/计算几何/圆/圆基础.cpp"), lang: "cpp", block: true)]
 
-#zebraw(lang: false)[#raw(readcode("templates/计算几何/多边形重心.cpp"), lang: "cpp", block: true)]
+=== 圆相关求交与面积交
+
+#zebraw(lang: false)[#raw(readcode("templates/计算几何/圆/图形交.cpp"), lang: "cpp", block: true)]
+
+=== 最小圆覆盖
+
+#zebraw(lang: false)[#raw(readcode("templates/计算几何/圆/最小圆覆盖.cpp"), lang: "cpp", block: true)]
+
+== 平面剖分
+
+=== Delaunay 三角剖分
+
+#zebraw(lang: false)[#raw(readcode("templates/计算几何/平面剖分/Delaunay.cpp"), lang: "cpp", block: true)]
+
+=== Voronoi 图
+
+#zebraw(lang: false)[#raw(readcode("templates/计算几何/平面剖分/Voronoi.cpp"), lang: "cpp", block: true)]
+
+== 三维
+
+=== 三维向量
+
+#zebraw(lang: false)[#raw(readcode("templates/计算几何/三维/三维向量.cpp"), lang: "cpp", block: true)]
+
+=== 三维直线与线段
+
+#zebraw(lang: false)[#raw(readcode("templates/计算几何/三维/三维直线.cpp"), lang: "cpp", block: true)]
+
+=== 三维平面
+
+#zebraw(lang: false)[#raw(readcode("templates/计算几何/三维/三维平面.cpp"), lang: "cpp", block: true)]
+
+=== 三维旋转
+
+#zebraw(lang: false)[#raw(readcode("templates/计算几何/三维/三维旋转.cpp"), lang: "cpp", block: true)]
+
+=== 三维凸包
+
+#zebraw(lang: false)[#raw(readcode("templates/计算几何/三维/三维凸包.cpp"), lang: "cpp", block: true)]
 
 = 通用
 

@@ -413,104 +413,134 @@
    "hidden": false
   },
   {
-   "key": "计算几何/geo.cpp",
-   "title": "基础几何库",
+   "key": "计算几何/使用说明.typ",
+   "title": "选用与约定",
    "missing": false,
    "hidden": false
   },
   {
-   "key": "计算几何/Delaunay.cpp",
-   "title": "Delaunay 三角剖分",
+   "key": "计算几何/基础/geo.cpp",
+   "title": "二维点与向量",
    "missing": false,
    "hidden": false
   },
   {
-   "key": "计算几何/Voronoi.cpp",
-   "title": "Voronoi 图",
+   "key": "计算几何/基础/直线与线段.cpp",
+   "title": "直线与线段",
    "missing": false,
    "hidden": false
   },
   {
-   "key": "计算几何/三维凸包.cpp",
-   "title": "三维凸包",
-   "missing": false,
-   "hidden": false
-  },
-  {
-   "key": "计算几何/三维向量.cpp",
-   "title": "三维向量",
-   "missing": false,
-   "hidden": false
-  },
-  {
-   "key": "计算几何/三维平面.cpp",
-   "title": "三维平面",
-   "missing": false,
-   "hidden": false
-  },
-  {
-   "key": "计算几何/三维旋转.cpp",
-   "title": "三维旋转",
-   "missing": false,
-   "hidden": false
-  },
-  {
-   "key": "计算几何/三维直线.cpp",
-   "title": "三维直线与线段",
-   "missing": false,
-   "hidden": false
-  },
-  {
-   "key": "计算几何/上凸壳.cpp",
-   "title": "上凸壳",
-   "missing": false,
-   "hidden": false
-  },
-  {
-   "key": "计算几何/凸包内点判定.cpp",
-   "title": "凸包内点判定",
-   "missing": false,
-   "hidden": false
-  },
-  {
-   "key": "计算几何/半平面交.cpp",
-   "title": "半平面交",
-   "missing": false,
-   "hidden": false
-  },
-  {
-   "key": "计算几何/图形交.cpp",
-   "title": "圆相关求交与面积交",
-   "missing": false,
-   "hidden": false
-  },
-  {
-   "key": "计算几何/多边形包含.cpp",
-   "title": "多边形包含",
-   "missing": false,
-   "hidden": false
-  },
-  {
-   "key": "计算几何/最小圆覆盖.cpp",
-   "title": "最小圆覆盖",
-   "missing": false,
-   "hidden": false
-  },
-  {
-   "key": "计算几何/最近点对.cpp",
+   "key": "计算几何/基础/最近点对.cpp",
    "title": "最近点对",
    "missing": false,
    "hidden": false
   },
   {
-   "key": "计算几何/简单多边形三角剖分.cpp",
+   "key": "计算几何/凸包/凸包.cpp",
+   "title": "凸包、直径与裁剪",
+   "missing": false,
+   "hidden": false
+  },
+  {
+   "key": "计算几何/凸包/上凸壳.cpp",
+   "title": "上凸壳",
+   "missing": false,
+   "hidden": false
+  },
+  {
+   "key": "计算几何/凸包/凸包内点判定.cpp",
+   "title": "凸包内点判定",
+   "missing": false,
+   "hidden": false
+  },
+  {
+   "key": "计算几何/凸包/半平面交.cpp",
+   "title": "半平面交",
+   "missing": false,
+   "hidden": false
+  },
+  {
+   "key": "计算几何/多边形/多边形基础.cpp",
+   "title": "面积与点包含",
+   "missing": false,
+   "hidden": false
+  },
+  {
+   "key": "计算几何/多边形/多边形包含.cpp",
+   "title": "缠绕数包含",
+   "missing": false,
+   "hidden": false
+  },
+  {
+   "key": "计算几何/多边形/多边形重心.cpp",
+   "title": "多边形重心",
+   "missing": false,
+   "hidden": false
+  },
+  {
+   "key": "计算几何/多边形/简单多边形三角剖分.cpp",
    "title": "简单多边形三角剖分",
    "missing": false,
    "hidden": false
   },
   {
-   "key": "计算几何/多边形重心.cpp",
-   "title": "多边形重心",
+   "key": "计算几何/圆/圆基础.cpp",
+   "title": "圆与外接圆",
+   "missing": false,
+   "hidden": false
+  },
+  {
+   "key": "计算几何/圆/图形交.cpp",
+   "title": "圆相关求交与面积交",
+   "missing": false,
+   "hidden": false
+  },
+  {
+   "key": "计算几何/圆/最小圆覆盖.cpp",
+   "title": "最小圆覆盖",
+   "missing": false,
+   "hidden": false
+  },
+  {
+   "key": "计算几何/平面剖分/Delaunay.cpp",
+   "title": "Delaunay 三角剖分",
+   "missing": false,
+   "hidden": false
+  },
+  {
+   "key": "计算几何/平面剖分/Voronoi.cpp",
+   "title": "Voronoi 图",
+   "missing": false,
+   "hidden": false
+  },
+  {
+   "key": "计算几何/三维/三维向量.cpp",
+   "title": "三维向量",
+   "missing": false,
+   "hidden": false
+  },
+  {
+   "key": "计算几何/三维/三维直线.cpp",
+   "title": "三维直线与线段",
+   "missing": false,
+   "hidden": false
+  },
+  {
+   "key": "计算几何/三维/三维平面.cpp",
+   "title": "三维平面",
+   "missing": false,
+   "hidden": false
+  },
+  {
+   "key": "计算几何/三维/三维旋转.cpp",
+   "title": "三维旋转",
+   "missing": false,
+   "hidden": false
+  },
+  {
+   "key": "计算几何/三维/三维凸包.cpp",
+   "title": "三维凸包",
    "missing": false,
    "hidden": false
   },
