@@ -360,6 +360,10 @@
 
 #zebraw(lang: false)[#raw(readcode("templates/计算几何/整数/整数点.cpp"), lang: "cpp", block: true)]
 
+=== 整数线段
+
+#zebraw(lang: false)[#raw(readcode("templates/计算几何/整数/线段.cpp"), lang: "cpp", block: true)]
+
 = 通用
 
 == 大质数表
