@@ -376,6 +376,10 @@
 
 #zebraw(lang: false)[#raw(readcode("templates/计算几何/整数/凸包内点判定.cpp"), lang: "cpp", block: true)]
 
+=== 整数最近点对
+
+#zebraw(lang: false)[#raw(readcode("templates/计算几何/整数/最近点对.cpp"), lang: "cpp", block: true)]
+
 = 通用
 
 == 大质数表
