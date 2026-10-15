@@ -443,6 +443,12 @@
    "hidden": false
   },
   {
+   "key": "计算几何/凸包/闵可夫斯基和.cpp",
+   "title": "闵可夫斯基和",
+   "missing": false,
+   "hidden": false
+  },
+  {
    "key": "计算几何/凸包/上凸壳.cpp",
    "title": "上凸壳",
    "missing": false,

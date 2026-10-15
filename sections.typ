@@ -272,6 +272,12 @@
 
 #zebraw(lang: false)[#raw(readcode("templates/计算几何/凸包/凸包.cpp"), lang: "cpp", block: true)]
 
+=== 闵可夫斯基和
+
+#include "templates/计算几何/凸包/闵可夫斯基和.typ"
+
+#zebraw(lang: false)[#raw(readcode("templates/计算几何/凸包/闵可夫斯基和.cpp"), lang: "cpp", block: true)]
+
 === 上凸壳
 
 #zebraw(lang: false)[#raw(readcode("templates/计算几何/凸包/上凸壳.cpp"), lang: "cpp", block: true)]
