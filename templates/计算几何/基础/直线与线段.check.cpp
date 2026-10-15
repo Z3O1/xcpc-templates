@@ -1,6 +1,6 @@
 // 直线与线段 自测:整数精确相交参考、参数夹取距离、投影/反射/交点，4 万组含点线段
 #include "../../_check_base.hpp"
-#include "geo.cpp"
+#include "二维向量.cpp"
 #include "直线与线段.cpp"
 
 // 整数坐标的精确转向；测试坐标绝对值 <=100。

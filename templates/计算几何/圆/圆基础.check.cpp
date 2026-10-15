@@ -1,6 +1,6 @@
 // 圆基础 自测:外心等距与直径、圆盘边界、三点共线、圆求交与最小圆覆盖联编，10000 组
 #include "../../_check_base.hpp"
-#include "../基础/geo.cpp"
+#include "../基础/二维向量.cpp"
 #include "../基础/直线与线段.cpp"
 #include "圆基础.cpp"
 #include "图形交.cpp"

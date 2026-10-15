@@ -5,7 +5,7 @@
 //     给出 0/1/2 的**真值**(对自交多边形同样成立,缠绕数定义与实现无关)。
 //   angWN:把每条边相对 p 的有向角(atan2 差,归一到 (-π,π])累加 = 2πk,k 就是缠绕数 ——
 //     与「跨 y 符号 + 叉积符号」的实现完全不同的算法,用来做第二意见。
-//   geo.cpp 的 contain(射线法,奇偶规则):简单多边形上必须与本模板一致;自交多边形上
+//   多边形基础.cpp 的 contain(射线法,奇偶规则):简单多边形上必须与本模板一致;自交多边形上
 //     两者**故意不同**(非零规则 vs 奇偶规则),这一段只打印观察不改判定。
 //
 // 用例规模:
@@ -16,7 +16,7 @@
 //   4 3000 组 ±1e9 大整数坐标(简单的与自交的都有),与 exactWN 对照(整数叉积精确,不受 eps 影响)
 //   5 性质级:平移不变性、逆序(反向遍历)不改答案、顶点顺序循环移位不改答案
 #include "../../_check_base.hpp"
-#include "../基础/geo.cpp"
+#include "../基础/二维向量.cpp"
 #include "../基础/直线与线段.cpp"
 #include "多边形基础.cpp"
 #include "多边形包含.cpp"
@@ -64,7 +64,7 @@ static bool angWNOk(const vector<p2> &a, p2 p, int &sign_out) {  // 有向角和
     sign_out = kr > 0 ? 1 : kr < 0 ? -1 : 0;
     return true;
 }
-static bool onAnyEdge(const vector<p2> &a, p2 p) {  // 与模板同约定:跳过退化的零长边(否则 geo 的 ons 对任意点都为真)
+static bool onAnyEdge(const vector<p2> &a, p2 p) {  // 与被测缠绕数模板同约定：跳过零长边
     int n = a.size();
     for(int i = 0; i < n; ++i) if(!(a[i] == a[(i + 1) % n]) && ons({a[i], a[(i + 1) % n]}, p)) return true;
     return false;
@@ -116,7 +116,7 @@ int main() {
             vector<p2> dbl = {P(0, 0), P(4, 0), P(0, 4), P(0, 0), P(4, 0), P(0, 4)};
             CHECK(wn_contain(6, dbl.data(), P(1, 1)) == 2 && exactWN(dbl, 1, 1) == 2,
                   "wn_contain 绕两圈的三角形:缠绕数 2 -> 判内部(与精确缠绕数一致)");
-            CHECK(contain(6, dbl.data(), P(1, 1)) == 0, "同一个点:geo.cpp 的 contain(奇偶规则)判外部 —— 两种规则确实不同");
+            CHECK(contain(6, dbl.data(), P(1, 1)) == 0, "同一个点:contain(奇偶规则)判外部 —— 两种规则确实不同");
         }
         {
             // 五角星(每两个顶点连一条):中心小五边形缠绕数 ±2 -> 非零规则判内部,奇偶规则判外部
@@ -149,7 +149,7 @@ int main() {
                 a.push_back(P(llroundl(r * cos(ang)), llroundl(r * sin(ang))));
             }
             if(t % 2) reverse(a.begin(), a.end());  // 一半顺时针
-            bool simple = true;                     // 取整后可能自交/重边,先粗筛:与 geo 的 contain 只对简单多边形比
+            bool simple = true;                     // 取整后可能自交/重边,先粗筛:与 contain 只对简单多边形比
             for(int i = 0; i < n; ++i) for(int j = i + 1; j < n; ++j) if(a[i] == a[j]) simple = false;
             for(int it = 0; it < 80; ++it) {
                 ll qx = rnd(-50, 50), qy = rnd(-50, 50);

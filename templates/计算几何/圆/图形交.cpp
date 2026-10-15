@@ -91,7 +91,7 @@ db tri_disk2(const circle &c, p2 a, p2 b) {
     a = a - c.o, b = b - c.o;
     db r2 = c.r * c.r;
     // 判「点是否在圆盘内」比的是**距离**而不是平方距离:平方距离在半径 1e-6 时只有 1e-12,
-    // 会被 geo 的绝对 eps = 1e-10 全部判成「在圆内」
+    // 会被基础库的绝对 eps = 1e-10 全部判成「在圆内」
     int va = cmp(dis(a), c.r) <= 0, vb = cmp(dis(b), c.r) <= 0;
     if(va && vb) return a.det(b);
     vector<p2> v = cir_seg(circle{{0, 0}, c.r}, {a, b});  // 圆(圆心在原点)与线段 ab 的交点,按 a->b 递增

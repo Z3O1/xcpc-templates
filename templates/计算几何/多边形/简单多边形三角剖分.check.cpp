@@ -3,20 +3,20 @@
 // 【测什么】对逆时针简单多边形调用 ear_clip(n, a),逐条断言(全部 CHECK,失败即打印现场并 exit 1):
 //   A1 三角形数 == 剥掉共线点后剩下的顶点数 - 2(退化输入即面积 0 时为 0); 下标都落在 [0,n);
 //   A2 每个三角形逆时针(带号面积严格 > 0)、三下标互不相同、内部不含其它存活顶点;
-//   A3 三角形带号面积之和 == 多边形带号面积(用 1e-9*(1+|面积|) 的相对容差),且与 geo.cpp 的 area 一致;
+//   A3 三角形带号面积之和 == 多边形带号面积(用 1e-9*(1+|面积|) 的相对容差),且与多边形基础的 area 一致;
 //   A4 每个三角形顶点都是多边形顶点; 每条三角形边要么是多边形边、要么是多边形内部的对角线 ——
 //      对角线的中点必须严格在多边形内部(用本文件独立的 refContain/refNearest,距离留净空),
-//      且与任何多边形边不「规范相交」(本文件自写 refProperCross,与 geo.cpp 的 chkss 无关);
+//      且与任何多边形边不「规范相交」(本文件自写 refProperCross,与直线与线段的 chkss 无关);
 //   A5 采样覆盖/不重叠: 在包围盒内随机取点(离多边形边太近的点跳过),用模板的 contain(3,tri,q)
 //      数它落在几个三角形里 —— 「≥1 个三角形」当且仅当「在多边形内」,且个数 <= 1;
 //   A6 每个「非共线顶点」都至少出现在一个三角形里,且三角形顶点只能是非共线顶点(共线点被剥掉)。
 //
 // 【对拍方式】不依赖模板的实现全在本文件另写一套: refContain(射线法 + 边界距离)、refArea/shoelace、
 //   refNearest、refProperCross、refDistPolyOnly、refIsSimple、refSurvivors(独立复刻剥共线点)。
-//   模板只提供 ear_clip 与 geo.cpp 的 contain/area/p2/det(仅 A3/A5 用)。
+//   被测模块提供 ear_clip 及基础点运算，A3/A5 还调用多边形基础的 contain/area。
 //
 // 【用例规模】总计约 6000 组随机多边形 + 一批定点/退化用例,单次 < 20s:
-//   · 凸多边形: 随机点求凸包(geo.cpp 的 convex_hull),n = 3..40,2000 组;
+//   · 凸多边形: 随机点求凸包(convex_hull),n = 3..40,2000 组;
 //   · 凹多边形: 随机星形多边形(绕星心按角度排序的随机半径点)筛掉自交后,2000 组 × 20~50 采样点;
 //   · 带共线点: 凸包每条边上插 0~3 个点(t 用 1/20 的倍数,插出来的点理论上精确共线,但浮点
 //     叉积往往是 1e-14 量级的噪声 —— 正好用来验证模板那套「局部相对」共线判据),2000 组;
@@ -25,7 +25,7 @@
 //
 // 【复杂度】单组 O(n^2 + S*n)(S = 采样点数,取 20),模板本身 O(n^2);总规模约 6000 组,实测约 0.6s。
 #include "../../_check_base.hpp"
-#include "../基础/geo.cpp"
+#include "../基础/二维向量.cpp"
 #include "../基础/直线与线段.cpp"
 #include "../凸包/凸包.cpp"
 #include "多边形基础.cpp"
@@ -232,7 +232,7 @@ static void earCase(const vector<p2> &poly0, const char *what, bool expectFull) 
     db tmpl = area(n, ac.data());
     if(!eqd(tmpl, want, 1e-9L * (1 + A_(want)))) {
         diePoly();
-        printf("    geo.cpp 的 area 与独立 shoelace 不一致: 实测 %Lg, 期望 %Lg\n", tmpl, want);
+        printf("    area 与独立 shoelace 不一致: 实测 %Lg, 期望 %Lg\n", tmpl, want);
         exit(1);
     }
     if(!eqd(sum, want, 1e-9L * (1 + A_(want)))) {
@@ -406,13 +406,13 @@ int main() {
         }
         CHECK(polyCCW(big) && refIsSimple(8, big.data()), "±1e9 量级 8 边形: 逆时针简单");
         earCase(big, "坐标 ±1e9 的 8 边形", true);
-        // 边长 1e-9 的正方形: geo.cpp 的 sign(绝对 eps = 1e-10)在这里会把所有 det 都判成 0,
+        // 边长 1e-9 的正方形: sign(绝对 eps = 1e-10)在这里会把所有 det 都判成 0,
         // 模板用的精确比较则能正常剖出 2 个三角形 —— 这正是模板不用 sign 的原因
         vector<p2> tiny = {{0, 0}, {1e-9L, 0}, {1e-9L, 1e-9L}, {0, 1e-9L}};
         {
             vector<p2> b = tiny;
             auto tt = ear_clip(4, b.data());
-            CHECK((int) tt.size() == 2, "边长 1e-9 的正方形也能剖出 2 个三角形(坐标尺度小于 geo.cpp 的绝对 eps)");
+            CHECK((int) tt.size() == 2, "边长 1e-9 的正方形也能剖出 2 个三角形(叉积尺度小于基础库的绝对 eps)");
         }
         earCase(tiny, "边长 1e-9 的正方形", true);
         // 带共线点的定点用例
@@ -423,7 +423,7 @@ int main() {
         CHECK((int) ear_clip(3, (vector<p2>{{0, 0}, {1, 0}, {2, 0}}).data()).empty(), "三个共线点: 没有面积为正的三角形, 返回空");
     }
 
-    // ===== 3. 随机凸多边形(geo.cpp 的 convex_hull)=====
+    // ===== 3. 随机凸多边形(convex_hull)=====
     {
         int done = 0, skip = 0, subrun = 0;
         For(t, 1, 3200) {

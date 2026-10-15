@@ -14,7 +14,7 @@
 // 随机种子固定(rnd 用 steady_clock 播种,这里再 srand 一次固定库的 rand 无关,只靠 rng 固定不了,
 // 故用自定义 gen 固定种子),每段几千~几万组。
 #include "../../_check_base.hpp"
-#include "../基础/geo.cpp"
+#include "../基础/二维向量.cpp"
 
 #include "三维向量.cpp"
 

@@ -1,6 +1,6 @@
 // seg(): 计算几何 · 直线与线段
 
-// 依赖 基础/geo.cpp；seg{x,y} 方向 x→y，作为直线时要求 x!=y。
+// 依赖 基础/二维向量.cpp；seg{x,y} 方向 x→y，作为直线时要求 x!=y。
 // 线段允许退化为点；nearest / disss 返回距离平方，proj / reflect 操作无限直线。
 namespace Geo {
 

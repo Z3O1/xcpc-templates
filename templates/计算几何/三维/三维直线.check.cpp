@@ -12,7 +12,7 @@
 //   ⑤ 退化:零长线段(退化成点)、两点重合、平行线最近点对不唯一
 //   ⑥ 大坐标(1e6~1e9):只做性质级断言(非负、对称、不超过端点距离、相交则距离 0)
 #include "../../_check_base.hpp"
-#include "../基础/geo.cpp"
+#include "../基础/二维向量.cpp"
 
 #include "三维向量.cpp"
 #include "三维直线.cpp"

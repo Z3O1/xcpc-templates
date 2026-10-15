@@ -1,4 +1,4 @@
-// geo 自测:二维基础模块联编、独立参考随机对拍、运算符/排序/退化回归
+// 二维向量 自测:二维基础模块联编、独立参考随机对拍、运算符/排序/退化回归
 //   与内置的独立参考实现 + 暴力对照大规模随机对拍,并做大量「性质级」断言。
 //
 // 覆盖：比较与向量运算、旋转、线段位置关系/距离、投影/反射、面积与包含关系、
@@ -8,7 +8,7 @@
 // proj/reflect 等接口的非退化前提、绝对 eps 的适用尺度以源码契约及各段断言为准。
 // 段内 [note] 为补充观察，不作为覆盖接口全部输入域的正确性保证；结果以实际运行判定。
 #include "../../_check_base.hpp"
-#include "geo.cpp"
+#include "二维向量.cpp"
 #include "直线与线段.cpp"
 #include "../多边形/多边形基础.cpp"
 #include "../凸包/凸包.cpp"
@@ -281,9 +281,9 @@ static bool hullCheckOne(const vector<p2> &v, bool verbose = false) {
 // convex_cut 后的多边形面积(用带号面积 -> 绝对值)
 static db cutArea(const vector<p2> &v) { return Abs(refArea(v)); }
 
-// 全量随机对拍与极端/退化用例;通过则 PASSED("geo"),否则打印反例并 FAIL。
+// 全量随机对拍与极端/退化用例；失败打印反例。
 int main() {
-    printf("== geo.check:强化版随机对拍 + 极端/退化用例(独立参考实现见文件头部)==\n");
+    printf("== 二维向量.check:随机对拍 + 极端/退化用例(独立参考实现见文件头部)==\n");
 
     // ===== 1. eps / pi / sign / cmp =====
     CHECK(eps == 1e-10, "eps == 1e-10");
@@ -1394,5 +1394,5 @@ int main() {
     }
     CHECK(minus_ok && diveq_ok, "减等为向量减法、除等为标量除法");
 
-    PASSED("geo");
+    PASSED("二维向量");
 }

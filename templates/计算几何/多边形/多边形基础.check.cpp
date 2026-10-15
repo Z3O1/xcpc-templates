@@ -1,6 +1,6 @@
 // 多边形基础 自测:矩形解析答案、凹星形有向角包含参考、三角形面积和，5000 组及退化输入
 #include "../../_check_base.hpp"
-#include "../基础/geo.cpp"
+#include "../基础/二维向量.cpp"
 #include "../基础/直线与线段.cpp"
 #include "多边形基础.cpp"
 

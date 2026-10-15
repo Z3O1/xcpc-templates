@@ -15,7 +15,7 @@
 //      内部点、重复点(不应成为新顶点)
 //   ⑥ 规模:n = 300/1000 的随机点集只做性质级断言(含耗时打印)
 #include "../../_check_base.hpp"
-#include "../基础/geo.cpp"
+#include "../基础/二维向量.cpp"
 
 #include "三维向量.cpp"
 #include "三维直线.cpp"  // 三维平面.cpp 用到 line3(依赖链:向量 -> 直线 -> 平面 -> 凸包)

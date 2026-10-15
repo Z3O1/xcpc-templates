@@ -14,7 +14,7 @@
 //   ⑥ 退化:三点共线(n = 0)、平面内直线、四点共面、平面上/下两点、零法向(契约外只记录)
 //   ⑦ 大坐标(1e6):只做性质级断言
 #include "../../_check_base.hpp"
-#include "../基础/geo.cpp"
+#include "../基础/二维向量.cpp"
 
 #include "三维向量.cpp"
 #include "三维直线.cpp"

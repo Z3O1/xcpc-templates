@@ -250,9 +250,9 @@
 
 === 二维点与向量
 
-#include "templates/计算几何/基础/geo.typ"
+#include "templates/计算几何/基础/二维向量.typ"
 
-#zebraw(lang: false)[#raw(readcode("templates/计算几何/基础/geo.cpp"), lang: "cpp", block: true)]
+#zebraw(lang: false)[#raw(readcode("templates/计算几何/基础/二维向量.cpp"), lang: "cpp", block: true)]
 
 === 直线与线段
 

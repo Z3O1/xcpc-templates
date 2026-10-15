@@ -16,7 +16,7 @@
 //   4 3000 组「上边界共线点很多」的构造用例:nos=0/nos=1 的语义各自断言
 //   5 1000 组 ±1e9 大坐标(整数,叉积精确)-> 参考逐位对照
 #include "../../_check_base.hpp"
-#include "../基础/geo.cpp"
+#include "../基础/二维向量.cpp"
 #include "../基础/直线与线段.cpp"
 #include "上凸壳.cpp"
 

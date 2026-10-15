@@ -4,7 +4,7 @@
 //   refCentroidEdge:把多边形看成「每条边与 x 轴围成的竖直梯形」的有向叠加,用积分解析算
 //     ∫x dA = Σ s·∫₀¹(u.x+ts)(u.y+tdv)dt、∫y dA = Σ s·∫₀¹ h(t)²/2 dt,再除以带号面积 ——
 //     与模板的「(x_i+x_{i+1})·叉积」是两套不同的推导。
-//   refCentroidMC:在多边形的包围盒里撒点,用 geo.cpp 的 contain 过滤内部点求平均 —— 纯数值方法,
+//   refCentroidMC:在多边形的包围盒里撒点,用多边形基础的 contain 过滤内部点求平均 —— 纯数值方法,
 //     与解析式完全独立(1e6 个样本,容差取包围盒尺度的 3%/√N 级别)。
 //   另外用已知形状的解析值对照:三角形 = 顶点平均、正方形/矩形 = 中心、正 n 边形 = 中心、
 //   对称 U 形 = 对称轴上的解析点、梳子形 = 手算值。
@@ -20,7 +20,7 @@
 //   4 100 组蒙特卡洛对照(每组 25 万个样本 = 2500 万次采样)
 //   5 ±1e9 大整数坐标 1000 组与逐边积分参考对照(相对 1e-12)
 #include "../../_check_base.hpp"
-#include "../基础/geo.cpp"
+#include "../基础/二维向量.cpp"
 #include "../基础/直线与线段.cpp"
 #include "../凸包/凸包.cpp"
 #include "多边形基础.cpp"
@@ -108,7 +108,7 @@ int main() {
             vector<p2> comb = {P(0, 0), P(6, 0), P(6, 1), P(5, 1), P(5, 5), P(4, 5), P(4, 1), P(3, 1), P(3, 5), P(2, 5), P(2, 1), P(1, 1), P(1, 5), P(0, 5)};
             p2 g = centroid(comb.size(), comb.data());
             CHECK(eqp(g, P(8.0L / 3, 13.0L / 6), 1e-12L), "centroid 梳子形(面积 18)-> 手算 (8/3, 13/6)");
-            CHECK(eqd(Abs(area(comb.size(), comb.data())), 18, 1e-12L), "geo.cpp 的 area 确认梳子形面积 = 18(手算依据)");
+            CHECK(eqd(Abs(area(comb.size(), comb.data())), 18, 1e-12L), "area 确认梳子形面积 = 18(手算依据)");
         }
         {  // U 形(重心在凹口里、不在多边形内 —— 不能对凹多边形断言「重心在内」)
             vector<p2> U = {P(0, 0), P(6, 0), P(6, 6), P(4, 6), P(4, 2), P(2, 2), P(2, 6), P(0, 6)};

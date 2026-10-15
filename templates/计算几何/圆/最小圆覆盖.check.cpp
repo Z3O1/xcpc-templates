@@ -15,7 +15,7 @@
 //   5 性质级:圆覆盖所有输入点、r >= 0、r 不超过任意两点距离之半的最大值、r 不超过暴力值+容差
 //   6 ±1e9 大坐标 2000 组只做性质断言(覆盖性用相对容差)
 #include "../../_check_base.hpp"
-#include "../基础/geo.cpp"
+#include "../基础/二维向量.cpp"
 #include "../基础/直线与线段.cpp"
 #include "圆基础.cpp"
 #include "最小圆覆盖.cpp"
@@ -47,7 +47,7 @@ static bool covers(circle c, const vector<p2> &v) {
 }
 
 // ---------- 独立参考实现 ----------
-static p2 refCircum(p2 A, p2 B, p2 C) {  // 外接圆圆心(行列式公式,与 geo.cpp 的写法不同)
+static p2 refCircum(p2 A, p2 B, p2 C) {  // 外接圆圆心参考，与圆基础中的写法不同
     db d = 2 * (A.x * (B.y - C.y) + B.x * (C.y - A.y) + C.x * (A.y - B.y));
     db ux = ((A.x * A.x + A.y * A.y) * (B.y - C.y) + (B.x * B.x + B.y * B.y) * (C.y - A.y) + (C.x * C.x + C.y * C.y) * (A.y - B.y)) / d;
     db uy = ((A.x * A.x + A.y * A.y) * (C.x - B.x) + (B.x * B.x + B.y * B.y) * (A.x - C.x) + (C.x * C.x + C.y * C.y) * (B.x - A.x)) / d;

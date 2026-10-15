@@ -17,7 +17,7 @@
 // 所有测试点都用整数坐标(量级到 1e9),这样方向判定、面积、边去重、凸包都是精确的,
 // 空圆判定在 1e4 以内还能用 i128 精确算。随机种子固定(20240915),不 flaky。
 #include "../../_check_base.hpp"
-#include "../基础/geo.cpp"
+#include "../基础/二维向量.cpp"
 #include "../基础/直线与线段.cpp"
 #include "../凸包/凸包.cpp"
 #include "Delaunay.cpp"

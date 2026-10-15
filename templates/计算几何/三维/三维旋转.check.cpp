@@ -11,7 +11,7 @@
 //   ⑤ 基底 basis/tolocal/toworld:正交、右手(det = +1)、往返还原、局部 z 就是到平面的带号距离
 //   ⑥ 退化与极限:角度 0 / ±2π / 极小角、轴取反(等价于角度取反)、轴不归一化也能用
 #include "../../_check_base.hpp"
-#include "../基础/geo.cpp"
+#include "../基础/二维向量.cpp"
 
 #include "三维向量.cpp"
 #include "三维旋转.cpp"

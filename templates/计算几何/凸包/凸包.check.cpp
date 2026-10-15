@@ -1,6 +1,6 @@
 // 凸包 自测:独立 Jarvis 凸包/逐边枚举共线点、暴力直径、解析裁剪，12000 组含空/重/共线点
 #include "../../_check_base.hpp"
-#include "../基础/geo.cpp"
+#include "../基础/二维向量.cpp"
 #include "../基础/直线与线段.cpp"
 #include "../多边形/多边形基础.cpp"
 #include "凸包.cpp"

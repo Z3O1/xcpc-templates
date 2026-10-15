@@ -19,7 +19,7 @@
 //   蒙特卡洛按 4σ 统计误差(se = 盒面积 * sqrt(p(1-p)/M)),理由写在 MC 段注释里。
 //   这些容差都远小于「面积算成 2 倍 / 漏一段弓形 / 扇形归一化错」的量级,真错一定能抓到。
 #include "../../_check_base.hpp"
-#include "../基础/geo.cpp"
+#include "../基础/二维向量.cpp"
 #include "../基础/直线与线段.cpp"
 #include "../多边形/多边形基础.cpp"
 #include "圆基础.cpp"
@@ -93,7 +93,7 @@ static void die(const char *name, int line) {
         printf("  [ok] %s\n", name);                                                            \
     } while (0)
 
-// ============ 独立参考实现(只用 geo.cpp 的 p2/seg/ons/contain/isll/area) ============
+// ============ 独立参考实现（只用基础模块的点、线段、面积与包含关系） ============
 
 // 点在直线上的参数 t(以 l.x 为原点,l.dir() 为方向);退化返回 0
 static db ref_param(const seg &l, const p2 &p) {
@@ -988,7 +988,7 @@ int main() {
                     die("1e6 量级半径的交点必须落在圆上", __LINE__);
                 }
                 // 共线判据必须按规模缩放:坐标/半径到 1e6 时,叉积量级 ~1e12,而 crossop 用的是
-                // geo.cpp 里 eps = 1e-10 的**绝对**容差,交点叉积的舍入误差 (1e-7 量级) 会被它判成非零
+                // 绝对 eps=1e-10：交点叉积的舍入误差若到 1e-7 量级，会被判成非零
                 if(Absd(cross({l.x, l.y}, p)) > 1e-9L * dis(l.dir()) * (1 + dis(p - l.x))) die("大半径交点必须共线", __LINE__);
             }
         }

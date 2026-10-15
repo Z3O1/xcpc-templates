@@ -15,7 +15,7 @@
 //        n = 200000 全同点 -> 必须等于 0(并且要跑得快,证明不是 O(n²))
 //   6 ±1e9 大坐标 2000 组:与暴力对拍(相对容差)+ 性质断言
 #include "../../_check_base.hpp"
-#include "geo.cpp"
+#include "二维向量.cpp"
 #include "最近点对.cpp"
 
 // 构造点。
