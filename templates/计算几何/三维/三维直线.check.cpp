@@ -1,4 +1,4 @@
-// 三维直线与线段 自测:点线距/线线距/线段最近点/相交判定
+// 三维直线与线段 自测:短段/近乎平行/有限候选最优/唯一交点/独立参考及大随机
 //
 // 对拍方式:
 //   ① 手算常数用例(坐标轴、单位立方体棱、十字交叉、平行、异面)
@@ -173,9 +173,89 @@ p3 IP3(I3 a) { return {db(a.x), db(a.y), db(a.z)}; }
 // 整数线段转 seg3。
 seg3 ISG(I3 a, I3 b) { return {IP3(a), IP3(b)}; }
 
+// 独立参考：a 为 x 轴 [0,len]，沿 b 的参数对凸距离平方导数二分。
+// 不用两直线公式或有限候选枚举；端点最优也由单调导数夹取。
+db refAxisSS(db len, seg3 b) {
+    p3 v = b.dir();
+    db l = 0, r = 1;
+    for(int i = 0; i < 160; ++i) {
+        db t = (l + r) / 2;
+        p3 p = b.x + v * t;
+        db dx = p.x - max((db) 0, min(len, p.x));
+        if(dx * v.x + p.y * v.y + p.z * v.z < 0) l = t;
+        else r = t;
+    }
+    p3 p = b.x + v * ((l + r) / 2);
+    return hypot(p.x - max((db) 0, min(len, p.x)), p.y, p.z);
+}
+
 // 手算/参考对照与退化用例;通过则 PASSED("三维直线")。
 int main() {
     p3 X{1, 0, 0}, Y{0, 1, 0}, Z{0, 0, 1}, O{0, 0, 0};
+
+    // 短非零段不能按长度平方与线性 eps 比较；真正零长仍按点处理。
+    for(db len : {1e-6L, 1e-9L, 1e-15L}) {
+        seg3 s{O, P3(len, 0, 0)};
+        CHECK(dis(proj(s, P3(len / 2, len, 0)) - P3(len / 2, 0, 0)) < len * 1e-14L &&
+              abs(dis(s, P3(len / 2, len, 0)) / len - 1) < 1e-14L,
+              "短非零段的中点投影和距离按长度尺度正确");
+        CHECK(ons_s(s, P3(len / 2, 0, 0)) == (len / 2 > eps) && !ons_s(s, O),
+              "严格内部的端点余量为线性 eps，不比较平方点积");
+    }
+    {
+        seg3 a{O, X}, b{X, P3(2, 0, 0)}, overlap{P3(.5L, 0, 0), P3(2, 0, 0)};
+        p3 p{9, 9, 9};
+        CHECK(chkss(a, b) && !chkss_s(a, b) && isss(a, b, p) && p == X,
+              "共线单点触碰有唯一交点，但不是严格相交");
+        CHECK(!isss(a, overlap, p) && p == X && !isss(a, a, p), "正长度共线重叠不输出唯一点且失败保留输出");
+        CHECK(isss(a, SG(X, X), p) && p == X && isss(SG(O, O), a, p) && p == O &&
+              isss(SG(X, X), SG(X, X), p) && !isss(SG(O, O), SG(X, X), p),
+              "点段与点点的唯一公共点契约");
+        seg3 shortA{O, P3(2e-6L, 0, 0)}, shortB{P3(1e-6L, -1e-6L, 0), P3(1e-6L, 1e-6L, 0)};
+        CHECK(chkss_s(shortA, shortB) && isss(shortA, shortB, p), "短段内部十字相交");
+    }
+    for(db k : {1e-4L, 1e-8L, 2e-10L, 1e-12L}) {
+        line3 a = LN(O, X), b = LN(P3(0, -1, 1), P3(1, k, 0));
+        p3 pa, pb;
+        if(k > eps) {
+            db d = dis(a, b, pa, pb);
+            CHECK(abs(d - 1) < 1e-14L && abs(pa.x * k - 1) < 1e-14L &&
+                  abs(pb.x * k - 1) < 1e-14L && abs(pb.y) < 1e-14L,
+                  "夹角超 eps 的近乎平行两线内部最近点为 (1/k,0,0) 与 (1/k,0,1)，不作 Gram 消减");
+        } else {
+            CHECK(ispara(a, b) && abs(dis(a, b) - sqrt((db) 2)) < 1e-14L,
+                  "两直线在夹角 eps 内按平行契约处理");
+        }
+        seg3 sa{O, P3(2, 0, 0)}, sb{P3(0, -k, 0), P3(2, k, 0)};
+        CHECK(dis(sa, sb, pa, pb) < 1e-16L && abs(pa.x - 1) < 1e-14L && abs(pb.x - 1) < 1e-14L,
+              "近乎平行线段仍枚举内部驻点，距离不按角度 eps 退化");
+    }
+    {
+        int e = numeric_limits<db>::max_exponent * 3 / 4;
+        for(int k : {-e, e}) {
+            line3 l = LN(O, P3(ldexp((db) 1, k), 0, 0));
+            CHECK(dis(proj(l, P3(3, 4, 0)) - P3(3, 0, 0)) < 1e-14L && abs(dis(l, P3(3, 4, 0)) - 4) < 1e-14L,
+                  "直线方向极大/极小不影响投影与距离");
+        }
+        for(int i = 0; i < 20000; ++i) {
+            db scale = pow((db) 10, grnd(-6, 6));
+            db k = pow((db) 10, grnd(-12, -1));
+            db x = db(grnd(-20, 20)) / 10, y = db(grnd(-20, 20)) / 10;
+            db dx = db(grnd(1, 30)) / 10, z = db(grnd(-10, 10)) / 10;
+            seg3 a{O, P3(scale, 0, 0)};
+            seg3 b{P3(x * scale, y * k * scale, z * k * scale),
+                   P3((x + dx) * scale, (y + dx) * k * scale, z * k * scale)};
+            p3 pa, pb;
+            db got = dis(a, b, pa, pb), want = refAxisSS(scale, b);
+            db tol = 5e-15L * scale + 1e-11L * want;
+            if(abs(got - want) > tol || abs(dis(b, a) - want) > tol ||
+               abs(dis(SG(a.y, a.x), SG(b.y, b.x)) - want) > tol ||
+               abs(dis(pa - pb) - got) > tol) {
+                fprintf(stderr, "near parallel a=%s b=%s got=%Lg want=%Lg tol=%Lg\n", ps(a).c_str(), ps(b).c_str(), got, want, tol);
+                CHECK(false, "2 万组跨尺度近乎平行：独立单调导数参考、交换与端点反转");
+            }
+        }
+    }
 
     // ===== 1. 手算常数用例 =====
     CHECK(eq(dis(LN(O, X), P3(3, 4, 0)), 4, 1e-15) && eq(dis(LN(O, X), P3(0, 4, 3)), 5, 1e-15), "点到 x 轴距离 = sqrt(y²+z²):(3,4,0) -> 4、(0,4,3) -> 5");
@@ -449,9 +529,13 @@ int main() {
                 }
                 ++bad;
             }
-            // isss:只有「非共线且相交」时才输出点,且该点必须同时在两段上
+            // 精确唯一性：非平行交点唯一；共线时公共端点去重后恰好一个。
+            set<array<ll, 3>> common;
+            for(I3 p : {p1, p2, q1, q2}) if(iOnSeg(p1, p2, p) && iOnSeg(q1, q2, p)) common.insert({p.x, p.y, p.z});
+            bool wantI = want && (!izero(icross(isub(p2, p1), isub(q2, q1))) || common.size() == 1);
             p3 ip;
             bool gotI = isss(sa, sb, ip);
+            if(gotI != wantI) { if(!bad) msg = "isss 唯一性与整数参考不符 a=" + ps(sa) + " b=" + ps(sb); ++bad; }
             if(gotI) {  // 只有「精确参考也判相交」时才算对
                 if(!want) { if(!bad) msg = "isss 说相交但精确参考说否 a=" + ps(sa) + " b=" + ps(sb); ++bad; }
                 if(!ons(sa, ip) || !ons(sb, ip)) { if(!bad) msg = "isss 输出的点不在两段上 a=" + ps(sa) + " b=" + ps(sb) + " p=" + ps(ip); ++bad; }
