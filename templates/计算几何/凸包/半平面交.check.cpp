@@ -514,7 +514,18 @@ int main() {
     for(db h : {eps/4, eps*2}) {
         vector<seg> lines{{{0,0},{1,0}},{{1,0},{1,h}},{{1,h},{0,h}},{{0,h},{0,0}}};
         auto got = hpi(lines);
-        CHECK((h < eps ? got.empty() : got.size() == 4), "局部二倍面积退化阈值仍生效");
+        CHECK((h < eps ? got.empty() : got.size() == 4), "面积/周长按长度eps判退化");
+    }
+    for(db scale : {db(1e-6L),db(1),db(1e6L)}) {
+        for(auto a : {vector<p2>{{0,0},{scale,0},{scale,scale},{0,scale}},
+                      vector<p2>{{0,0},{4*scale,0},{2*scale,2*scale},{0,2*scale}}}) {
+            db want = a[1].x == scale ? scale*scale : 6*scale*scale;
+            vector<seg> lines;
+            for(int i = 0; i < 4; ++i) lines.push_back({a[i],a[(i+1)%4]});
+            auto got = hpi(lines);
+            CHECK(got.size() == 4 && abs(polyArea(got)/want-1) < 1e-12L,
+                  "小/大方形与梯形面积解析值，不能将平方量与线性eps混比");
+        }
     }
     analytic();
 
