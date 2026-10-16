@@ -462,6 +462,33 @@ static int runPatho(int groups) {
 // 暴力裁剪/凸包/解析用例;通过则 PASSED("半平面交")。
 int main() {
     printf("== 半平面交.check:暴力裁剪对拍 + 凸包对拍 + 解析/退化用例 ==\n");
+    {
+        vector<seg> near;
+        for(db y : {db(0), eps * 0.75L, eps * 1.5L})
+            for(db length : {db(1e-6L), db(1), db(2)}) near.push_back({{0, y}, {length, y}});
+        auto equiv = [](seg a, seg b) { return !hpi_less(a, b) && !hpi_less(b, a); };
+        bool good = true;
+        for(auto a : near) for(auto b : near) for(auto c : near)
+            good &= hpi_less(a, b) == (a.x.y > b.x.y) &&
+                    (!(hpi_less(a, b) && hpi_less(b, c)) || hpi_less(a, c)) &&
+                    (!(equiv(a, b) && equiv(b, c)) || equiv(a, c));
+        CHECK(good, "近eps同角约束排序严格弱序，方向长度不改变次序");
+        array<int, 3> order{0, 1, 2};
+        do {
+            vector<seg> lines{{{1, 0}, {1, 1}}, {{1, 1}, {0, 1}}, {{0, 1}, {0, 0}}};
+            for(int i : order) lines.push_back(near[i * 3 + 1]);
+            auto p = hpi(lines);
+            db low = 1;
+            for(auto q : p) low = min(low, q.y);
+            CHECK(p.size() == 4 && abs(low - eps * 1.5L) < eps * 1e-6L, "同角合并保留真正最强限制，不沿eps链放松");
+        } while(next_permutation(order.begin(), order.end()));
+        vector<seg> seam{{{0, -1}, {1, -1}}, {{1, -1}, {1, 0}}, {{0, 0}, {0, -1}},
+                         {{1, 0.0L}, {0, 0.0L}}, {{1, 0.0L}, {0, -0.0L}}};
+        feclearexcept(FE_ALL_EXCEPT);
+        auto p = hpi(seam);
+        CHECK(p.size() == 4 && fetestexcept(FE_INVALID | FE_DIVBYZERO) == 0,
+              "负零导致的正负pi同向接缝，不产生0/0");
+    }
     analytic();
 
     int b2 = runRandom(2000, 0);
