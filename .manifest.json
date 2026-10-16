@@ -639,6 +639,12 @@
    "title": "点圆与两圆切线",
    "missing": false,
    "hidden": false
+  },
+  {
+   "key": "计算几何/圆/圆并.cpp",
+   "title": "圆并面积与周长",
+   "missing": false,
+   "hidden": false
   }
  ]
 }

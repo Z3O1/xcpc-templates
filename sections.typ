@@ -352,6 +352,12 @@
 
 #zebraw(lang: false)[#raw(readcode("templates/计算几何/圆/切线.cpp"), lang: "cpp", block: true)]
 
+=== 圆并面积与周长
+
+#include "templates/计算几何/圆/圆并.typ"
+
+#zebraw(lang: false)[#raw(readcode("templates/计算几何/圆/圆并.cpp"), lang: "cpp", block: true)]
+
 == 平面剖分
 
 === Delaunay 三角剖分
