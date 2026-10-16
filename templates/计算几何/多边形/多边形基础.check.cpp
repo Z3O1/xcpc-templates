@@ -1,4 +1,4 @@
-// 多边形基础 自测:矩形解析答案、凹星形有向角包含参考、三角形面积和，5000 组及退化输入
+// 多边形基础 自测:大平移整数积分面积/反向/循环移位、矩形解析、凹星形有向角，5000 组及退化输入
 #include "../../_check_base.hpp"
 #include "../基础/二维向量.cpp"
 #include "../基础/直线与线段.cpp"
@@ -18,6 +18,33 @@ int angle_contain(const vector<p2> &a, p2 p) {
 // 解析/独立有向角参考与顺逆时针性质对拍。
 int main() {
     rng.seed(2026101402);
+    for(int t = 0; t < 3000; ++t) {
+        int n = rnd(3, 20);
+        vector<array<ll, 2>> a(n);
+        for(auto &p : a) p = {rnd(-1000, 1000), rnd(-1000, 1000)};
+        // 整数竖直梯形积分 -∮y dx，与模板扇形剖分独立；自交也为代数面积。
+        ll twice = 0;
+        for(int i = 0; i < n; ++i) {
+            auto u = a[i], v = a[(i + 1) % n];
+            twice -= (v[0] - u[0]) * (v[1] + u[1]);
+        }
+        for(db shift : {db(0), db(1e12L), db(-1e15L), ldexp(db(1), 60)}) {
+            vector<p2> p;
+            for(auto q : a) p.push_back({shift + q[0], -shift + q[1]});
+            for(int rev = 0; rev < 2; ++rev) {
+                rotate(p.begin(), p.begin() + t % n, p.end());
+                db got = area(p), want = (rev ? -twice : twice) / db(2);
+                if(got != want) {
+                    printf("translated area case=%d shift=%Lg rev=%d got=%Lg want=%Lg\n", t, shift, rev, got, want);
+                    for(auto q : a) printf("(%lld,%lld) ", q[0], q[1]);
+                    return 1;
+                }
+                reverse(p.begin(), p.end());
+            }
+        }
+    }
+    CHECK(area({{1e12L, 1e12L}, {1e12L+4, 1e12L}, {1e12L+2, 1e12L+2}, {1e12L, 1e12L+2}}) == 6,
+          "大平移梯形解析面积6");
     for(int t = 0; t < 5000; ++t) {
         int n = rnd(3, 30);
         vector<p2> a;
