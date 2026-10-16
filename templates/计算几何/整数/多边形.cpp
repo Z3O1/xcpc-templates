@@ -1,7 +1,7 @@
 // area2(): 计算几何 · 整数面积与点包含
 
 // 依赖 线段.cpp；a[0..n) 按边界顺序，不重复首点；O(n)，不修改输入。
-namespace Geo {
+namespace IGeo {
 
 // 带号二倍面积，逆时针为正；允许自交（代数面积），要求最终值在 i128 内。
 i128 area2(int n, const p2i *a) {
@@ -24,4 +24,4 @@ int contain(int n, const p2i *a, p2i p) {
     return ret * 2;
 }
 
-}  // namespace Geo
+}  // namespace IGeo

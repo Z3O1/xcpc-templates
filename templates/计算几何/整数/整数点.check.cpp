@@ -16,6 +16,7 @@
 #include "../三维/三维直线.cpp"
 #include "../三维/三维平面.cpp"
 #include "../../../tests/geometry_int_reference.hpp"
+using IGeo::p2i;
 
 // 对照不同代数展开，并在失败时输出原始点和精确值。
 void verify(p2i a, p2i b, p2i c) {
@@ -27,21 +28,22 @@ void verify(p2i a, p2i b, p2i c) {
                    dot(a, b, c) == d && dis2(a, b) == IntCheck::distance2(a, b) &&
                    got == -cross(a, c, b), "基础精确参考", {a, b, c});
 }
-// 同一翻译单元检查整数/浮点/三维重载及主要接口，不依赖浮点版计算整数真值。
+// 同一翻译单元显式限定整数/浮点命名空间，不引入 using namespace IGeo。
 void mixed() {
-    p2 a[] = {{0, 0}, {2, 0}, {0, 2}}, b[8];
-    p2i x[] = {{0, 0}, {4, 0}, {0, 4}}, y[8];
-    IntCheck::need(area(3, a) == 2 && area2(3, x) == 16 &&
-                   contain(3, a, p2{0.5L, 0.5L}) == 2 && contain(3, x, p2i{1, 1}) == 2,
-                   "多边形重载联编");
-    int n = convex_hull(3, a, b), m = convex_hull(3, x, y);
-    IntCheck::need(n == 3 && m == 3 && convex_diameter(n, b) == 8 && convex_diameter(m, y) == 32 &&
-                   in_convex(n, b, p2{0, 0}) == 1 && in_convex(m, y, p2i{1, 1}) == 2,
-                   "凸包重载联编");
-    IntCheck::need(dis_closest({p2{0, 0}, p2{2, 0}}) == 2 && closest_pair2(3, x) == 16 &&
-                   ons(seg{{0, 0}, {1, 0}}, p2{0, 0}) && ons(segi{{0, 0}, {1, 0}}, p2i{0, 0}) &&
-                   dis2(p2{3, 4}) == 25 && dis2(p3{1, 2, 3}) == 14,
-                   "距离与线段重载联编");
+    Geo::p2 a[] = {{0, 0}, {2, 0}, {0, 2}}, b[8];
+    IGeo::p2i x[] = {{0, 0}, {4, 0}, {0, 4}}, y[8];
+    IntCheck::need(Geo::area(3, a) == 2 && IGeo::area2(3, x) == 16 &&
+                   Geo::contain(3, a, Geo::p2{0.5L, 0.5L}) == 2 &&
+                   IGeo::contain(3, x, IGeo::p2i{1, 1}) == 2, "多边形命名空间联编");
+    int n = Geo::convex_hull(3, a, b), m = IGeo::convex_hull(3, x, y);
+    IntCheck::need(n == 3 && m == 3 && Geo::convex_diameter(n, b) == 8 &&
+                   IGeo::convex_diameter(m, y) == 32 && ::in_convex(n, b, Geo::p2{0, 0}) == 1 &&
+                   IGeo::in_convex(m, y, IGeo::p2i{1, 1}) == 2, "凸包命名空间联编");
+    IntCheck::need(::dis_closest({Geo::p2{0, 0}, Geo::p2{2, 0}}) == 2 && IGeo::closest_pair2(3, x) == 16 &&
+                   Geo::ons(Geo::seg{{0, 0}, {1, 0}}, Geo::p2{0, 0}) &&
+                   IGeo::ons(IGeo::segi{{0, 0}, {1, 0}}, IGeo::p2i{0, 0}) &&
+                   Geo::dis2(Geo::p2{3, 4}) == 25 && Geo::dis2(Geo::p3{1, 2, 3}) == 14,
+                   "距离与线段命名空间联编");
 }
 // 边界、随机与精确排序性质检查。
 int main() {

@@ -3,6 +3,8 @@
 #include "整数点.cpp"
 #include "线段.cpp"
 #include "../../../tests/geometry_int_reference.hpp"
+using IGeo::p2i;
+using IGeo::segi;
 
 // 参数式独立求交，不调用被测相交或转向；返回闭相交与严格交叉。
 array<bool, 2> reference(segi a, segi b) {

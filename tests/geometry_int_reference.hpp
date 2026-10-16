@@ -1,6 +1,7 @@
 // 整数几何自测的独立参考与诊断，不进入板子书。
 #pragma once
 namespace IntCheck {
+using IGeo::p2i;
 
 // 十进制输出 i128，支持最小值，不在 signed 域取反。
 std::string text(i128 x) {

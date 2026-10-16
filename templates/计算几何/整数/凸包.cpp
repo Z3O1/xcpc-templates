@@ -1,7 +1,7 @@
 // convex_hull(): 计算几何 · 整数凸包与直径
 
 // 依赖 整数点.cpp；几何运算范围同该文件，索引与点数使用 int。
-namespace Geo {
+namespace IGeo {
 
 // Andrew 凸包；nos=0 去边上共线点，nos=1 保留；O(n log n)，逆时针返回点数。
 // a 原地排序去重；b 不与 a 重叠，容量至少 size_t(2)*n+2；不重复首点。
@@ -44,4 +44,4 @@ i128 convex_diameter(int n, const p2i *a) {
     return ret;
 }
 
-}  // namespace Geo
+}  // namespace IGeo

@@ -3,6 +3,7 @@
 #include "整数点.cpp"
 #include "最近点对.cpp"
 #include "../../../tests/geometry_int_reference.hpp"
+using IGeo::p2i;
 
 // O(n²) 精确参考；独立坐标展开，不调用模板距离函数。
 i128 brute(const vector<p2i> &a) {

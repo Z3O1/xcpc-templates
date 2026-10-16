@@ -3,7 +3,7 @@
 // 坐标为 ll；乘法、减法均先升 i128，无 eps，不依赖浮点几何。
 // 要求中间积及和差在 i128 内；|坐标| < 2^62 时以下运算均安全。
 // 不提供可能溢出的点加减；差向量直接在 cross / dot / dis2 内计算。
-namespace Geo {
+namespace IGeo {
 
 struct p2i {
     ll x, y;
@@ -33,5 +33,4 @@ i128 dis2(p2i a, p2i b) {
     return x * x + y * y;
 }
 
-}  // namespace Geo
-using namespace Geo;
+}  // namespace IGeo

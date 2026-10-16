@@ -5,6 +5,7 @@
 #include "凸包.cpp"
 #include "凸包内点判定.cpp"
 #include "../../../tests/geometry_int_reference.hpp"
+using IGeo::p2i;
 
 // 逐边半平面与精确边界的线性参考，支持0/1/2个点。
 int reference(const vector<p2i> &a, p2i p) {

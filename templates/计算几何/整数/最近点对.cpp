@@ -2,7 +2,7 @@
 
 // 依赖 整数点.cpp；距离平方及中间运算须在 i128 内。
 // 原地重排 a[0..n)，O(n log n) 时间、O(n) 辅助空间；不复制整份输入。
-namespace Geo {
+namespace IGeo {
 
 // 返回最近距离平方；重合点返回 0，n<2 返回 -1；不转浮点、不求平方根。
 i128 closest_pair2(int n, p2i *a) {
@@ -36,4 +36,4 @@ i128 closest_pair2(int n, p2i *a) {
     return ans;
 }
 
-}  // namespace Geo
+}  // namespace IGeo

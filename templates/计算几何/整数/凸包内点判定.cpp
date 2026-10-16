@@ -1,7 +1,7 @@
 // in_convex(): 计算几何 · 整数凸包内点判定
 
 // 依赖 线段.cpp；n>=3 时要求逆时针严格凸包，不重复首点，可用 convex_hull(nos=0) 输出。
-namespace Geo {
+namespace IGeo {
 
 // O(log n) 判定：0 外、1 边界、2 内；空集、单点、线段也支持，不修改输入。
 int in_convex(int n, const p2i *a, p2i p) {
@@ -20,4 +20,4 @@ int in_convex(int n, const p2i *a, p2i p) {
     return c < 0 ? 0 : c == 0 ? 1 : 2;
 }
 
-}  // namespace Geo
+}  // namespace IGeo

@@ -4,6 +4,7 @@
 #include "线段.cpp"
 #include "多边形.cpp"
 #include "../../../tests/geometry_int_reference.hpp"
+using IGeo::p2i;
 
 // 独立缠绕数的奇偶与边界参考，不调用被测包含/线段接口。
 int reference(const vector<p2i> &a, p2i p) {

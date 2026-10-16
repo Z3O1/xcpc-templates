@@ -1,7 +1,7 @@
 // segi(): 计算几何 · 整数线段
 
 // 依赖 整数点.cpp 及其数值范围；线段允许退化成点，全部判定精确、O(1)。
-namespace Geo {
+namespace IGeo {
 
 struct segi { p2i x, y; };
 // 点是否在线段上，包含端点与零长线段。
@@ -27,4 +27,4 @@ bool chkss_s(segi a, segi b) {
            crossop(b.x, b.y, a.x) * crossop(b.x, b.y, a.y) < 0;
 }
 
-}  // namespace Geo
+}  // namespace IGeo

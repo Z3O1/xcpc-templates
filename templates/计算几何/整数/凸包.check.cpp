@@ -3,6 +3,7 @@
 #include "整数点.cpp"
 #include "凸包.cpp"
 #include "../../../tests/geometry_int_reference.hpp"
+using IGeo::p2i;
 
 // 对拍严格与保留共线两种输出，检查缓冲哨兵、旋向及精确直径。
 void verify(vector<p2i> a) {
