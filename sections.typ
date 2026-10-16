@@ -316,6 +316,14 @@
 
 #zebraw(lang: false)[#raw(readcode("templates/计算几何/凸包/半平面交.cpp"), lang: "cpp", block: true)]
 
+=== 凸包方向极值
+
+#zebraw(lang: false)[#raw(readcode("templates/计算几何/凸包/凸包方向极值.cpp"), lang: "cpp", block: true)]
+
+=== 凸包直线求交
+
+#zebraw(lang: false)[#raw(readcode("templates/计算几何/凸包/凸包直线求交.cpp"), lang: "cpp", block: true)]
+
 == 多边形
 
 === 面积与点包含
