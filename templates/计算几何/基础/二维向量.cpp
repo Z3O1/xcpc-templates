@@ -38,12 +38,22 @@ p2 operator+=(p2 &a, p2 b) { return a = a + b; }
 p2 operator-=(p2 &a, p2 b) { return a = a - b; }
 p2 operator/=(p2 &a, db k) { return a = a / k; }
 
-// 模长平方。
+// 模长平方；结果须在 db 可表示范围内。
 db dis2(p2 a) { return dot(a, a); }
-// 模长；两点距离写 dis(a-b)。
-db dis(p2 a) { return hypot(a.x, a.y); }
-// 单位化；要求非零向量。
-p2 unit(p2 a) { return a / dis(a); }
+// 模长；两点距离写 dis(a-b)，差向量须可表示。
+db dis(p2 a) {
+    const db lo = ldexp(db(1), numeric_limits<db>::min_exponent / 2);
+    const db hi = ldexp(db(1), numeric_limits<db>::max_exponent / 2 - 1);
+    db m = max(abs(a.x), abs(a.y));
+    return m >= lo && m <= hi ? sqrt(dis2(a)) : hypot(a.x, a.y);
+}
+// 单位化；要求非零向量，模长溢出或为次正规数时先缩放。
+p2 unit(p2 a) {
+    db d = dis(a);
+    if(isnormal(d)) return a / d;
+    a /= max(abs(a.x), abs(a.y));
+    return a / sqrt(dis2(a));
+}
 // 逆时针旋转 90 度。
 p2 r90(p2 a) { return {-a.y, a.x}; }
 // 绕原点逆时针旋转 t 弧度。

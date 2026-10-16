@@ -1,4 +1,4 @@
-// 二维向量 自测:二维基础模块联编、独立参考随机对拍、运算符/排序/退化回归
+// 二维向量 自测:全指数模长/单位化多精度参考、二维基础联编、随机/排序/退化回归
 //   与内置的独立参考实现 + 暴力对照大规模随机对拍,并做大量「性质级」断言。
 //
 // 覆盖：比较与向量运算、旋转、线段位置关系/距离、投影/反射、面积与包含关系、
@@ -282,8 +282,54 @@ static bool hullCheckOne(const vector<p2> &v, bool verbose = false) {
 // convex_cut 后的多边形面积(用带号面积 -> 绝对值)
 static db cutArea(const vector<p2> &v) { return Abs(refArea(v)); }
 
+// GCC 113 位参考：按二进制指数缩放后用 Newton 开方，不依赖 hypot/sqrt 或外部库。
+static bool norm_extremes() {
+    const int low = numeric_limits<db>::min_exponent - numeric_limits<db>::digits;
+    const int high = numeric_limits<db>::max_exponent - 1;
+    mt19937_64 gen(2026102601);
+    auto verify = [&](p2 a) {
+        int exponent = 0;
+        frexp(max(abs(a.x), abs(a.y)), &exponent);
+        __float128 x = ldexp(a.x, -exponent), y = ldexp(a.y, -exponent);
+        __float128 square = x * x + y * y, n = 1;
+        for(int j = 0; j < 9; ++j) n = (n + square / n) / 2;
+        if(!square) n = 0;
+        db want = ldexp(db(n), exponent);
+        feclearexcept(FE_ALL_EXCEPT);
+        db got = dis(a);
+        bool clean = !isfinite(want) || !fetestexcept(FE_OVERFLOW | FE_INVALID | FE_DIVBYZERO);
+        db tol = 8 * numeric_limits<db>::epsilon();
+        bool ok = clean && (isinf(want) ? isinf(got) :
+            abs(got - want) <= max(abs(want) * tol, numeric_limits<db>::denorm_min() * 2));
+        if(a.x || a.y) {
+            p2 u = unit(a);
+            db ux = db(x / n), uy = db(y / n);
+            ok &= abs(u.x - ux) <= tol && abs(u.y - uy) <= tol;
+        }
+        if(!ok) printf("norm a=(%La,%La) got=%La want=%La\n", a.x, a.y, got, want);
+        return ok;
+    };
+    for(int e : {low, low + 1, numeric_limits<db>::min_exponent / 2 - 1,
+                 numeric_limits<db>::min_exponent / 2, 0, high / 2, high / 2 + 1, high}) {
+        db x = ldexp(db(1), e);
+        if(!verify({x, x}) || !verify({x, 0}) || !verify({x, -x / 2})) return false;
+    }
+    db large = numeric_limits<db>::max() * 0.75L;
+    if(!verify({large, large}) || !verify({0, 0})) return false;
+    for(int i = 0; i < 30000; ++i) {
+        int ex = low + gen() % (high - low + 1), ey = low + gen() % (high - low + 1);
+        db x = ldexp(db(1) + db(gen() % 1024) / 1024, ex);
+        db y = ldexp(db(1) + db(gen() % 1024) / 1024, ey);
+        if(gen() & 1) x = -x;
+        if(gen() & 1) y = -y;
+        if(!verify({x, y})) return false;
+    }
+    return true;
+}
+
 // 全量随机对拍与极端/退化用例；失败打印反例。
 int main() {
+    CHECK(norm_extremes(), "全指数模长/单位化 113 位参考 30000 组");
     printf("== 二维向量.check:随机对拍 + 极端/退化用例(独立参考实现见文件头部)==\n");
 
     // ===== 1. eps / pi / sign / cmp =====
