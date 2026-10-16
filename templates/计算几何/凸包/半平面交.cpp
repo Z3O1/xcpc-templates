@@ -50,7 +50,7 @@ vector<p2> hpi(vector<seg> vs) {
     while(qs.size() > 1 && qs.front() == qs.back()) qs.pop_back();
     if(qs.size() < 3) return {};
     db s = 0;
-    for(int i = 0; i < (int) qs.size(); ++i) s += qs[i].det(qs[(i + 1) % qs.size()]);
+    for(int i = 1; i + 1 < (int) qs.size(); ++i) s += (qs[i] - qs[0]).det(qs[i + 1] - qs[0]);
     if(sign(s) <= 0) return {};
     return qs;
 }
