@@ -58,19 +58,34 @@ bool chkss_s(const seg &a, const seg &b) {
            crossop(b, a.x) * crossop(b, a.y) < 0;
 }
 
-// 点在无限直线上的投影；要求 l 非零长。
+// 以下均 O(1)；坐标差、缩放后的点积/叉积及返回值须可表示。
+// 方向缩放不能丢失有效小分量；近共线仍有浮点消减误差。
+// 点在无限直线上的投影；要求 l 非零长，不对原方向取平方。
 p2 proj(const seg &l, const p2 &q) {
     p2 d = l.dir();
-    return l.x + d * (dot(d, q - l.x) / dis2(d));
+    d = abs(d.x) >= abs(d.y) ? p2{1, d.y / d.x} : p2{d.x / d.y, 1};
+    return l.x + d * dot(d * (1 / dis2(d)), q - l.x);
 }
-// 点关于无限直线的对称点；要求 l 非零长。
-p2 reflect(const seg &l, const p2 &q) { return proj(l, q) * 2 - q; }
-// 点到线段的最近距离平方；支持点线段。
+// 点关于无限直线的对称点；要求 l 非零长，避免先将绝对坐标翻倍。
+p2 reflect(const seg &l, const p2 &q) {
+    p2 h = proj(l, q);
+    return h + (h - q);
+}
+// 点到线段的最近距离平方；支持点线段，沿用投影包围盒的 eps 扩展。
 db nearest(const seg &s, const p2 &q) {
-    if(dis2(s.dir()) == 0) return dis2(q - s.x);
-    p2 h = proj(s, q);
-    if(isMid(s.x, h, s.y)) return dis2(q - h);
-    return min(dis2(s.x - q), dis2(s.y - q));
+    p2 d = s.dir(), w = q - s.x;
+    db m = max(abs(d.x), abs(d.y));
+    if(m == 0) return dis2(w);
+    if(abs(d.x) == m) d = {copysign(db(1), d.x), d.y / m};
+    else d = {d.x / m, copysign(db(1), d.y)};
+    db n = dis2(d), a = dot(d, w);
+    if(a < -eps * n) return dis2(w);
+    p2 v = q - s.y;
+    db b = dot(d, v);
+    if(b > eps * n) return dis2(v);
+    if(a > -b) w = v;
+    db h = d.det(w);  // 选较近端点作局部原点，避免大平移吞掉垂距。
+    return (h / n) * h;
 }
 // 两线段最近距离平方；相交返回 0，支持点线段。
 db disss(const seg &a, const seg &b) {
