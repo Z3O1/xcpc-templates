@@ -3,19 +3,21 @@
 // 依赖 圆/圆基础.cpp；与最小圆覆盖共用 c2，可同时抄入。
 // 交点/圆圆面积 O(1)，圆多边形面积 O(n)；无孤立交点返回空，点圆面积为 0。
 
-// 圆与直线交点；按 l.x→l.y 方向递增，返回 0/1/2 个点；退化直线返回空。
+// 圆与直线返回 0/1/2 交点，沿 l.x→l.y 递增；仅数学零方向退化，局部运算须有限。
 vector<p2> cir_line(const c2 &c, const seg &l) {
     p2 d = l.y - l.x;
-    db L2 = dis2(d);
-    if(!sign(L2)) return {};
-    p2 f = proj(l, c.o);
-    db x = c.r * c.r - dis2(c.o - f);
+    db s = max(abs(d.x), abs(d.y));
+    if(s == 0) return {};
+    p2 u = d / s;
+    u = u / dis(u);
+    db side = u.det(l.x - c.o), dist = abs(side);
+    p2 f = c.o + r90(u) * side;
+    db x = (c.r - dist) * (c.r + dist);
     // 判别式约为 2r(r-|of|)，除以半径后才能与绝对 eps 比较，避免小圆误判相切。
     db sc = cmp(c.r, 0) > 0 ? x / c.r : x;
     if(sign(sc) < 0) return {};
     db h = sign(sc) > 0 ? sqrtl(x) : 0;
     if(!sign(h)) return {f};
-    p2 u = d / sqrtl(L2);
     return {f - u * h, f + u * h};
 }
 
