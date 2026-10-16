@@ -534,7 +534,7 @@
   },
   {
    "key": "计算几何/圆/圆基础.cpp",
-   "title": "圆与外接圆",
+   "title": "圆与内外接圆",
    "missing": false,
    "hidden": false
   },

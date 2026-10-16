@@ -336,7 +336,7 @@
 
 == 圆
 
-=== 圆与外接圆
+=== 圆与内外接圆
 
 #zebraw(lang: false)[#raw(readcode("templates/计算几何/圆/圆基础.cpp"), lang: "cpp", block: true)]
 
