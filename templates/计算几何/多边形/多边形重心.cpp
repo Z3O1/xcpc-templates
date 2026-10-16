@@ -10,7 +10,7 @@ db perimeter(const vector<p2> &a) {
     for(int i = 0; i < n; ++i) s += dis(a[(i + 1) % n] - a[i]);
     return s;
 }
-// 面积重心；要求简单多边形；二倍带号面积在 eps 内时返回顶点平均，空集返回 (0,0)。
+// 面积重心；简单多边形；|二倍面积|/周长<=eps 时返回顶点平均，空集返回 (0,0)。
 p2 centroid(const vector<p2> &a) {
     int n = a.size();
     if(n == 0) return {0, 0};
@@ -22,7 +22,8 @@ p2 centroid(const vector<p2> &a) {
         s += c;
         ret = ret + (u + v) * c;
     }
-    if(!sign(s)) {  // 退化:退回顶点平均
+    db p = perimeter(a);
+    if(p == 0 || !sign(s / p)) {  // 用长度判退化；三角形时 |s|/p 即内切圆半径。
         p2 av = {0, 0};
         for(int i = 0; i < n; ++i) av = av + (a[i] - a[0]);
         return a[0] + av / (db) n;

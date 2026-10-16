@@ -83,6 +83,22 @@ static p2 refCentroidMC(const vector<p2> &a, int N) {
 int main() {
     printf("== 多边形重心.check:逐边积分/蒙特卡洛/已知形状三方对照 ==\n");
 
+    for(db width : {db(1e-6L),db(1),db(1e6L)}) {
+        for(db height : {eps/4,16*eps}) {
+            vector<p2> a{{0,0},{4*width,0},{2*width,height},{0,height}};
+            p2 g = centroid(a);
+            db x = height < eps ? db(1.5L) : db(14)/9;
+            db y = height < eps ? db(0.5L) : db(4)/9;
+            CHECK(abs(g.x/width-x) < 1e-12L && abs(g.y/height-y) < 1e-12L,
+                  "退化阈值按面积/周长的长度，小宽度/大宽度均不混比面积eps");
+        }
+    }
+    for(db scale : {db(1e-6L),db(1),db(1e6L)}) {
+        vector<p2> a{{0,0},{4*scale,0},{2*scale,2*scale},{0,2*scale}};
+        p2 g = centroid(a);
+        CHECK(abs(g.x/scale-db(14)/9) < 1e-12L && abs(g.y/scale-db(8)/9) < 1e-12L,
+              "小/大梯形不因绝对面积误退化");
+    }
     // 大平移下用局部解析答案，只允许最终坐标舍入的两个 ULP，不按平移量放宽 eps。
     for(int t = 0; t < 2500; ++t) {
         db b = rnd(1, 100), c = rnd(1, 100), h = rnd(1, 100);
