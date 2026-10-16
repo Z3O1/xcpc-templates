@@ -107,7 +107,7 @@ int main() {
             if(!eq(dis(a), dis(v), 1e-11L * sc)) { if(!bad) msg = "旋转不保长 v=" + ps(v); ++bad; }
             p3 v2{db(grnd(-100, 100)) / 7, db(grnd(-100, 100)) / 7, db(grnd(-100, 100)) / 7};
             db sc2 = 1 + dis(v2);
-            if(!eq(rot(v, k, ang) * rot(v2, k, ang), v * v2, 1e-9L * sc * sc2)) { if(!bad) msg = "旋转不保夹角 v=" + ps(v) + " v2=" + ps(v2); ++bad; }
+            if(!eq(dot(rot(v, k, ang), rot(v2, k, ang)), dot(v, v2), 1e-9L * sc * sc2)) { if(!bad) msg = "旋转不保夹角 v=" + ps(v) + " v2=" + ps(v2); ++bad; }
             if(!eq(det(rot(X, k, ang), rot(Y, k, ang), rot(Z, k, ang)), 1, 1e-10L)) { if(!bad) msg = "旋转不保定向(混合积 != 1)"; ++bad; }
             // 轴上点不动、同轴两次旋转 = 角度相加、逆旋转
             if(!eq(dis(rot(k * 3.7L, k, ang) - k * 3.7L), 0, 1e-10L * dis(k))) { if(!bad) msg = "轴上的点动了"; ++bad; }
@@ -165,15 +165,15 @@ int main() {
             p3 u, v, w;
             basis(n, u, v, w);
             if(!eq(dis(u), 1, 1e-14L) || !eq(dis(v), 1, 1e-14L) || !eq(dis(w), 1, 1e-14L)) { if(!bad) msg = "basis 基向量不是单位向量 n=" + ps(n); ++bad; }
-            if(!eq(u * v, 0, 1e-12L) || !eq(u * w, 0, 1e-12L) || !eq(v * w, 0, 1e-12L)) { if(!bad) msg = "basis 基不两两垂直 n=" + ps(n); ++bad; }
+            if(!eq(dot(u, v), 0, 1e-12L) || !eq(dot(u, w), 0, 1e-12L) || !eq(dot(v, w), 0, 1e-12L)) { if(!bad) msg = "basis 基不两两垂直 n=" + ps(n); ++bad; }
             if(!eq(det(u, v, w), 1, 1e-12L)) { if(!bad) msg = "basis 不是右手系(det != 1) n=" + ps(n); ++bad; }
             if(!eq(dis(w - unit(n)), 0, 1e-15L)) { if(!bad) msg = "basis 的 w != unit(n)"; ++bad; }
             p3 l = tolocal(x, o, u, v, w), back = toworld(l, o, u, v, w);
             db sc = 1 + dis(x - o);
             if(!eq(dis(back - x), 0, 1e-10L * sc)) { if(!bad) msg = "tolocal/toworld 往返不还原 x=" + ps(x) + " o=" + ps(o) + " n=" + ps(n); ++bad; }
             // 局部坐标的几何意义:z 分量是到「过 o、法向 n 的平面」的带号距离,另外两个分量在平面内
-            if(!eq(l.z, (x - o) * unit(n), 1e-10L * sc)) { if(!bad) msg = "局部 z != 到平面的带号距离"; ++bad; }
-            p3 onPlane = x - unit(n) * ((x - o) * unit(n));
+            if(!eq(l.z, dot(x - o, unit(n)), 1e-10L * sc)) { if(!bad) msg = "局部 z != 到平面的带号距离"; ++bad; }
+            p3 onPlane = x - unit(n) * dot(x - o, unit(n));
             p3 lp = tolocal(onPlane, o, u, v, w);
             if(!eq(lp.z, 0, 1e-10L * sc) || !eq(lp.x * lp.x + lp.y * lp.y, dis2(onPlane - o), 1e-9L * sc * sc)) { if(!bad) msg = "平面内点的局部坐标不对"; ++bad; }
             // 距离保持:两个点的局部坐标差长度 = 世界坐标差长度

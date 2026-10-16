@@ -48,12 +48,12 @@ static db refArea(const vector<p2> &a) {  // shoelace 带号面积
 }
 static db refNearest(p2 a, p2 b, p2 q) {  // 点到线段距离平方(零长线段也定义良好)
     p2 d = b - a;
-    db dd = d * d;
-    if(dd == 0) return (q - a) * (q - a);
-    db t = ((q - a) * d) / dd;
+    db dd = dot(d, d);
+    if(dd == 0) return dot(q - a, q - a);
+    db t = dot(q - a, d) / dd;
     t = max((db) 0, min((db) 1, t));
     p2 h = a + d * t;
-    return (q - h) * (q - h);
+    return dot(q - h, q - h);
 }
 static db refDistPolyOnly(int n, const p2 *a, p2 q) {  // 只到边的距离平方
     db r = 1e300L;
@@ -99,7 +99,7 @@ static vector<int> refSurvivors(int n, const p2 *a) {
     // 与模板同样的「局部相对」共线判据(独立写一遍, 不用模板的代码)
     auto colin = [&](int x) {
         p2 u = a[x] - a[prv[x]], v = a[nxt[x]] - a[x];
-        db l1 = sqrtl(u * u), l2 = sqrtl(v * v);
+        db l1 = sqrtl(dot(u, u)), l2 = sqrtl(dot(v, v));
         return A_(refDet(u, v)) <= 1e-13L * l1 * l2;
     };
     for(bool ch = 1; ch && cnt >= 3;) {

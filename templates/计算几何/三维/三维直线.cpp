@@ -27,7 +27,7 @@ struct seg3 {
 
 // ---------- 点与直线 ----------
 // 点在直线上的投影。
-p3 proj(const line3 &l, p3 p) { return l.o + l.d * ((l.d * (p - l.o)) / dis2(l.d)); }
+p3 proj(const line3 &l, p3 p) { return l.o + l.d * (dot(l.d, p - l.o) / dis2(l.d)); }
 // 点关于直线的对称点。
 p3 reflect(const line3 &l, p3 p) { return proj(l, p) * 2 - p; }
 // 点到直线的距离。
@@ -50,9 +50,9 @@ db dis(const line3 &a, const line3 &b, p3 &pa, p3 &pb) {
         pa = a.o, pb = proj(b, pa);
         return dis(pa - pb);
     }
-    db A = dis2(a.d), B = a.d * b.d, C = dis2(b.d), den = A * C - B * B;
+    db A = dis2(a.d), B = dot(a.d, b.d), C = dis2(b.d), den = A * C - B * B;
     p3 w = a.o - b.o;
-    db D = a.d * w, E = b.d * w;
+    db D = dot(a.d, w), E = dot(b.d, w);
     pa = a.o + a.d * ((B * E - C * D) / den);
     pb = b.o + b.d * ((A * E - B * D) / den);
     return dis(pa - pb);
@@ -67,7 +67,7 @@ p3 closest_on(const line3 &a, const line3 &b) { p3 pa, pb; return dis(a, b, pa, 
 p3 proj(const seg3 &s, p3 p) {
     p3 d = s.dir();
     if(!sign(dis2(d))) return s.x;  // 退化成点
-    db t = (d * (p - s.x)) / dis2(d);
+    db t = dot(d, p - s.x) / dis2(d);
     return s.x + d * max((db) 0, min((db) 1, t));
 }
 // 点到线段的距离。
@@ -75,7 +75,7 @@ db dis(const seg3 &s, p3 p) { return dis(proj(s, p) - p); }
 // 点是否在线段上(含端点)。
 bool ons(const seg3 &s, p3 p) { return !sign(dis(s, p)); }
 // 点是否严格在线段内部(不含端点)。
-bool ons_s(const seg3 &s, p3 p) { return ons(s, p) && sign((p - s.x) * (p - s.y)) < 0; }
+bool ons_s(const seg3 &s, p3 p) { return ons(s, p) && sign(dot(p - s.x, p - s.y)) < 0; }
 
 // ---------- 两线段:最近点对与距离 ----------
 // pa 在 a 上、pb 在 b 上,返回 |pa - pb|;退化(零长)线段也能用。
@@ -88,7 +88,7 @@ db dis(const seg3 &a, const seg3 &b, p3 &pa, p3 &pb) {
         return pb = b.x, pa = proj(a, pb), dis(pa - pb);
     }
     p3 e = u / la, f = v / lb, w = a.x - b.x;
-    db c = e * f, k = 1 - c * c, p = e * w, q = f * w, s, t;
+    db c = dot(e, f), k = 1 - c * c, p = dot(e, w), q = dot(f, w), s, t;
     if(ispara(a, b)) {  // 平行:最近点对不唯一,s = 0 起步,后面照样投影夹取
         s = 0, t = q / lb;
     } else {

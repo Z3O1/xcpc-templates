@@ -129,7 +129,7 @@ int main() {
             p3 u, v;
             spanDir(pl, u, v);
             p3 p1 = pl.proj(q), p2 = pl.proj(q + u * 3 + v * 7);
-            if(!eq(pl.n * (p2 - p1), 0, 1e-10 * (1 + dis(p2 - p1)))) { if(!bad) msg = "平面内两点连线不在平面内"; ++bad; }
+            if(!eq(dot(pl.n, p2 - p1), 0, 1e-10 * (1 + dis(p2 - p1)))) { if(!bad) msg = "平面内两点连线不在平面内"; ++bad; }
             if(bad) break;
         }
         if(bad) printf("  [FAIL] 首个反例:%s\n", msg.c_str());
@@ -172,8 +172,8 @@ int main() {
             line3 l = ispl(p1, p2);
             db sc = 1 + dis(l.o);
             // 交线:方向 ⊥ 两个法向、起点满足两个平面方程;方向与 n1×n2 平行
-            if(!eq(p1.n * l.d, 0, 1e-10 * dis(l.d))) { if(!bad) msg = "交线方向 ⊥ n1 不成立 p1=" + ps(p1) + " p2=" + ps(p2); ++bad; }
-            if(!eq(p2.n * l.d, 0, 1e-10 * dis(l.d))) { if(!bad) msg = "交线方向 ⊥ n2 不成立"; ++bad; }
+            if(!eq(dot(p1.n, l.d), 0, 1e-10 * dis(l.d))) { if(!bad) msg = "交线方向 ⊥ n1 不成立 p1=" + ps(p1) + " p2=" + ps(p2); ++bad; }
+            if(!eq(dot(p2.n, l.d), 0, 1e-10 * dis(l.d))) { if(!bad) msg = "交线方向 ⊥ n2 不成立"; ++bad; }
             if(!eq(p1.side(l.o), 0, 1e-9 * sc)) { if(!bad) msg = "交线起点不在平面 1 上 p1=" + ps(p1) + " p2=" + ps(p2) + " o=" + ps(l.o); ++bad; }
             if(!eq(p2.side(l.o), 0, 1e-9 * sc)) { if(!bad) msg = "交线起点不在平面 2 上"; ++bad; }
             if(!eq(dis(cross(unit(l.d), unit(cross(p1.n, p2.n)))), 0, 1e-10)) { if(!bad) msg = "交线方向与 n1×n2 不平行"; ++bad; }
@@ -219,7 +219,7 @@ int main() {
             // 构造:先在平面上取一个已知点 P,再画一条过 P 的随机直线 —— 交点必须 ≈ P
             p3 P = pl.proj(P3(0, 0, 0)) + u * (db(grnd(-30, 30)) / 3) + v * (db(grnd(-30, 30)) / 3);
             p3 dd{db(grnd(-60, 60)) / 3, db(grnd(-60, 60)) / 3, db(grnd(-60, 60)) / 3};
-            if(abs(pl.n * dd) < 0.2L) continue;  // 与平面近乎平行则跳过
+            if(abs(dot(pl.n, dd)) < 0.2L) continue;  // 与平面近乎平行则跳过
             line3 l = LN(P - dd, dd * 2);
             p3 x = islp(pl, l);
             db sc = 1 + dis(P) + dis(dd);

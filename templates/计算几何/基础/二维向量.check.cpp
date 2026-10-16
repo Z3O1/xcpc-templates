@@ -140,7 +140,7 @@ static vector<p2> refCut(const vector<p2> &h, seg q) {  // 保留 cross(q, .) >=
 static db refNearest(p2 a, p2 b, p2 q) {  // 点到线段距离平方
     if(a.x == b.x && a.y == b.y) return dd(a, q);
     p2 dir = b - a;
-    db t = (dir * (q - a)) / dis2(dir);
+    db t = dot(dir, q - a) / dis2(dir);
     return dd(q, a + dir * max((db) 0, min((db) 1, t)));
 }
 static bool refChkss(p2 a, p2 b, p2 c, p2 e) {  // 闭线段相交(参数法 + 共线投影精确)
@@ -151,7 +151,7 @@ static bool refChkss(p2 a, p2 b, p2 c, p2 e) {  // 闭线段相交(参数法 + �
         return t >= -1e-12 && t <= 1 + 1e-12 && u >= -1e-12 && u <= 1 + 1e-12;
     }
     if(Abs(refDet(g, d)) > 1e-12) return false;  // 平行不共线
-    auto proj = [](p2 p, p2 q, p2 v) { return (p - q) * v; };  // 一维投影坐标
+    auto proj = [](p2 p, p2 q, p2 v) { return dot(p - q, v); };  // 一维投影坐标
     db p1 = proj(a, c, d), p2v = proj(b, c, d);                // a,b 在方向 d 上的投影
     db q1 = proj(c, c, d), q2 = proj(e, c, d);
     if(p1 > p2v) swap(p1, p2v);
@@ -164,7 +164,7 @@ static db refDisss(p2 a, p2 b, p2 c, p2 e) {
     return min({refNearest(a, b, c), refNearest(a, b, e), refNearest(c, e, a), refNearest(c, e, b)});
 }
 static p2 refProjAnalytic(p2 a, p2 b, p2 q) {  // 参数方程解析解
-    db t = ((q - a) * (b - a)) / dis2(b - a);
+    db t = dot(q - a, b - a) / dis2(b - a);
     return a + (b - a) * t;
 }
 // 外心解析式(与模板独立的一套写法)
@@ -329,7 +329,7 @@ int main() {
     }
     CHECK(eqp(a + b, P(2, 6)) && eqp(b + a, P(2, 6)), "operator+ 与手算一致");
     CHECK(eqp(a - b, P(4, 2)) && eqp(b - a, P(-4, -2)), "operator- 与手算一致");
-    CHECK(eqd(a * b, 5) && eqd(a * b, 3.0L * -1 + 4.0L * 2), "operator*(p2,p2) 点积(手算 3*(-1)+4*2 = 5)");
+    CHECK(eqd(dot(a, b), 5) && eqd(dot(a, b), 3.0L * -1 + 4.0L * 2), "dot(p2,p2) 点积(手算 3*(-1)+4*2 = 5)");
     CHECK(eqp(a * 2.0L, P(6, 8)) && eqp(2.0L * a, P(6, 8)) && eqp(a * -1.0L, P(-3, -4)), "operator* 数乘(db 在两侧)");
     CHECK(eqp(a / 2.0L, P(1.5L, 2.0L)) && eqp(a / -2.0L, P(-1.5L, -2.0L)), "operator/(p2,db)");
     CHECK(eqd(a.det(b), 10) && eqd(a.det(b), 3.0L * 2 - 4.0L * -1), "p2::det 叉积与手算一致(3*2-4*(-1) = 10)");
@@ -345,23 +345,23 @@ int main() {
             if(!eqp(x + y, y + x)) pb.hit("x+y != y+x", 0, 0);
             if(!eqp((x + y) + z, x + (y + z))) pb.hit("加法不结合", 0, 0);
             if(!eqp(x - y, x + y * -1.0L)) pb.hit("x-y != x+(-y)", 0, 0);
-            if(!eqd(x * y, y * x, 1e-9 * (1 + Abs(x * y)))) pb.hit("点积不对称", x * y, y * x);
+            if(!eqd(dot(x, y), dot(y, x), 1e-9 * (1 + Abs(dot(x, y))))) pb.hit("点积不对称", dot(x, y), dot(y, x));
             if(!eqd(x.det(y), -y.det(x), 1e-9 * (1 + Abs(x.det(y))))) pb.hit("det 不反对称", x.det(y), -y.det(x));
             if(!eqd((x + y).det(z), x.det(z) + y.det(z), 1e-9 * (1 + Abs(x.det(z)) + Abs(y.det(z))))) pb.hit("det 不线性", 0, 0);
             if(!eqp(x * (db) 3 - x * (db) 2, x)) pb.hit("数乘分配", 0, 0);
             if(!eqp((x + y) / 2.0L, x / 2.0L + y / 2.0L)) pb.hit("除以 2 不分配", 0, 0);
             if(!eqd(dis(x), dis(P(0, 0) - x), 1e-9 * (1 + dis(x)))) pb.hit("dis 奇对称", dis(x), dis(P(0, 0) - x));
             if(dis(x) > 1e-6L && !eqd(dis(unit(x)), 1, 1e-9)) pb.hit("unit 后长度不是 1", dis(unit(x)), 1);
-            if(!eqd(x * r90(x), 0, 1e-9 * (1 + dis2(x)))) pb.hit("r90 不正交", x * r90(x), 0);
+            if(!eqd(dot(x, r90(x)), 0, 1e-9 * (1 + dis2(x)))) pb.hit("r90 不正交", dot(x, r90(x)), 0);
             if(!eqd(dis2(r90(x)), dis2(x), 1e-9 * (1 + dis2(x)))) pb.hit("r90 不保长", dis2(r90(x)), dis2(x));
-            if(!eqd(dis2(x), x * x, 1e-9 * (1 + dis2(x)))) pb.hit("dis2 != x*x", dis2(x), x * x);
+            if(!eqd(dis2(x), dot(x, x), 1e-9 * (1 + dis2(x)))) pb.hit("dis2 != dot(x,x)", dis2(x), dot(x, x));
         }
         CHECK(pb.bad == 0, "p2 代数性质:加法交换/结合、det 反对称与双线性、数乘分配、dis 奇对称、r90 正交保长(2 万组)");
     }
 
     // ===== 3. r90 / rot =====
     CHECK(eqp(r90(P(3, 4)), P(-4, 3)) && eqp(r90(P(1, 0)), P(0, 1)), "r90 逆时针 90 度");
-    CHECK(eqd(P(3, 4) * r90(P(3, 4)), 0) && eqd(dis2(r90(P(3, 4))), 25), "r90 正交且保长");
+    CHECK(eqd(dot(P(3, 4), r90(P(3, 4))), 0) && eqd(dis2(r90(P(3, 4))), 25), "r90 正交且保长");
     CHECK(eqp(rot(P(1, 0), pi / 2), P(0, 1)) && eqp(rot(P(1, 0), pi), P(-1, 0)) && eqp(rot(P(0, 1), pi / 2), P(-1, 0)), "rot 特殊角");
     {
         int bad = 0;
@@ -383,7 +383,7 @@ int main() {
             db ang = (db) rnd(-1000000, 1000000) / 100000;
             p2 rx = rot(x, ang), ry = rot(y, ang);
             db sc = 1 + dis2(x) + dis2(y);
-            if(!eqd(rx * ry, x * y, 1e-9L * sc)) pb.hit("旋转不保点积", rx * ry, x * y);
+            if(!eqd(dot(rx, ry), dot(x, y), 1e-9L * sc)) pb.hit("旋转不保点积", dot(rx, ry), dot(x, y));
             if(!eqd(rx.det(ry), x.det(y), 1e-9L * sc)) pb.hit("旋转不保 det", rx.det(ry), x.det(y));
             if(!eqd(dis(rx - ry), dis(x - y), 1e-9L * (1 + dis(x - y)))) pb.hit("旋转不保距离", dis(rx - ry), dis(x - y));
             if(!eqp(rot(rx, -ang), x, 1e-6L * (1 + dis(x)))) pb.hitp("旋转后再逆旋转不还原", rot(rx, -ang), x);
@@ -467,8 +467,8 @@ int main() {
             db ref = refNearest(p1, p2r, q);
             if(!eqd(nearest(s, q), ref, 1e-9 * (1 + ref))) ++bad;
             p2 h = proj(s, q);
-            if(!eqd(dd(h, p1 + s.dir() * ((s.dir() * (q - p1)) / dis2(s.dir()))), 0, 1e-9 * (1 + dd(h, p1)))) ++bad;
-            if(!eqd((q - h) * s.dir(), 0, 1e-6 * dis(s.dir()) * (1 + dis(q - p1)))) ++bad;
+            if(!eqd(dd(h, p1 + s.dir() * (dot(s.dir(), q - p1) / dis2(s.dir()))), 0, 1e-9 * (1 + dd(h, p1)))) ++bad;
+            if(!eqd(dot(q - h, s.dir()), 0, 1e-6 * dis(s.dir()) * (1 + dis(q - p1)))) ++bad;
             if(!eqd(dd(reflect(s, q), h * 2 - q), 0, 1e-9)) ++bad;
             if(ons(s, q) != (ref < 1e-18 * (1 + dis2(s.dir())))) ++bad;
         }
@@ -484,7 +484,7 @@ int main() {
             p2 ha = refProjAnalytic(u, v, q);                 // 参数方程解析解
             db sc = 1 + dd(h, u);
             if(!eqd(dd(h, ha), 0, 1e-12L * sc)) pb.hit("proj != 解析解", dd(h, ha), 0);
-            if(!eqd((q - h) * (v - u), 0, 1e-9L * dis(v - u) * (1 + dis(q - u)))) pb.hit("垂线不垂直于方向", (q - h) * (v - u), 0);
+            if(!eqd(dot(q - h, v - u), 0, 1e-9L * dis(v - u) * (1 + dis(q - u)))) pb.hit("垂线不垂直于方向", dot(q - h, v - u), 0);
             // 垂足若落在线段内,则它到 q 的距离 <= 端点到 q 的距离(垂距最短)
             if(isMid(u, h, v)) {
                 db d1 = dd(h, q), d2 = min(dd(u, q), dd(v, q));
@@ -1156,7 +1156,7 @@ int main() {
             if(!eqd(got, ref, 1e-10L * (1 + ref))) pb.hit("1e9 量级 nearest 与参考不符", got, ref);
             if(got < -1e-8L * (1 + ref)) pb.hit("nearest 为负", got, 0);
             p2 h = proj(s, q);
-            db resid = Abs((q - h) * (v - u)) / (dis(v - u) * (1 + dis(q - u)));
+            db resid = Abs(dot(q - h, v - u)) / (dis(v - u) * (1 + dis(q - u)));
             if(resid > 1e-9L) pb.hit("1e9 量级 proj 垂线不垂直", resid, 0);
             if(!eqd(dd(h, q) + dd(h, u), dd(q, u), 1e-8L * (1 + dd(q, u)))) pb.hit("1e9 量级投影破坏勾股关系", 0, 0);
             if(isMid(u, h, v)) {  // 垂足落在线段内:它必须是最近点(ons 在这里会受 eps 影响,故改查「距离为 0」这一等价的容差式)
@@ -1225,7 +1225,7 @@ int main() {
             p2 r = rot(x, ang);
             if(!eqd(dis(r), dis(x), 1e-12L * (1 + dis(x)))) pb.hit("1e9 量级 rot 不保长", dis(r), dis(x));
             if(!eqd(remainderl(r.alpha() - x.alpha() - ang, 2 * pi), 0, 1e-9)) pb.hit("1e9 量级 rot 角度不对", r.alpha() - x.alpha(), ang);
-            if(!eqd(x * r, dis2(x) * cos(ang), 1e-9L * dis2(x))) pb.hit("1e9 量级 rot 点积公式不对", x * r, dis2(x) * cos(ang));
+            if(!eqd(dot(x, r), dis2(x) * cos(ang), 1e-9L * dis2(x))) pb.hit("1e9 量级 rot 点积公式不对", dot(x, r), dis2(x) * cos(ang));
             if(!eqp(rot(rot(x, ang), -ang), x, 1e-6L * (1 + dis(x)))) pb.hitp("1e9 量级 rot 逆旋转不还原", rot(rot(x, ang), -ang), x);
         }
         CHECK(pb.bad == 0, "1e9 量级 rot:保长、角度加成、与 cos 的点积公式、逆旋转还原(4000 组)");

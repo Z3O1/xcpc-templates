@@ -43,7 +43,7 @@ int main() {
                     abs(nearest(a, p) - point_dist(a, p)) < 1e-8L && abs(disss(a, b) - want) < 1e-8L;
         if(dis2(a.dir()) > 0) {
             p2 h = proj(a, p), r = reflect(a, p);
-            good &= abs((p - h) * a.dir()) < 1e-8L && dis(h - (p + r) / 2) < 1e-8L;
+            good &= abs(dot(p - h, a.dir())) < 1e-8L && dis(h - (p + r) / 2) < 1e-8L;
         }
         if(chkll(a, b)) {
             p2 q = isll(a, b);

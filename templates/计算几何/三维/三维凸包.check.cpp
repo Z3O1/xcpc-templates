@@ -63,7 +63,7 @@ vector<Facet> bruteFacets(const vector<p3> &a, db tol) {
         if(l <= tol) continue;  // 三点共线
         int pos = 0, neg = 0;
         for(int t = 0; t < n; ++t) {
-            db v = nr * (a[t] - a[i]);
+            db v = dot(nr, a[t] - a[i]);
             if(v > tol * l) ++pos;
             else if(v < -tol * l) ++neg;
         }
@@ -111,7 +111,7 @@ db maxOutside(const vector<p3> &a, const vector<face3> &f) {
         p3 nr = fnorm(a, f[t]);
         db l = dis(nr);
         if(l <= eps) continue;  // 退化面(零面积)不参与
-        for(int i = 0; i < a.size(); ++i) worst = max(worst, (nr * (a[i] - a[f[t].a])) / l);
+        for(int i = 0; i < a.size(); ++i) worst = max(worst, dot(nr, a[i] - a[f[t].a]) / l);
     }
     return worst;
 }
@@ -150,7 +150,7 @@ bool outwardOK(const vector<p3> &a, const vector<face3> &f, string &msg) {
     for(int t = 0; t < f.size(); ++t) {
         p3 nr = fnorm(a, f[t]);
         if(!sign(dis2(nr))) continue;  // 退化面
-        if(nr * (c - a[f[t].a]) > 0) { msg = "面法向朝内(顶点顺序给反了)"; return false; }
+        if(dot(nr, c - a[f[t].a]) > 0) { msg = "面法向朝内(顶点顺序给反了)"; return false; }
     }
     return true;
 }
@@ -168,7 +168,7 @@ db mcVolume(const vector<p3> &a, const vector<face3> &f, int N) {
         bool in = true;
         for(int t = 0; t < f.size(); ++t) {
             p3 nr = fnorm(a, f[t]);
-            if(nr * (q - a[f[t].a]) > 0) {
+            if(dot(nr, q - a[f[t].a]) > 0) {
                 in = false;
                 break;
             }

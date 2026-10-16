@@ -104,7 +104,7 @@ static db ref_param(const seg &l, const p2 &p) {
 static int ref_line_pts(const c2 &c, const seg &l, p2 *o) {
     db A = dis2(l.dir());
     if(!sign(A)) return 0;
-    db B = 2 * (l.dir() * (l.x - c.o));
+    db B = 2 * dot(l.dir(), l.x - c.o);
     db C = dis2(l.x - c.o) - c.r * c.r;
     db D = B * B - 4 * A * C;
     if(D <= 0) {

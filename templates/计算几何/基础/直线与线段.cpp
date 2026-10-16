@@ -38,7 +38,7 @@ bool ons(const seg &s, const p2 &q) { return !crossop(s, q) && isMid(s.x, q, s.y
 // 点是否严格在线段内部；端点与点线段返回 false。
 bool ons_s(const seg &s, const p2 &q) {
     p2 d = s.dir();
-    return !crossop(s, q) && sign((q - s.x) * d) * sign((q - s.y) * d) < 0;
+    return !crossop(s, q) && sign(dot(q - s.x, d)) * sign(dot(q - s.y, d)) < 0;
 }
 // 闭线段是否相交，含端点与共线重叠；支持点线段。
 bool chkss(const seg &a, const seg &b) {
@@ -61,7 +61,7 @@ bool chkss_s(const seg &a, const seg &b) {
 // 点在无限直线上的投影；要求 l 非零长。
 p2 proj(const seg &l, const p2 &q) {
     p2 d = l.dir();
-    return l.x + d * ((d * (q - l.x)) / dis2(d));
+    return l.x + d * (dot(d, q - l.x) / dis2(d));
 }
 // 点关于无限直线的对称点；要求 l 非零长。
 p2 reflect(const seg &l, const p2 &q) { return proj(l, q) * 2 - q; }

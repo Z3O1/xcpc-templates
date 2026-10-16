@@ -18,6 +18,13 @@
 #include "../../../tests/geometry_int_reference.hpp"
 using IGeo::p2i;
 
+template<class T, class = void> struct point_product : false_type {};
+template<class T> struct point_product<T, void_t<decltype(declval<T>() * declval<T>())>> : true_type {};
+static_assert(!point_product<Geo::p2>::value && !point_product<Geo::p3>::value,
+              "点点乘法必须使用dot");
+static_assert(is_same_v<decltype(Geo::p2{} * db(2)), Geo::p2> &&
+              is_same_v<decltype(db(2) * Geo::p3{}), Geo::p3>, "保留左右数乘");
+
 // 对照不同代数展开，并在失败时输出原始点和精确值。
 void verify(p2i a, p2i b, p2i c) {
     i128 d = i128(b.x) * c.x + i128(b.y) * c.y + i128(a.x) * a.x + i128(a.y) * a.y -
@@ -30,6 +37,8 @@ void verify(p2i a, p2i b, p2i c) {
 }
 // 同一翻译单元显式限定整数/浮点命名空间，不引入 using namespace IGeo。
 void mixed() {
+    IntCheck::need(Geo::dot(Geo::p2{3, 4}, Geo::p2{-1, 2}) == 5 &&
+                   Geo::dot(Geo::p3{1, 2, 3}, Geo::p3{4, 5, 6}) == 32, "独立dot重载");
     Geo::p2 a[] = {{0, 0}, {2, 0}, {0, 2}}, b[8];
     IGeo::p2i x[] = {{0, 0}, {4, 0}, {0, 4}}, y[8];
     IntCheck::need(Geo::area(3, a) == 2 && IGeo::area2(3, x) == 16 &&

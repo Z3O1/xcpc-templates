@@ -54,7 +54,7 @@ array<db, 2> cir_union(const vector<c2> &a) {
         auto add = [&](db l, db h) {
             db d = h - l, mid = (l + h) / 2;
             p2 v{cos(mid), sin(mid)};
-            area += r * (r * d / 2 + sin(d / 2) * (o * v));
+            area += r * (r * d / 2 + sin(d / 2) * dot(o, v));
             perimeter += r * d;
         };
         sort(arcs.begin(), arcs.end());  // 精确排序，不用 eps 破坏严格弱序。

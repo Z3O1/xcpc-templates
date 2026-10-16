@@ -70,6 +70,7 @@ python3 -m unittest discover -s tests # 改生成、构建、选测工具时必�
 - 片段不写 `main`、`#include`、`using namespace std;`，不重复定义读者 base header 的宏和基础类型；算法自身的结构体正常保留。
 - 使用 `For/rFor`、`vect<T>`、`ll/db/poly/ksm`；`pii` 是 `array<int,2>`，不是 pair。几何沿用 `p2/seg/line` 与 `eps/cmp/sgn/cross/det`。
 - `vect` 追加用 `+=`，不假设用户容器有 `push_back`；需要标准容器就明确用 `std::vector`。自测兼容层继承 vector，不能反推用户 header 的接口。
+- 几何点积写 `dot(a,b)`；`p2/p3` 的 `*` 仅作数乘，不重引入点点乘法重载。
 - 普通多项式用 `poly = vector<int>`、`M = 998244353`，系数规范到 `[0, M)`；乘法升 `ll` 并逐步取模，非零逆元用 `ksm(x, M - 2, M)`。
 - `ksm` 内部是 signed `ll` 乘法；指数非负、底数规范到 `[0, p)`，正模数须满足 `(p-1)^2 <= LLONG_MAX`（`p <= 3037000500`）。大模数参照 Miller-Rabin、二次剩余模板使用安全模乘。
 - **完整 u64×u64 范围用 `unsigned __int128`**；signed 溢出是未定义行为。有界的带符号计算仍可用 `i128`，不要求所有 `__int128` 都改成 unsigned。

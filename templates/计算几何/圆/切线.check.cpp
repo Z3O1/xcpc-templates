@@ -46,8 +46,8 @@ void verify(c2 a, c2 b, bool inner) {
         p2 va = (t.a - a.o) / scale, vb = (t.b - b.o) / scale;
         bool good = isfinite(t.a.x) && isfinite(t.a.y) && isfinite(t.b.x) && isfinite(t.b.y) &&
                     abs(dis(t.dir) - 1) < 1e-14L && abs(dis(va) - a.r / scale) < tol &&
-                    abs(dis(vb) - b.r / scale) < tol && abs(va * t.dir) < tol &&
-                    abs(vb * t.dir) < tol && abs(((t.b - t.a) / scale).det(t.dir)) < tol;
+                    abs(dis(vb) - b.r / scale) < tol && abs(dot(va, t.dir)) < tol &&
+                    abs(dot(vb, t.dir)) < tol && abs(((t.b - t.a) / scale).det(t.dir)) < tol;
         db da = ((a.o - t.a) / scale).det(t.dir), dbb = ((b.o - t.a) / scale).det(t.dir);
         good &= inner ? da * dbb <= tol : da * dbb >= -tol;
         need(good, a, b, inner, "切点/垂直/共线/单位方向");

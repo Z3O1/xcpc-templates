@@ -9,9 +9,9 @@ int angle_contain(const vector<p2> &a, p2 p) {
     db angle = 0;
     for(int i = 0; i < (int) a.size(); ++i) {
         p2 u = a[i] - p, v = a[(i + 1) % a.size()] - p, d = v - u;
-        db t = dis2(d) ? clamp(-(u * d) / dis2(d), db(0), db(1)) : 0;
+        db t = dis2(d) ? clamp(-dot(u, d) / dis2(d), db(0), db(1)) : 0;
         if(dis(u + d * t) < 1e-7L) return -1;
-        angle += atan2(u.det(v), u * v);
+        angle += atan2(u.det(v), dot(u, v));
     }
     return abs(angle) > pi ? 2 : 0;
 }

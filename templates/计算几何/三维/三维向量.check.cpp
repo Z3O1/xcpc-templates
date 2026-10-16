@@ -63,13 +63,13 @@ db refArea2Heron(p3 a, p3 b, p3 c) {
 // 底 × 高 / 2:高用「投影夹取」算(与 cross 无关)
 db refArea2BaseHeight(p3 a, p3 b, p3 c) {
     p3 d = b - a;
-    db t = (d * (c - a)) / dis2(d);
+    db t = dot(d, c - a) / dis2(d);
     db h2 = dis2(c - (a + d * t));
     return dis(d) * sqrt(h2 > 0 ? h2 : 0);
 }
 // Gram 行列式开根 = 平行六面体体积(x,y,z 三棱),独立于混合积
 db refVolume6Gram(p3 x, p3 y, p3 z) {
-    db g[3][3] = {{x * x, x * y, x * z}, {y * x, y * y, y * z}, {z * x, z * y, z * z}};
+    db g[3][3] = {{dot(x, x), dot(x, y), dot(x, z)}, {dot(y, x), dot(y, y), dot(y, z)}, {dot(z, x), dot(z, y), dot(z, z)}};
     db v = refDet3b(g);
     return v > 0 ? sqrt(v) : 0;
 }
@@ -78,7 +78,7 @@ db refVolume6BaseHeight(p3 a, p3 b, p3 c, p3 d) {
     p3 n = refCross(b - a, c - a);
     db area2v = dis(n);
     if(cmp(area2v, 0) == 0) return 0;
-    db h = abs(n * (d - a)) / area2v;  // |高| = |(d-a)·n̂|
+    db h = abs(dot(n, d - a)) / area2v;  // |高| = |(d-a)·n̂|
     return area2v / 2 * h * 2;        // 体积*6 = 底面积 * 高 * 2
 }
 // 带容差的标量判等。
@@ -91,13 +91,13 @@ int main() {
     CHECK(refDet9(1, 2, 3, 4, 5, 6, 7, 8, 10) == refDet9b(1, 2, 3, 4, 5, 6, 7, 8, 10), "参考自验:两种 Laplace 展开一致(手算 -3)");
     CHECK(eq(refDet9(1, 2, 3, 4, 5, 6, 7, 8, 10), -3, 1e-15), "参考自验:行列式手算值 = -3");
     CHECK(cross(X, Y) == Z && cross(Y, Z) == X && cross(Z, X) == Y, "基向量叉积:右手法则(x×y=z, y×z=x, z×x=y)");
-    CHECK(cross(Y, X) == -Z && X * Y == 0, "反序叉积取负、正交基向量点积为 0");
+    CHECK(cross(Y, X) == -Z && dot(X, Y) == 0, "反序叉积取负、正交基向量点积为 0");
     CHECK(eq(det(X, Y, Z), 1, 1e-15) && eq(det(Z, Y, X), -1, 1e-15) && eq(det(X, X, Y), 0, 1e-15), "混合积:单位正方体 +1、换序 -1、重复向量 0");
     CHECK(eq(area2(O, X, Y), 1, 1e-15) && eq(area2(X, X, Y), 0, 1e-15), "直角三角形面积 2 倍 = 1;退化三角形 = 0");
     CHECK(eq(volume6(O, X, Y, Z), 1, 1e-15) && eq(volume6(X, X, Y, Z), 0, 1e-15) && eq(volume6(O, X, Y, O), 0, 1e-15), "单位四面体体积 6 倍 = 1;重复顶点 = 0");
     CHECK(eq(dis2(P3(3, 4, 12)), 169, 1e-15) && eq(dis(P3(3, 4, 12)), 13, 1e-15), "模长:dis2(3,4,12) = 169、dis = 13");
     CHECK(unit(P3(0, 0, 5)) == Z && unit(P3(3, 0, 4)) == P3(0.6L, 0, 0.8L), "单位化:手算 (0,0,1) 与 (3,0,4)/5");
-    CHECK(perp(Z) == P3(0, -1, 0) && eq(perp(P3(1, 2, 3)) * P3(1, 2, 3), 0, 1e-15) && dis(perp(P3(1, 2, 3))) > 0, "perp:与输入垂直且非零");
+    CHECK(perp(Z) == P3(0, -1, 0) && eq(dot(perp(P3(1, 2, 3)), P3(1, 2, 3)), 0, 1e-15) && dis(perp(P3(1, 2, 3))) > 0, "perp:与输入垂直且非零");
     CHECK(P3(1, 2, 3) + P3(4, 5, 6) == P3(5, 7, 9) && P3(1, 2, 3) - P3(4, 5, 6) == P3(-3, -3, -3) &&
               P3(1, 2, 3) * 2 == P3(2, 4, 6) && 2 * P3(1, 2, 3) == P3(2, 4, 6) && P3(2, 4, 6) / 2 == P3(1, 2, 3) &&
               -P3(1, -2, 3) == P3(-1, 2, -3),
@@ -141,18 +141,18 @@ int main() {
             }
             if(cross(a, b) != -cross(b, a)) { if(!bad) msg = "cross 反对称失败 a=" + ps(a) + " b=" + ps(b); ++bad; }
             if(dis(cross(a, a)) > 1e-12 * sc) { if(!bad) msg = "cross(a,a) != 0 a=" + ps(a); ++bad; }
-            if(!eq(cross(a, b) * a, 0, 1e-12 * sc * sc) || !eq(cross(a, b) * b, 0, 1e-12 * sc * sc)) {
+            if(!eq(dot(cross(a, b), a), 0, 1e-12 * sc * sc) || !eq(dot(cross(a, b), b), 0, 1e-12 * sc * sc)) {
                 if(!bad) msg = "叉积不与因子垂直 a=" + ps(a) + " b=" + ps(b); ++bad;
             }
-            if(!eq(dis2(cross(a, b)), dis2(a) * dis2(b) - (a * b) * (a * b), 1e-10 * sc * sc)) {
+            if(!eq(dis2(cross(a, b)), dis2(a) * dis2(b) - dot(a, b) * dot(a, b), 1e-10 * sc * sc)) {
                 if(!bad) msg = "Lagrange 恒等式失败 a=" + ps(a) + " b=" + ps(b); ++bad;
             }
             {  // 双重叉积恒等式 (a×b)×c = b(a·c) - a(b·c)
-                p3 g = cross(cross(a, b), c), r = b * (a * c) - a * (b * c);
+                p3 g = cross(cross(a, b), c), r = b * dot(a, c) - a * dot(b, c);
                 if(!eq(dis(g - r), 0, 1e-11 * sc * dis(c))) { if(!bad) msg = "双重叉积恒等式失败 a=" + ps(a) + " b=" + ps(b) + " c=" + ps(c); ++bad; }
             }
             {  // 叉积的等价刻画:cross(a,b)·v == det(a,b,v)
-                db g = cross(a, b) * v, r = refDetRows(a, b, v);
+                db g = dot(cross(a, b), v), r = refDetRows(a, b, v);
                 if(!eq(g, r, 1e-11 * sc * dis(v))) { if(!bad) msg = "cross(a,b)·v != det(a,b,v) a=" + ps(a) + " b=" + ps(b) + " v=" + ps(v); ++bad; }
             }
             {  // 混合积:与独立行列式一致 + 轮换/换序性质
@@ -238,7 +238,7 @@ int main() {
             if(dis(cross(u, a)) > 1e-12 * dis(a)) { if(!bad) msg = "unit 与原向量不平行 a=" + ps(a); ++bad; }
             if(!eq(dis(u - unit(a * 13)), 0, 1e-15)) { if(!bad) msg = "unit 对正数缩放不敏感 a=" + ps(a); ++bad; }
             if(dis(perp(a)) <= 0) { if(!bad) msg = "perp 返回零向量 a=" + ps(a); ++bad; }
-            if(!eq(perp(a) * a, 0, 1e-14 * dis2(a))) { if(!bad) msg = "perp 不与输入垂直 a=" + ps(a); ++bad; }
+            if(!eq(dot(perp(a), a), 0, 1e-14 * dis2(a))) { if(!bad) msg = "perp 不与输入垂直 a=" + ps(a); ++bad; }
             // perp 只是「任取一个垂直方向」,不保证与别的垂直向量平行;这里只验它自身够用:
             p3 q = perp(a);
             if(!eq(dis2(cross(q, a)), dis2(q) * dis2(a), 1e-9 * dis2(q) * dis2(a))) { if(!bad) msg = "perp 的 |q×a|² != |q|²|a|² a=" + ps(a); ++bad; }
@@ -312,7 +312,7 @@ int main() {
             if(!eq(an, acos(max((db) -1, min((db) 1, ca))), 1e-14)) { if(!bad) msg = "angle != acos(cosang) a=" + ps(a) + " b=" + ps(b); ++bad; }
             if(!eq(angle(a, a), 0, 1e-13)) { if(!bad) msg = "angle(a,a) != 0 a=" + ps(a); ++bad; }
             if(!eq(angle(b, a), an, 1e-14)) { if(!bad) msg = "angle 不对称 a=" + ps(a) + " b=" + ps(b); ++bad; }
-            if(!eq(ca, (a * b) / dis(a) / dis(b), 1e-15)) { if(!bad) msg = "cosang 定义不符 a=" + ps(a) + " b=" + ps(b); ++bad; }
+            if(!eq(ca, dot(a, b) / dis(a) / dis(b), 1e-15)) { if(!bad) msg = "cosang 定义不符 a=" + ps(a) + " b=" + ps(b); ++bad; }
             db k1 = 3.5L, k2 = -2.25L;   // 正负缩放都不改变夹角(负缩放把角变成 pi - 角)
             db an2 = angle(a * k1, b * k2);
             if(!eq(abs(an2 + an - acos((db) -1)), 0, 1e-12) && !eq(an2, an, 1e-12)) { if(!bad) msg = "缩放后夹角不符 a=" + ps(a) + " b=" + ps(b); ++bad; }
@@ -329,10 +329,10 @@ int main() {
             p3 b{db(grnd(-1000000000, 1000000000)), db(grnd(-1000000000, 1000000000)), db(grnd(-1000000000, 1000000000))};
             p3 c{db(grnd(-1000000000, 1000000000)), db(grnd(-1000000000, 1000000000)), db(grnd(-1000000000, 1000000000))};
             db sc = dis2(a) + dis2(b) + dis2(c);
-            if(!eq(dis2(cross(a, b)), dis2(a) * dis2(b) - (a * b) * (a * b), 1e-16 * sc * sc)) { if(!bad) msg = "1e9 量级 Lagrange 失败"; ++bad; }
+            if(!eq(dis2(cross(a, b)), dis2(a) * dis2(b) - dot(a, b) * dot(a, b), 1e-16 * sc * sc)) { if(!bad) msg = "1e9 量级 Lagrange 失败"; ++bad; }
             if(!eq(det(a, b, c), refDetRows(a, b, c), 1e-16 * sc * dis(c))) { if(!bad) msg = "1e9 量级 det 与参考不符"; ++bad; }
             if(!eq(dis(unit(a)), 1, 1e-15)) { if(!bad) msg = "1e9 量级 unit 模长 != 1"; ++bad; }
-            if(!eq(dis2(a), a * a, 1e-15 * sc)) { if(!bad) msg = "1e9 量级 dis2 != a·a"; ++bad; }
+            if(!eq(dis2(a), dot(a, a), 1e-15 * sc)) { if(!bad) msg = "1e9 量级 dis2 != a·a"; ++bad; }
         }
         if(bad) printf("  [FAIL] 首个反例:%s\n", msg.c_str());
         CHECK(bad == 0, "1e9 量级:Lagrange 恒等式、det 与独立行列式、unit 模长为 1(相对容差,2 万组)");

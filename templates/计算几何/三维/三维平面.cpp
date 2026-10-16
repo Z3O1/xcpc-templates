@@ -15,21 +15,21 @@ struct plane {
     // 过三点的平面,法向 (b-a)×(c-a);三点共线时退化为 n=0。
     plane(p3 a, p3 b, p3 c) {
         p3 t = cross(b - a, c - a);
-        db l = sqrt(t * t);  // 注意:这里不能写 dis(t) —— 会被解析成成员 dis(p3)(遮蔽自由函数)
+        db l = sqrt(dot(t, t));  // 注意:这里不能写 dis(t) —— 会被解析成成员 dis(p3)(遮蔽自由函数)
         if(!sign(l)) {
             n = {0, 0, 0}, d = 0;  // 三点共线:退化(整个平面无意义)
         } else {
-            n = t / l, d = n * a;
+            n = t / l, d = dot(n, a);
         }
     }
     // 过点 o、法向 nor 的平面(nor 非零,内部单位化)。
     static plane from(p3 o, p3 nor) {
         plane r;
-        r.n = unit(nor), r.d = r.n * o;
+        r.n = unit(nor), r.d = dot(r.n, o);
         return r;
     }
     // 返回点 p 到有效平面的带号距离，单位法向一侧为正。
-    db side(p3 p) const { return n * p - d; }
+    db side(p3 p) const { return dot(n, p) - d; }
     // 返回点 p 到有效平面的距离。
     db dis(p3 p) const { return abs(side(p)); }
     // 返回点 p 在有效平面上的正投影。
@@ -44,7 +44,7 @@ bool ispara(const plane &a, const plane &b) { return !sign(sinang(a.n, b.n)); }
 // 两平面是否垂直。
 bool isperp(const plane &a, const plane &b) { return !sign(cosang(a.n, b.n)); }
 // 两平面夹角:法向量夹角的锐角部分,取值 [0, pi/2]
-db angle(const plane &a, const plane &b) { return acos(max((db) -1, min((db) 1, abs(a.n * b.n)))); }
+db angle(const plane &a, const plane &b) { return acos(max((db) -1, min((db) 1, abs(dot(a.n, b.n))))); }
 // 两平面的交线:方向 n1×n2,过点 (d1·(n2×w) + d2·(w×n1)) / |w|²(w = n1×n2)
 // 平行(含重合)时没有唯一的交线:返回方向为零向量的退化直线,调用方用 dis(l.d) == 0 判退化
 line3 ispl(const plane &a, const plane &b) {
@@ -54,11 +54,11 @@ line3 ispl(const plane &a, const plane &b) {
     return line3(o, o + w);  // 传两点(o, o+w),d 就是 w
 }
 // 直线与平面的交点:解 n·(o + t·d) = d 得 t = (d - n·o) / (n·d)
-p3 islp(const plane &p, const line3 &l) { return l.o + l.d * ((p.d - p.n * l.o) / (p.n * l.d)); }
+p3 islp(const plane &p, const line3 &l) { return l.o + l.d * ((p.d - dot(p.n, l.o)) / dot(p.n, l.d)); }
 // 过点 o 作平面的垂线
 line3 perpthrough(const plane &p, p3 o) { return line3(o, o + p.n); }
 // 直线是否整个在平面内
-bool ons(const plane &p, const line3 &l) { return !sign(p.side(l.o)) && !sign(p.n * l.d); }
+bool ons(const plane &p, const line3 &l) { return !sign(p.side(l.o)) && !sign(dot(p.n, l.d)); }
 // 点到平面距离(转发成员版)。
 db dis(const plane &p, p3 x) { return p.dis(x); }
 // 点在平面上的投影(转发成员版)。

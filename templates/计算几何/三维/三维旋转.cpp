@@ -35,7 +35,7 @@ mat3 transpose(const mat3 &m) {
 }
 // 罗德里格斯:v' = v·cos + (k×v)·sin + k·(k·v)·(1-cos)
 p3 rot(p3 v, p3 axis, db ang) {
-    p3 k = unit(axis), c = cross(k, v), d = k * (k * v);
+    p3 k = unit(axis), c = cross(k, v), d = k * dot(k, v);
     return v * cos(ang) + c * sin(ang) + d * (1 - cos(ang));
 }
 // 绕「过点 o、方向 axis」的轴转 ang 弧度;要求 axis 非零。
@@ -63,7 +63,7 @@ void basis(p3 n, p3 &u, p3 &v, p3 &w) {
 // 世界坐标转局部坐标(以 o 为原点、u/v/w 为基)。
 p3 tolocal(p3 x, p3 o, p3 u, p3 v, p3 w) {
     p3 d = x - o;
-    return {u * d, v * d, w * d};
+    return {dot(u, d), dot(v, d), dot(w, d)};
 }
 // 局部坐标转世界坐标(tolocal 的逆)。
 p3 toworld(p3 l, p3 o, p3 u, p3 v, p3 w) { return o + u * l.x + v * l.y + w * l.z; }

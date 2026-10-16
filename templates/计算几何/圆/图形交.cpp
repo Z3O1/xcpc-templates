@@ -82,7 +82,7 @@ db cir_cir_area(const c2 &c1, const c2 &other) {
 // 从 u 到 v 的**有向**夹角,取值 (-pi, pi]:atan2(叉积, 点积)。
 // 这里必须用有向角,不能把角差归一到 [0, 2pi) —— 圆心落在多边形外时各边扇形角的有向和是 0,
 // 归一化之后会变成 2pi,于是「圆完全在多边形外」会算出整整一块圆面积。
-db arg2(const p2 &u, const p2 &v) { return atan2l(u.det(v), u * v); }
+db arg2(const p2 &u, const p2 &v) { return atan2l(u.det(v), dot(u, v)); }
 // a、b 先平移到「以圆心为原点」;va/vb = a、b 是否在圆盘内(含边界)。三种情形:
 //   · a、b 都在圆内 -> 整块三角形都在圆内:a.det(b)
 //   · 线段 ab 与圆盘无交 -> 只贡献一个扇形:arg2(a, b) * r^2

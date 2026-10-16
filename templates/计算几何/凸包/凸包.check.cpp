@@ -34,8 +34,8 @@ vector<p2> boundary(vector<p2> a, const vector<p2> &h) {
         p2 p = h[i], q = h[(i + 1) % h.size()], d = q - p;
         vector<p2> edge;
         for(p2 v : a)
-            if(d.det(v - p) == 0 && (v - p) * d >= 0 && (v - p) * d < dis2(d)) edge.push_back(v);
-        sort(edge.begin(), edge.end(), [&](p2 u, p2 v) { return (u - p) * d < (v - p) * d; });
+            if(d.det(v - p) == 0 && dot(v - p, d) >= 0 && dot(v - p, d) < dis2(d)) edge.push_back(v);
+        sort(edge.begin(), edge.end(), [&](p2 u, p2 v) { return dot(u - p, d) < dot(v - p, d); });
         ret.insert(ret.end(), edge.begin(), edge.end());
     }
     return ret;

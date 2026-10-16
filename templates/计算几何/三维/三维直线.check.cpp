@@ -41,7 +41,7 @@ db refDisLP(line3 l, p3 p) { return dis(cross(l.d, p - l.o)) / dis(l.d); }
 db refDisSP(seg3 s, p3 p) {
     p3 d = s.dir();
     if(dis2(d) == 0) return dis(p - s.x);
-    db t = max((db) 0, min((db) 1, (d * (p - s.x)) / dis2(d)));
+    db t = max((db) 0, min((db) 1, dot(d, p - s.x) / dis2(d)));
     return dis(p - (s.x + d * t));
 }
 // 两直线距离:非平行时 |det(u, v, o2-o1)| / |u×v|;平行时退化成点线距
@@ -56,9 +56,9 @@ db sinLL(line3 a, line3 b) { return dis(cross(a.d, b.d)) / (dis(a.d) * dis(b.d))
 db refDisSS(seg3 a, seg3 b) {
     db best = min(min(refDisSP(b, a.x), refDisSP(b, a.y)), min(refDisSP(a, b.x), refDisSP(a, b.y)));
     p3 u = a.dir(), v = b.dir(), w = a.x - b.x;
-    db A = u * u, B = u * v, C = v * v, den = A * C - B * B;
+    db A = dot(u, u), B = dot(u, v), C = dot(v, v), den = A * C - B * B;
     if(den > 1e-12L * A * C) {  // 两条直线的最近点在两段内部
-        db D = u * w, E = v * w;
+        db D = dot(u, w), E = dot(v, w);
         db s = (B * E - C * D) / den, t = (A * E - B * D) / den;
         if(s > 0 && s < 1 && t > 0 && t < 1) best = min(best, dis((a.x + u * s) - (b.x + v * t)));
     }
@@ -218,7 +218,7 @@ int main() {
             if(!eq(g, r, 1e-11 * sc)) { if(!bad) msg = "点线距与解析式不符 l=" + ps(l) + " q=" + ps(q); ++bad; }
             p3 h = proj(l, q);
             if(!eq(dis(h - q), g, 1e-12 * sc)) { if(!bad) msg = "proj 到 q 的距离 != dis"; ++bad; }
-            if(!eq((q - h) * d, 0, 1e-10 * sc * dis(d))) { if(!bad) msg = "proj 垂线不垂直 l=" + ps(l) + " q=" + ps(q); ++bad; }
+            if(!eq(dot(q - h, d), 0, 1e-10 * sc * dis(d))) { if(!bad) msg = "proj 垂线不垂直 l=" + ps(l) + " q=" + ps(q); ++bad; }
             if(!eq(dis(cross(h - a, d)), 0, 1e-10 * dis(d) * sc)) { if(!bad) msg = "proj 不在直线上"; ++bad; }
             if(!eq(dis(reflect(l, reflect(l, q)) - q), 0, 1e-10 * sc)) { if(!bad) msg = "reflect 不是对合"; ++bad; }
             if(!eq(dis(reflect(l, q) - q), 2 * g, 1e-10 * sc)) { if(!bad) msg = "reflect 到 q 的距离不是 2*dis"; ++bad; }
@@ -260,7 +260,7 @@ int main() {
             p3 h = proj(s, q);
             if(!eq(dis(h - q), g, 1e-12 * (1 + g))) { if(!bad) msg = "线段 proj 距离不一致"; ++bad; }
             if(!ons(s, h)) { if(!bad) msg = "线段 proj 结果不在线段上 s=" + ps(s) + " q=" + ps(q); ++bad; }
-            if(cmp((y - x) * (h - x), 0) < 0 || cmp((y - x) * (h - y), 0) > 0) { if(!bad) msg = "线段 proj 参数越界"; ++bad; }
+            if(cmp(dot(y - x, h - x), 0) < 0 || cmp(dot(y - x, h - y), 0) > 0) { if(!bad) msg = "线段 proj 参数越界"; ++bad; }
             if(bad) break;
         }
         if(bad) printf("  [FAIL] 首个反例:%s\n", msg.c_str());
@@ -311,7 +311,7 @@ int main() {
             if(!eq(dis(cross(pb - b, d2)), 0, 1e-9 * dis(d2) * sc)) { if(!bad) msg = "pb 不在 l2 上"; ++bad; }
             if(!eq(dis(pa - pb), g, 1e-11 * sc)) { if(!bad) msg = "|pa-pb| != dis"; ++bad; }
             if(!ispara(l1, l2)) {
-                if(!eq((pa - pb) * d1, 0, 1e-9 * dis(d1) * sc) || !eq((pa - pb) * d2, 0, 1e-9 * dis(d2) * sc)) {
+                if(!eq(dot(pa - pb, d1), 0, 1e-9 * dis(d1) * sc) || !eq(dot(pa - pb, d2), 0, 1e-9 * dis(d2) * sc)) {
                     if(!bad) msg = "最近点连线不垂直于两方向 l1=" + ps(l1) + " l2=" + ps(l2); ++bad;
                 }
                 ++skew;

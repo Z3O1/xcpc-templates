@@ -2,6 +2,7 @@
 
 // 后续几何模板共用此文件；p2 兼作点与向量，坐标须有限，角度单位为弧度。
 // eps 是绝对容差，位置判定按题目尺度调整；排序用精确比较，不能带 eps。
+// 点积写 dot(a,b)，* 只表示数乘。
 namespace Geo {
 
 const db eps = 1e-10;
@@ -26,27 +27,19 @@ struct p2 {
         return x != b.x ? x < b.x : y < b.y;
     }
 };
-// 向量相加。
 p2 operator+(p2 a, p2 b) { return {a.x + b.x, a.y + b.y}; }
-// 向量相减。
 p2 operator-(p2 a, p2 b) { return {a.x - b.x, a.y - b.y}; }
-// 数乘，标量在右。
 p2 operator*(p2 a, db k) { return {a.x * k, a.y * k}; }
-// 数乘，标量在左。
 p2 operator*(db k, p2 a) { return a * k; }
-// 点积。
-db operator*(p2 a, p2 b) { return a.x * b.x + a.y * b.y; }
-// 向量除以标量；要求 k 非零。
+db dot(p2 a, p2 b) { return a.x * b.x + a.y * b.y; }
+// 除以标量，要求 k 非零。
 p2 operator/(p2 a, db k) { return {a.x / k, a.y / k}; }
-// 自加，返回修改后的值。
 p2 operator+=(p2 &a, p2 b) { return a = a + b; }
-// 自减，返回修改后的值。
 p2 operator-=(p2 &a, p2 b) { return a = a - b; }
-// 自除，返回修改后的值；要求 k 非零。
 p2 operator/=(p2 &a, db k) { return a = a / k; }
 
 // 模长平方。
-db dis2(p2 a) { return a * a; }
+db dis2(p2 a) { return dot(a, a); }
 // 模长；两点距离写 dis(a-b)。
 db dis(p2 a) { return hypot(a.x, a.y); }
 // 单位化；要求非零向量。
