@@ -29,18 +29,18 @@ static bool eqd(db a, db b, db tol = 1e-9) { return Abs(a - b) < tol; }
 // 打印点(诊断用)。
 static void pr(p2 a) { printf("(%g,%g)", (double) a.x, (double) a.y); }
 // 打印圆(诊断用)。
-static void prc(circle c) { printf("圆心 "), pr(c.o), printf(" r=%.17Lg", c.r); }
+static void prc(c2 c) { printf("圆心 "), pr(c.o), printf(" r=%.17Lg", c.r); }
 // 打印点集(诊断用)。
 static void prv(const char *s, const vector<p2> &v) {
     printf("      %s(%zu):", s, v.size());
     for(p2 x : v) printf(" "), pr(x);
     printf("\n");
 }
-static db coverTol(circle c, p2 p) {  // 覆盖判定的相对容差
+static db coverTol(c2 c, p2 p) {  // 覆盖判定的相对容差
     return 1e-9L * (1 + Abs(c.o.x) + Abs(c.o.y) + c.r + Abs(p.x) + Abs(p.y));
 }
 // 圆是否覆盖所有点(带相对容差)。
-static bool covers(circle c, const vector<p2> &v) {
+static bool covers(c2 c, const vector<p2> &v) {
     for(p2 x : v)
         if(dis(c.o - x) > c.r + coverTol(c, x)) return false;
     return true;
@@ -55,7 +55,7 @@ static p2 refCircum(p2 A, p2 B, p2 C) {  // 外接圆圆心参考，与圆基础
 }
 // 两点叉积(精确)。
 static db refDet(p2 a, p2 b) { return a.x * b.y - a.y * b.x; }
-static circle bruteMCC(const vector<p2> &v) {  // O(n^4):枚举点对/点三组
+static c2 bruteMCC(const vector<p2> &v) {  // O(n^4):枚举点对/点三组
     int n = v.size();
     if(n == 0) return {{0, 0}, -1};
     db best = 1e300L;
@@ -98,10 +98,10 @@ static vector<p2> refHullV(vector<p2> v) {  // Andrew 单调链(只留顶点,逆
 //   full=0:只做**凸包**上的暴力(O(h^4),h 很小),它由「最优圆的边界点必是凸包顶点」保证
 //           等于全点暴力的答案,n 可以放到 100。
 static int oneCase(const vector<p2> &v, int full) {
-    circle got = mcc(v);
+    c2 got = mcc(v);
     vector<p2> hv = refHullV(v);
-    circle wh = bruteMCC(hv);
-    circle want = wh;
+    c2 wh = bruteMCC(hv);
+    c2 want = wh;
     if(full) {
         want = bruteMCC(v);
         if(!eqd(want.r, wh.r, 1e-9 * (1 + wh.r))) {
@@ -137,7 +137,7 @@ int main() {
     // ===== 1. 解析用例 =====
     {
         vector<p2> one = {P(7, -3)};
-        circle c = mcc(one);
+        c2 c = mcc(one);
         CHECK(eqd(c.r, 0) && c.o == P(7, -3), "mcc:n=1 -> 半径 0、圆心就是该点");
         CHECK(mcc({}).r < 0, "mcc:空输入 -> 返回 r < 0 的无解标记");
         vector<p2> two = {P(0, 0), P(6, 8)};
@@ -219,7 +219,7 @@ int main() {
             int n = (int) rnd(1, 30);
             vector<p2> v;
             for(int i = 0; i < n; ++i) v.push_back(P((db) rnd(-5000, 5000), (db) rnd(-5000, 5000)));
-            circle c = mcc(v);
+            c2 c = mcc(v);
             if(c.r < 0) ++bad;
             if(!covers(c, v)) {
                 if(bad < 3) printf("      [反例] 圆没覆盖全部点:"), prc(c), printf("\n"), prv("输入", v);
@@ -242,7 +242,7 @@ int main() {
             int n = (int) rnd(1, 25);
             vector<p2> v;
             for(int i = 0; i < n; ++i) v.push_back(P((db) rnd(-1000000000, 1000000000), (db) rnd(-1000000000, 1000000000)));
-            circle c = mcc(v);
+            c2 c = mcc(v);
             if(c.r < 0) ++bad;
             if(!covers(c, v)) {
                 if(bad < 3) printf("      [反例] 大坐标下圆没覆盖全部点:r=%.17Lg\n", c.r), prv("输入", v);

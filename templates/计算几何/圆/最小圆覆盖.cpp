@@ -3,11 +3,11 @@
 // 依赖 圆/圆基础.cpp；允许重复点，不修改调用方的点集。
 // 随机增量：期望 O(n)，最坏 O(n^3)，空间 O(n)；三点共线时取最远两点为直径。
 // 最小圆覆盖(随机增量法);返回圆心与半径,空输入返回 { (0,0), -1 } 作无解标记。
-circle mcc(vector<p2> a) {
+c2 mcc(vector<p2> a) {
     if(a.empty()) return {{0, 0}, -1};
     static mt19937_64 mcc_rng(chrono::steady_clock::now().time_since_epoch().count());
     shuffle(a.begin(), a.end(), mcc_rng);
-    circle c = {a[0], 0};
+    c2 c = {a[0], 0};
     for(int i = 1; i < (int) a.size(); ++i) {
         if(in_circle(c, a[i])) continue;
         c = cir(a[0], a[i]);
