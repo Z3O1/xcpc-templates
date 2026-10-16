@@ -1,4 +1,4 @@
-// 圆基础 自测:外心/直径/圆盘联编，内切圆2万对拍/极端/退化，圆包含3万精确对拍/内切/点圆/大数吞量/浮点异常
+// 圆基础 自测:外心大平移/全排列/独立尺度/直径/联编，内切圆2万对拍，圆包含3万精确对拍/退化/极端
 #include "../../_check_base.hpp"
 #include <cfenv>
 #include "../基础/二维向量.cpp"
@@ -143,9 +143,31 @@ void check_containment() {
         exit(1);
     }
 }
-// 验证外心与已知圆，及两个圆算法模块共用同一 c2 定义。
+// 验证大平移/各向异尺度外心、已知圆，及两个圆算法模块共用同一 c2 定义。
 int main() {
     rng.seed(2026101404);
+    for(int t = 0; t < 3000; ++t) {
+        db k = rnd(1,100), m = rnd(1,100);
+        p2 u{3*k,4*k}, v{-4*m,3*m};  // 直角三角形，外心是斜边中点。
+        for(db shift : {db(0), db(1e12L), db(-1e15L)}) {
+            p2 o{shift,-shift}, want = o + (u+v)/2;
+            vector<p2> p{o,o+u,o+v};
+            array<int,3> id{0,1,2};
+            do {
+                auto got = circumcenter(p[id[0]],p[id[1]],p[id[2]]);
+                auto close = [](db x, db y) { return abs(x-y) <= 1e-10L + 2*abs(nextafterl(y,INFINITY)-y); };
+                if(!close(got[0],want.x) || !close(got[1],want.y)) {
+                    printf("translated circumcenter case=%d k=%Lg m=%Lg shift=%Lg order=%d%d%d offset=(%Lg,%Lg) want=(%Lg,%Lg)\n",
+                           t,k,m,shift,id[0],id[1],id[2],got[0]-shift,got[1]+shift,want.x-shift,want.y+shift);
+                    return 1;
+                }
+            } while(next_permutation(id.begin(),id.end()));
+        }
+    }
+    for(auto lengths : {array<db,2>{1e2000L,1e-2000L}, {1e-2000L,1e-2000L}, {1e2000L,1e2000L}}) {
+        auto got = circumcenter({0,0},{lengths[0],0},{0,lengths[1]});
+        CHECK(got[0] == lengths[0]/2 && got[1] == lengths[1]/2, "外心独立方向缩放避免平方溢出/下溢");
+    }
     for(int t = 0; t < 10000; ++t) {
         p2 o{db(rnd(-10000, 10000)), db(rnd(-10000, 10000))};
         db r = rnd(1, 1000), theta = db(rnd(-10000, 10000)) / 1000;
