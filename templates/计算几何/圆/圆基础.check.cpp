@@ -5,6 +5,8 @@
 #include "圆基础.cpp"
 #include "图形交.cpp"
 #include "最小圆覆盖.cpp"
+#include "切线.cpp"
+#include "圆并.cpp"
 
 // 失败打印三角形和返回圆，使用局部相对误差。
 void incir_need(bool good, p2 a, p2 b, p2 c, c2 got) {
@@ -120,6 +122,10 @@ int main() {
     auto circles = cir_cir(cover, {{2, 0}, 1});
     CHECK(dis(cover.o) < 1e-9L && abs(cover.r - 1) < 1e-9L, "最小圆覆盖共用圆基础");
     CHECK(line.size() == 2 && circles.size() == 1, "同一圆传给直线求交与圆圆求交");
+    auto tangent_lines = tangents(cover, c2{{2, 0}, 1});
+    auto united = cir_union({cover, c2{{2, 0}, 1}});
+    CHECK(tangent_lines.size() == 2 && abs(united[0] - 2 * pi) < 1e-12L &&
+          abs(united[1] - 4 * pi) < 1e-12L, "同一c2传给切线与圆并");
     CHECK(mcc({}).r < 0, "空点集无解标记");
     check_incir();
     PASSED("圆基础");
