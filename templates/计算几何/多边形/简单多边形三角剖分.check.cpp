@@ -1,4 +1,4 @@
-// 简单多边形三角剖分 自测:随机凸/凹/带共线点多边形上做性质级断言 + 独立参考判定全部校验
+// 简单多边形三角剖分 自测:独立性质参考，随机凸/凹/共线、对角线穿活点回归、2001点二次规模
 //
 // 【测什么】对逆时针简单多边形调用 ear_clip(n, a),逐条断言(全部 CHECK,失败即打印现场并 exit 1):
 //   A1 三角形数 == 剥掉共线点后剩下的顶点数 - 2(退化输入即面积 0 时为 0); 下标都落在 [0,n);
@@ -392,6 +392,11 @@ int main() {
 
     // ===== 2. 定点用例 =====
     {
+        vector<p2> regression{{0, 0}, {2, 0}, {2, 2}, {1, 1}, {0, 2}};
+        for(int shift = 0; shift < 5; ++shift) {
+            earCase(regression, "耳对角线经过其它活点", true);
+            rotate(regression.begin(), regression.begin() + 1, regression.end());
+        }
         earCase({{0, 0}, {4, 0}, {1, 3}}, "逆时针三角形 n=3", true);
         earCase({{0, 0}, {4, 0}, {4, 4}, {0, 4}}, "正方形 n=4", true);
         CHECK((int) ear_clip(4, (vector<p2>{{0, 0}, {4, 0}, {4, 4}, {0, 4}}).data()).size() == 2, "正方形剖出 2 个三角形");
@@ -526,5 +531,12 @@ int main() {
 
     auto t1 = chrono::steady_clock::now();
     printf("  [info] 总耗时 %.2f s\n", chrono::duration<double>(t1 - t0).count());
+    vector<p2> large;
+    for(ll x = -1000; x <= 1000; ++x) large.push_back({db(x), db(x * x)});
+    auto tris = ear_clip(large.size(), large.data());
+    db sum = 0;
+    for(auto t : tris) sum += (large[t[1]] - large[t[0]]).det(large[t[2]] - large[t[0]]) / 2;
+    CHECK(tris.size() == large.size() - 2 && abs(sum - area(large.size(), large.data())) < 1e-5L,
+          "2001点凸链，三角形数与覆盖面积");
     PASSED("简单多边形三角剖分");
 }
