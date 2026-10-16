@@ -3,7 +3,8 @@
 // 依赖本节 三维直线.cpp（及其三维向量依赖）。
 // 点法式 n·x=d，n 是单位法向量；side(p)=n·p-d 为带号距离（法向一侧为正）。
 // 前置条件:from() 的 nor 非零;islp() 要求 n·l.d != 0;ispl() 要求两平面不平行。
-// eps 是绝对容差(1e-10),坐标量级很大时请自行放宽。
+// eps 为绝对距离容差；两平面平行用法向夹角正弦 eps。
+// 要求坐标差、距离及中间点积可表示，舍入误差须小于所需容差。
 // 复杂度:全部 O(1)。
 namespace Geo {
 
@@ -12,15 +13,14 @@ struct plane {
     db d;  // n · x = d
     // 默认构造:成员未初始化,使用前须赋值。
     plane() {}
-    // 过三点的平面,法向 (b-a)×(c-a);三点共线时退化为 n=0。
+    // 过三点，法向 (b-a)×(c-a)；a=b 或 c 到直线 ab 距离 <= eps 时 n=0。
     plane(p3 a, p3 b, p3 c) {
-        p3 t = cross(b - a, c - a);
-        db l = sqrt(dot(t, t));  // 注意:这里不能写 dis(t) —— 会被解析成成员 dis(p3)(遮蔽自由函数)
-        if(!sign(l)) {
-            n = {0, 0, 0}, d = 0;  // 三点共线:退化(整个平面无意义)
-        } else {
-            n = t / l, d = dot(n, a);
-        }
+        p3 u = b - a;
+        n = {0, 0, 0}, d = 0;
+        if(Geo::dis(u) == 0) return;
+        p3 t = cross(unit(u), c - a);  // 模长是高，不将面积与长度 eps 混比
+        if(!sign(Geo::dis(t))) return;
+        n = unit(t), d = dot(n, a);
     }
     // 过点 o、法向 nor 的平面(nor 非零,内部单位化)。
     static plane from(p3 o, p3 nor) {

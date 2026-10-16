@@ -1,4 +1,4 @@
-// 三维平面 自测:点面距/平面交线/线面交点/两平面夹角
+// 三维平面 自测:缩放三点/线性高度退化/点面距/平面交线/线面交点/两平面夹角
 //
 // 对拍方式:
 //   ① 手算常数用例(z=0 / z=3 / x+y+z=1 平面,点到面距离、投影、对称)
@@ -71,6 +71,31 @@ line3 LN(p3 o, p3 d) {
 // 手算/参考对照与退化用例;通过则 PASSED("三维平面")。
 int main() {
     p3 X{1, 0, 0}, Y{0, 1, 0}, Z{0, 0, 1}, O{0, 0, 0};
+
+    // 三点退化必须比较高而非叉积面积；底边尺度不应改变高度 eps。
+    for(db base : {1e-8L, 1e-6L, 1.0L, 1e6L, 1e8L}) {
+        plane flat(O, P3(base, 0, 0), P3(base / 2, eps / 2, 0));
+        plane valid(O, P3(base, 0, 0), P3(base / 2, eps * 2, 0));
+        CHECK(dis(flat.n) == 0 && dis(valid.n - Z) < 1e-14L,
+              "相同高度跨底边尺度：eps/2 退化，2eps 保留单位法向");
+        plane scaled(O, P3(base, 0, 0), P3(0, base, 0));
+        CHECK(dis(scaled.n - Z) < 1e-14L && abs(scaled.dis(P3(0, 0, base)) / base - 1) < 1e-14L,
+              "小尺度非共线三点仍为有效平面，点面距按长度缩放");
+    }
+    CHECK(dis(PL(O, O, X).n) == 0 && dis(PL(O, X, X * 2).n) == 0,
+          "重复点和真正共线三点退化");
+    for(int i = 0; i < 20000; ++i) {
+        db s = pow((db) 10, grnd(-7, 5));
+        db a = grnd(1, 10), b = grnd(1, 10), c = grnd(1, 10);
+        plane p(P3(a * s, 0, 0), P3(0, b * s, 0), P3(0, 0, c * s));
+        // 截距式 x/a+y/b+z/c=s，独立于叉积计算。
+        db norm = sqrt(1 / (a * a) + 1 / (b * b) + 1 / (c * c));
+        p3 want{1 / a / norm, 1 / b / norm, 1 / c / norm};
+        if(dis(p.n - want) > 1e-14L || abs(p.side(O) / s + 1 / norm) > 1e-13L) {
+            fprintf(stderr, "scaled intercept plane s=%Lg a=%Lg b=%Lg c=%Lg got=%s\n", s, a, b, c, ps(p).c_str());
+            CHECK(false, "2 万组缩放截距平面与独立方程对拍");
+        }
+    }
 
     // ===== 1. 手算常数用例 =====
     {
