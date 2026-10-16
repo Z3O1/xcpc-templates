@@ -645,6 +645,18 @@
    "title": "反射容斥",
    "missing": false,
    "hidden": false
+  },
+  {
+   "key": "计算几何/整数/极角排序.cpp",
+   "title": "整数极角排序",
+   "missing": false,
+   "hidden": false
+  },
+  {
+   "key": "计算几何/整数/闵可夫斯基和.cpp",
+   "title": "整数闵可夫斯基和",
+   "missing": false,
+   "hidden": false
   }
  ]
 }
