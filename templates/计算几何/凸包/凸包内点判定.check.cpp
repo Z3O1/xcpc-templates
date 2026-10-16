@@ -87,7 +87,7 @@ static int cmpOne(const vector<p2> &a, const vector<p2> &q, int verbose) {
     int n = a.size();
     if(n < 3) return 1;
     for(int i = 0; i < q.size(); ++i) {
-        int got = in_convex(n, (p2 *) a.data(), q[i]), want = refIn(a, q[i]);
+        int got = in_convex(a, q[i]), want = refIn(a, q[i]);
         if(got != want) {
             printf("      不一致:点 "), pr(q[i]), printf(" 模板 %d,参考 %d\n", got, want);
             if(verbose) {
@@ -108,22 +108,22 @@ int main() {
     // ===== 1. 解析用例 =====
     {
         vector<p2> sq = {P(0, 0), P(4, 0), P(4, 4), P(0, 4)};
-        CHECK(in_convex(4, sq.data(), P(2, 2)) == 2, "in_convex:正方形中心 -> 2");
-        CHECK(in_convex(4, sq.data(), P(0, 2)) == 1 && in_convex(4, sq.data(), P(4, 0)) == 1, "in_convex:边中点/顶点 -> 1");
-        CHECK(in_convex(4, sq.data(), P(5, 2)) == 0 && in_convex(4, sq.data(), P(-1, 2)) == 0, "in_convex:边外一点 -> 0");
-        CHECK(in_convex(4, sq.data(), P(0, 0) + P(1, 1) * 0.5L) == 2, "in_convex:内部对角线 (0,0)-(4,4) 上的点 -> 2(内部)");
-        CHECK(in_convex(4, sq.data(), P(5, 5)) == 0, "in_convex:对角线延长线上的外部点 -> 0");
-        CHECK(in_convex(4, sq.data(), P(4.5L, 4.5L)) == 0 && in_convex(4, sq.data(), P(-0.5L, 2)) == 0, "in_convex:包围盒角/边外 -> 0");
+        CHECK(in_convex(sq, P(2, 2)) == 2, "in_convex:正方形中心 -> 2");
+        CHECK(in_convex(sq, P(0, 2)) == 1 && in_convex(sq, P(4, 0)) == 1, "in_convex:边中点/顶点 -> 1");
+        CHECK(in_convex(sq, P(5, 2)) == 0 && in_convex(sq, P(-1, 2)) == 0, "in_convex:边外一点 -> 0");
+        CHECK(in_convex(sq, P(0, 0) + P(1, 1) * 0.5L) == 2, "in_convex:内部对角线 (0,0)-(4,4) 上的点 -> 2(内部)");
+        CHECK(in_convex(sq, P(5, 5)) == 0, "in_convex:对角线延长线上的外部点 -> 0");
+        CHECK(in_convex(sq, P(4.5L, 4.5L)) == 0 && in_convex(sq, P(-0.5L, 2)) == 0, "in_convex:包围盒角/边外 -> 0");
         vector<p2> tri = {P(0, 0), P(10, 0), P(0, 10)};
-        CHECK(in_convex(3, tri.data(), P(1, 1)) == 2 && in_convex(3, tri.data(), P(5, 5)) == 1 && in_convex(3, tri.data(), P(6, 5)) == 0,
+        CHECK(in_convex(tri, P(1, 1)) == 2 && in_convex(tri, P(5, 5)) == 1 && in_convex(tri, P(6, 5)) == 0,
               "in_convex:直角三角形 内部/斜边/外部");
         vector<p2> pent;
         for(int i = 0; i < 5; ++i) pent.push_back(P(100 * cos(2 * pi * i / 5), 100 * sin(2 * pi * i / 5)));
-        CHECK(in_convex(5, pent.data(), P(0, 0)) == 2 && in_convex(5, pent.data(), pent[2]) == 1 && in_convex(5, pent.data(), P(200, 0)) == 0,
+        CHECK(in_convex(pent, P(0, 0)) == 2 && in_convex(pent, pent[2]) == 1 && in_convex(pent, P(200, 0)) == 0,
               "in_convex:正五边形 中心/顶点/远处");
-        CHECK(in_convex(2, sq.data(), P(0, 0)) == 0 && in_convex(0, sq.data(), P(0, 0)) == 0, "in_convex:n<3 -> 直接返回 0");
-        CHECK(in_convex(4, sq.data(), P(0, 2) + P(0, 1e-12L)) == 1, "in_convex:距边 1e-12(容差内)-> 判成边界 1");
-        CHECK(in_convex(4, sq.data(), P(0, 2) - P(1e-6L, 0)) == 0, "in_convex:距边 1e-6(容差外)-> 判成外部 0");
+        CHECK(in_convex(vector<p2>(sq.data(), sq.data() + (2)), P(0, 0)) == 0 && in_convex(vector<p2>{}, P(0, 0)) == 0, "in_convex:n<3 -> 直接返回 0");
+        CHECK(in_convex(sq, P(0, 2) + P(0, 1e-12L)) == 1, "in_convex:距边 1e-12(容差内)-> 判成边界 1");
+        CHECK(in_convex(sq, P(0, 2) - P(1e-6L, 0)) == 0, "in_convex:距边 1e-6(容差外)-> 判成外部 0");
     }
 
     // ===== 2. 随机整数点集的严格凸包 =====
@@ -162,8 +162,8 @@ int main() {
             for(int i = 0; i < n; ++i) mnx = min(mnx, a[i].x), mxx = max(mxx, a[i].x), mny = min(mny, a[i].y), mxy = max(mxy, a[i].y);
             For(gx, 0, 12) For(gy, 0, 12) {
                 p2 q = P(mnx - 2 + (mxx - mnx + 4) * gx / 12, mny - 2 + (mxy - mny + 4) * gy / 12);
-                if(in_convex(n, a.data(), q) != refIn(a, q)) {
-                    if(bad < 3) printf("      [反例] 第 %d 组:点 ", t), pr(q), printf(" 模板 %d 参考 %d\n", in_convex(n, a.data(), q), refIn(a, q)), prv("多边形", a);
+                if(in_convex(a, q) != refIn(a, q)) {
+                    if(bad < 3) printf("      [反例] 第 %d 组:点 ", t), pr(q), printf(" 模板 %d 参考 %d\n", in_convex(a, q), refIn(a, q)), prv("多边形", a);
                     ++bad;
                 }
             }
@@ -182,8 +182,8 @@ int main() {
             if(H.size() < 3) continue;
             vector<p2> q = makeQueries(H, 40);
             for(int i = 0; i < q.size(); ++i) {
-                int got = in_convex(H.size(), (p2 *) H.data(), q[i]);
-                int c2 = contain(H.size(), (p2 *) H.data(), q[i]);
+                int got = in_convex(H, q[i]);
+                int c2 = contain(H, q[i]);
                 if(got != c2) {
                     if(bad < 3) printf("      [反例] 与 contain 不一致:点 "), pr(q[i]), printf(" in_convex %d, contain %d\n", got, c2), prv("多边形", H);
                     ++bad;
@@ -210,8 +210,8 @@ int main() {
             for(int i = 0; i < H.size(); ++i) H2.push_back(H[i] * sc + sh);
             vector<p2> q = makeQueries(H, 30);
             for(int i = 0; i < q.size(); ++i) {
-                int a1 = in_convex(H.size(), (p2 *) H.data(), q[i]);
-                int a2 = in_convex(H2.size(), (p2 *) H2.data(), q[i] * sc + sh);
+                int a1 = in_convex(H, q[i]);
+                int a2 = in_convex(H2, q[i] * sc + sh);
                 if(a1 != a2) {
                     if(bad < 3) printf("      [反例] 平移/缩放后结论变了:点 "), pr(q[i]), printf(" %d -> %d\n", a1, a2);
                     ++bad;
@@ -223,9 +223,9 @@ int main() {
         for(int i = 0; i < 1000; ++i) big.push_back(P(10000 * cos(2 * pi * i / 1000), 10000 * sin(2 * pi * i / 1000)));
         int okk = 1;
         for(int i = 0; i < 1000; ++i) {
-            if(in_convex(1000, big.data(), big[i]) != 1) okk = 0;
-            if(in_convex(1000, big.data(), big[i] * 0.5L) != 2) okk = 0;
-            if(in_convex(1000, big.data(), big[i] * 1.5L) != 0) okk = 0;
+            if(in_convex(big, big[i]) != 1) okk = 0;
+            if(in_convex(big, big[i] * 0.5L) != 2) okk = 0;
+            if(in_convex(big, big[i] * 1.5L) != 0) okk = 0;
         }
         CHECK(okk, "in_convex:n=1000 的圆上多边形,3000 次查询(顶点/内部/外部)全部正确");
     }

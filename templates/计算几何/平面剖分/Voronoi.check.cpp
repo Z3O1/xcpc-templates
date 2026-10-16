@@ -28,7 +28,7 @@ static ll vrnd(ll l, ll r) { return l + (ll) (vrng() % (u64) (r - l + 1)); }
 // 整数坐标转 p2。
 static p2 VIP(ll x, ll y) { return p2{(db) x, (db) y}; }
 typedef pair<ll, ll> K;
-static db myArea(const vect<p2> &p) {  // 自己的 shoelace(不用模板的 area)
+static db myArea(const vector<p2> &p) {  // 自己的 shoelace(不用模板的 area)
     db s = 0;
     for(int i = 0; i < (int) p.size(); ++i) s += p[i].det(p[(i + 1) % p.size()]);
     return abs(s / 2);
@@ -37,7 +37,7 @@ static db myArea(const vect<p2> &p) {  // 自己的 shoelace(不用模板的 are
 static db edgeTol(p2 u, p2 v, p2 q) { return 1e-9L * (1 + abs(u.x) + abs(u.y) + abs(v.x) + abs(v.y) + abs(q.x) + abs(q.y)); }
 // 逐位判等(精确)。
 static bool sameP(p2 u, p2 v) { return u.x == v.x && u.y == v.y; }
-static bool inConv(const vect<p2> &p, p2 q, db mul = 1) {  // 闭区域
+static bool inConv(const vector<p2> &p, p2 q, db mul = 1) {  // 闭区域
     for(int i = 0; i < (int) p.size(); ++i) {
         p2 u = p[i], v = p[(i + 1) % p.size()];
         if(sameP(u, v)) continue;  // 重复相邻点(裁剪时可能产生)
@@ -45,7 +45,7 @@ static bool inConv(const vect<p2> &p, p2 q, db mul = 1) {  // 闭区域
     }
     return true;
 }
-static bool inConvStrict(const vect<p2> &p, p2 q) {  // 严格内部
+static bool inConvStrict(const vector<p2> &p, p2 q) {  // 严格内部
     for(int i = 0; i < (int) p.size(); ++i) {
         p2 u = p[i], v = p[(i + 1) % p.size()];
         if(sameP(u, v)) continue;
@@ -54,7 +54,7 @@ static bool inConvStrict(const vect<p2> &p, p2 q) {  // 严格内部
     return true;
 }
 // 暴力最近的两个站点;d1 <= d2
-static void nearest2(const vect<p2> &a, p2 q, db &d1, int &i1, db &d2) {
+static void nearest2(const vector<p2> &a, p2 q, db &d1, int &i1, db &d2) {
     d1 = d2 = 1e300L, i1 = -1;
     for(int i = 0; i < (int) a.size(); ++i) {
         db d = dis2(a[i] - q);
@@ -65,7 +65,7 @@ static void nearest2(const vect<p2> &a, p2 q, db &d1, int &i1, db &d2) {
 // ---------------- 验证器:返回空串 = 通过 ----------------
 static int gSamples = 0;
 // 验证 Voronoi 区域划分性质;返回空串表示通过,否则为失败原因。
-static string verifyCells(const vect<p2> &a, const vect<vect<p2>> &c, bool allowOverlap, bool sample = true) {
+static string verifyCells(const vector<p2> &a, const vector<vector<p2>> &c, bool allowOverlap, bool sample = true) {
     char buf[512];
     int n = a.size();
     if((int) c.size() != n) return "区域个数 != 站点个数";
@@ -138,10 +138,9 @@ static string verifyCells(const vect<p2> &a, const vect<vect<p2>> &c, bool allow
     if(bad) return first;
     return "";
 }
-// vector<p2> 转 vect<p2>。
-static vect<p2> VA(const vector<p2> &v) { return vect<p2>(v.begin(), v.end()); }
+static vector<p2> VA(const vector<p2> &v) { return v; }
 // 用模板求 Voronoi 并验证(verifyCells 的便捷封装)。
-static string verifyVoronoi(const vect<p2> &a, bool allowOverlap, bool sample = true) { return verifyCells(a, voronoi(a), allowOverlap, sample); }
+static string verifyVoronoi(const vector<p2> &a, bool allowOverlap, bool sample = true) { return verifyCells(a, voronoi(a), allowOverlap, sample); }
 
 // 暴力最近站点对照与划分性质验证;通过则 PASSED("Voronoi")。
 int main() {
@@ -151,14 +150,14 @@ int main() {
 
     // ===== 1. n = 0/1/2/3 与接口语义 =====
     {
-        vect<vect<p2>> r = voronoi(vect<p2>());
+        auto r = voronoi({});
         CHECK(r.empty(), "n=0 返回空");
-        vect<p2> one = {VIP(3, 5)};
+        vector<p2> one = {VIP(3, 5)};
         r = voronoi(one);
         CHECK(r.size() == 1 && r[0].size() == 4, "n=1:唯一的区域就是包围盒(4 个顶点)");
         CHECK(abs(myArea(r[0]) - (Voronoi::box[1].x - Voronoi::box[0].x) * (Voronoi::box[1].y - Voronoi::box[0].y)) < 1e-9, "n=1:区域面积 == 包围盒面积");
         CHECK(Voronoi::box[0].x < 3 && Voronoi::box[1].x > 3 && Voronoi::box[0].y < 5 && Voronoi::box[1].y > 5, "n=1:包围盒包住站点且非退化");
-        vect<p2> two = {VIP(0, 0), VIP(10, 0)};
+        vector<p2> two = {VIP(0, 0), VIP(10, 0)};
         r = voronoi(two);
         CHECK(r.size() == 2 && verifyVoronoi(two, false).empty(), "n=2:两个区域,中垂线 x=5 分开,采样对照通过");
         // 中垂线是 x=5:左区域的 x 坐标都不超过 5,右区域都不小于 5
@@ -168,9 +167,9 @@ int main() {
             for(p2 q : r[1]) if(q.x < 5 - 1e-9) ++bad;
             CHECK(bad == 0, "n=2:两个区域的边界恰好是中垂线 x = 5");
         }
-        vect<p2> three = {VIP(0, 0), VIP(10, 0), VIP(0, 10)};
+        vector<p2> three = {VIP(0, 0), VIP(10, 0), VIP(0, 10)};
         CHECK(verifyVoronoi(three, false).empty(), "n=3:非共线三站点通过采样对照");
-        vect<p2> col = {VIP(0, 0), VIP(4, 0), VIP(9, 0)};
+        vector<p2> col = {VIP(0, 0), VIP(4, 0), VIP(9, 0)};
         CHECK(verifyVoronoi(col, false).empty(), "n=3 共线站点:区域是三条竖条,通过采样对照");
     }
 
@@ -220,12 +219,12 @@ int main() {
                 s.insert({x, y}), v.push_back(VIP(x, y));
             }
             ++cases;
-            vect<p2> sites = VA(v);
-            vect<vect<p2>> c = voronoi(sites);
+            vector<p2> sites = VA(v);
+            auto c = voronoi(sites);
             // Delaunay 边:(i,j) 出现在同一个三角形里
             map<K, int> id;
             for(int i = 0; i < n; ++i) id[make_pair((ll) v[i].x, (ll) v[i].y)] = i;
-            vect<p2> dt = delaunay(sites);
+            auto dt = delaunay(sites);
             set<pair<int, int>> done;
             for(int i = 0; i + 3 <= (int) dt.size(); i += 3) {
                 int t[3];
@@ -263,8 +262,8 @@ int main() {
         // 重合站点:按约定它们区域相同(等于该点的完整区域),允许重叠
         {
             vector<p2> v = {VIP(2, 3), VIP(2, 3), VIP(2, 3), VIP(-4, 8), VIP(2, 3)};
-            vect<p2> sites = VA(v);
-            vect<vect<p2>> r = voronoi(sites);
+            vector<p2> sites = VA(v);
+            auto r = voronoi(sites);
             CHECK(r.size() == 5, "重合站点:每个站点都返回一个区域");
             int same = 0;
             for(int i : {0, 1, 2, 4}) {
@@ -322,12 +321,12 @@ int main() {
     // ===== 5. 反向自检:验证器能抓到错的东西(证明本 check 不是恒绿) =====
     {
         vector<p2> v = {VIP(0, 0), VIP(13, 0), VIP(4, 9), VIP(9, 4), VIP(-3, 5)};
-        vect<p2> sites = VA(v);
-        vect<vect<p2>> good = voronoi(sites);
+        vector<p2> sites = VA(v);
+        auto good = voronoi(sites);
         CHECK(verifyCells(sites, good, false).empty(), "基准:模板输出能通过验证器");
         // 5.1 把一个区域整体平移 -> 采样对照或面积和必须报错
         {
-            vect<vect<p2>> c = good;
+            auto c = good;
             for(int i = 0; i < (int) c[0].size(); ++i) c[0][i] = c[0][i] + p2{1000, 0};
             string e = verifyCells(sites, c, false);
             CHECK(!e.empty(), "变异:把区域 0 平移 (1000,0) -> 验证器报错");
@@ -335,38 +334,37 @@ int main() {
         }
         // 5.2 把区域 1 换成区域 0 的副本 -> 面积和/采样必须有反应
         {
-            vect<vect<p2>> c = good;
+            auto c = good;
             c[1] = c[0];
             string e = verifyCells(sites, c, false);
             CHECK(!e.empty(), "变异:把区域 1 换成区域 0 的副本 -> 验证器报错");
         }
         // 5.3 少一个区域
         {
-            vect<vect<p2>> c = good;
+            auto c = good;
             c.pop_back();
             string e = verifyCells(sites, c, false);
             CHECK(e == "区域个数 != 站点个数", "变异:少一个区域 -> 验证器报「区域个数 != 站点个数」");
         }
         // 5.4 把某个区域顶点顺序反过来(不再逆时针)
         {
-            vect<vect<p2>> c = good;
+            auto c = good;
             reverse(c[0].begin(), c[0].end());
             string e = verifyCells(sites, c, false);
             CHECK(!e.empty(), "变异:区域顶点顺序反过来 -> 验证器报「面积不为正」");
         }
         // 5.5 把某个区域缩到很小(丢掉一大块面积)
         {
-            vect<vect<p2>> c = good;
+            auto c = good;
             for(int i = 0; i < (int) c[0].size(); ++i) c[0][i] = sites[0] + (c[0][i] - sites[0]) * 0.01;
             string e = verifyCells(sites, c, false);
             CHECK(!e.empty(), "变异:把区域 0 缩小 100 倍 -> 验证器报错(面积和不足)");
         }
         // 5.6 往某个区域里塞进一个别的站点(区域算错)
         {
-            vect<vect<p2>> c = good;
+            auto c = good;
             // 用区域 0 去覆盖站点 1:构造一个把站点 1 包在内的大三角形
-            vect<p2> big;
-            big += sites[1] + p2{-1000, -1000}, big += sites[1] + p2{1000, -1000}, big += sites[1] + p2{0, 1000};
+            vector<p2> big{sites[1] + p2{-1000, -1000}, sites[1] + p2{1000, -1000}, sites[1] + p2{0, 1000}};
             c[0] = big;
             string e = verifyCells(sites, c, false);
             CHECK(!e.empty(), "变异:区域 0 里包住了站点 1 -> 验证器报「别的站点落在本区域内部」");
@@ -375,8 +373,8 @@ int main() {
 
     // ===== 6. 与 Delaunay 的接口一致性:站点在凸包上的区域必须是无界的(被 box 裁成有界) =====
     {
-        vect<p2> sites = {VIP(0, 0), VIP(20, 0), VIP(10, 14), VIP(10, 6), VIP(4, 3)};
-        vect<vect<p2>> c = voronoi(sites);
+        vector<p2> sites = {VIP(0, 0), VIP(20, 0), VIP(10, 14), VIP(10, 6), VIP(4, 3)};
+        auto c = voronoi(sites);
         // 内部站点 (10,6) 与 (4,3) 的区域应该完全在凸包内部(不与 box 边界接触)
         CHECK(verifyVoronoi(sites, false).empty(), "5 个站点(2 个内部)采样对照通过");
         int touch = 0;

@@ -5,7 +5,8 @@
 // 以 a[0] 为扇心二分，O(log n)；返回 0 外、1 边界、2 内；不修改输入。
 // 凹多边形或保留共线点的输入，改用 多边形/多边形基础.cpp 的 O(n) contain。
 
-int in_convex(int n, p2 *a, const p2 &p) {
+int in_convex(const vector<p2> &a, const p2 &p) {
+    int n = a.size();
     if(n < 3) return 0;
     if(crossop({a[0], a[1]}, p) < 0 || crossop({a[0], a[n - 1]}, p) > 0) return 0;  // 落在以 a[0] 为心的扇形外
     if(ons({a[0], a[1]}, p) || ons({a[n - 1], a[0]}, p)) return 1;                 // 与 a[0] 相邻的两条边

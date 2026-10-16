@@ -107,7 +107,8 @@ db tri_disk2(const c2 &c, p2 a, p2 b) {
 // 做法:对每条边 (a[i], a[i+1]) 求「三角形(圆心, a[i], a[i+1]) 与圆盘」的有向交面积并累加 ——
 // 这些三角形是圆心的「扇形剖分」,有向面积自动抵消外部与凹口,所以凹多边形同样正确。
 // 退化:r 在 eps 内按 0 处理;多边形面积 0 时结果 0。顺时针多边形不在契约内(会返回 0)。
-db cir_poly_area(int n, p2 *a, const c2 &c) {
+db cir_poly_area(const vector<p2> &a, const c2 &c) {
+    int n = a.size();
     if(n < 3 || !sign(c.r)) return 0;
     db s = 0;
     for(int i = 0; i < n; ++i) s += tri_disk2(c, a[i], a[(i + 1) % n]);

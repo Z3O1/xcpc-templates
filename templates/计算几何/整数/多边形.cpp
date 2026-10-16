@@ -4,7 +4,8 @@
 namespace IGeo {
 
 // 带号二倍面积，逆时针为正；允许自交（代数面积），要求最终值在 i128 内。
-i128 area2(int n, const p2i *a) {
+i128 area2(const vector<p2i> &a) {
+    int n = a.size();
     u128 s = 0;  // 无符号环绕累计，避免中间前缀溢出；最后按符号还原。
     For(i, 0, n - 1) {
         p2i u = a[i], v = a[(i + 1) % n];
@@ -13,7 +14,8 @@ i128 area2(int n, const p2i *a) {
     return s >> 127 ? -1 - i128(~s) : i128(s);
 }
 // 点与多边形关系：0 外、1 边界、2 内；空集返回 0，自交用奇偶规则。
-int contain(int n, const p2i *a, p2i p) {
+int contain(const vector<p2i> &a, p2i p) {
+    int n = a.size();
     int ret = 0;
     For(i, 0, n - 1) {
         p2i u = a[i], v = a[(i + 1) % n];

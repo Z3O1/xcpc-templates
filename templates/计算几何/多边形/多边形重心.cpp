@@ -4,13 +4,15 @@
 // 周长与面积重心均 O(n)，不修改输入；凹多边形的重心可能在外部。
 
 // 多边形闭合周长(顶点顺序任意)。
-db perimeter(int n, p2 *a) {
+db perimeter(const vector<p2> &a) {
+    int n = a.size();
     db s = 0;
     for(int i = 0; i < n; ++i) s += dis(a[(i + 1) % n] - a[i]);
     return s;
 }
 // 面积重心；要求简单多边形；二倍带号面积在 eps 内时返回顶点平均，空集返回 (0,0)。
-p2 centroid(int n, p2 *a) {
+p2 centroid(const vector<p2> &a) {
+    int n = a.size();
     if(n == 0) return {0, 0};
     p2 ret = {0, 0};
     db s = 0;

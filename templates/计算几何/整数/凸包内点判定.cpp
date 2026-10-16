@@ -4,7 +4,8 @@
 namespace IGeo {
 
 // O(log n) 判定：0 外、1 边界、2 内；空集、单点、线段也支持，不修改输入。
-int in_convex(int n, const p2i *a, p2i p) {
+int in_convex(const vector<p2i> &a, p2i p) {
+    int n = a.size();
     if(n <= 2) return n && ons({a[0], a[n - 1]}, p);
     int c = crossop(a[0], a[1], p), d = crossop(a[0], a[n - 1], p);
     if(c < 0 || d > 0) return 0;

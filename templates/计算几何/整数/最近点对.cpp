@@ -5,10 +5,11 @@
 namespace IGeo {
 
 // 返回最近距离平方；重合点返回 0，n<2 返回 -1；不转浮点、不求平方根。
-i128 closest_pair2(int n, p2i *a) {
+i128 closest_pair2(vector<p2i> &a) {
+    int n = a.size();
     if(n < 2) return -1;
-    sort(a, a + n);
-    if(adjacent_find(a, a + n) != a + n) return 0;
+    sort(a.begin(), a.end());
+    if(adjacent_find(a.begin(), a.end()) != a.end()) return 0;
     i128 ans = dis2(a[0], a[1]);
     vector<p2i> b(n);
     auto rec = [&](auto &&self, int l, int r) -> void {  // [l,r)，结束后按 y 有序

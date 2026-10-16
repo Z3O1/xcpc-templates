@@ -153,7 +153,7 @@ static void earCase(const vector<p2> &poly0, const char *what, bool expectFull) 
     int n = (int) poly0.size();
     db sc = polyScale(poly0);
     vector<p2> a = poly0;  // 模板只读 a, 这里留一份原文用于打印与参考判定
-    vector<array<int, 3>> tri = ear_clip(n, a.data());
+    vector<array<int, 3>> tri = ear_clip(a);
     vector<int> surv = refSurvivors(n, poly0.data());
     auto diePoly = [&]() { printf("  [FAIL] 用例: %s\n", what), prPoly(poly0); };
     if(expectFull && (int) surv.size() != n) {
@@ -229,7 +229,7 @@ static void earCase(const vector<p2> &poly0, const char *what, bool expectFull) 
     // ---- A3: 面积和 == 多边形带号面积 ----
     db want = refArea(poly0);
     vector<p2> ac = poly0;
-    db tmpl = area(n, ac.data());
+    db tmpl = area(ac);
     if(!eqd(tmpl, want, 1e-9L * (1 + A_(want)))) {
         diePoly();
         printf("    area 与独立 shoelace 不一致: 实测 %Lg, 期望 %Lg\n", tmpl, want);
@@ -295,7 +295,7 @@ db dq = refDistPolyOnly(n, poly0.data(), q);
         for(int i = 0; i < (int) tri.size(); ++i) {
             p2 te[3] = {poly0[tri[i][0]], poly0[tri[i][1]], poly0[tri[i][2]]};
             if(refNearest(te[0], te[1], q) <= 1e-18L * sc * sc || refNearest(te[1], te[2], q) <= 1e-18L * sc * sc || refNearest(te[2], te[0], q) <= 1e-18L * sc * sc) onTriEdge = true;
-            if(contain(3, te, q)) ++cnt;  // 模板的 contain(只对逆时针三角形有效)
+            if(contain(vector<p2>(te, te + (3)), q)) ++cnt;  // 模板的 contain(只对逆时针三角形有效)
         }
         if(onTriEdge) continue;  // 落在三角形边界上(计数可能 = 2), 跳过
         if(cnt > 1) {
@@ -386,8 +386,7 @@ int main() {
     // ===== 1. 接口边界: n < 3 =====
     {
         p2 a[4] = {{0, 0}, {1, 0}, {0, 1}, {1, 1}};
-        CHECK(ear_clip(0, a).empty() && ear_clip(1, a).empty() && ear_clip(2, a).empty(), "n=0/1/2 返回空 vector");
-        CHECK(ear_clip(-1, a).empty(), "n<0 也不崩且返回空");
+        CHECK(ear_clip(vector<p2>{}).empty() && ear_clip(vector<p2>(a, a + (1))).empty() && ear_clip(vector<p2>(a, a + (2))).empty(), "n=0/1/2 返回空 vector");
     }
 
     // ===== 2. 定点用例 =====
@@ -399,7 +398,7 @@ int main() {
         }
         earCase({{0, 0}, {4, 0}, {1, 3}}, "逆时针三角形 n=3", true);
         earCase({{0, 0}, {4, 0}, {4, 4}, {0, 4}}, "正方形 n=4", true);
-        CHECK((int) ear_clip(4, (vector<p2>{{0, 0}, {4, 0}, {4, 4}, {0, 4}}).data()).size() == 2, "正方形剖出 2 个三角形");
+        CHECK((int) ear_clip((vector<p2>{{0, 0}, {4, 0}, {4, 4}, {0, 4}})).size() == 2, "正方形剖出 2 个三角形");
         earCase({{0, 0}, {4, 0}, {3, 2}, {0, 4}}, "凹四边形 n=4", true);
         earCase({{0, 0}, {4, 0}, {3, 2}, {2, 1}, {0, 3}}, "凹五边形(反射顶点在 (3,2))", true);
         earCase({{0, 0}, {4, 0}, {4, 4}, {2, 1}, {0, 4}}, "凹五边形 2(反射顶点在 (2,1))", true);
@@ -416,7 +415,7 @@ int main() {
         vector<p2> tiny = {{0, 0}, {1e-9L, 0}, {1e-9L, 1e-9L}, {0, 1e-9L}};
         {
             vector<p2> b = tiny;
-            auto tt = ear_clip(4, b.data());
+            auto tt = ear_clip(b);
             CHECK((int) tt.size() == 2, "边长 1e-9 的正方形也能剖出 2 个三角形(叉积尺度小于基础库的绝对 eps)");
         }
         earCase(tiny, "边长 1e-9 的正方形", true);
@@ -425,7 +424,7 @@ int main() {
         earCase({{0, 0}, {2, 0}, {4, 0}, {4, 2}, {4, 4}, {0, 4}, {0, 2}}, "矩形四边中点(7 顶点)", false);
         earCase({{0, 0}, {1, 0}, {2, 0}, {3, 0}}, "全共线「多边形」(面积 0, 允许空)", false);
         earCase({{0, 0}, {1, 0}, {2, 0}}, "三个共线点(面积 0, 允许空)", false);
-        CHECK((int) ear_clip(3, (vector<p2>{{0, 0}, {1, 0}, {2, 0}}).data()).empty(), "三个共线点: 没有面积为正的三角形, 返回空");
+        CHECK((int) ear_clip((vector<p2>{{0, 0}, {1, 0}, {2, 0}})).empty(), "三个共线点: 没有面积为正的三角形, 返回空");
     }
 
     // ===== 3. 随机凸多边形(convex_hull)=====
@@ -436,8 +435,9 @@ int main() {
             int m = (int) rnd(3, 60), R = (t % 3 == 0) ? 1000000 : (t % 3 == 1 ? 1000 : 30);
             vector<p2> v(m);
             for(int i = 0; i < m; ++i) v[i] = {(db) rnd(-R, R), (db) rnd(-R, R)};
-            vector<p2> src = v, h(2 * m + 10);  // convex_hull 会改写输入并另写输出, 两个缓冲都要 n 以上
-            int k = convex_hull(m, src.data(), h.data());
+            auto src = v;
+            auto h = convex_hull(src);
+            int k = h.size();
             if(k < 3) {
                 ++skip;
                 continue;
@@ -492,8 +492,9 @@ int main() {
             int m = (int) rnd(3, 30);
             vector<p2> v(m);
             for(int i = 0; i < m; ++i) v[i] = {(db) rnd(-200, 200), (db) rnd(-200, 200)};
-            vector<p2> src = v, h(2 * m + 10);
-            int k = convex_hull(m, src.data(), h.data());
+            auto src = v;
+            auto h = convex_hull(src);
+            int k = h.size();
             if(k < 3) {
                 ++skip;
                 continue;
@@ -515,16 +516,16 @@ int main() {
     {
         vector<p2> cw = {{0, 0}, {0, 4}, {4, 4}, {4, 0}};
         vector<p2> b = cw;
-        auto r = ear_clip(4, b.data());
+        auto r = ear_clip(b);
         printf("  [note] 顺时针多边形不在前置条件内(要求逆时针): 实测返回 %d 个三角形, 不崩(结果无意义)。\n", (int) r.size());
         vector<p2> dup = {{0, 0}, {0, 0}, {4, 0}, {4, 4}, {0, 4}};
         vector<p2> c = dup;
-        auto r2 = ear_clip(5, c.data());
+        auto r2 = ear_clip(c);
         printf("  [note] 含重复点的多边形不在前置条件内: 实测返回 %d 个三角形(<= 3), 不崩。\n", (int) r2.size());
         CHECK((int) r.size() <= 2 && (int) r2.size() <= 3, "顺时针/重复点输入: 不崩且长度不超过 n-2(结果无意义, 只要求不越界不崩)");
         vector<p2> lin = {{0, 0}, {1, 0}, {2, 0}, {3, 0}, {4, 0}};
         vector<p2> d = lin;
-        auto r3 = ear_clip(5, d.data());
+        auto r3 = ear_clip(d);
         printf("  [note] 全共线「多边形」面积 0: 实测返回 %d 个三角形(没有合法剖分, 空是允许的)。\n", (int) r3.size());
         CHECK(r3.empty(), "全共线输入返回空(没有面积为正的三角形)");
     }
@@ -533,10 +534,10 @@ int main() {
     printf("  [info] 总耗时 %.2f s\n", chrono::duration<double>(t1 - t0).count());
     vector<p2> large;
     for(ll x = -1000; x <= 1000; ++x) large.push_back({db(x), db(x * x)});
-    auto tris = ear_clip(large.size(), large.data());
+    auto tris = ear_clip(large);
     db sum = 0;
     for(auto t : tris) sum += (large[t[1]] - large[t[0]]).det(large[t[2]] - large[t[0]]) / 2;
-    CHECK(tris.size() == large.size() - 2 && abs(sum - area(large.size(), large.data())) < 1e-5L,
+    CHECK(tris.size() == large.size() - 2 && abs(sum - area(large)) < 1e-5L,
           "2001点凸链，三角形数与覆盖面积");
     PASSED("简单多边形三角剖分");
 }

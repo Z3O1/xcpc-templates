@@ -73,7 +73,7 @@ static p2 refCentroidMC(const vector<p2> &a, int N) {
     vector<p2> b = a;  // contain 要非 const 指针
     for(int t = 0; t < N; ++t) {
         p2 q = P(mnx + (mxx - mnx) * (db) rnd(0, 1000000) / 1000000, mny + (mxy - mny) * (db) rnd(0, 1000000) / 1000000);
-        if(contain(n, b.data(), q) == 2) sx += q.x, sy += q.y, ++cnt;
+        if(contain(b, q) == 2) sx += q.x, sy += q.y, ++cnt;
     }
     if(!cnt) return P(0, 0);
     return P(sx / cnt, sy / cnt);
@@ -86,44 +86,44 @@ int main() {
     // ===== 1. 解析用例 =====
     {
         vector<p2> tri = {P(0, 0), P(9, 0), P(0, 12)};
-        p2 c = centroid(3, tri.data());
+        p2 c = centroid(tri);
         CHECK(eqp(c, P(3, 4)), "centroid 直角三角形 -> 顶点平均 (3,4)");
-        CHECK(eqd(perimeter(3, tri.data()), 9 + 12 + 15), "perimeter 直角三角形 9-12-15 -> 36");
+        CHECK(eqd(perimeter(tri), 9 + 12 + 15), "perimeter 直角三角形 9-12-15 -> 36");
         vector<p2> sq = {P(0, 0), P(4, 0), P(4, 4), P(0, 4)};
-        CHECK(eqp(centroid(4, sq.data()), P(2, 2)), "centroid 正方形 -> 中心 (2,2)");
-        CHECK(eqd(perimeter(4, sq.data()), 16), "perimeter 正方形 -> 16");
+        CHECK(eqp(centroid(sq), P(2, 2)), "centroid 正方形 -> 中心 (2,2)");
+        CHECK(eqd(perimeter(sq), 16), "perimeter 正方形 -> 16");
         vector<p2> rc = {P(-3, -2), P(5, -2), P(5, 7), P(-3, 7)};
-        CHECK(eqp(centroid(4, rc.data()), P(1, 2.5L)), "centroid 矩形 [-3,5]×[-2,7] -> 中心 (1,2.5)");
+        CHECK(eqp(centroid(rc), P(1, 2.5L)), "centroid 矩形 [-3,5]×[-2,7] -> 中心 (1,2.5)");
         vector<p2> cw = {P(0, 0), P(0, 4), P(4, 4), P(4, 0)};  // 顺时针
-        CHECK(eqp(centroid(4, cw.data()), P(2, 2)), "centroid 顺时针正方形 -> 一样是中心");
+        CHECK(eqp(centroid(cw), P(2, 2)), "centroid 顺时针正方形 -> 一样是中心");
         {
             vector<p2> pent;  // 正 n 边形:重心 = 外接圆心
             for(int i = 0; i < 7; ++i) pent.push_back(P(50 * cos(2 * pi * i / 7), 50 * sin(2 * pi * i / 7)));
-            p2 g = centroid(7, pent.data());
+            p2 g = centroid(pent);
             CHECK(dis(g) < 1e-12L, "centroid 正七边形(半径 50)-> 圆心 (0,0)");
-            CHECK(eqd(perimeter(7, pent.data()), 7 * dis(pent[1] - pent[0]), 1e-12L), "perimeter 正七边形 = 7×边长");
+            CHECK(eqd(perimeter(pent), 7 * dis(pent[1] - pent[0]), 1e-12L), "perimeter 正七边形 = 7×边长");
         }
         {  // 梳子形:底 6×1(重心 (3,0.5))+ 3 个 1×4 的齿(x∈[0,1],[2,3],[4,5],重心 y=3)
             // -> 面积 18,x̄ = (6·3 + 4·(0.5+2.5+4.5))/18 = 8/3,ȳ = (6·0.5 + 12·3)/18 = 13/6
             vector<p2> comb = {P(0, 0), P(6, 0), P(6, 1), P(5, 1), P(5, 5), P(4, 5), P(4, 1), P(3, 1), P(3, 5), P(2, 5), P(2, 1), P(1, 1), P(1, 5), P(0, 5)};
-            p2 g = centroid(comb.size(), comb.data());
+            p2 g = centroid(comb);
             CHECK(eqp(g, P(8.0L / 3, 13.0L / 6), 1e-12L), "centroid 梳子形(面积 18)-> 手算 (8/3, 13/6)");
-            CHECK(eqd(Abs(area(comb.size(), comb.data())), 18, 1e-12L), "area 确认梳子形面积 = 18(手算依据)");
+            CHECK(eqd(Abs(area(comb)), 18, 1e-12L), "area 确认梳子形面积 = 18(手算依据)");
         }
         {  // U 形(重心在凹口里、不在多边形内 —— 不能对凹多边形断言「重心在内」)
             vector<p2> U = {P(0, 0), P(6, 0), P(6, 6), P(4, 6), P(4, 2), P(2, 2), P(2, 6), P(0, 6)};
-            p2 g = centroid(U.size(), U.data());  // 6×6 正方形挖掉 [2,4]×[2,6] 的凹口:面积 28
+            p2 g = centroid(U);  // 6×6 正方形挖掉 [2,4]×[2,6] 的凹口:面积 28
             CHECK(eqp(g, P(3, 19.0L / 7), 1e-12L), "centroid U 形(6×6 挖 2×4 凹口)-> 手算 (3, 19/7)");
             printf("  [note] U 形(凹多边形)的重心落在凹口内部:contain(U, 重心) = %d(凹多边形的重心不一定在多边形内)。\n",
-                   contain(U.size(), U.data(), g));
+                   contain(U, g));
         }
         {
             vector<p2> col = {P(0, 0), P(1, 1), P(2, 2)};
-            CHECK(eqp(centroid(3, col.data()), P(1, 1)), "centroid 全共线(带号面积 0)-> 退回顶点平均 (1,1)");
+            CHECK(eqp(centroid(col), P(1, 1)), "centroid 全共线(带号面积 0)-> 退回顶点平均 (1,1)");
             vector<p2> same(10, P(3, 3));
-            CHECK(eqp(centroid(10, same.data()), P(3, 3)), "centroid 全同点 -> 顶点平均还是它自己");
-            CHECK(eqp(centroid(0, same.data()), P(0, 0)), "centroid n=0 -> (0,0)");
-            CHECK(eqd(perimeter(0, same.data()), 0), "perimeter n=0 -> 0");
+            CHECK(eqp(centroid(same), P(3, 3)), "centroid 全同点 -> 顶点平均还是它自己");
+            CHECK(eqp(centroid(vector<p2>{}), P(0, 0)), "centroid n=0 -> (0,0)");
+            CHECK(eqd(perimeter(vector<p2>{}), 0), "perimeter n=0 -> 0");
         }
     }
 
@@ -137,11 +137,9 @@ int main() {
                 for(int i = 0; i < n; ++i) v.push_back(P((db) rnd(-200, 200), (db) rnd(-200, 200)));
                 vector<p2> h;
                 {
-                    p2 arr[64], hh[64];
-                    for(int i = 0; i < n; ++i) arr[i] = v[i];
-                    int k = convex_hull(n, arr, hh);
-                    if(k < 3) continue;
-                    h.assign(hh, hh + k);
+                    auto arr = v;
+                    h = convex_hull(arr);
+                    if(h.size() < 3) continue;
                 }
                 v = h;
             } else {  // 凹:随机星形多边形(绕中心按角度排序 + 随机半径)
@@ -153,7 +151,7 @@ int main() {
                 }
             }
             n = v.size();
-            p2 got = centroid(n, v.data());
+            p2 got = centroid(v);
             auto rf = refCentroidEdge(v);
             p2 want = P(rf[0], rf[1]);
             db sc = 1 + Abs(want.x) + Abs(want.y);
@@ -165,7 +163,7 @@ int main() {
                 ++bad;
                 continue;
             }
-            if(!eqd(Abs(area(n, v.data())), Abs(rf[2]), 1e-9L * (1 + Abs(rf[2])))) {
+            if(!eqd(Abs(area(v)), Abs(rf[2]), 1e-9L * (1 + Abs(rf[2])))) {
                 if(bad < 3) printf("      [反例] 第 %d 组:带号面积不一致\n", t);
                 ++bad;
             }
@@ -186,8 +184,8 @@ int main() {
                 v.push_back(P(r * cos(ang), r * sin(ang)));
             }
             n = v.size();
-            p2 g = centroid(n, v.data());
-            db s0 = area(n, v.data());
+            p2 g = centroid(v);
+            db s0 = area(v);
             db tol = 1e-9L * (1 + Abs(g.x) + Abs(g.y) + R);
             p2 sh = P((db) rnd(-1000, 1000) / 7, (db) rnd(-1000, 1000) / 7);
             vector<p2> mv(n), rv(n), cy(n);
@@ -197,7 +195,7 @@ int main() {
             db sc = (db) rnd(1, 100) / 10;
             vector<p2> sv(n);
             for(int i = 0; i < n; ++i) sv[i] = v[i] * sc;
-            p2 g1 = centroid(n, mv.data()), g2 = centroid(n, rv.data()), g3 = centroid(n, cy.data()), g4 = centroid(n, sv.data());
+            p2 g1 = centroid(mv), g2 = centroid(rv), g3 = centroid(cy), g4 = centroid(sv);
             if(!eqp(g1, g + sh, tol) || !eqp(g2, g, tol) || !eqp(g3, g, tol) || !eqp(g4, g * sc, tol * sc)) {
                 if(bad < 3) {
                     printf("      [反例] 第 %d 组:原 ", t), pr(g), printf(",平移后 "), pr(g1), printf(",反向 "), pr(g2), printf(",移位 "), pr(g3), printf(",缩放 "), pr(g4), printf("\n");
@@ -206,15 +204,12 @@ int main() {
                 ++bad;
             }
             if(Abs(s0) > 1e-6L * R * R) {  // 凸多边形:重心必须在内部
-                p2 arr[64];
-                for(int i = 0; i < n; ++i) arr[i] = v[i];
-                vector<p2> h;
-                p2 hh[64];
-                int k = convex_hull(n, arr, hh);
+                auto arr = v;
+                auto h = convex_hull(arr);
+                int k = h.size();
                 if(k >= 3) {
-                    h.assign(hh, hh + k);
-                    if(contain(k, h.data(), g) != 2) {
-                        if(bad < 3) printf("      [反例] 凸包的重心不在内部:contain = %d\n", contain(k, h.data(), g));
+                    if(contain(h, g) != 2) {
+                        if(bad < 3) printf("      [反例] 凸包的重心不在内部:contain = %d\n", contain(h, g));
                         ++bad;
                     }
                 }
@@ -236,7 +231,7 @@ int main() {
                 v.push_back(P(r * cos(ang), r * sin(ang)));
             }
             n = v.size();
-            p2 g = centroid(n, v.data());
+            p2 g = centroid(v);
             p2 mc = refCentroidMC(v, 250000);
             db tol = 0.02L * R;  // 25 万样本下重心的标准误差约 0.1% 包围盒尺度,这里给 2% 的裕量
             if(!eqp(g, mc, tol)) {
@@ -258,14 +253,12 @@ int main() {
             vector<p2> v;
             for(int i = 0; i < n; ++i) v.push_back(P((db) rnd(-1000000000, 1000000000), (db) rnd(-1000000000, 1000000000)));
             if(t % 2) {  // 一半取凸包保证是简单多边形
-                p2 arr[64], hh[64];
-                for(int i = 0; i < n; ++i) arr[i] = v[i];
-                int k = convex_hull(n, arr, hh);
-                if(k < 3) continue;
-                v.assign(hh, hh + k);
-                n = k;
+                auto arr = v;
+                v = convex_hull(arr);
+                if(v.size() < 3) continue;
+                n = v.size();
             }
-            p2 got = centroid(n, v.data());
+            p2 got = centroid(v);
             auto rf = refCentroidEdge(v);
             db tol = 1e-9L * (1 + Abs(rf[0]) + Abs(rf[1]));
             if(!eqp(got, P(rf[0], rf[1]), tol)) {

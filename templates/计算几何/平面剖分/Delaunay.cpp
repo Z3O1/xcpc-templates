@@ -8,11 +8,11 @@
 // 最坏 O(n^2) 时间、O(n) 空间；不承诺 O(n log n)。
 namespace Delaunay {
 
-vect<p2> pts;  // 去重后的点,按 (x, y) 精确升序
+vector<p2> pts;  // 去重后的点,按 (x, y) 精确升序
 struct Tri { int v[3], f[3], ver; };  // v 逆时针;f[i] 是顶点 i 对边的邻接三角形(-1 表示凸包边)
 vector<Tri> tri;
-vect<char> live;
-vect<int> fre;
+vector<char> live;
+vector<int> fre;
 int verc;
 
 // 分配一个新三角形(优先复用空闲槽),返回其下标。
@@ -22,11 +22,11 @@ int nw() {
         fre.pop_back(), live[t] = 1;
         return t;
     }
-    tri.push_back(Tri()), live += 1;
+    tri.push_back(Tri()), live.push_back(1);
     return (int) tri.size() - 1;
 }
 // 释放三角形 t(标记死亡并回收下标)。
-void rm(int t) { live[t] = 0, fre += t; }
+void rm(int t) { live[t] = 0, fre.push_back(t); }
 // 按 (x, y) 精确字典序比较。
 bool lt(p2 u, p2 v) { return u.x != v.x ? u.x < v.x : u.y < v.y; }
 // 三点叉积的容差符号；a,b,c 为 pts 中的下标。
@@ -85,22 +85,20 @@ void flipall(vector<Tst> &st) {
 }
 
 // 构建 Delaunay 剖分；返回拼平的逆时针三角形坐标，覆盖内部状态，可重复调用。
-vect<p2> delaunay(vect<p2> a) {
-    pts.clear();
+vector<p2> delaunay(vector<p2> a) {
+    pts = move(a);
     tri.clear();
     live.clear();
     fre.clear();
     verc = 0;
-    sort(a.begin(), a.end(), lt);
-    for(int i = 0; i < (int) a.size(); ++i)
-        if(pts.empty() || pts.back().x != a[i].x || pts.back().y != a[i].y) pts += a[i];
-    int n = (int) pts.size();
+    sort(pts.begin(), pts.end(), lt);
+    pts.erase(unique(pts.begin(), pts.end(), [](p2 u, p2 v) { return u.x == v.x && u.y == v.y; }), pts.end());
+    int n = pts.size();
     if(n < 3) return {};
-    // 注意 convex_hull 会往 b 里写下凸壳 + 上凸壳,缓冲必须比 n 大(上界 2n-2),这里一律给 2n+2。
-    vect<p2> q(pts.begin(), pts.end()), hb(2 * n + 2);
-    int k = convex_hull(n, q.data(), hb.data());  // 凸包(逆时针,去掉共线点)
-    if(k < 3) return {};                          // 全部共线:没有任何非退化三角形
-    vect<int> hv(k), fs(k - 2);
+    auto hb = convex_hull(pts);
+    int k = hb.size();
+    if(k < 3) return {};
+    vector<int> hv(k), fs(k - 2);
     for(int j = 0; j < k; ++j) hv[j] = (int) (lower_bound(pts.begin(), pts.end(), hb[j], lt) - pts.begin());
     vector<Tst> st;
     For(i, 1, k - 2) fs[i - 1] = mk(hv[0], hv[i], hv[i + 1]);  // 先做扇形剖分
@@ -108,10 +106,10 @@ vect<p2> delaunay(vect<p2> a) {
     for(int t = 0; t < (int) tri.size(); ++t)
         for(int i = 0; i < 3; ++i) st.push_back({t, i, tri[t].ver});  // 把它翻成 Delaunay
     flipall(st);
-    vect<int> in;  // 内部点(不在凸包上的点;可能正好落在凸包边上)
-    vect<char> onh(n, 0);
+    vector<int> in;  // 内部点(不在凸包上的点;可能正好落在凸包边上)
+    vector<char> onh(n, 0);
     for(int j = 0; j < k; ++j) onh[hv[j]] = 1;
-    for(int i = 0; i < n; ++i) if(!onh[i]) in += i;
+    for(int i = 0; i < n; ++i) if(!onh[i]) in.push_back(i);
     mt19937 rng(20240915);
     shuffle(in.begin(), in.end(), rng);
     int last = fs[0];
@@ -172,10 +170,10 @@ vect<p2> delaunay(vect<p2> a) {
         }
         flipall(st);
     }
-    vect<p2> res;
+    vector<p2> res;
     for(int t = 0; t < (int) tri.size(); ++t) if(live[t]) {
         int a = tri[t].v[0], b = tri[t].v[1], c = tri[t].v[2];
-        res += pts[a], res += pts[b], res += pts[c];
+        res.push_back(pts[a]), res.push_back(pts[b]), res.push_back(pts[c]);
     }
     return res;
 }

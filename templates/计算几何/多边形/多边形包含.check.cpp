@@ -80,7 +80,7 @@ int main() {
         int bad = 0;
         For(x, -2, 6) For(y, -2, 6) {
             p2 p = P((db) x / 2, (db) y / 2);
-            int got = wn_contain(4, sq.data(), p);
+            int got = wn_contain(sq, p);
             bool in = x >= 0 && x <= 8 && y >= 0 && y <= 8;
             bool bd = in && (x == 0 || x == 8 || y == 0 || y == 8);
             int want = bd ? 1 : (in ? 2 : 0);
@@ -91,14 +91,14 @@ int main() {
         }
         CHECK(bad == 0, "wn_contain 正方形 9×9 网格:0(外)/1(边与顶点)/2(内)全部正确");
         vector<p2> cw = {P(0, 0), P(0, 4), P(4, 4), P(4, 0)};  // 顺时针
-        CHECK(wn_contain(4, cw.data(), P(2, 2)) == 2 && wn_contain(4, cw.data(), P(2, 0)) == 1 && wn_contain(4, cw.data(), P(5, 2)) == 0,
+        CHECK(wn_contain(cw, P(2, 2)) == 2 && wn_contain(cw, P(2, 0)) == 1 && wn_contain(cw, P(5, 2)) == 0,
               "wn_contain 与顶点顺序无关(顺时针多边形同样正确)");
         // 凹多边形(梳子形):逐点与精确整数缠绕数对照
         vector<p2> comb = {P(0, 0), P(6, 0), P(6, 1), P(5, 1), P(5, 5), P(4, 5), P(4, 1), P(3, 1), P(3, 5), P(2, 5), P(2, 1), P(1, 1), P(1, 5), P(0, 5)};
         bad = 0;
         For(x, -1, 7) For(y, -1, 6) {
             p2 p = P(x, y);
-            int got = wn_contain(comb.size(), comb.data(), p), want = exactWN(comb, x, y);
+            int got = wn_contain(comb, p), want = exactWN(comb, x, y);
             if(got != want) {
                 if(!bad) printf("      [反例] 梳子形 "), pr(p), printf(":模板 %d,精确 %d\n", got, want);
                 ++bad;
@@ -107,16 +107,16 @@ int main() {
         CHECK(bad == 0, "wn_contain 凹多边形(梳子形)8×7 网格逐点与精确缠绕数一致(含凹口/边界/角点)");
         // 蝴蝶结(自交):两个翅膀的三角形内部在 (1,2)/(3,2),交叉点 (2,2) 在两条边上
         vector<p2> bow = {P(0, 0), P(4, 4), P(4, 0), P(0, 4)};
-        CHECK(wn_contain(4, bow.data(), P(1, 2)) == 2 && wn_contain(4, bow.data(), P(3, 2)) == 2,
+        CHECK(wn_contain(bow, P(1, 2)) == 2 && wn_contain(bow, P(3, 2)) == 2,
               "wn_contain 自交蝴蝶结:两个翅膀内部都判 2(缠绕数非零)");
-        CHECK(wn_contain(4, bow.data(), P(2, 2)) == 1 && wn_contain(4, bow.data(), P(1, 1)) == 1 && wn_contain(4, bow.data(), P(1, 3)) == 1,
+        CHECK(wn_contain(bow, P(2, 2)) == 1 && wn_contain(bow, P(1, 1)) == 1 && wn_contain(bow, P(1, 3)) == 1,
               "wn_contain 自交蝴蝶结:交叉点 (2,2) 与两条对角线上的点 -> 边界 1");
         {
             // 「同一个三角形绕两圈」:缠绕数 2(非零规则判内部),奇偶规则判外部 —— 两种规则的分水岭
             vector<p2> dbl = {P(0, 0), P(4, 0), P(0, 4), P(0, 0), P(4, 0), P(0, 4)};
-            CHECK(wn_contain(6, dbl.data(), P(1, 1)) == 2 && exactWN(dbl, 1, 1) == 2,
+            CHECK(wn_contain(dbl, P(1, 1)) == 2 && exactWN(dbl, 1, 1) == 2,
                   "wn_contain 绕两圈的三角形:缠绕数 2 -> 判内部(与精确缠绕数一致)");
-            CHECK(contain(6, dbl.data(), P(1, 1)) == 0, "同一个点:contain(奇偶规则)判外部 —— 两种规则确实不同");
+            CHECK(contain(dbl, P(1, 1)) == 0, "同一个点:contain(奇偶规则)判外部 —— 两种规则确实不同");
         }
         {
             // 五角星(每两个顶点连一条):中心小五边形缠绕数 ±2 -> 非零规则判内部,奇偶规则判外部
@@ -124,16 +124,16 @@ int main() {
             for(int i = 0; i < 5; ++i) st.push_back(P(100 * cos(pi / 2 + 2 * pi * i / 5), 100 * sin(pi / 2 + 2 * pi * i / 5)));
             vector<p2> pent = {st[0], st[2], st[4], st[1], st[3]};
             int sg = 0;
-            CHECK(wn_contain(5, pent.data(), P(0, 0)) == 2 && contain(5, pent.data(), P(0, 0)) == 0 && angWNOk(pent, P(0, 0), sg) && sg != 0,
+            CHECK(wn_contain(pent, P(0, 0)) == 2 && contain(pent, P(0, 0)) == 0 && angWNOk(pent, P(0, 0), sg) && sg != 0,
                   "wn_contain 五角星中心:缠绕数 2 判内部,奇偶规则判外部,有向角和法也确认非零");
         }
         // 退化输入
         vector<p2> dupv = {P(0, 0), P(0, 0), P(4, 0), P(4, 4), P(0, 4)};
-        CHECK(wn_contain(5, dupv.data(), P(2, 2)) == 2 && wn_contain(5, dupv.data(), P(9, 9)) == 0 && wn_contain(5, dupv.data(), P(2, 0)) == 1,
+        CHECK(wn_contain(dupv, P(2, 2)) == 2 && wn_contain(dupv, P(9, 9)) == 0 && wn_contain(dupv, P(2, 0)) == 1,
               "wn_contain 相邻重复点(退化边)被跳过:内部/外部/边界判定照常");
         vector<p2> deg = {P(0, 0), P(1, 1), P(2, 2)};
-        CHECK(wn_contain(3, deg.data(), P(1, 1)) == 1 && wn_contain(3, deg.data(), P(1, 0)) == 0, "wn_contain 全共线退化多边形:线上点算子边界、线外算外部");
-        CHECK(wn_contain(2, sq.data(), P(0, 0)) == 0 && wn_contain(0, sq.data(), P(0, 0)) == 0, "wn_contain:n<3 -> 0");
+        CHECK(wn_contain(deg, P(1, 1)) == 1 && wn_contain(deg, P(1, 0)) == 0, "wn_contain 全共线退化多边形:线上点算子边界、线外算外部");
+        CHECK(wn_contain(vector<p2>(sq.data(), sq.data() + (2)), P(0, 0)) == 0 && wn_contain(vector<p2>{}, P(0, 0)) == 0, "wn_contain:n<3 -> 0");
     }
 
     // ===== 2. 随机简单多边形:四方对照 =====
@@ -154,7 +154,7 @@ int main() {
             for(int it = 0; it < 80; ++it) {
                 ll qx = rnd(-50, 50), qy = rnd(-50, 50);
                 p2 q = P((db) qx, (db) qy);
-                int got = wn_contain(n, a.data(), q), exact = exactWN(a, qx, qy);
+                int got = wn_contain(a, q), exact = exactWN(a, qx, qy);
                 ++cnt;
                 if(got != exact) {
                     if(bad < 3) printf("      [反例] "), pr(q), printf(":模板 %d,精确 %d\n", got, exact), prv("多边形", a);
@@ -169,8 +169,8 @@ int main() {
                         ++bad;
                     }
                 }
-                if(simple && exact != 1 && contain(n, a.data(), q) != got) {
-                    if(bad < 3) printf("      [反例] "), pr(q), printf(":模板 %d,contain(奇偶) %d(简单多边形上必须一致)\n", got, contain(n, a.data(), q));
+                if(simple && exact != 1 && contain(a, q) != got) {
+                    if(bad < 3) printf("      [反例] "), pr(q), printf(":模板 %d,contain(奇偶) %d(简单多边形上必须一致)\n", got, contain(a, q));
                     ++bad;
                 }
             }
@@ -189,7 +189,7 @@ int main() {
             for(int it = 0; it < 80; ++it) {
                 ll qx = rnd(-20, 20), qy = rnd(-20, 20);
                 p2 q = P((db) qx, (db) qy);
-                int got = wn_contain(n, a.data(), q), exact = exactWN(a, qx, qy);
+                int got = wn_contain(a, q), exact = exactWN(a, qx, qy);
                 ++cnt, inside += exact == 2;
                 if(got != exact) {
                     if(bad < 3) printf("      [反例] "), pr(q), printf(":模板 %d,精确 %d\n", got, exact), prv("多边形", a);
@@ -216,7 +216,7 @@ int main() {
             for(int i = 0; i < n; ++i) a.push_back(P((db) rnd(-1000000000, 1000000000), (db) rnd(-1000000000, 1000000000)));
             for(int it = 0; it < 20; ++it) {
                 ll qx = rnd(-1000000000, 1000000000), qy = rnd(-1000000000, 1000000000);
-                int got = wn_contain(n, a.data(), P((db) qx, (db) qy)), exact = exactWN(a, qx, qy);
+                int got = wn_contain(a, P((db) qx, (db) qy)), exact = exactWN(a, qx, qy);
                 if(got != exact) {
                     if(bad < 3) printf("      [反例] 大坐标 "), pr(P((db) qx, (db) qy)), printf(":模板 %d,精确 %d\n", got, exact), prv("多边形", a);
                     ++bad;
@@ -240,10 +240,10 @@ int main() {
             for(int i = 0; i < n; ++i) cy[i] = a[(i + 3) % n];
             for(int it = 0; it < 40; ++it) {
                 p2 q = P((db) rnd(-40, 40), (db) rnd(-40, 40));
-                int base = wn_contain(n, a.data(), q);
-                if(wn_contain(n, mv.data(), q + sh) != base) ++bad;
-                if(wn_contain(n, rv.data(), q) != base) ++bad;
-                if(wn_contain(n, cy.data(), q) != base) ++bad;
+                int base = wn_contain(a, q);
+                if(wn_contain(mv, q + sh) != base) ++bad;
+                if(wn_contain(rv, q) != base) ++bad;
+                if(wn_contain(cy, q) != base) ++bad;
                 bool bd = onAnyEdge(a, q);
                 if(bd != (base == 1)) ++bad;  // 边界判定与「确实在某条边上」等价
             }

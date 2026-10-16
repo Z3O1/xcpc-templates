@@ -5,13 +5,15 @@
 namespace Geo {
 
 // 带号面积，逆时针为正；n<=2 返回 0，自交时为代数面积。
-db area(int n, p2 *a) {
+db area(const vector<p2> &a) {
+    int n = a.size();
     db ret = 0;
     For(i, 0, n - 1) ret += a[i].det(a[(i + 1) % n]);
     return ret / 2;
 }
 // 点与多边形关系：0 外、1 边界、2 内；支持凹多边形与重复顶点，空集返回 0。
-int contain(int n, p2 *a, const p2 &p) {
+int contain(const vector<p2> &a, const p2 &p) {
+    int n = a.size();
     int ret = 0;
     For(i, 0, n - 1) {
         p2 u = a[i], v = a[(i + 1) % n];

@@ -33,10 +33,10 @@ static void prv(const char *s, const vector<p2> &v) {
     printf("%s\n", v.size() > 30 ? " ..." : "");
 }
 static vector<p2> runUpper(const vector<p2> &v, bool nos, int &k) {  // 跑模板并取出结果
-    static p2 a[4096], b[4096];
-    for(int i = 0; i < (int) v.size(); ++i) a[i] = v[i];
-    k = upper_hull(v.size(), a, b, nos);
-    return vector<p2>(b, b + k);
+    auto a = v;
+    auto b = upper_hull(a, nos);
+    k = b.size();
+    return b;
 }
 
 // ---------- 独立参考实现 ----------
@@ -186,10 +186,11 @@ int main() {
         vector<p2> sq = {P(0, 0), P(4, 0), P(4, 4), P(0, 4)};
         vector<p2> h = runUpper(sq, 0, k);
         CHECK(k == 2 && h[0] == P(0, 4) && h[1] == P(4, 4), "upper_hull 正方形 -> 上边界两个角(左到右)");
-        CHECK(upper_hull(0, sq.data(), sq.data()) == 0, "upper_hull:n=0 -> 0");
+        vector<p2> empty;
+        CHECK(upper_hull(empty).empty(), "upper_hull:空集");
         vector<p2> one = {P(3, 7)};
-        p2 b1[4];
-        CHECK(upper_hull(1, one.data(), b1) == 1 && b1[0] == P(3, 7), "upper_hull:n=1 -> 1 个点");
+        auto b1 = upper_hull(one);
+        CHECK(b1.size() == 1 && b1[0] == P(3, 7), "upper_hull:单点");
         vector<p2> two = {P(5, 5), P(1, 1)};
         h = runUpper(two, 0, k);
         CHECK(k == 2 && h[0] == P(1, 1) && h[1] == P(5, 5), "upper_hull:n=2 -> 按 x 排序输出两点");

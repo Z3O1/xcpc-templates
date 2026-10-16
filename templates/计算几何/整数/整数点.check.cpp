@@ -20,6 +20,12 @@ using IGeo::p2i;
 
 template<class T, class = void> struct point_product : false_type {};
 template<class T> struct point_product<T, void_t<decltype(declval<T>() * declval<T>())>> : true_type {};
+template<class T, class = void> struct raw_hull : false_type {};
+template<class T> struct raw_hull<T, void_t<decltype(convex_hull(0, declval<T*>(), declval<T*>()))>> : true_type {};
+static_assert(!raw_hull<Geo::p2>::value && !raw_hull<IGeo::p2i>::value, "不恢复点数+数组接口");
+static_assert(is_same_v<decltype(Geo::convex_hull(declval<vector<Geo::p2>&>())), vector<Geo::p2>> &&
+              is_same_v<decltype(IGeo::convex_hull(declval<vector<IGeo::p2i>&>())), vector<IGeo::p2i>>,
+              "凸包直接返回标准vector");
 static_assert(!point_product<Geo::p2>::value && !point_product<Geo::p3>::value,
               "点点乘法必须使用dot");
 static_assert(is_same_v<decltype(Geo::p2{} * db(2)), Geo::p2> &&
@@ -39,16 +45,17 @@ void verify(p2i a, p2i b, p2i c) {
 void mixed() {
     IntCheck::need(Geo::dot(Geo::p2{3, 4}, Geo::p2{-1, 2}) == 5 &&
                    Geo::dot(Geo::p3{1, 2, 3}, Geo::p3{4, 5, 6}) == 32, "独立dot重载");
-    Geo::p2 a[] = {{0, 0}, {2, 0}, {0, 2}}, b[8];
-    IGeo::p2i x[] = {{0, 0}, {4, 0}, {0, 4}}, y[8];
-    IntCheck::need(Geo::area(3, a) == 2 && IGeo::area2(3, x) == 16 &&
-                   Geo::contain(3, a, Geo::p2{0.5L, 0.5L}) == 2 &&
-                   IGeo::contain(3, x, IGeo::p2i{1, 1}) == 2, "多边形命名空间联编");
-    int n = Geo::convex_hull(3, a, b), m = IGeo::convex_hull(3, x, y);
-    IntCheck::need(n == 3 && m == 3 && Geo::convex_diameter(n, b) == 8 &&
-                   IGeo::convex_diameter(m, y) == 32 && ::in_convex(n, b, Geo::p2{0, 0}) == 1 &&
-                   IGeo::in_convex(m, y, IGeo::p2i{1, 1}) == 2, "凸包命名空间联编");
-    IntCheck::need(::dis_closest({Geo::p2{0, 0}, Geo::p2{2, 0}}) == 2 && IGeo::closest_pair2(3, x) == 16 &&
+    vector<Geo::p2> a{{0, 0}, {2, 0}, {0, 2}};
+    vector<IGeo::p2i> x{{0, 0}, {4, 0}, {0, 4}};
+    IntCheck::need(Geo::area(a) == 2 && IGeo::area2(x) == 16 &&
+                   Geo::contain(a, Geo::p2{0.5L, 0.5L}) == 2 &&
+                   IGeo::contain(x, IGeo::p2i{1, 1}) == 2, "多边形命名空间联编");
+    auto b = Geo::convex_hull(a);
+    auto y = IGeo::convex_hull(x);
+    IntCheck::need(b.size() == 3 && y.size() == 3 && Geo::convex_diameter(b) == 8 &&
+                   IGeo::convex_diameter(y) == 32 && ::in_convex(b, Geo::p2{0, 0}) == 1 &&
+                   IGeo::in_convex(y, IGeo::p2i{1, 1}) == 2, "凸包命名空间联编");
+    IntCheck::need(::dis_closest({Geo::p2{0, 0}, Geo::p2{2, 0}}) == 2 && IGeo::closest_pair2(x) == 16 &&
                    Geo::ons(Geo::seg{{0, 0}, {1, 0}}, Geo::p2{0, 0}) &&
                    IGeo::ons(IGeo::segi{{0, 0}, {1, 0}}, IGeo::p2i{0, 0}) &&
                    Geo::dis2(Geo::p2{3, 4}) == 25 && Geo::dis2(Geo::p3{1, 2, 3}) == 14,

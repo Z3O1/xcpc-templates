@@ -1,45 +1,40 @@
 // convex_hull(): 计算几何 · 凸包、直径与裁剪
 
-// 依赖 基础/直线与线段.cpp；凸多边形顶点不重复首点。
+// 依赖 基础/直线与线段.cpp；凸多边形顶点不重复首点，size() 须在 int 内。
 namespace Geo {
 
-// Andrew 凸包，O(n log n)；nos=0 去共线点，nos=1 保留；返回点数，逆时针写入 b。
-// a 原地排序并精确去重；b 不得与 a 重叠，容量至少 2n+2；空集返回 0，单点也写入 b。
-// 全共线时 nos=0 只留端点，nos=1 按字典序各输出一次；非共线时从字典序最小点开始。
-int convex_hull(int n, p2 *a, p2 *b, bool nos = 0) {
-    if(!n) return 0;
-    sort(a, a + n);
-    n = unique(a, a + n, [](p2 x, p2 y) {
-        return x.x == y.x && x.y == y.y;
-    }) - a;
-    if(n == 1) {
-        b[0] = a[0];
-        return 1;
-    }
+// a 原地排序、精确去重，返回逆时针凸包，不重复首点；nos=1 保留边上共线点，默认只留端点。
+// O(n log n)；空/单点照常返回；全共线默认留两端点，nos=1 按字典序各输出一次。
+vector<p2> convex_hull(vector<p2> &a, bool nos = false) {
+    sort(a.begin(), a.end());
+    a.erase(unique(a.begin(), a.end(), [](p2 x, p2 y) { return x.x == y.x && x.y == y.y; }), a.end());
+    int n = a.size();
+    if(n <= 1) return a;
     if(nos) {
         bool collinear = true;
         For(i, 1, n - 2) if(crossop({a[0], a[n - 1]}, a[i])) collinear = false;
-        if(collinear) {
-            copy(a, a + n, b);
-            return n;
-        }
+        if(collinear) return a;
     }
-    int k = 0;
-    For(i, 0, n - 1) {
-        while(k > 1 && crossop({b[k - 2], b[k - 1]}, a[i]) <= -nos) --k;
-        b[k++] = a[i];
+    vector<p2> b;
+    b.reserve(a.size() + 1);
+    for(auto p : a) {
+        while(b.size() > 1 && crossop({b[b.size() - 2], b.back()}, p) <= -nos)
+            b.pop_back();
+        b.push_back(p);
     }
-    int t = k;
+    size_t t = b.size();
     rFor(i, n - 2, 0) {
-        while(k > t && crossop({b[k - 2], b[k - 1]}, a[i]) <= -nos) --k;
-        if(i) b[k++] = a[i];
+        while(b.size() > t && crossop({b[b.size() - 2], b.back()}, a[i]) <= -nos)
+            b.pop_back();
+        if(i) b.push_back(a[i]);
     }
-    return k;
+    return b;
 }
 
-// 旋转卡壳求最远点对距离平方，O(n)；要求逆时针凸多边形；n<=1 返回 0，n=2 可用。
-// 全共线可按沿线顺序给点；重复相邻点须先去掉；不修改输入。
-db convex_diameter(int n, p2 *a) {
+// 逆时针凸多边形的直径平方，O(n)，不修改输入；n<=1 返回 0，线段也支持。
+// 全共线须按沿线顺序给点，相邻重复点须先去掉。
+db convex_diameter(const vector<p2> &a) {
+    int n = a.size();
     if(n <= 1) return 0;
     int is = 0, js = 0;
     For(k, 1, n - 1) {
@@ -49,18 +44,17 @@ db convex_diameter(int n, p2 *a) {
     int i = is, j = js;
     db ret = dis2(a[i] - a[j]);
     do {
-        if((a[(i + 1) % n] - a[i]).det(a[(j + 1) % n] - a[j]) >= 0)
-            j = (j + 1) % n;
-        else
-            i = (i + 1) % n;
+        if((a[(i + 1) % n] - a[i]).det(a[(j + 1) % n] - a[j]) >= 0) j = (j + 1) % n;
+        else i = (i + 1) % n;
         ret = max(ret, dis2(a[i] - a[j]));
     } while(i != is || j != js);
     return ret;
 }
 
-// 用非零长有向直线 q 裁凸多边形，O(n)；保留左侧及边界，返回顶点并保持原旋向。
-// 不修改输入；允许返回空/点/线段，可能含重复相邻点。
-vector<p2> convex_cut(int n, p2 *a, const seg &q) {
+// 用非零有向直线 q 裁凸多边形，保留左侧及边界；O(n)，不修改输入、保持旋向。
+// 允许空/点/线段，结果可能有重复相邻点。
+vector<p2> convex_cut(const vector<p2> &a, const seg &q) {
+    int n = a.size();
     vector<p2> ret;
     For(i, 0, n - 1) {
         p2 u = a[i], v = a[(i + 1) % n];

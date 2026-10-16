@@ -18,24 +18,23 @@ seg bisector(p2 a, p2 b) {
 }
 
 // 求各站点的 Voronoi 区域(半平面交逐站点裁剪包围盒);返回第 i 个元素为站点 i 的逆时针区域。
-vect<vect<p2>> voronoi(vect<p2> a) {
-    int n = (int) a.size();
-    vect<vect<p2>> res;
+vector<vector<p2>> voronoi(const vector<p2> &a) {
+    int n = a.size();
+    vector<vector<p2>> res;
     if(!n) return res;
     db x1 = a[0].x, x2 = a[0].x, y1 = a[0].y, y2 = a[0].y;
     for(int i = 1; i < n; ++i) x1 = min(x1, a[i].x), x2 = max(x2, a[i].x), y1 = min(y1, a[i].y), y2 = max(y2, a[i].y);
     db r = max(x2 - x1, y2 - y1) + 1;
     box = {p2{x1 - r, y1 - r}, p2{x2 + r, y2 + r}};
-    vect<p2> ini;
-    ini += p2{box[0].x, box[0].y}, ini += p2{box[1].x, box[0].y};
-    ini += p2{box[1].x, box[1].y}, ini += p2{box[0].x, box[1].y};  // 逆时针
+    vector<p2> ini{{box[0].x, box[0].y}, {box[1].x, box[0].y},
+                   {box[1].x, box[1].y}, {box[0].x, box[1].y}};  // 逆时针
     for(int i = 0; i < n; ++i) {
-        vect<p2> cur = ini;
+        vector<p2> cur = ini;
         for(int j = 0; j < n; ++j) {
             if(j == i || a[i] == a[j] || cur.size() < 3) continue;
-            cur = convex_cut((int) cur.size(), cur.data(), bisector(a[i], a[j]));
+            cur = convex_cut(cur, bisector(a[i], a[j]));
         }
-        res += cur;
+        res.push_back(move(cur));
     }
     return res;
 }

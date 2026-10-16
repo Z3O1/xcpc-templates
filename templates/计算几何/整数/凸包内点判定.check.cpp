@@ -22,8 +22,8 @@ int reference(const vector<p2i> &a, p2i p) {
 // 对拍查询并检查不修改凸包；失败输出查询点和整个凸包。
 void verify(const vector<p2i> &a, const vector<p2i> &queries) {
     auto before = a;
-    for(auto p : queries) if(in_convex(a.size(), a.data(), p) != reference(a, p)) {
-        cerr << "query=(" << p.x << ',' << p.y << ") got=" << in_convex(a.size(), a.data(), p)
+    for(auto p : queries) if(in_convex(a, p) != reference(a, p)) {
+        cerr << "query=(" << p.x << ',' << p.y << ") got=" << in_convex(a, p)
              << " want=" << reference(a, p) << '\n';
         IntCheck::need(false, "逐边半平面参考", a);
     }
@@ -54,13 +54,12 @@ int main() {
     verify({{0, 0}, {N, N - 1}, {N + 1, N}}, {{0, 0}, {N, N}, {N, N - 1}, {N + 1, N}});
     vector<p2i> a, b;
     for(ll x = -100000; x <= 100000; ++x) a.push_back({x, x * x});
-    b.resize(2 * a.size() + 2);
-    int n = convex_hull(a.size(), a.data(), b.data());
+    b = convex_hull(a);
     for(ll x = -100000; x <= 100000; ++x) {
-        IntCheck::need(in_convex(n, b.data(), {x, x * x}) == 1, "长凸链顶点边界");
+        IntCheck::need(in_convex(b, {x, x * x}) == 1, "长凸链顶点边界");
         if(abs(x) < 100000) {
-            IntCheck::need(in_convex(n, b.data(), {x, x * x + 1}) == 2, "长凸链内点");
-            IntCheck::need(in_convex(n, b.data(), {x, x * x - 1}) == 0, "长凸链外点");
+            IntCheck::need(in_convex(b, {x, x * x + 1}) == 2, "长凸链内点");
+            IntCheck::need(in_convex(b, {x, x * x - 1}) == 0, "长凸链外点");
         }
     }
     PASSED("整数凸包内点判定");

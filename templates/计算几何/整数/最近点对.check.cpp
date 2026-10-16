@@ -17,7 +17,7 @@ i128 brute(const vector<p2i> &a) {
 // 暴力对拍并核对重排后仍是同一多重集。
 void verify(vector<p2i> a) {
     auto before = a;
-    i128 want = brute(a), got = closest_pair2(a.size(), a.data());
+    i128 want = brute(a), got = closest_pair2(a);
     if(got != want) cerr << "closest got=" << IntCheck::text(got) << " want=" << IntCheck::text(want) << '\n';
     IntCheck::need(got == want, "暴力最近点对参考", before);
     sort(a.begin(), a.end()); sort(before.begin(), before.end());
@@ -44,14 +44,14 @@ int main() {
     vector<p2i> a(N);
     for(int i = 0; i < N; ++i) a[i] = {3LL * i, 4LL * i};
     shuffle(a.begin(), a.end(), rng);
-    IntCheck::need(closest_pair2(N, a.data()) == 25, "百万斜线点");
+    IntCheck::need(closest_pair2(a) == 25, "百万斜线点");
     for(int i = 0; i < N; ++i) a[i] = {1000000000000000000LL, 7LL * i};
     shuffle(a.begin(), a.end(), rng);
-    IntCheck::need(closest_pair2(N, a.data()) == 49, "百万竖线点");
+    IntCheck::need(closest_pair2(a) == 49, "百万竖线点");
     for(int i = 0; i < N; ++i) a[i] = {i % 1000, i / 1000};
     shuffle(a.begin(), a.end(), rng);
-    IntCheck::need(closest_pair2(N, a.data()) == 1, "百万网格点");
+    IntCheck::need(closest_pair2(a) == 1, "百万网格点");
     fill(a.begin(), a.end(), p2i{7, 9});
-    IntCheck::need(closest_pair2(N, a.data()) == 0, "百万重合点");
+    IntCheck::need(closest_pair2(a) == 0, "百万重合点");
     PASSED("整数最近点对");
 }

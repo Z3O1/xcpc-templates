@@ -7,7 +7,8 @@
 // 闭三角形内（含对角线上）的其它活点均阻塞摘耳；O(n²) 时间、O(n) 空间。
 
 // 对简单多边形耳切；要求如上，输出三角形不重不漏。
-vector<array<int, 3>> ear_clip(int n, p2 *a) {
+vector<array<int, 3>> ear_clip(const vector<p2> &a) {
+    int n = a.size();
     vector<array<int, 3>> ret;
     if(n < 3) return ret;
     vector<int> prv(n), nxt(n), blocks(n, -1);

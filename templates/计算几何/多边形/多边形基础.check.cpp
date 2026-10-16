@@ -27,27 +27,27 @@ int main() {
         }
         db triangles = 0;
         for(int i = 1; i + 1 < n; ++i) triangles += (a[i] - a[0]).det(a[i + 1] - a[0]) / 2;
-        CHECK(abs(area(n, a.data()) - triangles) < 1e-7L, "扇形三角形代数面积和");
+        CHECK(abs(area(a) - triangles) < 1e-7L, "扇形三角形代数面积和");
         for(int j = 0; j < 20; ++j) {
             p2 p{db(rnd(-10000, 10000)), db(rnd(-10000, 10000))};
-            int want = angle_contain(a, p), got = contain(n, a.data(), p);
+            int want = angle_contain(a, p), got = contain(a, p);
             if(want >= 0 && got != want) {
                 printf("case=%d p=(%Lg,%Lg) got=%d want=%d\n", t, p.x, p.y, got, want);
                 for(p2 v : a) printf("(%Lg,%Lg) ", v.x, v.y);
                 return 1;
             }
         }
-        db s = area(n, a.data());
+        db s = area(a);
         reverse(a.begin(), a.end());
-        CHECK(abs(area(n, a.data()) + s) < 1e-7L && contain(n, a.data(), {0, 0}) == 2, "反向面积变号、包含不变");
+        CHECK(abs(area(a) + s) < 1e-7L && contain(a, {0, 0}) == 2, "反向面积变号、包含不变");
     }
     p2 rectangle[] = {{0, 0}, {4, 0}, {4, 3}, {0, 3}, {0, 3}};
     for(int x = -2; x <= 10; ++x) for(int y = -2; y <= 8; ++y) {
         int want = x < 0 || x > 8 || y < 0 || y > 6 ? 0 : x == 0 || x == 8 || y == 0 || y == 6 ? 1 : 2;
-        CHECK(contain(5, rectangle, {db(x) / 2, db(y) / 2}) == want, "带重复顶点矩形解析分类");
+        CHECK(contain(vector<p2>(rectangle, rectangle + (5)), {db(x) / 2, db(y) / 2}) == want, "带重复顶点矩形解析分类");
     }
     p2 one{2, 3};
-    CHECK(area(0, nullptr) == 0 && contain(0, nullptr, one) == 0, "空集");
-    CHECK(area(1, &one) == 0 && contain(1, &one, one) == 1 && contain(1, &one, {0, 0}) == 0, "单点退化");
+    CHECK(area(vector<p2>{}) == 0 && contain(vector<p2>{}, one) == 0, "空集");
+    CHECK(area(vector<p2>(&one, &one + (1))) == 0 && contain(vector<p2>(&one, &one + (1)), one) == 1 && contain(vector<p2>(&one, &one + (1)), {0, 0}) == 0, "单点退化");
     PASSED("多边形基础");
 }
