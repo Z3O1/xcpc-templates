@@ -64,6 +64,30 @@ void check_incir() {
         got = incir(p[0], p[1], p[2]);
         incir_need(got.r == 0 && isfinite(got.o.x) && isfinite(got.o.y), p[0], p[1], p[2], got);
     }
+    // 边长可超出db上限，或同时跨越6000个十进制数量级；真值仍有限。
+    db L = numeric_limits<db>::max() * 0.75L;
+    array<p2, 3> huge{{{0, 0}, {L, L}, {L, 0}}};
+    order = {0, 1, 2};
+    do {
+        got = incir(huge[order[0]], huge[order[1]], huge[order[2]]);
+        incir_need(isfinite(got.o.x) && isfinite(got.o.y) && isfinite(got.r) &&
+                   abs(got.r / L - (1 - 1 / sqrtl(2))) < 1e-14L &&
+                   abs(got.o.x / L - 1 / sqrtl(2)) < 1e-14L && abs(got.o.y / L - got.r / L) < 1e-14L,
+                   huge[order[0]], huge[order[1]], huge[order[2]], got);
+    } while(next_permutation(order.begin(), order.end()));
+    L = 1e3000L;
+    db H = 1e-3000L;
+    for(bool obtuse : {false, true}) {
+        array<p2, 3> skinny{{{0, 0}, {L, 0}, obtuse ? p2{2 * L, H} : p2{0, H}}};
+        order = {0, 1, 2};
+        do {
+            got = incir(skinny[order[0]], skinny[order[1]], skinny[order[2]]);
+            db factor = obtuse ? 0.25L : 0.5L;
+            bool center = obtuse ? abs(got.o.x / L - 1) < 1e-14L : abs(got.o.x / H - factor) < 1e-14L;
+            incir_need(center && abs(got.o.y / H - factor) < 1e-14L && abs(got.r / H - factor) < 1e-14L,
+                       skinny[order[0]], skinny[order[1]], skinny[order[2]], got);
+        } while(next_permutation(order.begin(), order.end()));
+    }
     got = incir({0, 0}, {1, 0}, {2, 1e-20L});
     incir_need(got.r > 0 && abs(got.r / 2.5e-21L - 1) < 1e-14L, {0, 0}, {1, 0}, {2, 1e-20L}, got);
 }

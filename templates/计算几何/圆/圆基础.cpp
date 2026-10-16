@@ -12,12 +12,20 @@ struct c2 {
 c2 cir(p2 a, p2 b) { return {(a + b) / 2, dis(a - b) / 2}; }
 // 三角形内切圆，O(1)；要求点差及结果有限；共线时 r=0，全重合时圆心取 a。
 c2 incir(p2 a, p2 b, p2 c) {
+    auto span = [](p2 p) { return max(abs(p.x), abs(p.y)); };
+    if(span(c - b) < min(span(b - a), span(c - a))) swap(a, b);  // 基点放在短边上。
     p2 u = b - a, v = c - a;
-    db z = max(dis(u), dis(v));
-    if(z == 0) return {a, 0};
-    u /= z, v /= z;  // 局部平移与缩放，不损失小三角形，也避免叉积溢出。
-    db B = dis(v), C = dis(u), k = z / (dis(u - v) + B + C);
-    return {a + (u * B + v * C) * k, abs(u.det(v)) * k};
+    db U = max(abs(u.x), abs(u.y)), V = max(abs(v.x), abs(v.y)), s = max(U, V);
+    if(s == 0) return {a, 0};
+    db B = V ? dis(v / V) : 0, C = U ? dis(u / U) : 0;
+    db p = (U / s) * C + (V / s) * B + dis(u / s - v / s);
+    auto mul = [&](db x, db y) {  // xy / (s*p)，先除较大因子，保留极短分量。
+        if(abs(x) < abs(y)) swap(x, y);
+        return (x / s) * (y / p);
+    };
+    p2 o{mul(u.x, V) * B + mul(v.x, U) * C,
+         mul(u.y, V) * B + mul(v.y, U) * C};
+    return {a + o, abs(mul(u.x, v.y) - mul(u.y, v.x))};
 }
 // 点是否在圆盘内，含边界；按距离与半径比较，不能把平方距离与 eps 直接比较。
 bool in_circle(const c2 &c, const p2 &p) { return cmp(dis(c.o - p), c.r) <= 0; }
