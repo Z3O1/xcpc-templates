@@ -52,8 +52,10 @@ vector<face3> convex3d(const vector<p3> &a) {
         plane p;
     };
     vector<F> f;
-    f.push_back(F{0, 1, 2, plane(b[0], b[1], b[2])});  // 两个朝向的初始三角形,
-    f.push_back(F{0, 2, 1, plane(b[0], b[2], b[1])});  // 插入第 4 个点时朝向会自动定好
+    // 两个朝向复用有效的 p0；换底边重判高度可能把反向薄长三角形误判退化。
+    f.push_back(F{0, 1, 2, p0});
+    p0.n = -p0.n, p0.d = -p0.d;
+    f.push_back(F{0, 2, 1, p0});  // 插入第 4 个点时朝向会自动定好
     unordered_map<ll, int> vis;                        // 有向边 (u,v) -> 最后一次被删的轮次
     For(i, 3, n - 1) {
         vector<F> keep, kill;
@@ -69,6 +71,7 @@ vector<face3> convex3d(const vector<p3> &a) {
             e[2][0] = kill[t].c, e[2][1] = kill[t].a;
             for(int k = 0; k < 3; ++k) vis[(ll) e[k][0] * n + e[k][1]] = i;
         }
+        // 可见点到旧面距离 > eps，故到面上任一边直线的距离也 > eps，新面不会退化。
         for(int t = 0; t < kill.size(); ++t) {  // 反向边没被标记的边就是地平线,与新点连成新面
             e[0][0] = kill[t].a, e[0][1] = kill[t].b;
             e[1][0] = kill[t].b, e[1][1] = kill[t].c;
