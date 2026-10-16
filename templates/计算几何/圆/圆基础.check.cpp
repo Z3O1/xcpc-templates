@@ -1,5 +1,6 @@
-// 圆基础 自测:外心/直径/圆盘与联编，内切圆角平分线参考/2万随机/边距性质/极端缩放/大平移/退化
+// 圆基础 自测:外心/直径/圆盘联编，内切圆2万对拍/极端/退化，圆包含3万精确对拍/内切/点圆/大数吞量/浮点异常
 #include "../../_check_base.hpp"
+#include <cfenv>
 #include "../基础/二维向量.cpp"
 #include "../基础/直线与线段.cpp"
 #include "圆基础.cpp"
@@ -93,6 +94,55 @@ void check_incir() {
     got = incir({0, 0}, {1, 0}, {2, 1e-20L});
     incir_need(got.r > 0 && abs(got.r / 2.5e-21L - 1) < 1e-14L, {0, 0}, {1, 0}, {2, 1e-20L}, got);
 }
+// 圆包含：小整数独立平方参考，另测容差、吞量与溢出。
+void check_containment() {
+    auto need = [](const c2 &a, const c2 &b, bool expected, const char *label) {
+        bool got = in_circle(a, b);
+        if(got != expected) {
+            printf("contains FAIL %s outer=(%Lg,%Lg;r=%Lg) inner=(%Lg,%Lg;r=%Lg) got=%d expected=%d\n",
+                   label, a.o.x, a.o.y, a.r, b.o.x, b.o.y, b.r, got, expected);
+            exit(1);
+        }
+    };
+    auto reference = [](c2 a, c2 b) {  // 仅用于下面的有界整数圆，平方比较不取根。
+        i128 dx = ll(a.o.x) - ll(b.o.x), dy = ll(a.o.y) - ll(b.o.y);
+        i128 r = ll(a.r) - ll(b.r);
+        return r >= 0 && dx * dx + dy * dy <= r * r;
+    };
+    vector<c2> fixed{{{0, 0}, 0}, {{0, 0}, 1}, {{0, 0}, 2}, {{1, 0}, 1},
+                     {{2, 0}, 1}, {{3, 4}, 0}, {{3, 4}, 2}, {{0, 0}, 7}, {{-3, -4}, 2}};
+    for(auto a : fixed) for(auto b : fixed) need(a, b, reference(a, b), "定点矩阵");
+    mt19937_64 gen(2026101604);
+    auto integer = [&]() { return ll(gen() % 100001) - 50000; };
+    for(int t = 0; t < 30000; ++t) {
+        c2 a{{db(integer()), db(integer())}, db(gen() % 50001)};
+        c2 b{{db(integer()), db(integer())}, db(gen() % 50001)};
+        bool expected = reference(a, b);
+        need(a, b, expected, "整数精确参考");
+        need(a, c2{b.o, 0}, in_circle(a, b.o), "点圆与点判定一致");
+        if(expected) for(p2 u : vector<p2>{{1, 0}, {-1, 0}, {0, 1}, {0, -1}})
+            need(a, c2{b.o + u * b.r, 0}, true, "包含圆上的四个端点");
+    }
+    c2 a{{0, 0}, 5};
+    need(a, c2{{3, 0}, 2}, true, "内切");
+    need(a, c2{{3 + eps / 4, 0}, 2}, true, "容差内的内切");
+    need(a, c2{{3 + 10 * eps, 0}, 2}, false, "容差外的越界");
+    need(c2{{0, 0}, 1e-6L}, c2{{5e-7L, 0}, 5e-7L}, true, "小尺度内切");
+    need(c2{{0, 0}, 1e-6L}, c2{{5e-7L + 10 * eps, 0}, 5e-7L}, false, "小尺度越界");
+    db T = ldexp(db(1), numeric_limits<db>::digits + 8);
+    need(c2{{0, 0}, T}, c2{{T, 0}, 1}, false, "距离吞掉小半径");
+    need(c2{{0, 0}, T}, c2{{1, 0}, T}, false, "半径吞掉小距离");
+    need(c2{{0, 0}, T}, c2{{0, 0}, T}, true, "大圆重合");
+    need(c2{{0, 0}, T}, c2{{T, 0}, 0}, true, "大圆边界点圆");
+    db R = numeric_limits<db>::max();
+    c2 outer{{0, 0}, R}, inner{{R * 0.75L, 0}, R * 0.75L};
+    feclearexcept(FE_ALL_EXCEPT);
+    need(outer, inner, false, "不直接相加超大距离与半径");
+    if(fetestexcept(FE_OVERFLOW | FE_INVALID | FE_DIVBYZERO)) {
+        printf("contains FAIL: unexpected floating exception\n");
+        exit(1);
+    }
+}
 // 验证外心与已知圆，及两个圆算法模块共用同一 c2 定义。
 int main() {
     rng.seed(2026101404);
@@ -116,7 +166,7 @@ int main() {
     CHECK(circumcircle_diameter(a, b, c) == -1, "共线无外接圆");
     c2 zero = cir(a, a), unit{{0, 0}, 1};
     CHECK(zero.r == 0 && in_circle(zero, a) && !in_circle(zero, b), "点圆与圆盘包含");
-    CHECK(in_circle(unit, {1, 0}) && !in_circle(unit, {1 + 10 * eps, 0}), "圆盘边界容差");
+    CHECK(in_circle(unit, p2{1, 0}) && !in_circle(unit, p2{1 + 10 * eps, 0}), "圆盘边界容差");
     c2 cover = mcc({{-1, 0}, {1, 0}, {0, 1}, {0, 0}, {-1, 0}});
     auto line = cir_line(cover, {{-2, 0}, {2, 0}});
     auto circles = cir_cir(cover, {{2, 0}, 1});
@@ -128,5 +178,6 @@ int main() {
           abs(united[1] - 4 * pi) < 1e-12L, "同一c2传给切线与圆并");
     CHECK(mcc({}).r < 0, "空点集无解标记");
     check_incir();
+    check_containment();
     PASSED("圆基础");
 }

@@ -27,8 +27,14 @@ c2 incir(p2 a, p2 b, p2 c) {
          mul(u.y, V) * B + mul(v.y, U) * C};
     return {a + o, abs(mul(u.x, v.y) - mul(u.y, v.x))};
 }
-// 点是否在圆盘内，含边界；按距离与半径比较，不能把平方距离与 eps 直接比较。
+// 点是否在圆盘内，含边界，按长度 eps 判定；字面量显式用 p2{...} 或 c2{...}。
 bool in_circle(const c2 &c, const p2 &p) { return cmp(dis(c.o - p), c.r) <= 0; }
+// a 是否包含 b，含内切、重合及点圆；同样按长度 eps 判定。
+bool in_circle(const c2 &a, const c2 &b) {
+    db d = dis(a.o - b.o), x = max(d, b.r);
+    // 先减较大项，避免 d+b.r 吞掉小量或溢出。
+    return cmp(a.r, x) >= 0 && cmp(a.r - x, min(d, b.r)) >= 0;
+}
 // 三点外接圆直径；三点按 eps 判共线时返回 -1。
 db circumcircle_diameter(p2 a, p2 b, p2 c) {
     if(!crossop({a, b}, c)) return -1;
