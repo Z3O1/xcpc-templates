@@ -1,4 +1,4 @@
-// 三维向量 自测:p3 的运算与手算/独立参考对照(叉积、混合积、模长、共线共面)
+// 三维向量 自测:p3 运算/独立参考/随机性质/极大极小有限向量与尺度不变角度
 //
 // 对拍方式:
 //   ① 手算常数用例(基向量叉积、单位四面体体积 6 倍、直角三角形面积 2 倍…)
@@ -86,6 +86,34 @@ db eq(db x, db y, db tol) { return abs(x - y) <= tol; }
 
 // 手算/参考对照与退化用例;通过则 PASSED("三维向量")。
 int main() {
+    // 平方会溢出/下溢，但范数与方向仍可表示；幂次按 db 的实际范围选择。
+    {
+        int e = numeric_limits<db>::max_exponent * 3 / 4;
+        for(int k : {-e, e}) {
+            db s = ldexp((db) 1, k);
+            p3 a{3 * s, 4 * s, 0}, b{-4 * s, 3 * s, 0};
+            CHECK(isfinite(dis(a)) && abs(dis(a) / s - 5) < 1e-14L,
+                  "极大/极小向量模长为 5s，不先平方");
+            CHECK(dis(unit(a) - P3(.6L, .8L, 0)) < 1e-14L &&
+                  abs(cosang(a, b)) < 1e-14L && abs(sinang(a, b) - 1) < 1e-14L &&
+                  abs(angle(a, b) - acos((db) 0)) < 1e-14L,
+                  "极大/极小向量单位化与直角稳定");
+        }
+        for(int i = 0; i < 20000; ++i) {
+            db x = db(grnd(1, 10000)) / 10000;
+            db s = ldexp((db) 1, int(grnd(-e, e)));
+            p3 a{s, 0, 0}, b{s, s * x, 0};
+            db got = angle(a, b), want = atan(x);
+            if(abs(got - want) > 1e-14L) {
+                fprintf(stderr, "angle scale exponent=%d x=%Lg got=%Lg want=%Lg\n", ilogb(s), x, got, want);
+                CHECK(false, "2 万组跨数量级角度与解析 atan 对照");
+            }
+        }
+        p3 a{1, 0, 0}, b{1, 1e-12L, 0};
+        CHECK(abs(angle(a, b) / 1e-12L - 1) < 1e-14L &&
+              abs(angle(a, -b) - acos((db) -1) + 1e-12L) < 1e-14L,
+              "近零角和近 pi 角不经 acos 消减");
+    }
     // ===== 1. 手算常数用例 =====
     p3 X{1, 0, 0}, Y{0, 1, 0}, Z{0, 0, 1}, O{0, 0, 0};
     CHECK(refDet9(1, 2, 3, 4, 5, 6, 7, 8, 10) == refDet9b(1, 2, 3, 4, 5, 6, 7, 8, 10), "参考自验:两种 Laplace 展开一致(手算 -3)");

@@ -1,4 +1,4 @@
-// 三维凸包 自测:与「暴力枚举所有三点组成的面、判断是否所有点在面同侧」对拍
+// 三维凸包 自测:薄长种子正反面/全排列/缩放四面体/暴力支撑面/大随机拓扑与包含
 //
 // 对拍方式:
 //   ① 手算常数用例:单位四面体(表面积 √3、体积 1/6)、单位立方体(表面积 6、体积 1)、
@@ -110,7 +110,7 @@ db maxOutside(const vector<p3> &a, const vector<face3> &f) {
     for(int t = 0; t < f.size(); ++t) {
         p3 nr = fnorm(a, f[t]);
         db l = dis(nr);
-        if(l <= eps) continue;  // 退化面(零面积)不参与
+        if(!isfinite(l) || l == 0) return numeric_limits<db>::infinity();
         for(int i = 0; i < a.size(); ++i) worst = max(worst, dot(nr, a[i] - a[f[t].a]) / l);
     }
     return worst;
@@ -124,6 +124,8 @@ bool checkTopo(const vector<p3> &a, const vector<face3> &f, string &msg) {
         int v[3] = {f[t].a, f[t].b, f[t].c};
         for(int k = 0; k < 3; ++k) if(v[k] < 0 || v[k] >= n) { msg = "面片下标越界"; return false; }
         if(v[0] == v[1] || v[1] == v[2] || v[0] == v[2]) { msg = "同一个面里有重复顶点"; return false; }
+        db len = dis(fnorm(a, f[t]));
+        if(!isfinite(len) || len == 0) { msg = "面法向无效或三点真正共线"; return false; }
         for(int k = 0; k < 3; ++k) {
             ++cnt[{v[k], v[(k + 1) % 3]}];
             vs.insert(v[k]);
@@ -149,7 +151,7 @@ bool outwardOK(const vector<p3> &a, const vector<face3> &f, string &msg) {
     c = c / (db) a.size();
     for(int t = 0; t < f.size(); ++t) {
         p3 nr = fnorm(a, f[t]);
-        if(!sign(dis2(nr))) continue;  // 退化面
+        if(!isfinite(dis(nr)) || dis(nr) == 0) { msg = "面法向无效"; return false; }
         if(dot(nr, c - a[f[t].a]) > 0) { msg = "面法向朝内(顶点顺序给反了)"; return false; }
     }
     return true;
@@ -180,6 +182,90 @@ db mcVolume(const vector<p3> &a, const vector<face3> &f, int N) {
 
 // 手算/暴力参考对照与拓扑性质检查;通过则 PASSED("三维凸包")。
 int main() {
+    // P1：同一薄长三角形按不同底边判退化，不能重新构造反向种子面。
+    {
+        vector<p3> a{{0,0,0}, {2*eps,0,0}, {10,1,0}, {0,0,-1}, {0,1,1}};
+        for(int n : {4, 5}) {
+            vector<p3> b(a.begin(), a.begin() + n);
+            auto f = convex3d(b);
+            string msg;
+            CHECK(!f.empty() && checkTopo(b, f, msg) && outwardOK(b, f, msg) && maxOutside(b, f) <= eps,
+                  "P1 薄长种子：四点及五点前缀均为合法闭曲面且包含所有输入");
+        }
+    }
+    {
+        int cnt = 0;
+        for(db width : {2*eps, 4*eps, 16*eps}) for(db len : {10.0L, 1000.0L})
+            for(db h : {.25L, 1.0L, 4.0L}) for(db z : {0.0L, 3.0L}) {
+                vector<p3> a{{0,0,z}, {width,0,z}, {len,h,z}, {0,0,z-h}, {0,h,z+h}};
+                array<int, 5> order{0,1,2,3,4};
+                do {
+                    vector<p3> b;
+                    for(int i : order) b.push_back(a[i]);
+                    auto f = convex3d(b);
+                    string msg;
+                    if(f.empty() || !checkTopo(b, f, msg) || !outwardOK(b, f, msg) || maxOutside(b, f) > eps ||
+                       hull_volume(b, f) < len * h * h / 6 * (1 - 1e-12L)) {
+                        fprintf(stderr, "thin seed permutation points=%s faces=%zu outside=%Lg reason=%s\n",
+                                ps(b).c_str(), f.size(), maxOutside(b, f), msg.c_str());
+                        CHECK(false, "薄长种子全排列：面合法、拓扑、全点包含及厚四面体体积下界");
+                    }
+                    ++cnt;
+                } while(next_permutation(order.begin(), order.end()));
+            }
+        printf("  [note] 薄长种子排列 %d 组，含非零平面常数项与后续插点\n", cnt);
+    }
+    for(int i = 0; i < 3000; ++i) {
+        // 最小高度远大于 eps 的薄长五点集，与独立暴力支撑面逐面比较。
+        db len = pow((db) 10, grnd(1, 3)), h = grnd(1, 8);
+        db width = eps * len * grnd(100, 10000);
+        vector<p3> a{{0,0,0}, {width,0,0}, {len,h,0}, {0,0,-h}, {0,h,h}};
+        shuffle(a.begin(), a.end(), g_rng);
+        auto f = convex3d(a);
+        auto bf = bruteFacets(a, eps);
+        set<array<int, 3>> got, want;
+        for(auto t : f) { array<int, 3> v{t.a,t.b,t.c}; sort(v.begin(),v.end()); got.insert(v); }
+        for(auto t : bf) want.insert({t.i,t.j,t.k});
+        string msg;
+        if(got != want || !checkTopo(a, f, msg) || !outwardOK(a, f, msg) || maxOutside(a, f) > eps) {
+            fprintf(stderr, "thin random points=%s faces=%zu ref=%zu reason=%s\n", ps(a).c_str(), f.size(), bf.size(), msg.c_str());
+            CHECK(false, "3000 组薄长五点：独立支撑面参考、面合法、拓扑及全点包含");
+        }
+    }
+
+    // 小四面体的面面积可远小于 eps，但点面距离仍大于 eps。
+    for(int i = 0; i < 5000; ++i) {
+        db s = pow((db) 10, grnd(-8, 6));
+        db x = grnd(1, 10), y = grnd(1, 10), z = grnd(1, 10);
+        vector<p3> a{{0, 0, 0}, {s * x, 0, 0}, {0, s * y, 0}, {0, 0, s * z}};
+        shuffle(a.begin(), a.end(), g_rng);
+        auto f = convex3d(a);
+        db wantV = x * y * z / 6;
+        db wantA = (x * y + x * z + y * z + sqrt(x*x*y*y + x*x*z*z + y*y*z*z)) / 2;
+        string msg;
+        bool good = f.size() == 4 && checkTopo(a, f, msg) &&
+                    abs(hull_volume(a, f) / (s*s*s) - wantV) < 1e-11L &&
+                    abs(hull_area(a, f) / (s*s) - wantA) < 1e-11L;
+        // 不沿用旧性质检查里“面积 <= eps 就跳过”的捷径。
+        for(face3 face : f) {
+            p3 nr = fnorm(a, face);
+            db len = dis(nr);
+            if(len == 0) { good = false; break; }
+            for(p3 p : a) if(dot(nr, p - a[face.a]) / len > s * 1e-13L) good = false;
+        }
+        if(!good) {
+            fprintf(stderr, "scaled tetra s=%Lg x=%Lg y=%Lg z=%Lg faces=%zu points=%s topo=%s\n",
+                    s, x, y, z, f.size(), ps(a).c_str(), msg.c_str());
+            CHECK(false, "5000 组随机缩放及重排四面体：解析面积体积、拓扑与逐面包含");
+        }
+    }
+    {
+        vector<p3> a{{0, 0, 0}, {1e-6L, 0, 0}, {0, 1e-6L, 0}, {0, 0, eps / 2}};
+        CHECK(convex3d(a).empty(), "四面体高度 eps/2 按距离退化");
+        a[3].z = eps * 2;
+        CHECK(convex3d(a).size() == 4, "四面体高度 2eps 保留四面，不将面积与 eps 混比");
+    }
+
     // ===== 1. 手算常数用例 =====
     {
         p3 X{1, 0, 0}, Y{0, 1, 0}, Z{0, 0, 1}, O{0, 0, 0};

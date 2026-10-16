@@ -41,16 +41,22 @@ p3 cross(p3 a, p3 b) {
 db det(p3 a, p3 b, p3 c) { return dot(a, cross(b, c)); }
 // 模长平方。
 db dis2(p3 a) { return dot(a, a); }
-// 模长。
-db dis(p3 a) { return sqrt(dis2(a)); }
-// 单位化;要求 a 非零(零向量得 inf/nan)。
-p3 unit(p3 a) { return a / dis(a); }
-// 返回夹角余弦；要求 a、b 均非零。
-db cosang(p3 a, p3 b) { return dot(a, b) / (dis(a) * dis(b)); }
-// 返回夹角的非负正弦；要求 a、b 均非零。
-db sinang(p3 a, p3 b) { return dis(cross(a, b)) / (dis(a) * dis(b)); }
-// 返回 [0,pi] 内的夹角（弧度）；要求 a、b 均非零。
-db angle(p3 a, p3 b) { return atan2(sinang(a, b), cosang(a, b)); }
+// 模长；避免先平方造成不必要的溢出/下溢，结果仍须可表示。
+db dis(p3 a) { return hypot(a.x, a.y, a.z); }
+// 单位化；只将数学零视为退化，要求 a 非零且分量有限。
+p3 unit(p3 a) {
+    a /= max({abs(a.x), abs(a.y), abs(a.z)});
+    return a / dis(a);
+}
+// 返回夹角余弦；要求 a、b 均非零且分量有限。
+db cosang(p3 a, p3 b) { return max((db) -1, min((db) 1, dot(unit(a), unit(b)))); }
+// 返回夹角的非负正弦；要求 a、b 均非零且分量有限。
+db sinang(p3 a, p3 b) { return min((db) 1, dis(cross(unit(a), unit(b)))); }
+// 返回 [0,pi] 内的夹角（弧度）；要求 a、b 均非零且分量有限。
+db angle(p3 a, p3 b) {
+    a = unit(a), b = unit(b);
+    return atan2(dis(cross(a, b)), dot(a, b));
+}
 // 返回三角形 abc 面积的 2 倍。
 db area2(p3 a, p3 b, p3 c) { return dis(cross(b - a, c - a)); }
 // 返回四面体 abcd 带号体积的 6 倍。

@@ -1,125 +1,120 @@
 // line3(): 计算几何 · 三维直线与线段 (点线距/线线距/线段相交)
 
 // 依赖本节 三维向量.cpp；seg3{x,y} 为线段，line3(a,b) 由两点构造。
-// line3 内部存 o=a、d=b-a，表示 o+t·d；d 须非零，不必单位化。
-// 前置条件与约定:
-//   - 零长线段(退化成点)被当作点处理:proj/dis/ons/两线段距离都成立(不会出 NaN)。
-//   - 平行/共线的两线段最近点对不唯一,只保证「距离」正确。
-//   - 判定门槛都是绝对 eps(1e-10):坐标量级很大(>1e6)时请自行放宽容差。
-//   - 两线段接近平行时,最近点对的 s/t 由显式公式解出后夹取,已避免除以 0(平行分支另走)。
-// 复杂度:全部 O(1)。
+// line3 存 o=a、d=b-a，表示 o+t·d；d 须非零，不必单位化。
+// 只有真正零长的线段按点处理；线段距离不把近乎平行当作平行。
+// 两直线距离按 ispara 将夹角正弦 <= eps 的方向视为平行。
+// 判定用绝对长度 eps；ispara 用夹角正弦 eps，严格内部距两端的轴向距离须 > eps。
+// isss 按 ispara 分类；共线投影重叠长度 > eps 不算唯一点，其余 eps 内接触算单点。
+// 要求坐标差、长度及中间点积/参数可表示；舍入误差须小于所需容差。
+// 近乎平行时最近点病态，误差可按 1/sin(夹角) 放大，远处交点尤其需注意。
+// 复杂度:全部 O(1)，线段距离枚举四个边界最优点及一个内部驻点。
 namespace Geo {
 
 struct line3 {
     p3 o, d;  // 参数式 o + t·d
-    // 默认构造:成员未初始化。
     line3() {}
-    // 由两点构造直线(o=a,d=b-a)。
     line3(p3 a, p3 b) : o(a), d(b - a) {}
-    // 参数 t 对应的点。
     p3 at(db t) const { return o + d * t; }
 };
 struct seg3 {
     p3 x, y;
-    // 方向向量 y - x。
     p3 dir() const { return y - x; }
 };
 
-// ---------- 点与直线 ----------
 // 点在直线上的投影。
-p3 proj(const line3 &l, p3 p) { return l.o + l.d * (dot(l.d, p - l.o) / dis2(l.d)); }
-// 点关于直线的对称点。
-p3 reflect(const line3 &l, p3 p) { return proj(l, p) * 2 - p; }
-// 点到直线的距离。
-db dis(const line3 &l, p3 p) { return dis(p - proj(l, p)); }
-// 点是否在直线上。
-bool ons(const line3 &l, p3 p) { return !sign(dis(l, p)); }
-// 两直线是否平行。
-bool ispara(const line3 &a, const line3 &b) { return !sign(sinang(a.d, b.d)); }
-// 判断线段方向是否平行；按 eps 判为零长的线段约定与任意线段平行。
-bool ispara(const seg3 &a, const seg3 &b) {
-    return !sign(dis(a.dir())) || !sign(dis(b.dir())) || !sign(sinang(a.dir(), b.dir()));
+p3 proj(const line3 &l, p3 p) {
+    p3 e = unit(l.d);
+    return l.o + e * dot(e, p - l.o);
 }
-// 两直线是否垂直。
+p3 reflect(const line3 &l, p3 p) { return proj(l, p) * 2 - p; }
+db dis(const line3 &l, p3 p) { return dis(cross(unit(l.d), p - l.o)); }
+bool ons(const line3 &l, p3 p) { return !sign(dis(l, p)); }
+bool ispara(const line3 &a, const line3 &b) { return !sign(sinang(a.d, b.d)); }
+// 零长线段约定与任意线段平行。
+bool ispara(const seg3 &a, const seg3 &b) {
+    return dis(a.dir()) == 0 || dis(b.dir()) == 0 || !sign(sinang(a.dir(), b.dir()));
+}
 bool isperp(const line3 &a, const line3 &b) { return !sign(cosang(a.d, b.d)); }
 
-// ---------- 两直线:最近点对与距离 ----------
-// pa 在 a 上、pb 在 b 上,dis(pa, pb) 即两直线距离;平行时取 pa = a.o。
+// pa 在 a 上、pb 在 b 上；按 eps 判平行时取 pa=a.o，最近点对可不唯一。
 db dis(const line3 &a, const line3 &b, p3 &pa, p3 &pb) {
-    if(ispara(a, b)) {
+    p3 e = unit(a.d), f = unit(b.d), n = cross(e, f), w = b.o - a.o;
+    db sn = dis(n);
+    if(!sign(sn)) {
         pa = a.o, pb = proj(b, pa);
-        return dis(pa - pb);
+    } else {
+        n /= sn;
+        pa = a.o + e * (dot(cross(w, f), n) / sn);
+        pb = b.o + f * (dot(cross(w, e), n) / sn);
     }
-    db A = dis2(a.d), B = dot(a.d, b.d), C = dis2(b.d), den = A * C - B * B;
-    p3 w = a.o - b.o;
-    db D = dot(a.d, w), E = dot(b.d, w);
-    pa = a.o + a.d * ((B * E - C * D) / den);
-    pb = b.o + b.d * ((A * E - B * D) / den);
     return dis(pa - pb);
 }
-// 两直线距离(忽略最近点)。
 db dis(const line3 &a, const line3 &b) { p3 pa, pb; return dis(a, b, pa, pb); }
-// a 上离 b 最近的点。
 p3 closest_on(const line3 &a, const line3 &b) { p3 pa, pb; return dis(a, b, pa, pb), pa; }
 
-// ---------- 点与线段 ----------
-// 点在线段上的最近点(参数夹到 [0,1]);线段可退化为点。
+// 点在线段上的最近点；短但非零的线段不退化。
 p3 proj(const seg3 &s, p3 p) {
     p3 d = s.dir();
-    if(!sign(dis2(d))) return s.x;  // 退化成点
-    db t = dot(d, p - s.x) / dis2(d);
-    return s.x + d * max((db) 0, min((db) 1, t));
+    db len = dis(d);
+    if(len == 0) return s.x;
+    p3 e = unit(d);
+    db t = dot(e, p - s.x);
+    if(t <= 0) return s.x;
+    if(t >= len) return s.y;
+    return s.x + e * t;
 }
-// 点到线段的距离。
 db dis(const seg3 &s, p3 p) { return dis(proj(s, p) - p); }
-// 点是否在线段上(含端点)。
 bool ons(const seg3 &s, p3 p) { return !sign(dis(s, p)); }
-// 点是否严格在线段内部(不含端点)。
-bool ons_s(const seg3 &s, p3 p) { return ons(s, p) && sign(dot(p - s.x, p - s.y)) < 0; }
-
-// ---------- 两线段:最近点对与距离 ----------
-// pa 在 a 上、pb 在 b 上,返回 |pa - pb|;退化(零长)线段也能用。
-db dis(const seg3 &a, const seg3 &b, p3 &pa, p3 &pb) {
-    p3 u = a.dir(), v = b.dir();
-    db la = dis(u), lb = dis(v);
-    if(!sign(la) || !sign(lb)) {  // 至少一条退化成点
-        if(!sign(la) && !sign(lb)) return pa = a.x, pb = b.x, dis(pa - pb);
-        if(!sign(la)) return pa = a.x, pb = proj(b, pa), dis(pa - pb);
-        return pb = b.x, pa = proj(a, pb), dis(pa - pb);
-    }
-    p3 e = u / la, f = v / lb, w = a.x - b.x;
-    db c = dot(e, f), k = 1 - c * c, p = dot(e, w), q = dot(f, w), s, t;
-    if(ispara(a, b)) {  // 平行:最近点对不唯一,s = 0 起步,后面照样投影夹取
-        s = 0, t = q / lb;
-    } else {
-        s = (c * q - p) / (la * k), t = (q - c * p) / (lb * k);
-    }
-    s = max((db) 0, min((db) 1, s)), t = max((db) 0, min((db) 1, t));
-    // |w + s·u - t·v|² 是 (s, t) 上的凸二次函数:盒约束下逐坐标做「一维精确最优 + 夹取」,
-    // 每步都让距离不增,几轮就收敛(平行时的平坦方向也在其中)
-    For(_, 1, 12) {
-        t = max((db) 0, min((db) 1, (q + s * la * c) / lb));
-        s = max((db) 0, min((db) 1, (t * lb * c - p) / la));
-    }
-    pa = a.x + u * s, pb = b.x + v * t;
-    return dis(pa - pb);
+// 严格内部：沿线段方向到两端均超过 eps；零长段无内部。
+bool ons_s(const seg3 &s, p3 p) {
+    if(dis(s.dir()) == 0) return false;
+    p3 e = unit(s.dir());
+    return ons(s, p) && sign(dot(e, p - s.x)) > 0 && sign(dot(e, s.y - p)) > 0;
 }
-// 两线段间距离(忽略最近点)。
+
+// 返回最短距离及段上的最近点 pa、pb；包括点段、平行段。
+db dis(const seg3 &a, const seg3 &b, p3 &pa, p3 &pb) {
+    db best = dis(a.x - b.x);
+    pa = a.x, pb = b.x;
+    auto upd = [&](p3 x, p3 y) {
+        db d = dis(x - y);
+        if(d < best) best = d, pa = x, pb = y;
+    };
+    upd(a.x, proj(b, a.x)), upd(a.y, proj(b, a.y));
+    upd(proj(a, b.x), b.x), upd(proj(a, b.y), b.y);
+    db la = dis(a.dir()), lb = dis(b.dir());
+    if(la == 0 || lb == 0) return best;
+    p3 e = unit(a.dir()), f = unit(b.dir()), n = cross(e, f), w = b.x - a.x;
+    db sn = dis(n);
+    if(sn > 0) {
+        n /= sn;
+        db s = dot(cross(w, f), n) / sn, t = dot(cross(w, e), n) / sn;
+        if(s >= 0 && s <= la && t >= 0 && t <= lb) upd(a.x + e * s, b.x + f * t);
+    }
+    return best;
+}
 db dis(const seg3 &a, const seg3 &b) { p3 pa, pb; return dis(a, b, pa, pb); }
 
-// 两线段是否相交(公共点存在即真,含端点相接、共线重叠)。
+// 含端点相接、共线重叠、点段；最短距离 <= eps 即相交。
 bool chkss(const seg3 &a, const seg3 &b) { return !sign(dis(a, b)); }
-// 严格相交:交点严格在两段内部(共线/平行/端点相接都不算)。
+// 严格相交：非平行、最近点均在严格内部；共线/点段/端点不算。
 bool chkss_s(const seg3 &a, const seg3 &b) {
-    if(ispara(a, b) || !sign(dis(a.dir())) || !sign(dis(b.dir()))) return false;
+    if(ispara(a, b)) return false;
     p3 pa, pb;
     return !sign(dis(a, b, pa, pb)) && ons_s(a, pa) && ons_s(b, pb);
 }
-// 交于唯一一点时输出该点(共线重叠/不相交返回 false)。交点取 a 上的最近点。
+// 唯一公共点（eps 意义，见头部）；失败不修改 p，成功取 a 上的最近点。
 bool isss(const seg3 &a, const seg3 &b, p3 &p) {
-    if(ispara(a, b) || !sign(dis(a.dir())) || !sign(dis(b.dir()))) return false;
     p3 pa, pb;
-    return !sign(dis(a, b, pa, pb)) ? (p = pa, true) : false;
+    if(sign(dis(a, b, pa, pb))) return false;
+    db la = dis(a.dir()), lb = dis(b.dir());
+    if(la > 0 && lb > 0 && ispara(a, b)) {
+        p3 e = unit(a.dir());
+        db u = dot(e, b.x - a.x), v = dot(e, b.y - a.x);
+        if(sign(min(la, max(u, v)) - max((db) 0, min(u, v))) > 0) return false;
+    }
+    return p = pa, true;
 }
 
 }  // namespace Geo
