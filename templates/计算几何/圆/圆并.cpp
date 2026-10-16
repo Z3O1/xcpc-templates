@@ -35,15 +35,18 @@ array<db, 2> cir_union(const vector<c2> &a) {
                 return max(db(0), min(y, z) / scale - (x - max(y, z)) / scale);
             };
             // 三角形半角公式，避免平方相减及 acos 在悬殊半径下失真。
-            db half = 2 * atan2(sqrt(gap(d, r, R)) * sqrt(gap(r, d, R)),
-                                sqrt(d / scale + r / scale + R / scale) * sqrt(gap(R, d, r)));
+            db x = sqrt(gap(d, r, R)) * sqrt(gap(r, d, R));
+            db y = sqrt(d / scale + r / scale + R / scale) * sqrt(gap(R, d, r));
+            db half = 2 * atan2(x, y);
             if(half == 0) continue;
             db mid = v.alpha();
             if(mid < 0) mid += 2 * pi;
             db l = mid - half, h = mid + half;
-            if(l < 0) { arcs.push_back({l + 2 * pi, 2 * pi}); arcs.push_back({0, h}); }
-            else if(h > 2 * pi) { arcs.push_back({l, 2 * pi}); arcs.push_back({0, h - 2 * pi}); }
-            else arcs.push_back({l, h});
+            if(l < 0) {
+                arcs.push_back({l + 2 * pi, 2 * pi}); arcs.push_back({0, h});
+            } else if(h > 2 * pi) {
+                arcs.push_back({l, 2 * pi}); arcs.push_back({0, h - 2 * pi});
+            } else arcs.push_back({l, h});
         }
         if(covered) continue;
         if(arcs.empty()) { area += pi * r * r; perimeter += 2 * pi * r; continue; }
@@ -56,7 +59,10 @@ array<db, 2> cir_union(const vector<c2> &a) {
         };
         sort(arcs.begin(), arcs.end());  // 精确排序，不用 eps 破坏严格弱序。
         db last = 0;
-        for(auto v : arcs) { if(v[0] > last) add(last, v[0]); last = max(last, v[1]); }
+        for(auto v : arcs) {
+            if(v[0] > last) add(last, v[0]);
+            last = max(last, v[1]);
+        }
         if(last < 2 * pi) add(last, 2 * pi);
     }
     return {max(db(0), area), perimeter};

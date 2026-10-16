@@ -340,23 +340,23 @@
 
 #zebraw(lang: false)[#raw(readcode("templates/计算几何/圆/圆基础.cpp"), lang: "cpp", block: true)]
 
-=== 圆相关求交与面积交
-
-#zebraw(lang: false)[#raw(readcode("templates/计算几何/圆/图形交.cpp"), lang: "cpp", block: true)]
-
-=== 最小圆覆盖
-
-#zebraw(lang: false)[#raw(readcode("templates/计算几何/圆/最小圆覆盖.cpp"), lang: "cpp", block: true)]
-
 === 点圆与两圆切线
 
 #zebraw(lang: false)[#raw(readcode("templates/计算几何/圆/切线.cpp"), lang: "cpp", block: true)]
+
+=== 圆相关求交与面积交
+
+#zebraw(lang: false)[#raw(readcode("templates/计算几何/圆/图形交.cpp"), lang: "cpp", block: true)]
 
 === 圆并面积与周长
 
 #include "templates/计算几何/圆/圆并.typ"
 
 #zebraw(lang: false)[#raw(readcode("templates/计算几何/圆/圆并.cpp"), lang: "cpp", block: true)]
+
+=== 最小圆覆盖
+
+#zebraw(lang: false)[#raw(readcode("templates/计算几何/圆/最小圆覆盖.cpp"), lang: "cpp", block: true)]
 
 == 平面剖分
 
