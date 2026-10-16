@@ -15,13 +15,9 @@ struct p3 {
     }
     // 按 eps 容差判不等。
     bool operator!=(const p3 &b) const { return !(*this == b); }
-    // 字典序(x,y,z),用于排序/二分。
+    // 精确字典序，供排序/二分；与容差判等分开。
     bool operator<(const p3 &b) const {
-        int c = cmp(x, b.x);
-        if(c) return c < 0;
-        c = cmp(y, b.y);
-        if(c) return c < 0;
-        return cmp(z, b.z) < 0;
+        return x != b.x ? x < b.x : y != b.y ? y < b.y : z < b.z;
     }
 };
 // 向量相加。

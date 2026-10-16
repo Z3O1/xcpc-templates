@@ -109,6 +109,19 @@ int main() {
         CHECK(P3(1, 2, 3) < P3(1, 2, 4) && P3(1, 2, 3) < P3(1, 3, 0) && P3(1, 2, 3) < P3(2, 0, 0) && !(P3(1, 2, 3) < P3(1, 2, 3)), "字典序 operator<");
     }
 
+    {
+        vector<p3> near;
+        for(db x : {db(0), eps * 0.75L, eps * 1.5L})
+            for(db y : {db(0), eps * 0.75L, eps * 1.5L})
+                for(db z : {db(0), eps * 0.75L, eps * 1.5L}) near.push_back({x, y, z});
+        bool good = true;
+        auto equiv = [](p3 a, p3 b) { return !(a < b) && !(b < a); };
+        for(auto a : near) for(auto b : near) for(auto c : near)
+            good &= (a < b) == (tie(a.x, a.y, a.z) < tie(b.x, b.y, b.z)) &&
+                    (!(a < b && b < c) || a < c) &&
+                    (!(equiv(a, b) && equiv(b, c)) || equiv(a, c));
+        CHECK(good, "近eps三维字典序、严格弱序及不可比关系传递性");
+    }
     // ===== 2. 性质级 + 独立参考(几万组随机) =====
     {
         int bad = 0;
