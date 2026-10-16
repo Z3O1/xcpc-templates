@@ -1,4 +1,4 @@
-// 直线与线段 自测:整数精确相交/距离4万组，113位投影/距离随机3万组、全指数方向/平移/eps退化
+// 直线与线段 自测:整数相交/距离4万组、113位投影/距离3万组、偏移全指数2万组、极端/平移/eps
 #include "../../_check_base.hpp"
 #include "二维向量.cpp"
 #include "直线与线段.cpp"
@@ -151,8 +151,51 @@ bool projection_extremes() {
     return true;
 }
 
+// 覆盖普通点积/巨大偏移分摊权重两条分支；不要求超范围的距离平方有限。
+bool projection_offset_range() {
+    auto verify = [](seg s, p2 q) {
+        Oracle want = projection_oracle(s, q);
+        feclearexcept(FE_ALL_EXCEPT);
+        p2 h = proj(s, q);
+        bool clean = !fetestexcept(FE_OVERFLOW | FE_INVALID | FE_DIVBYZERO);
+        db scale = max({abs(q.x), abs(q.y), abs(want.foot.x), abs(want.foot.y)});
+        db error = max(64 * numeric_limits<db>::epsilon() * scale,
+                       4 * numeric_limits<db>::denorm_min());
+        bool good = clean && isfinite(h.x) && isfinite(h.y) &&
+                    abs(h.x - want.foot.x) <= error && abs(h.y - want.foot.y) <= error;
+        if(!good) printf("offset dir=(%La,%La) q=(%La,%La) h=(%La,%La) want=(%La,%La) clean=%d\n",
+                         s.y.x, s.y.y, q.x, q.y, h.x, h.y, want.foot.x, want.foot.y, int(clean));
+        return good;
+    };
+    db tiny = numeric_limits<db>::denorm_min();
+    for(int k = 1; k <= 63; ++k) for(int sign : {-1, 1}) {
+        p2 q{tiny * k, tiny * k * sign};
+        seg s{{0, 0}, {1, db(sign)}};
+        p2 h = proj(s, q), r = reflect(s, q);
+        CHECK(h.x == q.x && h.y == q.y && r.x == q.x && r.y == q.y,
+              "次正规在线点投影/反射不丢末位");
+    }
+    db hi = numeric_limits<db>::max() / 4;
+    for(db v : {nextafter(hi, db(0)), hi, nextafter(hi, numeric_limits<db>::max()), hi * 3})
+        for(p2 d : vector<p2>{{1, 1}, {-1, -1}, {3, 1}, {1, 0}, {0, -1}})
+            for(p2 q : vector<p2>{{v, v}, {v, -v}, {-v, v}})
+                if(!verify({{0, 0}, d}, q)) return false;
+    mt19937_64 gen(2026102702);
+    int low = numeric_limits<db>::min_exponent - numeric_limits<db>::digits;
+    int high = numeric_limits<db>::max_exponent - 8;
+    for(int i = 0; i < 20000; ++i) {
+        int e = low + gen() % (high - low + 1);
+        int de = (int(gen() % 3) - 1) * numeric_limits<db>::max_exponent * 3 / 4;
+        p2 d{ldexp(db(1 + gen() % 15), de), ldexp(db(int(gen() % 31) - 15), de)};
+        p2 q{ldexp(db(int(gen() % 63) - 31), e), ldexp(db(int(gen() % 63) - 31), e)};
+        if(!verify({{0, 0}, d}, q)) return false;
+    }
+    return true;
+}
+
 // 独立参考随机对拍；失败打印两线段及查询点。
 int main() {
+    CHECK(projection_offset_range(), "投影偏移全指数/巨大分支 oracle 20000组");
     CHECK(projection_extremes(), "113位投影/距离 oracle，3万随机与极端/平移/尺度");
     rng.seed(2026101401);
     auto point = []() -> p2 { return {db(rnd(-100, 100)), db(rnd(-100, 100))}; };
