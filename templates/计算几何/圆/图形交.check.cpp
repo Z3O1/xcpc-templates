@@ -419,8 +419,9 @@ int main() {
     for(db shift : {db(0),db(1e12L),db(-1e15L)}) {
         c2 c{{shift,-shift},5};
         auto got = cir_line(c,{{shift-1,-shift+3},{shift+1,-shift+3}});
-        T(got.size() == 2 && got[0].x == shift-4 && got[1].x == shift+4 && got[0].y == -shift+3 && got[1].y == -shift+3,
-          "平移解析3-4-5弦，比较局部坐标");
+        auto close = [](db x, db y) { return abs(x-y) <= 2*abs(nextafterl(y,INFINITY)-y); };
+        T(got.size() == 2 && close(got[0].x,shift-4) && close(got[1].x,shift+4) && close(got[0].y,-shift+3) && close(got[1].y,-shift+3),
+          "平移解析3-4-5弦，仅允许两个输出ULP");
     }
     for(db gap : {db(-1e-7L),db(0),db(1e-7L)}) {
         auto got = cir_line({{0,1-gap},1},{{0,0},{1e-1000L,0}});
@@ -429,6 +430,22 @@ int main() {
         for(auto p : got) T(abs(dis(p-p2{0,1-gap})-1) < 1e-10L && abs(p.y) < 1e-10L, "近相切交点满足圆和直线");
     }
     T(cir_line({{0,0},1},{{0,0},{0,0}}).empty(), "仅数学零方向返回空");
+    for(db distance : {db(0),eps/4,16*eps,db(1e-6L)}) {
+        auto got = cir_line({{0,0},0},{{-1,distance},{1,distance}});
+        T(got.size() == (distance <= eps ? 1u : 0u), "点圆按长度eps判定，不产生平方容差伪交点");
+    }
+    for(db radius : {db(1e-6L),db(1),db(1e6L)}) {
+        for(db gap : {-16*eps,-eps/4,db(0),eps/4,16*eps}) {
+            db distance = radius-gap;
+            auto got = cir_line({{0,0},radius},{{-1,distance},{1,distance}});
+            int count = gap < -eps ? 0 : gap > eps ? 2 : 1;
+            T((int)got.size() == count, "小/大圆相切边界统一按径向长度eps");
+            for(auto p : got) T(abs(dis(p)-radius) <= eps*1.1L, "相切边界返回点的径向误差不超过eps");
+        }
+    }
+    auto large = cir_line({{0,0},1e2000L},{{0,0},{1e-2000L,0}});
+    T(large.size() == 2 && abs(large[0].x/1e2000L+1) < 1e-15L && abs(large[1].x/1e2000L-1) < 1e-15L,
+      "巨大半径与极短方向不需要平方半径/方向");
 
     // ---------- 0. 手算确定用例 ----------
     {
