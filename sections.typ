@@ -348,6 +348,10 @@
 
 #zebraw(lang: false)[#raw(readcode("templates/计算几何/圆/最小圆覆盖.cpp"), lang: "cpp", block: true)]
 
+=== 点圆与两圆切线
+
+#zebraw(lang: false)[#raw(readcode("templates/计算几何/圆/切线.cpp"), lang: "cpp", block: true)]
+
 == 平面剖分
 
 === Delaunay 三角剖分
