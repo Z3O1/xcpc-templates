@@ -272,6 +272,10 @@
 
 #zebraw(lang: false)[#raw(readcode("templates/计算几何/整数/最近点对.cpp"), lang: "cpp", block: true)]
 
+=== 整数极角排序
+
+#zebraw(lang: false)[#raw(readcode("templates/计算几何/整数/极角排序.cpp"), lang: "cpp", block: true)]
+
 == 基础
 
 === 二维点与向量
