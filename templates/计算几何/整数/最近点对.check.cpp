@@ -1,4 +1,4 @@
-// 整数最近点对 自测:暴力平方距离参考、3万组全尺度随机/退化、跨中线与极值回归、百万点线/竖线/网格/全重
+// 整数最近点对 自测:暴力平方距离参考、三点网格穷举/极值平移、3万组全尺度随机/退化、跨中线、百万点线/竖线/网格/全重
 #include "../../_check_base.hpp"
 #include "整数点.cpp"
 #include "最近点对.cpp"
@@ -28,6 +28,23 @@ int main() {
     rng.seed(2026101506);
     verify({}); verify({{0, 0}}); verify({{1, 2}, {1, 2}});
     verify({{-1, 0}, {0, 100}, {1, 0}, {2, 100}});
+    vector<p2i> grid;
+    for(ll x = -1; x <= 1; ++x) for(ll y = -1; y <= 1; ++y) grid.push_back({x, y});
+    for(auto a : grid) for(auto b : grid) for(auto c : grid) verify({a, b, c});
+    for(ll s : {LLONG_MIN + 100, LLONG_MAX - 100})
+        verify({{s - 1, s}, {s, s + 100}, {s + 1, s}, {s + 2, s + 100}});
+    for(int t = 0; t < 2000; ++t) {
+        vector<p2i> local(rnd(2, 16));
+        for(auto &p : local) p = {rnd(-30, 30), rnd(-30, 30)};
+        i128 want = brute(local);
+        for(p2i shift : vector<p2i>{{0, 0}, {LLONG_MIN + 100, LLONG_MAX - 100},
+                                  {LLONG_MAX - 100, LLONG_MIN + 100}}) {
+            auto moved = local;
+            for(auto &p : moved) p.x += shift.x, p.y += shift.y;
+            verify(moved);
+            IntCheck::need(closest_pair2(moved) == want, "小尺度极值平移不变", moved);
+        }
+    }
     for(int t = 0; t < 30000; ++t) {
         vector<p2i> a(rnd(0, 35));
         for(auto &p : a) p = IntCheck::point(t % 3);
