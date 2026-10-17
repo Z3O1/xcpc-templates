@@ -1,0 +1,33 @@
+# XCPC 模板排版基准。规则说明见 STYLE.md；既有文件不要求一次性重排。
+# 校验：clang-format --dry-run <file>（或 clang-format <file> | diff -u <file> -）。
+---
+Language: Cpp
+Standard: c++17
+BasedOnStyle: LLVM
+IndentWidth: 4
+TabWidth: 4
+UseTab: Never
+# 不强制列宽：板子允许长行，避免为折行引入额外缩进。
+ColumnLimit: 0
+# 命名空间内容不缩进。
+NamespaceIndentation: None
+BreakBeforeBraces: Attach
+# if( / for( / while( 前不加空格。
+SpaceBeforeParens: Never
+# 指针、引用右靠：int *a、vector<int> &b。
+PointerAlignment: Right
+AllowShortFunctionsOnASingleLine: All
+AllowShortIfStatementsOnASingleLine: AllIfsAndElse
+AllowShortLoopsOnASingleLine: true
+Cpp11BracedListStyle: true
+# 命名空间收尾不补 // namespace X。
+FixNamespaceComments: false
+AlignConsecutiveAssignments: false
+AlignConsecutiveDeclarations: false
+AlignEscapedNewlines: Right
+AlwaysBreakTemplateDeclarations: No
+# 尾随注释前留两个空格。
+SpacesBeforeTrailingComments: 2
+KeepEmptyLinesAtTheStartOfBlocks: false
+SortIncludes: false
+IncludeBlocks: Preserve
