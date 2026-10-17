@@ -5,7 +5,7 @@ struct fgcd_t {
     array<int, 3> a[n + 1];
     int s[B + 1][B + 1];
     bitset<n + 1> b;
-    // 构造 O(n) 预处理表；对象含大数组不宜放栈上；单个对象可重复查询。
+    // 对象含大数组不宜放栈上；单个对象可重复查询。
     fgcd_t() {
         vect<int> p;
         a[1] = {1, 1, 1};
@@ -23,7 +23,7 @@ struct fgcd_t {
         }
         For(i, 0, B) For(j, 0, i) s[i][j] = !j ? i : s[j][i % j];
     }
-    // 查询 gcd；要求 0 <= x,y <= n；返回非负最大公约数,支持 0。
+    // 要求 0 <= x,y <= n；返回 gcd，支持 0。
     int operator()(int x, int y) const {
         if(!x || !y) return x | y;
         if(x == 1 || y == 1) return 1;

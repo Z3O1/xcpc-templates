@@ -1,11 +1,10 @@
 // DJS(): 数论 · 杜教筛 (数论函数前缀和)
 
-// 求 S(n) = sum_{i=1}^{n} f(i)。利用 g(1) * S(n) = H(n) - sum_{i=2}^{n} g(i) * S(n / i),
-// 其中 H 是 f * g 的前缀和;对 n / i 记忆化后复杂度 O(n^{2/3})。
-// 前置:调用方提供阈值 N,并预处理 mu/phi 的前缀和 smu[0..N]、sphi[0..N](下标 0 为 0)。
+// 求 S(n) = sum_{i=1}^n f(i)；O(n^{2/3})。
+// 前置：调用方提供阈值 N 及预处理的前缀和 smu[0..N]、sphi[0..N]（下标 0 为 0）。
 unordered_map<ll, ll> smu_big, sphi_big;
-// 求莫比乌斯函数前缀和；要求已预处理 smu[0..N]；返回 sum_{i<=n} mu(i),并记忆化大 n。
-ll DJS_mu(ll n) { // f = mu,取 g = 1,则 H(n) = 1
+// 莫比乌斯函数前缀和；要求已预处理 smu[0..N]。
+ll DJS_mu(ll n) {
     if(n <= N) return smu[n];
     if(smu_big.count(n)) return smu_big[n];
     ll ans = 1;
@@ -13,8 +12,8 @@ ll DJS_mu(ll n) { // f = mu,取 g = 1,则 H(n) = 1
         r = n / (n / l), ans -= (r - l + 1) * DJS_mu(n / l);
     return smu_big[n] = ans;
 }
-// 求欧拉函数前缀和；要求已预处理 sphi[0..N] 且 n*(n+1)/2 不溢出 ll；返回 sum_{i<=n} phi(i)。
-ll DJS_phi(ll n) { // f = phi,取 g = 1,则 H(n) = n * (n + 1) / 2
+// 欧拉函数前缀和；要求已预处理 sphi[0..N] 且 n*(n+1)/2 不溢出 ll。
+ll DJS_phi(ll n) {
     if(n <= N) return sphi[n];
     if(sphi_big.count(n)) return sphi_big[n];
     ll ans = n * (n + 1) / 2;

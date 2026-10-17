@@ -1,12 +1,12 @@
 // f(n,a,b,c): 数学 · 类欧几里得 (一次递归求出 f/g/h)
 
-// 契约:n/a/b >= 0,c > 0;参数保留普通整数,结果按常量 M = 998244353 取模。
-// 依赖:ll/ksm;f/g/h 分别为下取整和、平方和、乘 i 的带权和(i = 0..n)。
+// 依赖：ll/ksm；结果按 M = 998244353 取模。
 const int i2 = (M + 1) / 2, i6 = ksm(6, M - 2, M);
 struct nd {
     int f, g, h;
 };
-// 计算 Σ floor((a*i+b)/c) 及平方、乘 i 和；要求 n/a/b >= 0,c > 0；返回三量模 M。
+// 一次递归求 f/g/h：下取整和、平方和、乘 i 的带权和（i = 0..n）。
+// 要求 n/a/b >= 0、c > 0。
 nd f(int n_, int a, int b, int c) {
     if(n_ < 0) return {0, 0, 0};
     ll n = n_ % M, x = (a / c) % M, y = (b / c) % M;

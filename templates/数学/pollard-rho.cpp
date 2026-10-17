@@ -2,12 +2,11 @@
 
 // hide
 
-// chkp 接受 ll;PR 要求 n 为正合数,fact 要求 n >= 1,返回升序去重质因子。
-// 判定素数；接受 signed ll 全范围输入；返回 n 是否为素数。
+// 判定素数；接受 signed ll 全范围，确定性。
 constexpr bool chkp(ll n) {
     if(n < 2) return 0;
     if(n % 2 == 0) return n == 2;
-    constexpr int p[] = {2, 325, 9375, 28178, 450775, 9780504, 1795265022}; // {2, 7, 61} for 32-bits
+    constexpr int p[] = {2, 325, 9375, 28178, 450775, 9780504, 1795265022};
     auto ksm = [&](i128 a, ll b) {
         i128 s = 1;
         for(; b; b >>= 1, a = a * a % n)
@@ -24,7 +23,7 @@ constexpr bool chkp(ll n) {
     }
     return 1;
 }
-// 寻找 Pollard-Rho 因子；要求 n 为正合数；返回一个非平凡因子,偶数直接返回 2。
+// 求 n 的一个非平凡因子；要求 n 为正合数。
 ll PR(ll n) {
 	mt19937_64 rng(114514);
     if(n % 2 == 0) return 2;
@@ -47,7 +46,7 @@ ll PR(ll n) {
         }
     }
 }
-// 分解质因数；要求 n >= 1；返回升序去重质因子。
+// 要求 n >= 1；返回升序去重质因子。
 vect<ll> fact(ll n) {
     if(n == 1) return {};
     vect<ll> f;
