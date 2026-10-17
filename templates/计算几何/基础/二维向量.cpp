@@ -11,12 +11,10 @@ const db angle_eps = 1e-10;
 const db pi = acos(db(-1));
 // 带容差取符号；|x| <= eps 返回 0，否则返回 ±1。
 int sign(db x) { return x < -eps ? -1 : x > eps; }
-// 容差比较；返回 x-y 的符号。
 int cmp(db x, db y) { return sign(x - y); }
 
 struct p2 {
     db x, y;
-    // 向量叉积，等于带号平行四边形面积。
     db det(const p2 &b) const { return x * b.y - y * b.x; }
     // 极角，范围 [-pi,pi]；要求非零向量。
     db alpha() const { return atan2(y, x); }
@@ -34,7 +32,6 @@ p2 operator-(p2 a, p2 b) { return {a.x - b.x, a.y - b.y}; }
 p2 operator*(p2 a, db k) { return {a.x * k, a.y * k}; }
 p2 operator*(db k, p2 a) { return a * k; }
 db dot(p2 a, p2 b) { return a.x * b.x + a.y * b.y; }
-// 除以标量，要求 k 非零。
 p2 operator/(p2 a, db k) { return {a.x / k, a.y / k}; }
 p2 operator+=(p2 &a, p2 b) { return a = a + b; }
 p2 operator-=(p2 &a, p2 b) { return a = a - b; }

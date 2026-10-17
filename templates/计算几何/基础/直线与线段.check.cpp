@@ -1,4 +1,4 @@
-// 直线与线段 自测:EPS距离/角度/全排列2万113位oracle、整数4万/投影3万/偏移2万、极端退化
+// 直线与线段 自测:快判门槛6000组/EPS距离角度与全排列2万113位oracle、整数4万/投影3万/偏移2万
 #include "../../_check_base.hpp"
 #include "二维向量.cpp"
 #include "直线与线段.cpp"
@@ -306,8 +306,40 @@ bool eps_contracts() {
     return true;
 }
 
+// 快判上下界与精确开方回退均与113位长度/夹角参考对照。
+bool predicate_bounds() {
+    mt19937_64 gen(2026101701);
+    int E = numeric_limits<db>::max_exponent * 3 / 4;
+    for(int i = 0; i < 6000; ++i) {
+        p2 d{db(1 + gen() % 31), db(int(gen() % 63) - 31)};
+        int e = int(gen() % (2 * E + 1)) - E;
+        seg a{{0, 0}, d * ldexp(db(i % 2 ? -1 : 1), e)};
+        db factor = db(1 + gen() % 30000) / 10000;
+        if(i % 9 == 0) factor = 1 - 1e-5L;
+        if(i % 9 == 1) factor = 1 + 1e-5L;
+        if(factor == 1) factor += 1e-5L;
+        p2 p = r90(d) * (eps * factor / hypot(d.x, d.y));
+        seg near{{0, 0}, (d + r90(d) * (factor * angle_eps)) * ldexp(db(1), -e)};
+        seg b{{0, 0}, {ldexp(db(1), -e), ldexp(factor * angle_eps, -e)}};
+        seg x{{0, 0}, {ldexp(db(1), e), 0}};
+        if(crossop(a, p) != distance_side(a, p) || chkll(x, b) != angle_reference(x, b) ||
+           chkll(a, near) != angle_reference(a, near)) {
+            printf("predicate case=%d e=%d factor=%La d=(%La,%La) p=(%La,%La)\n",
+                   i, e, factor, d.x, d.y, p.x, p.y);
+            return false;
+        }
+    }
+    for(db shift : {db(0), db(1e9L), db(-1e15L)}) {
+        seg a{{shift, shift}, {shift + 3, shift + 4}};
+        for(p2 p : {p2{shift, shift}, p2{shift + 1, shift}, p2{shift - 1, shift + 2}})
+            if(crossop(a, p) != distance_side(a, p)) return false;
+    }
+    return true;
+}
+
 // 独立参考随机对拍；失败打印两线段及查询点。
 int main() {
+    CHECK(predicate_bounds(), "快判/开方回退6000组：长度与角度eps邻域、全指数方向、大平移");
     CHECK(eps_contracts(), "EPS长度/角度/三点全排列113位oracle 20000组");
     CHECK(projection_offset_range(), "投影偏移全指数/巨大分支 oracle 20000组");
     CHECK(projection_extremes(), "113位投影/距离 oracle，3万随机与极端/平移/尺度");
