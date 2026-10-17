@@ -100,7 +100,7 @@ int main() {
 
     // 1) 随机数据 × 所有 k:划分合法 + 代价等于最优
     {
-        long long cnt = 0;
+        ll cnt = 0;
         For(t, 1, 120) {
             int nn = (int) rnd(1, 26);
             gn = nn;

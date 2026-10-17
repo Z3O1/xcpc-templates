@@ -12,7 +12,7 @@
 int main() {
     // 1) 1-based(dt=1):n = 1..80 与 2B±1 等块边界,全区间对穷举
     {
-        long long cnt = 0;
+        ll cnt = 0;
         vector<int> sizes{1, 2, 3, 19, 20, 21, 39, 40, 41, 59, 60, 61, 100, 121, 200};
         for(int n : sizes) for(int mode = 0; mode < 4; ++mode) {
             vector<int> a(n + 1); // 1-based

@@ -64,22 +64,22 @@ int main() {
     for(u64 p : {2147483647ULL, 4294967291ULL, 4294967297ULL, 998244353ULL, 1000000007ULL,
                  1000000009ULL, 2305843009213693951ULL, 18446744073709551557ULL, 1125899906842597ULL})
         if(p == 4294967297ULL) { if(chkp(p)) return printf("  [FAIL] 4294967297 = 641*6700417 应为合数\n"), 1; }
-        else if(!chkp(p)) return printf("  [FAIL] %llu 应为素数\n", (unsigned long long) p), 1;
+        else if(!chkp(p)) return printf("  [FAIL] %llu 应为素数\n", (u64) p), 1;
     ok("大素数 + 2^32+1(Fermat 数,合数)");
 
     // 7 个底数各自的素数因子:整除底数时若把 a % p 当 0 直接做 MR,这些素数会被判成合数
     for(u64 p : {2ULL, 3ULL, 5ULL, 13ULL, 19ULL, 73ULL, 193ULL, 407521ULL, 299210837ULL})
-        if(!chkp(p)) return printf("  [FAIL] MR 底数的素因子 %llu 被误判为合数\n", (unsigned long long) p), 1;
+        if(!chkp(p)) return printf("  [FAIL] MR 底数的素因子 %llu 被误判为合数\n", (u64) p), 1;
     ok("7 个底数的全部素因子");
 
     // Carmichael 数与半素数
     for(u64 n : {561ULL, 1105ULL, 1729ULL, 2465ULL, 2821ULL, 6601ULL, 8911ULL, 10585ULL, 15841ULL, 29341ULL,
                  41041ULL, 62745ULL, 63973ULL, 75361ULL, 101101ULL, 512461ULL, 294409ULL, 56052361ULL,
                  118901521ULL})
-        if(chkp(n)) return printf("  [FAIL] Carmichael 数 %llu 被误判为素数\n", (unsigned long long) n), 1;
+        if(chkp(n)) return printf("  [FAIL] Carmichael 数 %llu 被误判为素数\n", (u64) n), 1;
     for(u64 n : {1000000007ULL * 1000000009ULL, 3037000493ULL * 3037000453ULL, 999999999989ULL * 9000011ULL,
                  2147483647ULL * 2147483647ULL, 2305843009213693951ULL * 3ULL})
-        if(chkp(n)) return printf("  [FAIL] 合数 %llu 被误判为素数\n", (unsigned long long) n), 1;
+        if(chkp(n)) return printf("  [FAIL] 合数 %llu 被误判为素数\n", (u64) n), 1;
     ok("19 个 Carmichael 数 + 5 个半素数");
 
     // 强伪素数均在 u64 内,另给出真因子来独立确认合数,不使用会截断的超范围常量。

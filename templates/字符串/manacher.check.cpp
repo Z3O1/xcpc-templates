@@ -67,7 +67,7 @@ static bool verify_radii(int n, const char *s, const int *d, bool verbose) {
 int main() {
     // ---------- 1) 小规模穷举:{a,b} 长 1..12、{a,b,c} 长 1..9 ----------
     {
-        long long cnt = 0, centers = 0;
+        ll cnt = 0, centers = 0;
         For(sig, 2, 3) {
             int mx = sig == 2 ? 16 : 9;
             For(n, 1, mx) {
@@ -95,7 +95,7 @@ int main() {
 
     // ---------- 2) 随机压力 ----------
     {
-        long long small = 0, mid = 0, centers = 0;
+        ll small = 0, mid = 0, centers = 0;
         For(t, 1, 40000) {
             int n = (int) rnd(1, 50), sig = (int) rnd(1, 3);
             string s(n + 1, ' ');
@@ -124,7 +124,7 @@ int main() {
         printf("  [ok] 随机对照:%lld 个小串 + %lld 个中等串,共 %lld 个中心全吻合\n", small, mid, centers);
 
         // 周期串 + 回文块拼接:制造长回文,专门压 l+r-i 镜像复用那条分支
-        long long per = 0, blocks = 0, pc = 0;
+        ll per = 0, blocks = 0, pc = 0;
         For(t, 1, 20000) {
             int n = (int) rnd(1, 120), p = (int) rnd(1, 5);
             string s(n + 1, ' ');
@@ -165,7 +165,7 @@ int main() {
 
     // ---------- 3) 特殊结构 + 单字符 + 哨兵边界 ----------
     {
-        long long cnt = 0;
+        ll cnt = 0;
         auto cmp = [&](const string &s) {
             int n = (int) s.size() - 1;
             vector<int> want = brute_odd(n, s);
@@ -215,7 +215,7 @@ int main() {
 
     // ---------- 4) 偶回文:按注释的 |c1|c2|...|cn| 构造与暴力对照 ----------
     {
-        long long small = 0, mid = 0, evens = 0;
+        ll small = 0, mid = 0, evens = 0;
         auto check_even = [&](int n, const string &t) {
             vector<int> od = brute_odd(n, t);
             int m = build_interleaved(n, t, S2BUF);
@@ -287,7 +287,7 @@ int main() {
         run_odd(n, s, DBUF);
         ms = chrono::duration<double, milli>(chrono::steady_clock::now() - t0).count();
         CHECK(verify_radii(n, SBUF, DBUF, true), "1e6 随机串:每个中心回文且半径极大");
-        long long mx = 0;
+        ll mx = 0;
         For(i, 1, n) mx = max(mx, (ll) DBUF[i] - 1);
         printf("  [ok] n=1e6 随机串 O(n) 全校验通过(最长臂 %lld,%.0f ms)\n", mx, ms);
 

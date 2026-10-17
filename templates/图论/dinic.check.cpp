@@ -121,7 +121,7 @@ int main() {
         return 1;
     }
 
-    long long ncase = 0, nbad = 0, nbad_other = 0;
+    ll ncase = 0, nbad = 0, nbad_other = 0;
 
     // ———— 1) 小规模穷举:枚举割求和验证 max-flow == min-cut ————
     For(n, 2, 4) {
@@ -157,7 +157,7 @@ int main() {
     printf("  [ok] 穷举 %lld 组(含 s-t 不连通、零容量、平行边)\n", ncase);
 
     // ———— 2) 中等规模随机压力:与独立 EK 对照 + clear() 反复复位 ————
-    long long ncase2 = 0, nbad2 = 0, nbad2_other = 0;
+    ll ncase2 = 0, nbad2 = 0, nbad2_other = 0;
     For(rep, 1, 400) {
         int n = (int) rnd(2, 30), m = (int) rnd(0, 60);
         int s = (int) rnd(1, n), t = (int) rnd(1, n);

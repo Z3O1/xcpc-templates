@@ -16,7 +16,7 @@ ll brute(ll a, ll b, ll p) {
 // 运行 BSGS 契约自测；覆盖最小解、无解和退化底数；失败返回 1。
 int main() {
     // 1) 小素数全量:(a, b) 所有组合与暴力对照
-    long long cnt = 0;
+    ll cnt = 0;
     for(ll p : {2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97}) {
         For(a, 1, p - 1) For(b, 0, p - 1) {
             ll want = brute(a, b, p), got = BSGS(a, b, p);

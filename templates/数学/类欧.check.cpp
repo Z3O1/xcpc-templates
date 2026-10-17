@@ -28,7 +28,7 @@ static int ref_sum(u64 n, u64 a, u64 b, u64 c) {
 int main() {
     // 1) 全枚举:a,b,c <= 15,n <= 15,三量一起对照暴力
     {
-        long long cnt = 0;
+        ll cnt = 0;
         For(c, 1, 15) For(a, 0, 15) For(b, 0, 15) For(n, 0, 15) {
             ll bf = 0, bg = 0, bh = 0;
             For(i, 0, n) {

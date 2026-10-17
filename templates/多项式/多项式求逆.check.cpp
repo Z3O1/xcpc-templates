@@ -96,7 +96,7 @@ int main() {
 
     // ——— 1) n = 1..6 的小规模全枚举 ———
     {
-        long long cnt = 0;
+        ll cnt = 0;
         const int vals[4] = {0, 1, 2, 998244352};
         For(len, 1, 4) {
             For(mask, 0, (1 << (2 * len)) - 1) {

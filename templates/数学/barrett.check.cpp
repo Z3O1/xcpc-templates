@@ -20,8 +20,8 @@ int main() {
             barret b(M);
             For(x, 0, 600) {
                 if(b.mod(x) != (u64) x % M) {
-                    printf("  [FAIL] M=%d x=%d want=%llu got=%llu\n", M, x, (unsigned long long) x % M,
-                           (unsigned long long) b.mod(x));
+                    printf("  [FAIL] M=%d x=%d want=%llu got=%llu\n", M, x, (u64) x % M,
+                           (u64) b.mod(x));
                     return 1;
                 }
                 ++cnt;
@@ -37,8 +37,8 @@ int main() {
             u64 M = rnd_mod(), x = rnd_u64();
             u64 want = x % M, got = barret(M).mod(x);
             if(got != want) {
-                printf("  [FAIL] M=%llu x=%llu want=%llu got=%llu\n", (unsigned long long) M,
-                       (unsigned long long) x, (unsigned long long) want, (unsigned long long) got);
+                printf("  [FAIL] M=%llu x=%llu want=%llu got=%llu\n", (u64) M,
+                       (u64) x, (u64) want, (u64) got);
                 return 1;
             }
             // 未做条件减法的商误差统计(说明这条减法分支确实被走到)
@@ -64,7 +64,7 @@ int main() {
                 if(base == 0 && d < 0) continue;
                 u64 x = (u64) xx;
                 if(barret(M).mod(x) != x % M) {
-                    printf("  [FAIL] 边界 M=%llu x=%llu\n", (unsigned long long) M, (unsigned long long) x);
+                    printf("  [FAIL] 边界 M=%llu x=%llu\n", (u64) M, (u64) x);
                     return 1;
                 }
             }
@@ -81,9 +81,9 @@ int main() {
             u64 xs[] = {0, 1, M - 1, M, M + 1, ~0ull, ~0ull - 1, (u64) ((u128) M * 2 - 1)};
             for(u64 x : xs) {
                 if(b.mod(x) != x % M) {
-                    printf("  [FAIL] 极值 M=%llu x=%llu want=%llu got=%llu\n", (unsigned long long) M,
-                           (unsigned long long) x, (unsigned long long) (x % M),
-                           (unsigned long long) b.mod(x));
+                    printf("  [FAIL] 极值 M=%llu x=%llu want=%llu got=%llu\n", (u64) M,
+                           (u64) x, (u64) (x % M),
+                           (u64) b.mod(x));
                     return 1;
                 }
             }
@@ -97,13 +97,13 @@ int main() {
             u64 M = rnd_mod(), x = rnd_u64();
             u64 r = barret(M).mod_without_chk(x), want = x % M;
             if(r != want && r != want + M) {
-                printf("  [FAIL] mod_without_chk M=%llu x=%llu r=%llu\n", (unsigned long long) M,
-                       (unsigned long long) x, (unsigned long long) r);
+                printf("  [FAIL] mod_without_chk M=%llu x=%llu r=%llu\n", (u64) M,
+                       (u64) x, (u64) r);
                 return 1;
             }
             if(r % M != want) {
-                printf("  [FAIL] mod_without_chk 不同余 M=%llu x=%llu r=%llu\n", (unsigned long long) M,
-                       (unsigned long long) x, (unsigned long long) r);
+                printf("  [FAIL] mod_without_chk 不同余 M=%llu x=%llu r=%llu\n", (u64) M,
+                       (u64) x, (u64) r);
                 return 1;
             }
         }
@@ -120,7 +120,7 @@ int main() {
 
     // M = 1:模板的固有边界(w = 2^64 截断成 0),只打印不判定
     printf("  [note] M=1 时 barret(1).mod(7) = %llu(应为 0;这是模板固有限制:w 存不下 2^64)\n",
-           (unsigned long long) barret(1).mod(7));
+           (u64) barret(1).mod(7));
 
     PASSED("barret");
 }

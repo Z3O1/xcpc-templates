@@ -33,7 +33,7 @@ void reset() {
 // 运行隐藏 SAM 回归；覆盖暴力子串数、结构性质、连续追加和中等随机串。
 int main() {
     // 1) 与暴力对照不同子串数(小串全量 + 随机)
-    long long cases = 0;
+    ll cases = 0;
     for(int sigma = 1; sigma <= 3; ++sigma) {
         for(int n = 1; n <= 12; ++n) {
             // 穷举 sigma 字母表下所有长度为 n 的串(≤ 3^12 = 531441,按 sigma 与 n 控制)

@@ -11,7 +11,7 @@ int rounds;
 void work() { ++rounds; }
 
 static_assert(is_same_v<pii, array<int, 2>> && is_same_v<pll, array<ll, 2>>);
-static_assert(is_same_v<u32, unsigned> && is_same_v<i64, ll> && is_same_v<u64, ull>);
+static_assert(sizeof(ll) == 8 && sizeof(u64) == 8);
 static_assert(numeric_limits<db>::digits > numeric_limits<double>::digits);
 #if __SIZEOF_POINTER__ == 8
 static_assert(sizeof(i128) == 16 && sizeof(u128) == 16);

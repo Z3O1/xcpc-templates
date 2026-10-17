@@ -128,8 +128,8 @@ static MatchOut run_match(int n, const vector<array<int, 2>> &es) {
     vector<char> buf;
     char tmp[4096];
     int st = 0;
-    long long polls = (long long) WATCHDOG_MS * 20;   // 每轮约 50us
-    for(long long it = 0;; ++it) {
+    ll polls = (ll) WATCHDOG_MS * 20;   // 每轮约 50us
+    for(ll it = 0;; ++it) {
         for(int k = 0; k < 64; k++) {
             ssize_t r = read(fd[0], tmp, sizeof tmp);
             if(r > 0) buf.insert(buf.end(), tmp, tmp + r);
@@ -275,7 +275,7 @@ static Verdict check_case(int n, const vector<array<int, 2>> &es) {
     return v;
 }
 
-static long long n_case = 0, n_ok = 0, n_hang = 0, n_sub = 0, n_invalid = 0, n_bug = 0;
+static ll n_case = 0, n_ok = 0, n_hang = 0, n_sub = 0, n_invalid = 0, n_bug = 0;
 static int n_printed = 0;   // [BUG] 用例明细最多打印几条
 
 // 运行一般图匹配回归、穷举和随机对拍；返回 0 表示全部通过。
@@ -375,7 +375,7 @@ int main() {
 
     puts("— 穷举 n<=5 的所有图(硬断言: 必须恰好等于暴力最优) —");
     {
-        long long cnt = 0, bad = 0, hang = 0;
+        ll cnt = 0, bad = 0, hang = 0;
         For(n, 2, 5) {
             vector<array<int, 2>> all;
             For(u, 1, n) For(v, u + 1, n) all.push_back({u, v});
@@ -406,7 +406,7 @@ int main() {
 
     puts("— 随机图 n=6..10(多种密度/结构) —");
     {
-        long long cnt = 0, okn = 0, sub = 0, hang = 0, inv = 0, bugn = 0;
+        ll cnt = 0, okn = 0, sub = 0, hang = 0, inv = 0, bugn = 0;
         const int REPS = 240;
         For(rep, 1, REPS) {
             int n = (int) rnd(6, 10);

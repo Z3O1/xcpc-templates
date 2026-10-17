@@ -322,7 +322,7 @@ static bool run_child_mcmf(int which, MfRes &out, int ms) {
 // 运行费用流回归、静态扫描和随机对拍；返回 0 表示全部通过。
 int main() {
     rng.seed(20240513);   // 固定种子: 每次跑同一批随机用例, 出问题可复现
-    long long ncase = 0;
+    ll ncase = 0;
 
     // ———— 0) mcmf2 的历史 bug(A/B): 静态判定(动态对拍在第 9 节) ————
     puts("— mcmf2(): 静态判定(A/B 两个历史 bug 的回归守卫) —");

@@ -4,7 +4,7 @@
 // 独立依据(不拿另一个 Delaunay 实现对拍,而是直接验证 Delaunay 的定义):
 //   1. 空圆性质:对每个输出三角形算外心 O 与半径 R(解析公式,独立于模板里的 4x4 行列式),
 //      再暴力检查每个输入点 p 满足 |p-O|^2 >= R^2 - 1e-9*(1+R^2);小坐标(|坐标| <= 1e4)时
-//      额外用 __int128 精确算 4x4 外接圆行列式,要求「没有任何点严格在圆内」精确成立。
+//      额外用 i128 精确算 4x4 外接圆行列式,要求「没有任何点严格在圆内」精确成立。
 //   2. 剖分合法性:三角形都逆时针(面积>0)、无重复/退化三角形、每条无序边最多被两个三角形
 //      共享(只出现 1 次的边 = 边界边,它必须整条落在凸包边上,且每条凸包边被这些边界边按参数
 //      区间恰好铺满,不重不漏)、三角形面积和 == 独立算的凸包面积(== 并集盖住凸包)、
@@ -151,8 +151,8 @@ static string verify(const vector<p2> &in, const vector<p2> &out, bool exactCirc
     }
     for(auto &e : ec)
         if(e.second > 2) {
-            snprintf(buf, sizeof buf, "边 (%lld,%lld)-(%lld,%lld) 被 %d 个三角形共享", (long long) e.first.first.first, (long long) e.first.first.second,
-                     (long long) e.first.second.first, (long long) e.first.second.second, e.second);
+            snprintf(buf, sizeof buf, "边 (%lld,%lld)-(%lld,%lld) 被 %d 个三角形共享", (ll) e.first.first.first, (ll) e.first.first.second,
+                     (ll) e.first.second.first, (ll) e.first.second.second, e.second);
             return buf;
         }
     if(h < 3) {  // 全部共线:不允许有三角形
@@ -198,13 +198,13 @@ static string verify(const vector<p2> &in, const vector<p2> &out, bool exactCirc
         i128 cur = 0;
         for(auto &s : seg) {
             if(s.first != cur) {
-                snprintf(buf, sizeof buf, "凸包边 (%g,%g)-(%g,%g) 没有被边界边恰好铺满(参数 %lld 处断开/重叠)", (double) A.x, (double) A.y, (double) B.x, (double) B.y, (long long) (s.first - cur));
+                snprintf(buf, sizeof buf, "凸包边 (%g,%g)-(%g,%g) 没有被边界边恰好铺满(参数 %lld 处断开/重叠)", (double) A.x, (double) A.y, (double) B.x, (double) B.y, (ll) (s.first - cur));
                 return buf;
             }
             cur = s.second;
         }
         if(cur != D) {
-            snprintf(buf, sizeof buf, "凸包边 (%g,%g)-(%g,%g) 没有被边界边铺满(只铺到 %lld/%lld)", (double) A.x, (double) A.y, (double) B.x, (double) B.y, (long long) cur, (long long) D);
+            snprintf(buf, sizeof buf, "凸包边 (%g,%g)-(%g,%g) 没有被边界边铺满(只铺到 %lld/%lld)", (double) A.x, (double) A.y, (double) B.x, (double) B.y, (ll) cur, (ll) D);
             return buf;
         }
     }

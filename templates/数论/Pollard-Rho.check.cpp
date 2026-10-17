@@ -80,7 +80,7 @@ int main() {
         do p = rnd(1000000000LL, 4000000000LL); while (!chkp(p));
         do q = rnd(1000000000LL, 4000000000LL); while (!chkp(q));
         if(check(p * q, vector<u64>{min(p, q), max(p, q)})) {
-            printf("  [FAIL] %llu * %llu 分解错误\n", (unsigned long long) p, (unsigned long long) q);
+            printf("  [FAIL] %llu * %llu 分解错误\n", (u64) p, (u64) q);
             return 1;
         }
     }

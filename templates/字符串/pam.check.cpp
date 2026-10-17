@@ -51,7 +51,7 @@ static void pam_run(const vector<string> &strs) {
 
 // ---------- 暴力 ----------
 // 所有串的所有回文子串(精确字符串集合 + 总个数)
-static void brute_pals(const vector<string> &strs, set<string> &S, long long &total) {
+static void brute_pals(const vector<string> &strs, set<string> &S, ll &total) {
     for(auto &s : strs) {
         int n = (int) s.size();
         For(i, 0, n - 1) For(j, i, n - 1) {
@@ -81,7 +81,7 @@ struct H2 {
     }
 };
 // 用中心扩展和哈希统计不同回文串数；要求字符串为小写普通串；返回去重后的数量。
-static long long brute_pal_count_hash(const vector<string> &strs) {
+static ll brute_pal_count_hash(const vector<string> &strs) {
     vector<pair<u64, u64>> hs;
     for(auto &s : strs) {
         int n = (int) s.size();
@@ -97,7 +97,7 @@ static long long brute_pal_count_hash(const vector<string> &strs) {
     }
     sort(all(hs));
     hs.erase(unique(all(hs)), hs.end());
-    return (long long) hs.size();
+    return (ll) hs.size();
 }
 
 // ---------- 把模板建出来的自动机"读出来"并核对 ----------
@@ -126,7 +126,7 @@ static bool collect_nodes(vector<string> &ns, int &reach) {
 // 核对节点数、长度和 fail 链；要求全局 PAM 对应 strs，exact=true 时逐节点对照集合。
 static bool check_against_brute(const vector<string> &strs, bool exact) {
     set<string> S;
-    long long total = 0;
+    ll total = 0;
     brute_pals(strs, S, total);
     if(tot - 2 != (int) S.size()) {
         printf("    [FAIL] 节点数 %d != 不同回文个数 %d (总回文 %lld)\n", tot - 2, (int) S.size(), total);
@@ -179,7 +179,7 @@ int main() {
     pam_alloc(64);
     // ---------- 1) 穷举:单串 {a,b} 长 1..10、{a,b,c} 长 1..6 ----------
     {
-        long long cnt = 0;
+        ll cnt = 0;
         For(alpha, 2, 3) {
             int mx = alpha == 2 ? 10 : 6;
             vector<string> strs;
@@ -207,7 +207,7 @@ int main() {
 
     // ---------- 2) 穷举所有两串组合(长 1..4,{a,b})----------
     {
-        long long cnt = 0;
+        ll cnt = 0;
         vector<string> all4;
         For(n, 1, 4) {
             vector<int> cur(n, 0);
@@ -235,7 +235,7 @@ int main() {
 
     // ---------- 3) 随机多串压力(小 n,精确字符串集合对照)----------
     {
-        long long cnt = 0, nodes = 0;
+        ll cnt = 0, nodes = 0;
         For(t, 1, 20000) {
             int k = (int) rnd(1, 3);
             vector<string> strs;
@@ -259,7 +259,7 @@ int main() {
 
     // ---------- 4) 随机中等规模(只数不同回文个数,哈希暴力对照)----------
     {
-        long long cnt = 0;
+        ll cnt = 0;
         For(t, 1, 2000) {
             int k = (int) rnd(1, 3);
             vector<string> strs;
@@ -270,7 +270,7 @@ int main() {
                 strs.push_back(s);
             }
             pam_run(strs);
-            long long want = brute_pal_count_hash(strs);
+            ll want = brute_pal_count_hash(strs);
             if(tot - 2 != want) {
                 printf("  [FAIL] 中等随机 m=%d:节点 %d != 暴力 %lld\n", k, tot - 2, want);
                 return 1;
@@ -283,7 +283,7 @@ int main() {
             For(j, 1, n) s += (char) ('a' + (j % p));
             vector<string> strs{s};
             pam_run(strs);
-            long long want = brute_pal_count_hash(strs);
+            ll want = brute_pal_count_hash(strs);
             if(tot - 2 != want) {
                 printf("  [FAIL] 结构串 n=%d p=%d:节点 %d != 暴力 %lld\n", n, p, tot - 2, want);
                 return 1;
@@ -293,7 +293,7 @@ int main() {
         printf("  [ok] 中等/结构串 %lld 组(到长 2000)不同回文个数与哈希暴力一致\n", cnt);
 
         // 大随机串(10 万~30 万):随机串上中心扩展暴力仍是线性,可以真的对照
-        long long big = 0;
+        ll big = 0;
         For(t, 1, 5) {
             int nn = (int) rnd(100000, 300000), run = (int) rnd(1000, 3000);
             string s;
@@ -302,7 +302,7 @@ int main() {
             For(j, st0, st0 + run - 1) s[j - 1] = 'a';   // 插一段长同字符 run
             vector<string> strs{s};
             pam_run(strs);
-            long long want = brute_pal_count_hash(strs);
+            ll want = brute_pal_count_hash(strs);
             if(tot - 2 != want) {
                 printf("  [FAIL] 大随机串 n=%d run=%d:节点 %d != 暴力 %lld\n", nn, run, tot - 2, want);
                 return 1;
@@ -339,7 +339,7 @@ int main() {
                 For(j, 1, nn) s += (char) ('a' + (j & 1));
                 vector<string> strs{s};
                 pam_run(strs);
-                long long want = brute_pal_count_hash(strs);
+                ll want = brute_pal_count_hash(strs);
                 if(tot - 2 != want) return printf("  [FAIL] 交替 n=%d 公式核对失败\n", nn), 1;
                 if(want != nn)   // 交替串的奇数长子串全是回文,不同回文个数恰好 = n
                     return printf("  [FAIL] 交替 n=%d 实测 %lld 与公式 n 不符\n", nn, want), 1;

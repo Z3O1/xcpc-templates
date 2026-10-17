@@ -84,7 +84,7 @@ int main() {
 
     // 1) 随机数组 × 正/零/负 dt(重点覆盖负 dt —— 那正是配 WQS 用的罚分区间)
     {
-        long long cnt = 0;
+        ll cnt = 0;
         int neg = 0, zero = 0, pos = 0;
         For(t, 1, 60000) {
             int len = (int) rnd(1, 60);

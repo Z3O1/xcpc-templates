@@ -60,8 +60,8 @@ int main() {
         // 抽样几个位置与暴力对照
         For(i, 0, 5) {
             int idx = (int) rnd(0, 2 * n - 2);
-            __int128 want = 0;
-            for(int j = max(0, idx - n + 1); j <= min(idx, n - 1); ++j) want += (__int128) (ll) a[j] * (ll) b[idx - j];
+            i128 want = 0;
+            for(int j = max(0, idx - n + 1); j <= min(idx, n - 1); ++j) want += (i128) (ll) a[j] * (ll) b[idx - j];
             db err = fabs(got[idx] - (db) want) / max((db) 1, fabs((db) want));
             if(!isfinite(got[idx]) || err > 1e-6) return printf("  [FAIL] 大系数 idx=%d got=%.3Lf want=%.3Lf\n", idx, got[idx], (db) want), 1;
         }

@@ -82,7 +82,7 @@ int main() {
     For(t, 1, 1000) {
         u64 x = rng() % p, y = rng() % p;
         if(quadres(x, p) != euler_ref_u64(x, p))
-            return printf("  [FAIL] u64 p=%llu x=%llu\n", (unsigned long long) p, (unsigned long long) x), 1;
+            return printf("  [FAIL] u64 p=%llu x=%llu\n", (u64) p, (u64) x), 1;
         u64 square = (u128) y * y % p;
         CHECK(quadres(square, p), "完整 u64 的平方数必须为二次剩余");
     }

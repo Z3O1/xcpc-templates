@@ -72,7 +72,7 @@ int main() {
 
     // ---------- 1) 小规模穷举:2 字母长 1..16 ----------
     {
-        long long cnt = 0;
+        ll cnt = 0;
         For(n, 1, 16) {
             string t(n + 1, ' ');
             vector<int> cur(n + 1, 0);
@@ -118,7 +118,7 @@ int main() {
 
     // ---------- 2) 随机压力 ----------
     {
-        long long small = 0, mid = 0, pos = 0;
+        ll small = 0, mid = 0, pos = 0;
         For(t, 1, 40000) {
             int n = (int) rnd(1, 60), sig = (int) rnd(1, 3);
             string s(n + 1, ' ');
@@ -151,7 +151,7 @@ int main() {
 
     // ---------- 3) 特殊结构:全同 / 交替 / 周期 / a..ab / Fibonacci / 整串回文 ----------
     {
-        long long cnt = 0;
+        ll cnt = 0;
         auto cmp = [&](const string &s) {
             int n = (int) s.size() - 1;
             setup(n, s.c_str());

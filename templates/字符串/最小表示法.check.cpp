@@ -1,7 +1,7 @@
 // 最小表示法 自测:返回起点循环移位后确实是最小循环同构串,与"枚举全部循环移位取最小"暴力对照
 //             (并列最小值时只要求"得到的串是最小串"且起点合法),1e6 规模另用 Booth 算法独立预言机核对
 //
-// 覆盖:容器类型 string / vector<int> / vector<char> / vector<long long> / vector<pair>;
+// 覆盖:容器类型 string / vector<int> / vector<char> / vector<ll> / vector<pair>;
 //       单字符、全同、交替、周期、递增、最小起点在末尾、并列最小值、以及 1e6 极端。
 #include "../_check_base.hpp"
 #include "最小表示法.cpp"
@@ -130,7 +130,7 @@ int main() {
 
     // ---------- 2) 穷举:{0,1} 串长 1..14、{0,1,2} 串长 1..9 ----------
     {
-        long long cnt = 0, ties = 0;
+        ll cnt = 0, ties = 0;
         For(sig, 2, 3) {
             int mx = sig == 2 ? 14 : 9;
             For(n, 1, mx) {
@@ -161,7 +161,7 @@ int main() {
 
     // ---------- 3) 随机压力 + 结构串 ----------
     {
-        long long small = 0, mid = 0, ties = 0;
+        ll small = 0, mid = 0, ties = 0;
         For(t, 1, 30000) {
             int n = (int) rnd(1, 40), sig = (int) rnd(1, 3);
             vector<int> a(n, 0);
@@ -189,7 +189,7 @@ int main() {
             ties += tt > 1, ++mid;
         }
         // 结构串
-        long long spec = 0;
+        ll spec = 0;
         For(n, 1, 300) {
             vector<vector<int>> cases;
             vector<int> same(n, 5), alt(n, 0), incr(n, 0), decr(n, 0), per(n, 0), tail(n, 0), aa(n, 1);
@@ -219,7 +219,7 @@ int main() {
 
     // ---------- 4) 容器类型:std::string / vector<char> / vector<ll> / vector<pair> ----------
     {
-        long long cnt = 0;
+        ll cnt = 0;
         For(t, 1, 5000) {
             int n = (int) rnd(1, 30);
             // std::string
@@ -270,7 +270,7 @@ int main() {
     {
         // 先在中规模上确认 Booth 预言机本身与暴力一致
         {
-            long long c1 = 0, c2 = 0;
+            ll c1 = 0, c2 = 0;
             For(t, 1, 3000) {
                 int n = (int) rnd(1, 60), sig = (int) rnd(1, 2);
                 vector<int> a(n, 0);

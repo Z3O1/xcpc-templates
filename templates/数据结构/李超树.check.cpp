@@ -22,7 +22,7 @@ int main() {
 
     // 1) 小规模:每组 1..8 条直线,查询点覆盖左端、右端、随机
     {
-        long long cnt = 0;
+        ll cnt = 0;
         For(t, 1, 3000) {
             int n = (int) rnd(1, 8);
             int rt = 0;

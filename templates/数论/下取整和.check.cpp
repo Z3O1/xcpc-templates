@@ -15,7 +15,7 @@ int main() {
     For(n, 0, 40) For(m, 1, 40) For(a, 0, 40) For(b, 0, 40) {
         if((u128) floor_sum(n, m, a, b) != brute(n, m, a, b)) {
             printf("  [FAIL] n=%d m=%d a=%d b=%d want=%llu got=%llu\n", n, m, a, b,
-                   (unsigned long long) brute(n, m, a, b), (unsigned long long) floor_sum(n, m, a, b));
+                   (u64) brute(n, m, a, b), (u64) floor_sum(n, m, a, b));
             return 1;
         }
     }
@@ -26,8 +26,8 @@ int main() {
         u64 n = rnd(0, 500), m = rnd(1, 100000), a = rnd(0, 100000), b = rnd(0, 100000);
         if((u128) floor_sum(n, m, a, b) != brute(n, m, a, b))
             return printf("  [FAIL] 随机 n=%llu m=%llu a=%llu b=%llu\n",
-                          (unsigned long long) n, (unsigned long long) m,
-                          (unsigned long long) a, (unsigned long long) b), 1;
+                          (u64) n, (u64) m,
+                          (u64) a, (u64) b), 1;
     }
     ok("5 万组随机中等规模");
 
@@ -71,8 +71,8 @@ int main() {
         ++big;
         if((u128) floor_sum(n, m, a, b) != exact)
             return printf("  [FAIL] 大值 n=%llu m=%llu a=%llu b=%llu\n",
-                          (unsigned long long) n, (unsigned long long) m,
-                          (unsigned long long) a, (unsigned long long) b), 1;
+                          (u64) n, (u64) m,
+                          (u64) a, (u64) b), 1;
     }
     if(big < 1000) return printf("  [FAIL] 大值用例太少(%d)\n", big), 1;
     printf("  [ok] %d 组大值(契约范围内)与 i128 版一致\n", big);
@@ -85,12 +85,12 @@ int main() {
         for(auto &c : one) {
             u64 n = c[0], a = c[1], b = c[2];
             u128 want = (u128) a * n * (n - 1) / 2 + (u128) b * n;
-            if(want > (u128) ~(u64) 0) return printf("  [FAIL] 自测用例本身超出契约 n=%llu\n", (unsigned long long) n), 1;
-            if(want != i128_version(n, 1, a, b)) return printf("  [FAIL] m = 1 手算与 i128 版不一致 n=%llu\n", (unsigned long long) n), 1;
+            if(want > (u128) ~(u64) 0) return printf("  [FAIL] 自测用例本身超出契约 n=%llu\n", (u64) n), 1;
+            if(want != i128_version(n, 1, a, b)) return printf("  [FAIL] m = 1 手算与 i128 版不一致 n=%llu\n", (u64) n), 1;
             if((u128) floor_sum(n, 1, a, b) != want)
                 return printf("  [FAIL] 高 n 溢出回归 n=%llu a=%llu b=%llu got=%llu want=%llu\n",
-                              (unsigned long long) n, (unsigned long long) a, (unsigned long long) b,
-                              (unsigned long long) floor_sum(n, 1, a, b), (unsigned long long) want), 1;
+                              (u64) n, (u64) a, (u64) b,
+                              (u64) floor_sum(n, 1, a, b), (u64) want), 1;
         }
         // m = 2、a = 1、b = 0、n = 2^32+1:每个 floor(i/2) 在 i = 2k、2k+1 各出现一次,
         // 再加 i = 2^32 一项,总和恰为 2^62。
@@ -99,11 +99,11 @@ int main() {
         u64 multi[][4] = {{4294967297ULL, 3, 2, 1}, {4294967297ULL, 7, 1, 3}, {8589934592ULL, 7, 1, 3}};
         for(auto &c : multi) {
             u128 want = i128_version(c[0], c[1], c[2], c[3]);
-            if(want > (u128) ~(u64) 0) return printf("  [FAIL] 自测用例本身超出契约 n=%llu\n", (unsigned long long) c[0]), 1;
+            if(want > (u128) ~(u64) 0) return printf("  [FAIL] 自测用例本身超出契约 n=%llu\n", (u64) c[0]), 1;
             if((u128) floor_sum(c[0], c[1], c[2], c[3]) != want)
                 return printf("  [FAIL] 高 n 多值回归 n=%llu m=%llu got=%llu want=%llu\n",
-                              (unsigned long long) c[0], (unsigned long long) c[1],
-                              (unsigned long long) floor_sum(c[0], c[1], c[2], c[3]), (unsigned long long) want), 1;
+                              (u64) c[0], (u64) c[1],
+                              (u64) floor_sum(c[0], c[1], c[2], c[3]), (u64) want), 1;
         }
         // 随机高 n 对照:a * n + b 必须留在 u64 内,答案也要在契约内
         int hn = 0;
@@ -114,7 +114,7 @@ int main() {
             ++hn;
             if((u128) floor_sum(n, m, a, b) != exact)
                 return printf("  [FAIL] 随机高 n n=%llu m=%llu a=%llu\n",
-                              (unsigned long long) n, (unsigned long long) m, (unsigned long long) a), 1;
+                              (u64) n, (u64) m, (u64) a), 1;
         }
         if(hn < 300) return printf("  [FAIL] 随机高 n 有效用例太少(%d)\n", hn), 1;
         printf("  [ok] 高 n(> 2^32)回归:7 组定点 + 2^62 闭式 + %d 组随机\n", hn);
@@ -131,8 +131,8 @@ int main() {
         u64 want = (u64) (((u128) rest + (u128) tri * (a / m % M) + (u128) (n % M) * (b / m % M)) % M);
         if(floor_sum(n, m, a, b) % M != want)
             return printf("  [FAIL] 拆分恒等式 n=%llu m=%llu a=%llu b=%llu\n",
-                          (unsigned long long) n, (unsigned long long) m,
-                          (unsigned long long) a, (unsigned long long) b), 1;
+                          (u64) n, (u64) m,
+                          (u64) a, (u64) b), 1;
     }
     ok("2 万组拆分恒等式");
 

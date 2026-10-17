@@ -96,7 +96,7 @@ static bool has_unreach_pred(int n, const vector<array<int, 2>> &es) {
     return false;
 }
 
-static long long n_case = 0;
+static ll n_case = 0;
 // 输出反例边集；要求点编号 1..n；只打印诊断信息。
 static void dump_edges(int n, const vector<array<int, 2>> &es) {
     printf("  (n=%d, 边:", n);
@@ -194,7 +194,7 @@ int main() {
 
     puts("— 穷举所有图 —");
     {
-        long long cnt = 0, hard = 0;
+        ll cnt = 0, hard = 0;
         // n=3: 全部 9 条有向边(含自环)的任意子集
         {
             int n = 3;
@@ -232,7 +232,7 @@ int main() {
 
     puts("— 随机图: 全图从 1 可达(硬断言 idom == 暴力) —");
     {
-        long long cnt = 0;
+        ll cnt = 0;
         For(rep, 1, 6000) {
             int n = (int) rnd(2, 12);
             vector<array<int, 2>> es;
@@ -249,7 +249,7 @@ int main() {
 
     puts("— 随机图: 允许不可达点,但所有可达点的 idom 必须正确 —");
     {
-        long long cnt = 0;
+        ll cnt = 0;
         For(rep, 1, 6000) {
             int n = (int) rnd(2, 10);
             vector<array<int, 2>> es;
@@ -272,9 +272,9 @@ int main() {
         build(n, es);
         DOM::getdom(n);
         ++n_case;
-        long long reach_cnt = 0;
+        ll reach_cnt = 0;
         For(v, 1, n) if(reach(v, 0, n)) ++reach_cnt;
-        long long dfn_cnt = 0;
+        ll dfn_cnt = 0;
         For(v, 1, n) if(DOM::dfn[v]) ++dfn_cnt;
         if(reach_cnt != dfn_cnt) {
             printf("  [FAIL] n=300: dfn 非零个数 %lld != 可达点个数 %lld\n", dfn_cnt, reach_cnt);
