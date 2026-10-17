@@ -2,7 +2,7 @@
 
 // 依赖 基础/二维向量.cpp 的 eps / sign / cmp，与 p2 同在 Geo 命名空间。
 // 点积写 dot(a,b)，* 只表示数乘。
-// 前置条件:unit(a) 要求 a 非零(零向量会得到 inf/nan)。
+// unit / cosang / sinang / angle 要求向量非零且分量有限；只将数学零视为退化。
 // eps 是绝对容差：colinear / coplanar 直接将叉积模长/混合积与 eps 比较。
 // 坐标缩放会改变判定尺度，应按数据尺度调整容差或另用相对判据。
 // 复杂度:全部 O(1)。
@@ -14,7 +14,6 @@ struct p3 {
     bool operator==(const p3 &b) const {
         return !cmp(x, b.x) && !cmp(y, b.y) && !cmp(z, b.z);
     }
-    // 按 eps 容差判不等。
     bool operator!=(const p3 &b) const { return !(*this == b); }
     // 精确字典序，供排序/二分；与容差判等分开。
     bool operator<(const p3 &b) const {
@@ -39,22 +38,21 @@ p3 cross(p3 a, p3 b) {
 }
 // 返回混合积 a·(b×c)，即平行六面体带号体积。
 db det(p3 a, p3 b, p3 c) { return dot(a, cross(b, c)); }
-// 模长平方。
 db dis2(p3 a) { return dot(a, a); }
 // 模长；避免先平方造成不必要的溢出/下溢，结果仍须可表示。
 db dis(p3 a) { return hypot(a.x, a.y, a.z); }
-// 单位化；只将数学零视为退化，要求 a 非零且分量有限。
 p3 unit(p3 a) {
     a /= max({abs(a.x), abs(a.y), abs(a.z)});
     return a / dis(a);
 }
-// 返回夹角余弦；要求 a、b 均非零且分量有限。
+// 返回夹角余弦。
 db cosang(p3 a, p3 b) { return max((db) -1, min((db) 1, dot(unit(a), unit(b)))); }
-// 返回夹角的非负正弦；要求 a、b 均非零且分量有限。
+// 返回夹角的非负正弦。
 db sinang(p3 a, p3 b) { return min((db) 1, dis(cross(unit(a), unit(b)))); }
-// 返回 [0,pi] 内的夹角（弧度）；要求 a、b 均非零且分量有限。
+// 返回 [0,pi] 内的夹角（弧度）；仅缩放到分量有界，无须单位化。
 db angle(p3 a, p3 b) {
-    a = unit(a), b = unit(b);
+    a /= max({abs(a.x), abs(a.y), abs(a.z)});
+    b /= max({abs(b.x), abs(b.y), abs(b.z)});
     return atan2(dis(cross(a, b)), dot(a, b));
 }
 // 返回三角形 abc 面积的 2 倍。
@@ -65,9 +63,7 @@ db volume6(p3 a, p3 b, p3 c, p3 d) { return det(b - a, c - a, d - a); }
 p3 perp(p3 a) {
     return abs(a.x) > abs(a.z) ? p3{a.y, -a.x, 0} : p3{0, -a.z, a.y};
 }
-// 三点是否共线。
 bool colinear(p3 a, p3 b, p3 c) { return cmp(dis(cross(b - a, c - a)), 0) == 0; }
-// 四点是否共面。
 bool coplanar(p3 a, p3 b, p3 c, p3 d) { return sign(abs(det(b - a, c - a, d - a))) == 0; }
 
 }  // namespace Geo
