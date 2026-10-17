@@ -1,4 +1,4 @@
-// Voronoi 自测:与「暴力最近站点」逐点对照(格点采样 + 随机采样)/ 区域划分性质(面积和 = 包围盒面积、
+// Voronoi 自测:局部距离不等式独立裁剪/尺度平移回归、与「暴力最近站点」逐点对照(格点采样 + 随机采样)/ 区域划分性质(面积和 = 包围盒面积、
 //   区域凸且逆时针、站点在自己区域内部)/ 与 Delaunay 对偶的交叉验证 / 退化输入。
 //
 // 独立依据(不跟另一个 Voronoi 实现比):
@@ -208,6 +208,45 @@ static vector<p2> VA(const vector<p2> &v) { return v; }
 // 用模板求 Voronoi 并验证(verifyCells 的便捷封装)。
 static string verifyVoronoi(const vector<p2> &a, bool allowOverlap, bool sample = true) { return verifyCells(a, voronoi(a), allowOverlap, sample); }
 
+// 独立按距离平方差裁剪，不调用 bisector/convex_cut/isll；测试传入已去平移的坐标。
+static vector<vector<p2>> refCells(const vector<p2> &a, p2 lo, p2 hi) {
+    vector<vector<p2>> out;
+    for(p2 s : a) {
+        vector<p2> cell{{lo.x,lo.y},{hi.x,lo.y},{hi.x,hi.y},{lo.x,hi.y}};
+        for(p2 t : a) {
+            db dx = t.x-s.x, dy = t.y-s.y;
+            if(abs(dx) <= eps && abs(dy) <= eps) continue;
+            auto value = [&](p2 q) { return 2*((q.x-s.x)*dx+(q.y-s.y)*dy)-dx*dx-dy*dy; };
+            vector<p2> next;
+            for(int i = 0; i < (int)cell.size(); ++i) {
+                p2 u = cell[i], v = cell[(i+1)%cell.size()];
+                db f = value(u), g = value(v);
+                if(f <= 0) next.push_back(u);
+                if((f < 0 && g > 0) || (f > 0 && g < 0)) next.push_back(u+(v-u)*(f/(f-g)));
+            }
+            cell = move(next);
+        }
+        out.push_back(move(cell));
+    }
+    return out;
+}
+static db boundaryError(const vector<p2> &a, const vector<p2> &b) {
+    if(a.empty() || b.empty()) return numeric_limits<db>::infinity();
+    db error = 0;
+    for(p2 p : a) {
+        db best = numeric_limits<db>::infinity();
+        for(int j = 0; j < (int)b.size(); ++j) {
+            p2 u = b[j], v = b[(j+1)%b.size()];
+            db dx = v.x-u.x, dy = v.y-u.y, n = dx*dx+dy*dy;
+            db t = n ? ((p.x-u.x)*dx+(p.y-u.y)*dy)/n : 0;
+            t = max(db(0),min(db(1),t));
+            best = min(best,hypot(p.x-u.x-t*dx,p.y-u.y-t*dy));
+        }
+        error = max(error,best);
+    }
+    return error;
+}
+
 // 暴力最近站点对照与划分性质验证;通过则 PASSED("Voronoi")。
 int main() {
     printf("== Voronoi.check:暴力最近站点对照(格点+随机采样)+ 划分性质 + Delaunay 对偶交叉验证 ==\n");
@@ -393,6 +432,48 @@ int main() {
             if(!e.empty()) printf("      圆上站点:%s\n", e.c_str()), ++bad;
         }
         CHECK(bad == 0, "退化:重合站点、k x k 网格、±1e9、距离悬殊、共线站点、圆上站点 —— 采样对照与划分性质全部通过");
+    }
+
+    {
+        int bad = 0, cases = 0;
+        mt19937 rng(20261017);
+        for(int rep = 0; rep < 100; ++rep) {
+            vector<p2> base;
+            if(rep == 0) base = {{0,0},{4,0},{9,0}};
+            else if(rep == 1) base = {{0,0},{8,0},{8,8},{0,8},{4,4},{4,4}};
+            else for(int i = 0; i < 12; ++i) base.push_back({db(rng()%41),db(rng()%41)});
+            for(int e : {-12, 0, 12}) for(int shift : {0, 20, 40}) {
+                db scale = ldexp(db(1),e);
+                p2 o = shift ? p2{ldexp(db(1),shift),-ldexp(db(1),shift-1)} : p2{0,0};
+                vector<p2> sites, local;
+                for(p2 p : base) sites.push_back(o+p*scale);
+                for(p2 p : sites) local.push_back(p-o);
+                auto got = voronoi(sites);
+                auto ref = refCells(local,Voronoi::box[0]-o,Voronoi::box[1]-o);
+                db ulp = nextafter(o.x,numeric_limits<db>::infinity())-o.x;
+                db tol = 2*ulp+16*eps+1e-12L*(1+40*scale), err = 0;
+                for(int i = 0; i < (int)got.size(); ++i) {
+                    for(p2 &p : got[i]) p -= o;
+                    err = max({err,boundaryError(got[i],ref[i]),boundaryError(ref[i],got[i])});
+                }
+                if(err > tol && !bad) {
+                    printf("      局部裁剪反例 rep=%d e=%d shift=%d error=%.12Lg tol=%.12Lg\n      输入:",rep,e,shift,err,tol);
+                    for(p2 p : base) printf(" (%.0Lf,%.0Lf)",p.x,p.y);
+                    printf("\n");
+                }
+                bad += err > tol;
+                ++cases;
+            }
+        }
+        printf("      局部距离不等式 oracle：%d 组尺度/平移输入\n",cases);
+        CHECK(!bad, "区域双向边界距离符合独立距离不等式裁剪，误差仅容许输出 ulp 与局部舍入");
+        auto near = voronoi({{0,0},{eps/2,eps/2}});
+        CHECK(near[0].size()==4 && near[1].size()==4, "eps 内站点仍互不裁剪");
+        auto separate = voronoi({{0,0},{2*eps,0}});
+        db right = -2, left = 2;
+        for(p2 p : separate[0]) right = max(right,p.x);
+        for(p2 p : separate[1]) left = min(left,p.x);
+        CHECK(abs(right-eps)<eps/100 && abs(left-eps)<eps/100, "eps 外站点仍由中垂线划分");
     }
 
     // ===== 5. 反向自检:验证器能抓到错的东西(证明本 check 不是恒绿) =====
