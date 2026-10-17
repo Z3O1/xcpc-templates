@@ -31,9 +31,9 @@ int main() {
         For(t, 1, 300) {
             ll a = rnd(1, p - 1);
             ll x = rnd(0, 5000);
-            ll b = ksm(a, x, p);
+            ll b = qpow(a, x, p);
             ll got = BSGS(a, b, p);
-            if(got < 0 || ksm(a, got, p) != b) return printf("  [FAIL] 大素数 p=%lld a=%lld b=%lld got=%lld\n", p, a, b, got), 1;
+            if(got < 0 || qpow(a, got, p) != b) return printf("  [FAIL] 大素数 p=%lld a=%lld b=%lld got=%lld\n", p, a, b, got), 1;
             if(got > x) return printf("  [FAIL] 返回的不是最小解 p=%lld got=%lld 上界 %lld\n", p, got, x), 1;
         }
         // b = 1 必须返回 0
@@ -51,7 +51,7 @@ int main() {
             ll a = rnd(2, p - 1), b = rnd(1, p - 1);
             ll got = BSGS(a, b, p);
             if(got < 0) { ++none; continue; }
-            if(ksm(a, got, p) != b) return printf("  [FAIL] 返回非法解 p=%lld a=%lld b=%lld got=%lld\n", p, a, b, got), 1;
+            if(qpow(a, got, p) != b) return printf("  [FAIL] 返回非法解 p=%lld a=%lld b=%lld got=%lld\n", p, a, b, got), 1;
         }
         printf("  [ok] p=%lld:2000 组里 %d 组无解(返回 -1),其余解都验证通过\n", p, none);
     }

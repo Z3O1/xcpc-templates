@@ -95,7 +95,7 @@ int main() {
     for(ll p : {5LL, 13LL, 17LL, 29LL, 97LL, 1000033LL, 999999937LL}) {
         ll r = 0;
         for(ll g = 2; g < p; ++g)
-            if(ksm(g, p / 2, p) == p - 1) { r = ksm(g, (p - 1) / 4, p); break; }
+            if(qpow(g, p / 2, p) == p - 1) { r = qpow(g, (p - 1) / 4, p); break; }
         gi g = gi_gcd({p, 0}, {r, 1});
         if(nrm(g) != (u128) p) ++bad;
     }

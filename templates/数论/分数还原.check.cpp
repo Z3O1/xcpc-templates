@@ -83,7 +83,7 @@ int main() {
     // 3) 已知用例:3/7 mod 998244353 应还原成 (3, 7)
     {
         const ll P = 998244353;
-        ll v = (ll) ((i128) 3 * ksm(7, P - 2, P) % P); // v ≡ 3/7
+        ll v = (ll) ((i128) 3 * qpow(7, P - 2, P) % P); // v ≡ 3/7
         auto r = approx((int) P, (int) v, 1000000);
         if(r[0] != 3 || llabs(r[1]) != 7)
             return printf("  [FAIL] 3/7 应还原为 (3, ±7),实际 (%d, %d)\n", r[0], r[1]), 1;

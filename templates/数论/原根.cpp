@@ -18,7 +18,7 @@ int root(int p) {
     auto fac = fac_of(p - 1);
     For(g, 2, p - 1) {
         bool ok = 1;
-        for(int q : fac) ok &= ksm(g, (p - 1) / q, p) != 1;
+        for(int q : fac) ok &= qpow(g, (p - 1) / q, p) != 1;
         if(ok) return g;
     }
     return -1;
@@ -29,6 +29,6 @@ int ord(int a, int p) {
     int x = p - 1;
     auto fac = fac_of(x);
     for(int q : fac)
-        while (x % q == 0 && ksm(a, x / q, p) == 1) x /= q;
+        while (x % q == 0 && qpow(a, x / q, p) == 1) x /= q;
     return x;
 }

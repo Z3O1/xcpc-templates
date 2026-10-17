@@ -89,7 +89,7 @@ static int cmp_fg(const char *what, const vi &F, int n, bool check_other_way) {
     vi got = naive_comp(F, g, n);
     if(!same(w, got)) return bad("f(g(x)) != x", F, g, n, w, got);
     if(n > 1) {
-        int want1 = (int) ksm(F[1], mod - 2, mod);
+        int want1 = (int) qpow(F[1], mod - 2, mod);
         if(g[1] != want1) return bad("G[1] 应为 1/F[1]", F, g, n, vi{0, want1}, vi{g[0], g[1]});
     }
     if(check_other_way) {
@@ -179,7 +179,7 @@ int main() {
     // ——— 5) 结构用例(手算闭式) ———
     {
         CHECK(same(CIV({0, 1}, 2), vi{0, 1}), "F = x → 逆还是 x");
-        CHECK(same(CIV({0, 5}, 2), vi{0, (int) ksm(5, mod - 2, mod)}), "F = 5x → 逆 = (1/5)x");
+        CHECK(same(CIV({0, 5}, 2), vi{0, (int) qpow(5, mod - 2, mod)}), "F = 5x → 逆 = (1/5)x");
         CHECK(same(CIV({0, mod - 1}, 2), vi{0, mod - 1}), "F = -x → 逆 = -x");
         CHECK(same(CIV({0, 1, 0, 0, 0, 0}, 6), serX(6)), "F = x(补零到长度 6)→ 逆 = x");
         CHECK(same(CIV({0, 1, 1, 0}, 4), vi{0, 1, mod - 1, 2}), "F = x + x² → 逆 = x - x² + 2x³(手算)");
@@ -199,7 +199,7 @@ int main() {
         // n = 1 退化:仍须提供非零一次项以定义复合逆,只返回常数项0。
         CHECK(same(CIV({0, 7}, 1), vi{0}), "n = 1 → {0}(仍需非零一次项)");
         // n = 2:g = x/F[1]
-        CHECK(same(CIV({0, 3, 5}, 2), vi{0, (int) ksm(3, mod - 2, mod)}), "n = 2 只用到 F[1]");
+        CHECK(same(CIV({0, 3, 5}, 2), vi{0, (int) qpow(3, mod - 2, mod)}), "n = 2 只用到 F[1]");
         ok("结构/退化用例(F = x / c·x / -x / x+x² / -(x+x²+x³+x⁴) / x(1-x)^{-1} / n = 1,2)全部一致");
     }
 
@@ -250,7 +250,7 @@ int main() {
         // 7c) 变量缩放对称性:h(x) = c·F(x/c) ⟹ h^{<-1>}(y) = c·G(y/c),即系数乘 c^{1-i}。
         //     稠密 F 也能上大 n,O(n) 校验(不用朴素 O(n³))。
         for(int n : {1024, 2048}) {
-            const int c = 13, ic = (int) ksm(c, mod - 2, mod);
+            const int c = 13, ic = (int) qpow(c, mod - 2, mod);
             vi F = rnd_F(n, 0), F2(n, 0);
             ll pw = 1;  // c^{1-i},i 从 1 开始
             For(i, 1, n - 1) {

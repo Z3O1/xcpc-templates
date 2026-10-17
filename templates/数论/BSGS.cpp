@@ -9,8 +9,8 @@ ll BSGS(ll a, ll b, ll p) {
     if(!a) return -1;
     ll l = p - 1;
     for(ll q = 2; q * q <= l; ++q)
-        for(; l % q == 0 && ksm(a, l / q, p) == 1; l /= q);
-    if(l > 1 && ksm(a, l - 1, p) == 1) l = 1;
+        for(; l % q == 0 && qpow(a, l / q, p) == 1; l /= q);
+    if(l > 1 && qpow(a, l - 1, p) == 1) l = 1;
     ll m = (ll) sqrt((db) l);
     while (m * m < l) ++m;
     for(ll y = 0, w = 1 % p; y < std::min(m, l); ++y) {
@@ -23,11 +23,11 @@ ll BSGS(ll a, ll b, ll p) {
         pos.emplace(w, j);
         w = (i128) w * a % p;
     }
-    ll step = ksm(a, m, p), iv = ksm(step, p - 2, p), w = (i128) b * iv % p, ans = -1;
+    ll step = qpow(a, m, p), iv = qpow(step, p - 2, p), w = (i128) b * iv % p, ans = -1;
     for(ll i = 1; i <= m; ++i, w = (i128) w * iv % p)
         if(auto it = pos.find(w); it != pos.end()) {
             ll y = (ll) i * m + it->second;
-            if(ksm(a, y, p) == b && (ans < 0 || y < ans)) ans = y;
+            if(qpow(a, y, p) == b && (ans < 0 || y < ans)) ans = y;
         }
     return ans < 0 ? -1 : ans;
 }

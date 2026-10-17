@@ -15,7 +15,7 @@ template <int M, int G> static void NTT(poly &a, const int k) {
         For(i, 0, n - 1) r[i] = (r[i >> 1] >> 1) | ((i & 1) << (l - 1));
     }
     For(i, 0, n - 1) if(i < r[i]) swap(a[r[i]], a[i]);
-    ll wi = ksm(G, ((M - 1) >> 1) / n * k + M - 1, M);
+    ll wi = qpow(G, ((M - 1) >> 1) / n * k + M - 1, M);
     w.resize(n), w[0] = 1;
     For(i, 1, n - 1) w[i] = w[i - 1] * wi % M;
     for(int m = 1, l = __lg(n); m < n; m <<= 1, --l)
@@ -26,7 +26,7 @@ template <int M, int G> static void NTT(poly &a, const int k) {
                 a[i + j + m] = x - y < 0 ? x - y + M : x - y;
             }
     if(k == -1) {
-        ll inv = ksm(n, M - 2, M);
+        ll inv = qpow(n, M - 2, M);
         For(i, 0, n - 1) a[i] = a[i] * inv % M;
     }
 }

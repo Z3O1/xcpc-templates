@@ -16,7 +16,7 @@ static pair<poly, poly> naive_divmod(poly f, const poly &g) {
     int n = f.size(), m = g.size();
     if(n < m) return {poly(), f};
     poly q(n - m + 1);
-    int ig = ksm(g[m - 1], M - 2, M);
+    int ig = qpow(g[m - 1], M - 2, M);
     rFor(k, n - 1, m - 1) {
         int c = (ll) f[k] * ig % M;
         q[k - (m - 1)] = c;

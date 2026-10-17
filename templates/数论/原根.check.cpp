@@ -50,29 +50,29 @@ int main() {
     for(int p : {65537, 998244353, 1000000007, 1000000009, 2147483647}) {
         int g = root(p);
         if(g <= 1 || g >= p) return printf("  [FAIL] root(%d)=%d 越界\n", p, g), 1;
-        if(ksm(g, p - 1, p) != 1) return printf("  [FAIL] root(%d) 不是原根\n", p), 1;
+        if(qpow(g, p - 1, p) != 1) return printf("  [FAIL] root(%d) 不是原根\n", p), 1;
         if(ord(g, p) != p - 1) return printf("  [FAIL] ord(root(%d)) 应 = p-1\n", p), 1;
         // 原根性:对 p-1 的每个素因子 q,g^((p-1)/q) != 1
         int x = p - 1;
         for(int q = 2; (ll) q * q <= x; ++q) {
             if(x % q) continue;
             while (x % q == 0) x /= q;
-            if(ksm(g, (p - 1) / q, p) == 1) return printf("  [FAIL] root(%d) 不是原根(素因子 %d)\n", p, q), 1;
+            if(qpow(g, (p - 1) / q, p) == 1) return printf("  [FAIL] root(%d) 不是原根(素因子 %d)\n", p, q), 1;
         }
-        if(x > 1 && ksm(g, (p - 1) / x, p) == 1) return printf("  [FAIL] root(%d) 不是原根(大素因子)\n", p), 1;
+        if(x > 1 && qpow(g, (p - 1) / x, p) == 1) return printf("  [FAIL] root(%d) 不是原根(大素因子)\n", p), 1;
         // 随机 a 的阶:整除 p-1 且 a^ord ≡ 1、a^(ord/q) != 1
         For(t, 1, 200) {
             int a = (int) rnd(1, p - 1);
             int o = ord(a, p);
             if((p - 1) % o) return printf("  [FAIL] ord(%d,%d)=%d 不整除 p-1\n", a, p, o), 1;
-            if(ksm(a, o, p) != 1) return printf("  [FAIL] a^ord != 1 (a=%d p=%d)\n", a, p), 1;
+            if(qpow(a, o, p) != 1) return printf("  [FAIL] a^ord != 1 (a=%d p=%d)\n", a, p), 1;
             int y = o;
             for(int q = 2; (ll) q * q <= y; ++q) {
                 if(y % q) continue;
                 while (y % q == 0) y /= q;
-                if(o % q == 0 && ksm(a, o / q, p) == 1) return printf("  [FAIL] ord 非最小 a=%d p=%d\n", a, p), 1;
+                if(o % q == 0 && qpow(a, o / q, p) == 1) return printf("  [FAIL] ord 非最小 a=%d p=%d\n", a, p), 1;
             }
-            if(y > 1 && ksm(a, o / y, p) == 1) return printf("  [FAIL] ord 非最小(大素因子) a=%d p=%d\n", a, p), 1;
+            if(y > 1 && qpow(a, o / y, p) == 1) return printf("  [FAIL] ord 非最小(大素因子) a=%d p=%d\n", a, p), 1;
         }
     }
     ok("5 个大素数:原根性 + 阶整除 p-1 + 阶最小性");

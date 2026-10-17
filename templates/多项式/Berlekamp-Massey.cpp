@@ -1,6 +1,6 @@
 // BM(): 多项式 · 最短线性递推 (Berlekamp-Massey)
 
-// 序列各项在 [0,M)，M=998244353；依赖 For/ll/ksm，O(n²)。
+// 序列各项在 [0,M)，M=998244353；依赖 For/ll/qpow，O(n²)。
 // 只保证拟合给定前缀；外推须另有递推阶数保证，退化时系数可能不唯一。
 
 using poly = vector<int>;
@@ -18,7 +18,7 @@ poly BM(const poly &a) {
         ++off;
         if(!d) continue;
         poly tmp = res;
-        int k = 1ll * d * ksm(s, M - 2, M) % M;                // res ← res - (d/s) * lst * x^off
+        int k = 1ll * d * qpow(s, M - 2, M) % M;                // res ← res - (d/s) * lst * x^off
         For(j, off, n) res[j] = (res[j] - 1ll * k * lst[j - off] % M + M) % M;
         if(len * 2 > i) continue;
         len = i - len + 1, lst = tmp, s = d, off = 0;

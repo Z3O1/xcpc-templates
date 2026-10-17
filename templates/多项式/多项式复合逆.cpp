@@ -17,7 +17,7 @@ void prep(int n)
 	{
 		for(j = 1; j < (1 << i); j++)
 			rev[(1 << i) + j] = rev[(1 << (i - 1)) + (j >> 1)] | ((j & 1) << (i - 1));
-		w = ksm(3, (mod - 1) >> i, mod);
+		w = qpow(3, (mod - 1) >> i, mod);
 		omg[1 << i] = 1;
 		for(j = 1; j < (1 << i); j++)
 			omg[(1 << i) + j] = (ll)omg[(1 << i) + j - 1] * w % mod;
@@ -25,7 +25,7 @@ void prep(int n)
 	fac[0] = 1;
 	for(i = 1; i <= m; i++)
 		fac[i] = (ll)fac[i - 1] * i % mod;
-	inv[m] = ksm(fac[m], mod - 2, mod);
+	inv[m] = qpow(fac[m], mod - 2, mod);
 	for(i = m; i >= 1; i--)
 		inv[i - 1] = (ll)inv[i] * i % mod;
 	for(i = 1; i <= m; i++)
@@ -61,7 +61,7 @@ inline void ntt(int *A, int n, bool t)
 		for(i = 1; i < (1 << n); i++)
 			if(i < (1 << n) - i)
 				swap(A[i], A[(1 << n) - i]);
-		q = ksm(1 << n, mod - 2, mod);
+		q = qpow(1 << n, mod - 2, mod);
 		for(i = 0; i < (1 << n); i++)
 			A[i] = (ll)A[i] * q % mod;
 	}
@@ -171,7 +171,7 @@ poly pw_pj(poly F, int n)
 poly comp_inv(poly F, int n)
 {
 	if((int) F.c.size() < std::max(n, 2)) F.c.resize(std::max(n, 2));
-	int i, r, p = ksm(F.c[1], mod - 2, mod), c;
+	int i, r, p = qpow(F.c[1], mod - 2, mod), c;
 	for(i = 0, c = 1; i < n; i++, c = (ll)c * p % mod)
 		F.c[i] = (ll)F.c[i] * c % mod;
 	poly G;

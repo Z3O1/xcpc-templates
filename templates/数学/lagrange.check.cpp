@@ -11,7 +11,7 @@ static int ifac(int k) { return IFA[k]; }
 static void init_fac() {
     FA[0] = 1;
     For(i, 1, FN) FA[i] = (ll)FA[i - 1] * i % M;
-    IFA[FN] = ksm(FA[FN], M - 2, M);
+    IFA[FN] = qpow(FA[FN], M - 2, M);
     rFor(i, FN, 1) IFA[i - 1] = (ll)IFA[i] * i % M;
 }
 #include "lagrange.cpp"

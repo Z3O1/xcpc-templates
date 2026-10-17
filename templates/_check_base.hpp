@@ -10,7 +10,7 @@
 constexpr int M = 998244353;
 // 返回 a^b mod p；要求 a,b >= 0，1 <= p <= 3037000500（ll 模乘安全界）。
 // b=0 直接返回 1，包括 p=1；更大模数须另配安全模乘。
-ll ksm(ll a, ll b, ll p = M) {
+ll qpow(ll a, ll b, ll p = M) {
     ll s = 1;
     a %= p;
     for(; b; b >>= 1, a = a * a % p)
