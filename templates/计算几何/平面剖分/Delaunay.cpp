@@ -8,6 +8,7 @@
 // 点差各分量<=B时，内圆四次积要求12B^4在db范围；有效相对量不能下溢。
 // 近共线/共圆及容差门槛附近须能可靠判号，不承诺精确谓词。
 // 最坏 O(n^2) 时间、O(n) 空间；不承诺 O(n log n)。
+namespace Geo {
 namespace Delaunay {
 
 vector<p2> pts;  // 去重后的点,按 (x, y) 精确升序
@@ -182,3 +183,4 @@ vector<p2> delaunay(vector<p2> a) {
 
 }  // namespace Delaunay
 using namespace Delaunay;
+}  // namespace Geo

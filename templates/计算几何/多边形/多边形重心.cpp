@@ -3,6 +3,8 @@
 // 依赖 基础/二维向量.cpp；顶点按简单多边形边界顺序，可顺/逆时针，不重复首点。
 // 周长与面积重心均 O(n)，不修改输入；凹多边形的重心可能在外部；局部矩与点差须可表示。
 
+namespace Geo {
+
 // 多边形闭合周长(顶点顺序任意)。
 db perimeter(const vector<p2> &a) {
     int n = a.size();
@@ -35,3 +37,5 @@ p2 centroid(const vector<p2> &a) {
     }
     return a[0] + ret / (3 * s);
 }
+
+}  // namespace Geo

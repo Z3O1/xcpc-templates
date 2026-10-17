@@ -7,6 +7,8 @@
 // 三角形内测试用精确浮点符号；角门槛/边界附近须可可靠判号。
 // 闭三角形内（含对角线上）的其它活点均阻塞摘耳；O(n²) 时间、O(n) 空间。
 
+namespace Geo {
+
 // 对简单多边形耳切；要求如上，输出三角形不重不漏。
 vector<array<int, 3>> ear_clip(const vector<p2> &a) {
     int n = a.size();
@@ -54,3 +56,5 @@ vector<array<int, 3>> ear_clip(const vector<p2> &a) {
     }
     return ret;
 }
+
+}  // namespace Geo

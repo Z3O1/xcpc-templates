@@ -5,6 +5,8 @@
 // 以 a[0] 为扇心二分，O(log n)；返回 0 外、1 边界、2 内；不修改输入。
 // 凹多边形或保留共线点的输入，改用 多边形/多边形基础.cpp 的 O(n) contain。
 
+namespace Geo {
+
 int in_convex(const vector<p2> &a, const p2 &p) {
     int n = a.size();
     if(n < 3) return 0;
@@ -24,3 +26,5 @@ int in_convex(const vector<p2> &a, const p2 &p) {
     if(crossop({a[0], a[l]}, p) == 0) return ons({a[0], a[l]}, p) ? 2 : 0;  // 严格凸时对角线在内部
     return 2;
 }
+
+}  // namespace Geo

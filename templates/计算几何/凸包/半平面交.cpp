@@ -7,6 +7,8 @@
 // 非平行线夹角接近0或pi时不保证数值精度。
 // 极角排序 + 双端队列，O(n log n) 时间、O(n) 空间。
 
+namespace Geo {
+
 // 按精确极角、单位法向偏移排序，同角强约束在前；方向须非零，偏移须有限。
 bool hpi_less(const seg &a, const seg &b) {
     db x = a.dir().alpha(), y = b.dir().alpha();
@@ -61,3 +63,5 @@ vector<p2> hpi(vector<seg> vs) {
     if(sign(s / p) <= 0) return {};  // 面积/周长是长度，三角形时等于内切圆半径。
     return qs;
 }
+
+}  // namespace Geo

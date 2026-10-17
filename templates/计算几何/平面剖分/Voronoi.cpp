@@ -6,6 +6,7 @@
 // 非空输入重设 box（左下/右上），四周外扩 max(宽,高)+1；空输入返回空，保留旧 box。
 // 允许共线与共圆，要求数据尺度适合绝对 eps；不修改调用方输入。
 // 最坏 O(n^3) 时间、O(n^2) 输出空间；大规模请用 Delaunay 对偶算法。
+namespace Geo {
 namespace Voronoi {
 
 array<p2, 2> box;  // 裁剪用的包围盒:box[0] 左下、box[1] 右上
@@ -41,3 +42,4 @@ vector<vector<p2>> voronoi(const vector<p2> &a) {
 
 }  // namespace Voronoi
 using namespace Voronoi;
+}  // namespace Geo
