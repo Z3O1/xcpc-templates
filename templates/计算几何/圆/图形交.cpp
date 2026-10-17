@@ -3,6 +3,8 @@
 // 依赖 圆/圆基础.cpp；与最小圆覆盖共用 c2，可同时抄入。
 // 交点/圆圆面积 O(1)，圆多边形面积 O(n)；无孤立交点返回空，点圆面积为 0。
 
+namespace Geo {
+
 // 圆与直线返回 0/1/2 交点，沿 l.x→l.y 递增；按径向距离差 eps 判相切。
 // 仅数学零方向退化；点差及局部运算须有限，圆心距直线的舍入误差须小于 eps。
 vector<p2> cir_line(const c2 &c, const seg &l) {
@@ -118,3 +120,5 @@ db cir_poly_area(const vector<p2> &a, const c2 &c) {
     for(int i = 0; i < n; ++i) s += tri_disk2(c, a[i], a[(i + 1) % n]);
     return s > 0 ? s / 2 : 0;  // 逆时针 -> 有向和为正;数值噪声造成的极小负值归零
 }
+
+}  // namespace Geo

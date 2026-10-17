@@ -3,6 +3,8 @@
 // 依赖 基础/二维向量.cpp；返回最近两点的距离（非平方），重合点返回 0；n<2 返回 1e100。
 // 分治 + 按 y 归并，O(n log n) 时间、O(n) 空间；传值，不修改调用方点集。
 
+namespace Geo {
+
 db dis_closest(vector<p2> a) {
     int n = a.size();
     if(n < 2) return 1e100L;
@@ -30,3 +32,5 @@ db dis_closest(vector<p2> a) {
     rec(rec, 0, n);
     return ans;
 }
+
+}  // namespace Geo

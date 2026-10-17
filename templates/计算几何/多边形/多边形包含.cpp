@@ -4,6 +4,8 @@
 // O(n) 缠绕数判定；返回 0 外、1 边界、2 缠绕数非零；不修改输入。
 // 与本节 contain 的奇偶规则不同：例如同向绕正方形两圈，缠绕数为 2，奇偶规则判外。
 
+namespace Geo {
+
 int wn_contain(const vector<p2> &a, const p2 &p) {
     int n = a.size();
     if(n < 3) return 0;
@@ -18,3 +20,5 @@ int wn_contain(const vector<p2> &a, const p2 &p) {
     }
     return wn ? 2 : 0;
 }
+
+}  // namespace Geo

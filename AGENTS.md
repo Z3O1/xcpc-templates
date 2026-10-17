@@ -29,11 +29,11 @@ python3 -m unittest discover -s tests # 改生成、构建、选测工具时必�
 
 - **一个独立改动一个提交**：单个模板的修复/新增、一次生成或版式调整、一次工具或文档改动分别提交；完成该步并通过相应验证后立即 `git commit`，不攒大提交、不提交半成品。信息写清改了什么；提交只在本地，推送按 §7 手动进行。
 - 模板新增、隐藏、恢复、改代码或介绍后必须构建；隐藏不免除自测，算法修复还要跑受影响的同章测试。
-- 模板按人手抄需要排版，不用 clang-format 批量重排（`format.sh` 已删）。自测选项看 `./check.sh -h`；只列不跑用 `-l`。
+- 模板按人手抄需要排版。自测选项看 `./check.sh -h`；只列不跑用 `-l`。
 - `./build.sh --watch` 只在启动前生成一次章节，再监视 Typst 依赖；**增删文件、修改 manifest 或隐藏标记后须重启**。只生成章节用 `python3 gen.py`。
 - 自测用 `g++ -std=c++17 -O2`，在 check 所在目录运行（含小节子目录）；每个运行默认限时 60 秒，超时按 FAIL。`XCPC_CHECK_TIMEOUT` 调整限时，`CXX` 覆盖编译器。
 - 产物、日志、调试脚本放已忽略的 `tmp/`；提交/推送前检查 `git diff --check`，只暂存本次改动，不夹带用户改动、临时文件或参考库。
-- 附加 worktree 统一放在 `~/XCPC/.worktrees/`，该目录须被 Git 忽略；不在 `~` 下另建并列容器。
+- 附加 worktree 统一放在 `~/XCPC/.worktrees/`。
 
 ## 3. 文件与生成规则
 
@@ -74,8 +74,8 @@ python3 -m unittest discover -s tests # 改生成、构建、选测工具时必�
 - 几何多点集合接口用标准 `vector`：只读 `const vector<T>&`，原地重排 `vector<T>&`，需局部修改可传值；不传“n + 裸指针/数组”，不要求调用方预分配输出缓冲，变长结果直接返回 `vector`。固定三元下标等定长结构仍可用 `array`。
 - 普通多项式用 `poly = vector<int>`、`M = 998244353`，系数规范到 `[0, M)`；乘法升 `ll` 并逐步取模，非零逆元用 `ksm(x, M - 2, M)`。
 - `ksm` 内部是 signed `ll` 乘法；指数非负、底数规范到 `[0, p)`，正模数须满足 `(p-1)^2 <= LLONG_MAX`（`p <= 3037000500`）。大模数参照 Miller-Rabin、二次剩余模板使用安全模乘。
-- **完整 u64×u64 范围用 `unsigned __int128`**；signed 溢出是未定义行为。有界的带符号计算仍可用 `i128`，不要求所有 `__int128` 都改成 unsigned。
-- 补容器形状用 `resize`，不用会清空调用方数据的 `assign`；可重复调用的入口须重置自己维护的状态，不能默默沿用上次结果。单次构建等例外必须明确注释。
+- **完整 u64×u64 范围用 `unsigned __int128`**。有界的带符号计算仍可用 `i128`，不要求所有 `__int128` 都改成 unsigned。
+- 补容器形状用 `resize`；可重复调用的入口须重置自己维护的状态。单次构建等例外必须明确注释。
 
 移植优先顺序：`~/0/Code/`（用户板子）→ `~/0/Lib/atcoder/`（官方参考）→ `skip2004-ICPC-Templates/contents/`（第三方参考）；只移植需要的部分，不改来源。
 
@@ -118,7 +118,6 @@ g++ -std=c++17 -O1 -g -fsanitize=address,undefined \
 - 数学不用 LaTeX 反斜杠命令或花括号分组：写 `sqrt(n)`、`log(n)`、`10^(-5)`，不写 `\sqrt`、`10^{-5}`；相邻变量留空格，多字母名称用文本或 `op("gcd")(a,b)`。
 - 正负号用 `plus.minus`，共轭用 `macron(pi)`，`bar(pi)` 是模长竖线；避免不成对的反引号，内容块中的 `_ ^ # $ [ ]` 等特殊字符须转义。
 - 两栏表格复用 `_table.typ` 的字体、间距与网格；整表连标题/介绍放进 `#block(breakable: false)[...]`，长表可拆成左右两半并排。
-- 主字体固定为 Libertinus Serif / DejaVu Sans Mono + Noto Sans CJK JP，不依赖系统 fallback。
 - 调试小样放 `tmp/`（需要时放项目目录），可用 `#panic(...)` 输出值；构建错误按 `templates/xxx.typ:行号` 修复。**版面看 PNG，不用 pdftotext 判断换行/上标**：
 
 ```bash

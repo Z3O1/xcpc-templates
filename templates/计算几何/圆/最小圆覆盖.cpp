@@ -2,6 +2,8 @@
 
 // 依赖 圆/圆基础.cpp；允许重复点，不修改调用方的点集。
 // 随机增量：期望 O(n)，最坏 O(n^3)，空间 O(n)；三点共线时取最远两点为直径。
+namespace Geo {
+
 // 最小圆覆盖(随机增量法);返回圆心与半径,空输入返回 { (0,0), -1 } 作无解标记。
 c2 mcc(vector<p2> a) {
     if(a.empty()) return {{0, 0}, -1};
@@ -34,3 +36,5 @@ c2 mcc(vector<p2> a) {
     }
     return c;
 }
+
+}  // namespace Geo

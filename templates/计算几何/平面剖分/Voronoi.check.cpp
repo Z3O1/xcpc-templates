@@ -7,12 +7,12 @@
 //      就要求「q 恰好在最近站点的区域里,且不在任何其它区域的内部」。
 //   2. 划分性质:所有区域面积和 == box 面积(重合站点的情况除外,那时按约定允许重叠);
 //      每个区域逆时针、凸、顶点都在 box 内、包含自己的站点、不含别人的站点。
-//   3. 对偶交叉验证:每条 Delaunay 边 (i,j) 的中点必须同时落在 i、j 两个区域的闭包里
-//      (Delaunay 边 <=> 两个站点在 Voronoi 图里相邻),用 Delaunay.cpp 的输出驱动。
+//   3. 对偶交叉验证:沿每条 Delaunay 边的垂直平分线独立求等距最近点的参数区间，
+//      与 box 相交后检查端点及内部点在两个区域闭包中；区分裁空与共圆零长度对偶。
 //   4. 反向自检:把区域做变异(平移/删一个区域/把区域换成整个 box)后验证器必须报错。
 //
-// 站点都用整数坐标(量级到 1e9),采样点用「格点 + 半整数偏移」,这样叉积、面积精确,
-// 采样点也不会总是压在中垂线上。随机种子固定(19980831)。
+// 随机站点采用整数坐标(量级到 1e9)，解析裁空例另含小数坐标。
+// 采样采用格点偏移和随机点，避免总压在中垂线上；随机种子固定(19980831)。
 #include "../../_check_base.hpp"
 #include "../基础/二维向量.cpp"
 #include "../基础/直线与线段.cpp"
@@ -27,7 +27,6 @@ static mt19937_64 vrng(19980831);
 static ll vrnd(ll l, ll r) { return l + (ll) (vrng() % (u64) (r - l + 1)); }
 // 整数坐标转 p2。
 static p2 VIP(ll x, ll y) { return p2{(db) x, (db) y}; }
-typedef pair<ll, ll> K;
 static db myArea(const vector<p2> &p) {  // 自己的 shoelace(不用模板的 area)
     db s = 0;
     for(int i = 0; i < (int) p.size(); ++i) s += p[i].det(p[(i + 1) % p.size()]);
@@ -138,6 +137,73 @@ static string verifyCells(const vector<p2> &a, const vector<vector<p2>> &c, bool
     if(bad) return first;
     return "";
 }
+// 独立一维线性不等式 oracle，不调用模板裁剪/半平面交。
+struct DualStats { int edges = 0, checked = 0, clipEmpty = 0, zero = 0, rays = 0; };
+struct DualInterval {
+    db lo = -numeric_limits<db>::infinity(), hi = numeric_limits<db>::infinity();
+    bool valid = true;
+    void cut(db a, db b) {  // a*t <= b
+        if(a > 0) hi = min(hi, b / a);
+        else if(a < 0) lo = max(lo, b / a);
+        else if(b < 0) valid = false;
+    }
+    bool empty() const {
+        return !valid || lo > hi + 1e-12L * (1 + max(abs(lo), abs(hi)));
+    }
+};
+static string verifyDual(const vector<p2> &a, const vector<vector<p2>> &c,
+                         const vector<p2> &dt, DualStats &st) {
+    if(c.size() != a.size()) return "dual: 区域数错误";
+    set<pair<int, int>> edges;
+    auto index = [&](p2 p) {
+        for(int i = 0; i < (int)a.size(); ++i) if(sameP(a[i], p)) return i;
+        return -1;
+    };
+    for(int t = 0; t + 2 < (int)dt.size(); t += 3) {
+        for(int k = 0; k < 3; ++k) {
+            int i = index(dt[t + k]), j = index(dt[t + (k + 1) % 3]);
+            if(i < 0 || j < 0 || i == j) return "dual: 非法三角形顶点";
+            edges.insert(minmax(i, j));
+        }
+    }
+    for(auto [i, j] : edges) {
+        ++st.edges;
+        p2 m = (a[i] + a[j]) / 2;
+        db ux = -(a[j].y - a[i].y), uy = a[j].x - a[i].x;
+        DualInterval r;
+        for(p2 s : a) {
+            db sx = s.x - m.x, sy = s.y - m.y;
+            db ix = a[i].x - m.x, iy = a[i].y - m.y;
+            r.cut(2 * (ux * (s.x - a[i].x) + uy * (s.y - a[i].y)),
+                  sx * sx + sy * sy - ix * ix - iy * iy);
+        }
+        if(r.empty()) return "dual: 全局等距最近集合为空";
+        if(!isfinite(r.lo) || !isfinite(r.hi)) ++st.rays;
+        r.cut(ux, Voronoi::box[1].x - m.x);
+        r.cut(-ux, m.x - Voronoi::box[0].x);
+        r.cut(uy, Voronoi::box[1].y - m.y);
+        r.cut(-uy, m.y - Voronoi::box[0].y);
+        if(r.empty()) { ++st.clipEmpty; continue; }  // box 可裁掉整个全局对偶
+        if(!isfinite(r.lo) || !isfinite(r.hi)) return "dual: box 没有限制参数";
+        if(abs(r.hi - r.lo) <= 1e-12L * (1 + max(abs(r.lo), abs(r.hi)))) ++st.zero;
+        for(db t : {r.lo, (r.lo + r.hi) / 2, r.hi}) {
+            p2 q{m.x + t * ux, m.y + t * uy};
+            db di = (q.x-a[i].x)*(q.x-a[i].x) + (q.y-a[i].y)*(q.y-a[i].y);
+            for(int k = 0; k < (int)a.size(); ++k) {
+                db dk = (q.x-a[k].x)*(q.x-a[k].x) + (q.y-a[k].y)*(q.y-a[k].y);
+                db tol = 1e-10L * (1 + abs(di) + abs(dk));
+                if(di > dk + tol || (k == j && abs(di-dk) > tol)) return "dual: 证据不是等距最近点";
+            }
+            if(c[i].size() < 3 || c[j].size() < 3 || !inConv(c[i], q) || !inConv(c[j], q)) {
+                char buf[256];
+                snprintf(buf, sizeof buf, "dual: 边 %d-%d 证据 (%.12Lg,%.12Lg) 不在两区域闭包", i, j, q.x, q.y);
+                return buf;
+            }
+        }
+        ++st.checked;
+    }
+    return "";
+}
 static vector<p2> VA(const vector<p2> &v) { return v; }
 // 用模板求 Voronoi 并验证(verifyCells 的便捷封装)。
 static string verifyVoronoi(const vector<p2> &a, bool allowOverlap, bool sample = true) { return verifyCells(a, voronoi(a), allowOverlap, sample); }
@@ -145,7 +211,6 @@ static string verifyVoronoi(const vector<p2> &a, bool allowOverlap, bool sample 
 // 暴力最近站点对照与划分性质验证;通过则 PASSED("Voronoi")。
 int main() {
     printf("== Voronoi.check:暴力最近站点对照(格点+随机采样)+ 划分性质 + Delaunay 对偶交叉验证 ==\n");
-    char buf[512];
     clock_t t0 = clock();
 
     // ===== 1. n = 0/1/2/3 与接口语义 =====
@@ -208,8 +273,39 @@ int main() {
 
     // ===== 3. 与 Delaunay 对偶的交叉验证 =====
     {
-        int bad = 0, edges = 0, cases = 0;
-        for(int rep = 0; rep < 150; ++rep) {
+        // 解析 fixtures：钝角三角形的原边中点不是对偶；方形对角线只有公共顶点。
+        auto fixture = [&](vector<p2> a, int checked, int empty, int zero, int rays) {
+            auto c = voronoi(a);
+            auto dt = delaunay(a);
+            DualStats s;
+            string e = verifyDual(a, c, dt, s);
+            if(!e.empty()) printf("      fixture: %s\n", e.c_str());
+            CHECK(e.empty() && s.checked == checked && s.clipEmpty == empty && s.zero == zero && s.rays == rays,
+                  "解析 dual fixture: 实际检查/裁空/零长度/射线数量符合预期");
+            printf("      fixture checked=%d clip-empty=%d zero=%d rays=%d\n", s.checked, s.clipEmpty, s.zero, s.rays);
+            return c;
+        };
+        vector<p2> obtuse = {VIP(0, 0), VIP(4, 0), VIP(1, 1)};
+        auto oc = fixture(obtuse, 3, 0, 0, 3);
+        CHECK(!inConv(oc[0], p2{2, 0}) || !inConv(oc[1], p2{2, 0}), "钝角反例: 原边中点不是共同边界");
+        fixture({VIP(0, 0), VIP(4, 0), VIP(4, 4), VIP(0, 4)}, 5, 0, 1, 4);
+        fixture({VIP(0, 0), VIP(4, 0), p2{1, 0.01L}}, 2, 1, 0, 3);
+        fixture({VIP(0, 0), VIP(4, 0), VIP(1, 1), VIP(0, 0)}, 3, 0, 0, 3);
+        fixture({VIP(0, 0), VIP(4, 0), VIP(9, 0)}, 0, 0, 0, 0);
+        // 共线输入没有 Delaunay 三角形，另以解析条带分界检查闭包，不假称检查了边。
+        vector<p2> col = {VIP(0, 0), VIP(4, 0), VIP(9, 0)};
+        auto cc = voronoi(col);
+        CHECK(inConv(cc[0], p2{2, 0}) && inConv(cc[1], p2{2, 0}) &&
+              inConv(cc[1], p2{6.5L, 0}) && inConv(cc[2], p2{6.5L, 0}), "共线站点解析公共边界");
+        // 只用 dual 验证器抓损坏区域，不借助采样/面积验证器。
+        oc = voronoi(obtuse);
+        for(auto &p : oc[0]) p = obtuse[0] + (p - obtuse[0]) * 0.01L;
+        DualStats damaged;
+        CHECK(!verifyDual(obtuse, oc, delaunay(obtuse), damaged).empty(), "dual 独立拒绝缩坏的区域");
+
+        int bad = 0, cases = 0;
+        DualStats total;
+        for(int rep = 0; rep < 1200; ++rep) {
             int n = (int) vrnd(4, 16);
             set<pair<ll, ll>> s;
             vector<p2> v;
@@ -221,39 +317,20 @@ int main() {
             ++cases;
             vector<p2> sites = VA(v);
             auto c = voronoi(sites);
-            // Delaunay 边:(i,j) 出现在同一个三角形里
-            map<K, int> id;
-            for(int i = 0; i < n; ++i) id[make_pair((ll) v[i].x, (ll) v[i].y)] = i;
-            auto dt = delaunay(sites);
-            set<pair<int, int>> done;
-            for(int i = 0; i + 3 <= (int) dt.size(); i += 3) {
-                int t[3];
-                for(int j = 0; j < 3; ++j) t[j] = id[make_pair((ll) dt[i + j].x, (ll) dt[i + j].y)];
-                for(int j = 0; j < 3; ++j) {
-                    int x = t[j], y = t[(j + 1) % 3];
-                    if(x > y) swap(x, y);
-                    if(!done.insert({x, y}).second) continue;  // 每条边只查一次
-                    ++edges;
-                    p2 m = (sites[x] + sites[y]) / 2;
-                    db d1, d2;
-                    int i1;
-                    nearest2(sites, m, d1, i1, d2);
-                    db dk = min(dis2(sites[x] - m), dis2(sites[y] - m));
-                    if(d2 - dk <= 1e-9L * (1 + d2)) continue;  // 中点在别的中垂线上(退化),跳过
-                    if(!inConv(c[x], m) || !inConv(c[y], m)) {
-                        if(!bad) {
-                            snprintf(buf, sizeof buf, "Delaunay 边 %d-%d 的中点 (%.10Lg,%.10Lg) 不在两个区域的闭包里", x, y, m.x, m.y);
-                            printf("      反例:%s\n      站点:", buf);
-                            for(auto &q : v) printf(" (%g,%g)", (double) q.x, (double) q.y);
-                            printf("\n");
-                        }
-                        ++bad;
-                    }
+            string e = verifyDual(sites, c, delaunay(sites), total);
+            if(!e.empty()) {
+                if(!bad) {
+                    printf("      dual 反例: %s\n      站点:", e.c_str());
+                    for(auto q : sites) printf(" (%.12Lg,%.12Lg)", q.x, q.y);
+                    printf("\n");
                 }
+                ++bad;
             }
         }
-        printf("      %d 组站点、%d 条 Delaunay 边做了对偶检查\n", cases, edges);
-        CHECK(bad == 0, "对偶:Delaunay 边 (i,j) 的中点同时落在区域 i、区域 j 的闭包里(Delaunay 边 <=> 两站点在 Voronoi 图里相邻)");
+        printf("      %d 组 dual: edges=%d checked=%d clip-empty=%d zero=%d rays=%d\n",
+               cases, total.edges, total.checked, total.clipEmpty, total.zero, total.rays);
+        CHECK(bad == 0 && total.checked > 10000 && total.edges == total.checked + total.clipEmpty,
+              "dual 非真空: 独立等距最近区间的端点/内部点均在两区域闭包中");
     }
 
     // ===== 4. 退化:重合站点、网格站点、大坐标、极近/极远的站点 =====
