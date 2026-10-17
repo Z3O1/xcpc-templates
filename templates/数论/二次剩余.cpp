@@ -1,6 +1,5 @@
 // quadres(): 数论 · 二次剩余 (欧拉判别法 + 模素数开根)
 
-// 模乘/加法/快速幂写成函数内 lambda；p 可接近 ll 上限,两数相加须在 u64 里做,不能直接 ll 相加。
 // 判断 a 是否为奇素数 p 的二次剩余；要求 0 <= a < p。
 bool quadres(u64 a, u64 p) {
     if(!a) return 1;
@@ -29,7 +28,7 @@ ll sqrtp(ll x, ll p) {
     static mt19937_64 gen;
     ll w, a;
     do a = gen() % p; while (!a || pw(w = add(mul(a, a), p - x), (p - 1) >> 1) != p - 1);
-    auto prod = [&](pll u, pll v) { // F_p[√w] 里的乘法:(u0 + u1√w)(v0 + v1√w)
+    auto prod = [&](pll u, pll v) {
         ll t0 = add(mul(u.first, v.first), mul(mul(u.second, v.second), w));
         ll t1 = add(mul(u.first, v.second), mul(u.second, v.first));
         return make_pair(t0, t1);
