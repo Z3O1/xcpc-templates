@@ -1,13 +1,10 @@
 // poly_ln(): 多项式 · 多项式对数 (求导 积分 求逆)
 
-// 契约:f 非空且 f[0] == 1(ln 的定义需要:常数项恒为 1 的形式幂级数才有可定义的对数;
-//       f[0] != 1 时先提出常数因子,ln(c*h) = ln c + ln h);n >= 1。
-//       返回 ln f = ∫ f'/f (mod x^n),长度恰为 n,常数项恒为 0。
-// 复杂度:O(n log n)。
-// 依赖:poly_inv、mul(ntt.cpp)、常量 M = 998244353;系数在 [0, M),n < M。
+// 系数在 [0,M)，M=998244353，n<M；依赖 poly_inv、mul，O(n log n)。
+// f 的高次缺项视零，卷积长度须满足 mul 的上限。
 
 using poly = vector<int>;
-// 返回 1..n 模逆元表（静态缓存）；要求 n >= 0；索引 i 处为 i 在模 M 下的逆元。
+// 缓存 1..n 的模逆元，要求 0<=n<M；下标 0 不用。
 static const poly &_ln_inv_num(int n) { // 1..n 的模逆元表
     static poly iv{0, 1};
     if((int) iv.size() <= n) {
@@ -17,7 +14,7 @@ static const poly &_ln_inv_num(int n) { // 1..n 的模逆元表
     }
     return iv;
 }
-// 求 ln f = ∫f'/f (mod x^n)；要求 f 非空且 f[0]==1；n<=0 返回空，否则返回长度 n、常数项为 0 的向量。
+// 返回 ln f mod x^n 的 n 项（常数项 0）；f 非空且 f[0]=1；n<=0 返回空。
 poly poly_ln(const poly &f, int n) {
     if(n <= 0) return poly();
     poly d(n - 1);

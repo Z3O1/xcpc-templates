@@ -1,6 +1,6 @@
 // comp_inv(): 多项式 · 多项式复合逆 (复合逆, O(n log n))
 
-// 系数低次在前且在 [0, mod)；使用前须 prep(22)，初始化 NTT 与阶乘/逆元表。
+// 系数低次在前且在 [0,mod)；须先 prep(k)，0<=k<=22 且覆盖所有内部 NTT 长度。
 // 两份复合模板独立使用；静态缓冲约 202 MiB，不含临时向量。
 
 typedef vector<int> vi;
@@ -9,7 +9,7 @@ typedef unsigned long long ull;
 const int N = 4.4e6 + 15, mod = 998244353;
 int X[N], fac[N], inv[N], Inv[N];
 int rev[N * 2], omg[N * 2];
-// 预处理 NTT 的 rev/omg 与阶乘/逆元表；要求 n >= 0（按 2^n 长度上界）；用 NTT 前必须先调用一次。
+// 预处理长度不超过 2^n 的 NTT 及阶乘/逆元表（0<=n<=22）。
 void prep(int n)
 {
 	int i, j, w, m = N - 5;
@@ -32,7 +32,7 @@ void prep(int n)
 		Inv[i] = (ll)inv[i] * fac[i - 1] % mod;
 }
 ull tmp[N * 2];
-// 原地做长度 2^n 的 NTT；要求 A 有 >= 2^n 个元素、已调用 prep(>= n)；t=false 正变换、t=true 逆变换。
+// 原地变换 A[0..2^n)；须已 prep(>=n)，t=false 正变换、t=true 逆变换。
 inline void ntt(int *A, int n, bool t)
 {
 	int i, j, k, q, x;
@@ -66,7 +66,7 @@ inline void ntt(int *A, int n, bool t)
 			A[i] = (ll)A[i] * q % mod;
 	}
 }
-// 把 F 补到 2^n 长后做 NTT；要求 F.size() <= 2^n、已调用 prep(>= n)；t=false 正变换、t=true 逆变换；返回变换后的 F。
+// 将 F 补到 2^n 项后变换；|F|<=2^n，其余同 ntt，返回新向量。
 vi pv(vi F, int n, bool t)
 {
 	int i;
@@ -81,11 +81,9 @@ vi pv(vi F, int n, bool t)
 struct poly
 {
 	vector<int> c;
-	// 默认构造：空多项式。
 	poly() = default;
-	// 由系数向量构造；d 为低次在前的系数。
 	poly(vector<int> d) : c(move(d)) {}
-	// 模 mod 卷积；任一为空返回空；返回长度 |f|+|g|-1 的乘积。
+	// 卷积保留 |f|+|g|-1 项，任一为空则返回空。
 	friend poly operator * (poly f, poly g)
 	{
 		if(f.c.empty() || g.c.empty())
@@ -105,7 +103,7 @@ struct poly
 		return h;
 	}
 };
-// 复合逆的 Lagrange 反演辅助（提取 [x^{n-1}] 1/(1-yF) 的 y 系数）；要求 F.size() >= n；返回长度 n 的系数。
+// 返回 [x^(n-1)]1/(1-yF(x)) 的前 n 项 y 系数；n>=1、|F.c|>=n，仅供复合逆使用。
 poly pw_pj(poly F, int n)
 {
 	int i, j, S, R, m = 1, d = n - 1, l, r;
@@ -168,8 +166,8 @@ poly pw_pj(poly F, int n)
 		F.c[i] = A[i][0];
 	return F;
 }
-// 求复合逆 G，使 F(G(x)) ≡ x mod x^n；要求 n>=1、F[0]=0、F[1]!=0。
-// 按值补齐不足系数，不改调用方输入；返回恰好 n 项，须先 prep 覆盖内部 NTT 长度。
+// 返回 n 项的复合逆 G，使 F(G(x)) ≡ x mod x^n；n>=1、F[0]=0、F[1]!=0。
+// 不足项补零，不改输入；即使 n=1 也须提供非零一次项。
 poly comp_inv(poly F, int n)
 {
 	if((int) F.c.size() < std::max(n, 2)) F.c.resize(std::max(n, 2));

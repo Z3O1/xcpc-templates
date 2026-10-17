@@ -1,13 +1,10 @@
 // poly_exp(): 多项式 · 多项式指数 (牛顿迭代取对数)
 
-// 契约:f 非空且 f[0] == 0(否则 exp f 不是形式幂级数:先提出 e^{f[0]} 这个常数因子);n >= 1。
-//       返回 exp f (mod x^n),长度恰为 n,常数项恒为 1。
-// 复杂度:O(n log n),常数较大 —— 每轮牛顿都重算一次 ln g(内部含一次完整求逆)。
-// 依赖:poly_ln、poly_inv、mul(ntt.cpp)、常量 M = 998244353;系数在 [0, M),n < M。
-// 每轮:g ← g*(1 - ln g + f) mod x^m,精度翻倍。
+// 系数在 [0,M)，M=998244353，n<M；依赖 poly_ln、poly_inv、mul，O(n log n)。
+// f 的高次缺项视零，卷积长度须满足 mul 的上限。
 
 using poly = vector<int>;
-// 求 exp f (mod x^n)；要求 f 非空且 f[0]==0、n >= 1；返回长度 n、常数项为 1 的向量。
+// 返回 exp f mod x^n 的 n 项（常数项 1）；n>=1，f 非空且 f[0]=0。
 poly poly_exp(const poly &f, int n) {
     poly g{1};
     for(int m = 1; m < n; m <<= 1) {

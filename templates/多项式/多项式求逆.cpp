@@ -1,13 +1,10 @@
 // poly_inv(): 多项式 · 多项式求逆 (牛顿迭代 NTT)
 
-// 契约:f 非空且 f[0] != 0(否则 mod x 下不可逆);n >= 1。
-//       返回长度恰为 n 的 g,满足 f*g ≡ 1 (mod x^n);f 短于 n 时高次按 0 补齐。
-// 复杂度:O(n log n)。每轮牛顿把精度翻倍:g ← g*(2 - f*g) mod x^m。
-// 依赖:base header 的 For/ll/ksm/常量 M = 998244353,以及 ntt.cpp 的 mul。
-//       系数均须在 [0, M),所有运算按 M 取模。
+// 系数在 [0,M)，M=998244353；依赖 For/ll/ksm、ntt.cpp 的 mul，O(n log n)。
+// f 不足 n 项时高次补零，卷积长度须满足 mul 的上限。
 
 using poly = vector<int>;
-// 求 g 使 f*g ≡ 1 (mod x^n)；要求 f 非空且 f[0]!=0、n >= 1；返回长度 n 的逆。
+// 返回 n 项的 g，使 f*g ≡ 1 (mod x^n)；n>=1，f 非空且 f[0]!=0。
 poly poly_inv(const poly &f, int n) {
     poly g{int(ksm(f[0], M - 2, M))};
     for(int m = 1; m < n; m <<= 1) {

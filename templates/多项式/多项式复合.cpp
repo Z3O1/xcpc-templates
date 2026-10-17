@@ -1,6 +1,6 @@
 // comp(): 多项式 · 多项式复合 (F(G(x)) mod x^n, O(n log n))
 
-// 系数低次在前且在 [0, mod)；使用前须 prep(22)，覆盖内部 NTT 长度。
+// 系数低次在前且在 [0,mod)；须先 prep(k)，0<=k<=22 且覆盖所有内部 NTT 长度。
 // 两份复合模板独立使用；静态缓冲约 168 MiB，不含临时向量。
 
 typedef vector<int> vi;
@@ -9,7 +9,7 @@ typedef unsigned long long ull;
 const int N = 4.4e6 + 15, mod = 998244353;
 int X[N], Y[N];
 int rev[N * 2], omg[N * 2];
-// 预处理 NTT 的 rev/omg 表；要求 n >= 0（按 2^n 长度上界）；用 NTT 前必须先调用一次。
+// 预处理长度不超过 2^n 的 NTT（0<=n<=22）。
 void prep(int n)
 {
 	int i, j, w;
@@ -24,7 +24,7 @@ void prep(int n)
 	}
 }
 ull tmp[N * 2];
-// 原地做长度 2^n 的 NTT；要求 A 有 >= 2^n 个元素、已调用 prep(>= n)；t=false 正变换、t=true 逆变换。
+// 原地变换 A[0..2^n)；须已 prep(>=n)，t=false 正变换、t=true 逆变换。
 inline void ntt(int *A, int n, bool t)
 {
 	int i, j, k, q, x;
@@ -61,11 +61,9 @@ inline void ntt(int *A, int n, bool t)
 struct poly
 {
 	vector<int> c;
-	// 默认构造：空多项式。
 	poly() = default;
-	// 由系数向量构造；d 为低次在前的系数。
 	poly(vector<int> d) : c(move(d)) {}
-	// 模 mod 卷积；任一为空返回空；返回长度 |f|+|g|-1 的乘积。
+	// 卷积保留 |f|+|g|-1 项，任一为空则返回空。
 	friend poly operator * (poly f, poly g)
 	{
 		if(f.c.empty() || g.c.empty())
@@ -141,9 +139,8 @@ vv solve(vi F, vv G, int n, int m)
 	}
 	return ans;
 }
-// 求 F(G(x)) mod x^n；要求 n>=1、G[0]=0（实现忽略 G[0]）。
-// F、G 按值传入，低阶不足按零补齐；返回恰好 n 项，不改调用方输入。
-// 须先 prep(k) 使预处理覆盖内部 NTT 长度。
+// 返回 F(G(x)) mod x^n 的 n 项；n>=1、G[0]=0（实现忽略 G[0]）。
+// F、G 不足 n 项补零，不改输入；空 G 视零多项式。
 poly comp(poly F, poly G, int n)
 {
 	int i;

@@ -1,12 +1,11 @@
 // Mul::mul(): 多项式 · 任意模数 NTT (三模 CRT)
 
-// 契约:① 变换长度 l = 2^ceil(lg(n + m - 1)) 必须 <= 2^20(三模里 M1 = 1004535809 = 479·2^21+1 最小);
-//       超限结果错,但 P 恰为 998244353 / 469762049 时 CRT 退化成单模、反而看着对,别拿它们试上限;
-//       ② 系数请先归一到 [0, P):传负数(`{-1}`)结果不保证(非负但 >= P 的未归一系数是安全的)。
+// 系数须为非负 int（可 >= P，负数先归一），2 <= P <= 2^31-1。
+// 变换长度 l = 2^ceil(lg(n+m-1)) <= 2^20；即使 P 为某个 NTT 模数也须遵守。
 
 namespace Mul {
 using poly = vector<int>;
-// 原地做模 M 的 NTT；要求 a 长度为 2 的幂且符合长度上限，k=1 正变换、k=-1 逆变换；结果覆盖 a。
+// 原地 NTT：G 为模素数 M 的原根，长度 n>=2 为 2 的幂且 2n | M-1；k=±1 分别正/逆变换。
 template <int M, int G> static void NTT(poly &a, const int k) {
     static poly r, w;
     int n = a.size();
@@ -31,14 +30,14 @@ template <int M, int G> static void NTT(poly &a, const int k) {
         For(i, 0, n - 1) a[i] = a[i] * inv % M;
     }
 }
-// 单一模数下做卷积；要求 a、b 已补零到变换长度 l（2 的幂）；返回长度 l 的卷积结果。
+// 单模卷积；a、b 须已补零到合法变换长度 l，结果保留 l 项。
 template <int M, int G> static poly conv(poly a, poly b, int l) {
     NTT<M, G>(a, 1), NTT<M, G>(b, 1);
     For(i, 0, l - 1) a[i] = 1ll * a[i] * b[i] % M;
     NTT<M, G>(a, -1);
     return a;
 }
-// 任意模数卷积；要求系数非负 int、P ∈ [2, 2^31-1] 且满足 CRT 精度界；返回长度 n+m-1，空输入返回空。
+// 返回模 P 的卷积，长度 |a|+|b|-1；任一为空则返回空。
 poly mul(poly a, poly b, int P) {
     int n = a.size(), m = b.size();
     if(!n || !m) return poly();
@@ -58,7 +57,6 @@ poly mul(poly a, poly b, int P) {
     return d;
 }
 }  // namespace Mul
-// 普通卷积使用 base header 的常量 M;任意模数用 Mul::mul(a, b, P)。
+// 普通卷积用 base header 的 M=998244353；任意模数用 Mul::mul(a,b,P)。
 using poly = vector<int>;
-// 模 M=998244353 的普通卷积；要求系数非负（负数请先归一）；返回长度 n+m-1，空输入返回空。
 poly mul(poly a, poly b) { return Mul::mul(move(a), move(b), M); }

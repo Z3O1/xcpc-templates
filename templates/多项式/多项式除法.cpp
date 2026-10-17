@@ -1,16 +1,11 @@
 // poly_divmod(): 多项式 · 带余除法 (反转求逆)
 
-// 契约:f 任意(可为空向量),g 非空且首项系数 g.back() != 0(反转后它是常数项,要可逆;
-//       g 尾部有 0 请调用方先自己 trim)。返回 {q, r} 满足 f = q*g + r 且 deg r < deg g:
-//         |f| >= |g| 时 q 长度恰为 |f|-|g|+1,r 长度恰为 |g|-1
-//           (高次可能是 0,不自动 trim;|g| = 1 时 r 为空),
-//         |f| <  |g| 时 q 为空,r 就是传入的 f 原样(长度 |f|,不补到 |g|-1)。
-// 做法:反转两者,商 rev(q) = rev(f) * inv(rev(g), |f|-|g|+1),再整回来算余式。
-// 复杂度:O(n log n)。
-// 依赖:poly_inv、mul(ntt.cpp)、常量 M = 998244353;系数在 [0, M)。
+// 系数在 [0,M)，M=998244353；依赖 poly_inv、mul，O(n log n)，n=|f|。
+// 卷积长度须满足 mul 的上限；f 可为空，g 须先去掉高次零。
 
 using poly = vector<int>;
-// 带余除法；要求 g 非空且 g.back()!=0（f 可为空）；返回 {q, r} 满足 f=q*g+r 且 deg r < deg g。
+// 返回 {q,r}，满足 f=q*g+r、deg r<deg g；g 非空且 g.back()!=0。
+// n>=m=|g| 时长度为 {n-m+1,m-1}（不 trim）；否则返回 {空,f}。
 pair<poly, poly> poly_divmod(const poly &f, const poly &g) {
     int n = f.size(), m = g.size();
     if(n < m) return {poly(), f};
@@ -25,5 +20,4 @@ pair<poly, poly> poly_divmod(const poly &f, const poly &g) {
     r.resize(m - 1);
     return {q, r};
 }
-// 求 f mod g；要求同 poly_divmod；返回带余除法的余式。
 poly poly_mod(const poly &f, const poly &g) { return poly_divmod(f, g).second; }

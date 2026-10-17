@@ -1,14 +1,10 @@
 // poly_sqrt(): 多项式 · 多项式开根 (牛顿迭代求逆)
 
-// 契约:f 非空且 f[0] == 1(最常用情形;一般 f[0] 是二次剩余时先提出 sqrt(f[0]),
-//       常量开方用「二次剩余」模板);n >= 1。
-//       返回 g 满足 g² ≡ f (mod x^n),长度恰为 n 且 g[0] = 1(这个解唯一)。
-// 复杂度:O(n log n)。
-// 依赖:poly_inv、mul(ntt.cpp)、常量 M = 998244353;系数在 [0, M)。
-// 每轮:g ← (g + f/g)/2 mod x^m,精度翻倍。
+// 系数在 [0,M)，M=998244353；依赖 poly_inv、mul，O(n log n)。
+// f 的高次缺项视零，卷积长度须满足 mul 的上限。
 
 using poly = vector<int>;
-// 求 g 使 g² ≡ f (mod x^n)；要求 f 非空且 f[0]==1、n >= 1；返回长度 n、g[0]=1 的唯一解。
+// 返回 n 项的 g，使 g² ≡ f (mod x^n)、g[0]=1（唯一）；n>=1，f 非空且 f[0]=1。
 poly poly_sqrt(const poly &f, int n) {
     const int ih = (M + 1) / 2;
     poly g{1};
