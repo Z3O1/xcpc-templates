@@ -8,7 +8,6 @@ struct SPQR_tree {
     bool typ[N];
     unordered_map<int, int> t[N];
     bitset<N> vis;
-    // 合并已有边/结点 u,v，返回新父结点；kind 为串/并联类型。
     int node(int u, int v, bool kind) {
         typ[++m] = kind;
         fa[u] = fa[v] = m;

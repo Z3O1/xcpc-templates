@@ -14,20 +14,16 @@ int p[N];
 struct wcur {
     W &w;
     int l, r;
-    // 移动左端点至 x，维护窗口 (l,r]。
     void ml(int x) { while(l > x) w.add(l--); while(l < x) w.del(++l); }
-    // 移动右端点至 x，维护窗口 (l,r]。
     void mr(int x) { while(r < x) w.add(++r); while(r > x) w.del(r--); }
     void rs() { w.clear(), l = r = 0; }
 };
 W Wa, Wb;
 wcur s{Wa, 0, 0}, t{Wb, 0, 0};
-// 用区间 (k,i] 的代价 w 松弛 f[i]。
 void relax(ll w, int i, int k) {
     ll v = f[k] + w;
     if(v < f[i]) f[i] = v, p[i] = k;
 }
-// 已有端点状态时填充 (l,r) 的 DP，更新 f[r]。
 void dnc(int l, int r) {
     if(r - l == 1) return;
     int m = (l + r) >> 1;

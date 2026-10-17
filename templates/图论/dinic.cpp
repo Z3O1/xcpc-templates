@@ -14,7 +14,6 @@ class Dinic_t {
     void _add(int u, int v, ll w) {
         e[++tot] = {v, hd[u], w}, hd[u] = tot;
     }
-    // 加有向边，同时加入反向零容量边。
     void add(int u, int v, ll w) {
         _add(u, v, w), _add(v, u, 0);
     }
@@ -25,8 +24,6 @@ class Dinic_t {
     }
     // 按已设置的 s,t,n 建层次图，返回 t 是否可达。
     bool bfs() {
-        // d[s] = 0、其余 -1(未访问)。注意不能写成 d[i] = -(i == s):
-        // 那样邻居会拿到 0,而下面的判空条件 d[v] == -1 只认 -1,于是 BFS 一个点都进不去。
         For(i, 1, n) d[i] = -1, cur[i] = hd[i];
         d[s] = 0;
         queue<int> q;

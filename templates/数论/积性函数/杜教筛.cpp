@@ -3,7 +3,7 @@
 // 求 S(n) = sum_{i=1}^n f(i)；O(n^{2/3})。
 // 前置：调用方提供阈值 N 及预处理的前缀和 smu[0..N]、sphi[0..N]（下标 0 为 0）。
 unordered_map<ll, ll> smu_big, sphi_big;
-// 莫比乌斯函数前缀和；要求已预处理 smu[0..N]。
+// 莫比乌斯函数前缀和。
 ll DJS_mu(ll n) {
     if(n <= N) return smu[n];
     if(smu_big.count(n)) return smu_big[n];
@@ -12,7 +12,7 @@ ll DJS_mu(ll n) {
         r = n / (n / l), ans -= (r - l + 1) * DJS_mu(n / l);
     return smu_big[n] = ans;
 }
-// 欧拉函数前缀和；要求已预处理 sphi[0..N] 且 n*(n+1)/2 不溢出 ll。
+// 欧拉函数前缀和；n*(n+1)/2 不溢出 ll。
 ll DJS_phi(ll n) {
     if(n <= N) return sphi[n];
     if(sphi_big.count(n)) return sphi_big[n];

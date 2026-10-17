@@ -1,21 +1,18 @@
 // p3(): 计算几何 · 三维向量 (加减/点积/叉积/模长/混合积)
 
 // 依赖 基础/二维向量.cpp 的 eps / sign / cmp，与 p2 同在 Geo 命名空间。
-// 点积写 dot(a,b)，* 只表示数乘。
 // unit / cosang / sinang / angle 要求向量非零且分量有限；只将数学零视为退化。
 // eps 是绝对容差：colinear / coplanar 直接将叉积模长/混合积与 eps 比较。
 // 坐标缩放会改变判定尺度，应按数据尺度调整容差或另用相对判据。
-// 复杂度:全部 O(1)。
+// 判等用 eps，排序用精确字典序。
 namespace Geo {
 
 struct p3 {
     db x, y, z;
-    // 按 eps 容差判等。
     bool operator==(const p3 &b) const {
         return !cmp(x, b.x) && !cmp(y, b.y) && !cmp(z, b.z);
     }
     bool operator!=(const p3 &b) const { return !(*this == b); }
-    // 精确字典序，供排序/二分；与容差判等分开。
     bool operator<(const p3 &b) const {
         return x != b.x ? x < b.x : y != b.y ? y < b.y : z < b.z;
     }
@@ -25,31 +22,26 @@ p3 operator-(p3 a, p3 b) { return {a.x - b.x, a.y - b.y, a.z - b.z}; }
 p3 operator-(p3 a) { return {-a.x, -a.y, -a.z}; }
 p3 operator*(p3 a, db k) { return {a.x * k, a.y * k, a.z * k}; }
 p3 operator*(db k, p3 a) { return {a.x * k, a.y * k, a.z * k}; }
-// 除以标量;要求 k 非零。
 p3 operator/(p3 a, db k) { return {a.x / k, a.y / k, a.z / k}; }
 p3 operator+=(p3 &a, p3 b) { return a = a + b; }
 p3 operator-=(p3 &a, p3 b) { return a = a - b; }
 p3 operator*=(p3 &a, db k) { return a = a * k; }
 p3 operator/=(p3 &a, db k) { return a = a / k; }
 db dot(p3 a, p3 b) { return a.x * b.x + a.y * b.y + a.z * b.z; }
-// 三维叉积(右手法则),模长为两向量张成平行四边形面积。
 p3 cross(p3 a, p3 b) {
     return {a.y * b.z - a.z * b.y, a.z * b.x - a.x * b.z, a.x * b.y - a.y * b.x};
 }
 // 返回混合积 a·(b×c)，即平行六面体带号体积。
 db det(p3 a, p3 b, p3 c) { return dot(a, cross(b, c)); }
 db dis2(p3 a) { return dot(a, a); }
-// 模长；避免先平方造成不必要的溢出/下溢，结果仍须可表示。
 db dis(p3 a) { return hypot(a.x, a.y, a.z); }
 p3 unit(p3 a) {
     a /= max({abs(a.x), abs(a.y), abs(a.z)});
     return a / dis(a);
 }
-// 返回夹角余弦。
 db cosang(p3 a, p3 b) { return max((db) -1, min((db) 1, dot(unit(a), unit(b)))); }
-// 返回夹角的非负正弦。
 db sinang(p3 a, p3 b) { return min((db) 1, dis(cross(unit(a), unit(b)))); }
-// 返回 [0,pi] 内的夹角（弧度）；仅缩放到分量有界，无须单位化。
+// 夹角，弧度范围 [0,pi]。
 db angle(p3 a, p3 b) {
     a /= max({abs(a.x), abs(a.y), abs(a.z)});
     b /= max({abs(b.x), abs(b.y), abs(b.z)});

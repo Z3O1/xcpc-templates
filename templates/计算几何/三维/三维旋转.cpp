@@ -2,8 +2,6 @@
 
 // 依赖本节 三维向量.cpp（unit / cross / perp）；角度单位为弧度。
 // rot / rotmat 的轴与 basis 的 n 须非零且分量有限，内部安全单位化。
-// 同轴同角旋转多个向量时，复用 rotmat 的结果。
-// 复杂度:全部 O(1)。
 namespace Geo {
 
 struct mat3 {
@@ -37,7 +35,6 @@ p3 rot(p3 v, p3 axis, db ang) {
 }
 // 绕过点 o、方向为 axis 的轴旋转。
 p3 rot(p3 v, p3 axis, db ang, p3 o) { return o + rot(v - o, axis, ang); }
-// 返回与 rot 相同的旋转矩阵。
 mat3 rotmat(p3 axis, db ang) {
     p3 k = unit(axis);
     db c = cos(ang), s = sin(ang), t = 1 - c;

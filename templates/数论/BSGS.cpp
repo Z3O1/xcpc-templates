@@ -28,7 +28,7 @@ ll BSGS(ll a, ll b, ll p) {
     for(ll i = 1; i <= m; ++i, w = (i128) w * iv % p)
         if(auto it = pos.find(w); it != pos.end()) {
             ll y = (ll) i * m + it->second;
-            if(ksm(a, y, p) == b && (ans < 0 || y < ans)) ans = y; // 显式验证防误判
+            if(ksm(a, y, p) == b && (ans < 0 || y < ans)) ans = y;
         }
     return ans < 0 ? -1 : ans;
 }

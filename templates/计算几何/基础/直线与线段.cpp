@@ -37,7 +37,7 @@ bool chkll(const seg &a, const seg &b) {
     if(h <= angle_eps) return false;
     return h > angle_eps * sqrt(dis2(u) * dis2(v));
 }
-// 两直线近似重合：平行且两基点到另一条线均在eps内；要求均非零长。
+// 两直线近似重合；要求均非零长。
 bool eqll(const seg &a, const seg &b) {
     return !chkll(a, b) && inc(a, b.x) && inc(b, a.x);
 }
@@ -78,7 +78,6 @@ int turnop(p2 a, p2 b, p2 c) {
 bool isMid(const db &a, const db &m, const db &b) {
     return cmp(a, m) * cmp(b, m) <= 0;
 }
-// 逐分量判定 m 是否在 a、b 的包围盒内，坐标各扩展eps。
 bool isMid(const p2 &a, const p2 &m, const p2 &b) {
     return isMid(a.x, m.x, b.x) && isMid(a.y, m.y, b.y);
 }
@@ -111,9 +110,7 @@ bool chkss_s(const seg &a, const seg &b) {
            crossop(b, a.x) * crossop(b, a.y) < 0;
 }
 
-// 以下均 O(1)；坐标差、缩放后的点积/叉积及返回值须可表示。
-// 方向缩放不能丢失有效小分量；近共线仍有浮点消减误差。
-// 点在无限直线上的投影；要求 l 非零长，不对原方向取平方。
+// 点在无限直线上的投影；要求 l 非零长，中间量及结果可表示。
 inline p2 proj(const seg &l, const p2 &q) {
     p2 d = l.dir();
     d /= max(abs(d.x), abs(d.y));
@@ -124,7 +121,7 @@ inline p2 proj(const seg &l, const p2 &q) {
            dot(d * (1 / n), w);
     return l.x + d * t;
 }
-// 点关于无限直线的对称点；要求 l 非零长，避免先将绝对坐标翻倍。
+// 点关于无限直线的对称点；要求 l 非零长。
 p2 reflect(const seg &l, const p2 &q) {
     p2 h = proj(l, q);
     return h + (h - q);

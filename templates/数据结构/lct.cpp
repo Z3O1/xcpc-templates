@@ -20,7 +20,6 @@ inline void pd(int k) {
 inline bool gc(int k) { return ch[fa[k]][1] == k; }
 // 判断是否为辅助树根，虚父不算辅助树父亲。
 inline bool ir(int k) { return ch[fa[k]][gc(k)] != k; }
-// 从辅助树根到 k 下传翻转标记。
 void pda(int k) {
     static int st[N], t;
     st[++t] = k;
@@ -35,7 +34,6 @@ void rot(int u) {
     if(x) fa[x] = f;
     pu(f);
 }
-// 将 u 旋到辅助树根，先下传标记再维护聚合。
 void splay(int u) {
     for(pda(u); !ir(u); rot(u))
         if(!ir(fa[u])) {
@@ -54,7 +52,6 @@ int fd(int u) {
     while(ls(u)) u = ls(u), pd(u);
     return splay(u), u;
 }
-// 将 u 设为所在原树的根。
 void mkr(int u) {
     access(u), pl(u);
 }

@@ -18,7 +18,6 @@ struct mat {
     int a[2][2];
     int *operator[](int k) { return a[k]; }
     const int *operator[](int k) const { return a[k]; }
-    // max-plus 矩阵乘法。
     mat operator*(const mat &b) const {
         mat c;
         For(i, 0, 1)
@@ -86,7 +85,6 @@ int build(int l, int r) {
     return k;
 }
 void pushup(int k) { tr[k].x = tr[rs].x * tr[ls].x; }
-// 覆盖分治树位置 p 的矩阵；p 在当前区间 [l,r] 内。
 void upd(int p, mat x, int k, int l, int r) {
     if(l == r) {
         tr[k].x = x;
@@ -109,12 +107,12 @@ mat que(int L, int R, int k, int l, int r) {
 #undef rs
 // build 后把点 p 的当前 DP 写回所在重链。
 void apply(int p) {
-    int l = dfn[tp[p]], r = dfn[dw[tp[p]]]; // l/r 是底层树要更新的覆盖范围
+    int l = dfn[tp[p]], r = dfn[dw[tp[p]]];
     upd(dfn[p], {f[p][0], f[p][1], f[p][0], -INF}, rt[tp[p]], l, r);
 }
 // 查询 p 到所在重链链尾的矩阵 DP 后缀；返回 p 子树的“不选/选”最优值。
 pll que(int p) {
-    int l = dfn[tp[p]], r = dfn[dw[tp[p]]]; // 查询的是 p 到链尾的后缀,不是从链头开始
+    int l = dfn[tp[p]], r = dfn[dw[tp[p]]];
     auto res = que(dfn[p], r, rt[tp[p]], l, r);
     return {max(res[0][0], res[1][0]), max(res[0][1], res[1][1])};
 }

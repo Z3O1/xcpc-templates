@@ -4,9 +4,9 @@
 // 卷积长度须满足 mul 的上限。
 
 using poly = vector<int>;
-// 建乘积树：t[k]=Π_{i=l..r}(x-xs[i])，t 由入口分配 4m 个节点。
+// t[k]=Π_{i=l..r}(x-xs[i])。
 static void _interp_build(poly *t, int k, int l, int r, const poly &xs) {
-    if(l == r) return void(t[k] = poly{(M - xs[l]) % M, 1});  // x - xs[l]
+    if(l == r) return void(t[k] = poly{(M - xs[l]) % M, 1});
     int mid = (l + r) >> 1;
     _interp_build(t, k + k, l, mid, xs), _interp_build(t, k + k + 1, mid + 1, r, xs);
     t[k] = mul(t[k + k], t[k + k + 1]);

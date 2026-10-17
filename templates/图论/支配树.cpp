@@ -11,7 +11,6 @@ pii f[N];
 void add(int u, int v) {
     t[u] += v, t2[v] += u;
 }
-// dfn 清零后从根编号，f1 记录 DFS 树父亲。
 void dfs(int u) {
     dfn[u] = ++dt, pos[dt] = u;
     for(auto v : t[u]) if(!dfn[v]) dfs(v), f1[v] = u;

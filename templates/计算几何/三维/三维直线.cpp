@@ -8,11 +8,10 @@
 // isss 按 ispara 分类；共线投影重叠长度 > eps 不算唯一点，其余 eps 内接触算单点。
 // 要求坐标差、长度及中间点积/参数可表示；舍入误差须小于所需容差。
 // 近乎平行时最近点病态，误差可按 1/sin(夹角) 放大，远处交点尤其需注意。
-// 复杂度:全部 O(1)，线段距离枚举四个边界最优点及一个内部驻点。
 namespace Geo {
 
 struct line3 {
-    p3 o, d;  // 参数式 o + t·d
+    p3 o, d;
     line3() {}
     line3(p3 a, p3 b) : o(a), d(b - a) {}
     p3 at(db t) const { return o + d * t; }
@@ -22,7 +21,6 @@ struct seg3 {
     p3 dir() const { return y - x; }
 };
 
-// 点在直线上的投影。
 p3 proj(const line3 &l, p3 p) {
     p3 e = unit(l.d);
     return l.o + e * dot(e, p - l.o);
@@ -78,7 +76,7 @@ db dis(const seg3 &a, const seg3 &b, p3 &pa, p3 &pb) {
     db la = dis(a.dir()), lb = dis(b.dir());
     p3 e = la == 0 ? p3{0, 0, 0} : unit(a.dir());
     p3 f = lb == 0 ? p3{0, 0, 0} : unit(b.dir());
-    // 四次端点投影与内部驻点共用方向、长度，保留 unit 的安全缩放。
+    // 比较四个端点投影与两直线的内部驻点。
     auto project = [](const seg3 &s, p3 dir, db len, p3 p) {
         if(len == 0) return s.x;
         db t = dot(dir, p - s.x);

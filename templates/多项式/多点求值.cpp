@@ -4,14 +4,13 @@
 // m=|xs|，时间 O((|f|+m) log²(|f|+m))，额外空间 O(m log m)。
 
 using poly = vector<int>;
-// 建乘积树：t[k]=Π_{i=l..r}(x-xs[i])，t 由入口分配 4m 个节点。
+// t[k]=Π_{i=l..r}(x-xs[i])。
 static void _eval_build(poly *t, int k, int l, int r, const poly &xs) {
-    if(l == r) return void(t[k] = poly{(M - xs[l]) % M, 1});  // x - xs[l]
+    if(l == r) return void(t[k] = poly{(M - xs[l]) % M, 1});
     int mid = (l + r) >> 1;
     _eval_build(t, k + k, l, mid, xs), _eval_build(t, k + k + 1, mid + 1, r, xs);
     t[k] = mul(t[k + k], t[k + k + 1]);
 }
-// 沿已建乘积树取余，将闭区间 [l,r] 的点值写入 res。
 static void _eval_solve(const poly *t, int k, int l, int r, const poly &f, poly &res) {
     poly g = poly_mod(f, t[k]);
     if(l == r) return void(res[l] = g.empty() ? 0 : g[0]);
