@@ -1,29 +1,37 @@
 // quadres(): 数论 · 二次剩余 (欧拉判别法 + 模素数开根)
 
-// 不复用 base header 的 ksm:它按 ll 相乘,不能保证大模数下不溢出。
-namespace QR {
-    auto mul = [](u64 a, u64 b, u64 p) { return (u64) ((unsigned __int128) a * b % p); };
-    auto pw = [](u64 a, u64 x, u64 p, u64 r = 1) {
-        for(a %= p; x; x >>= 1, a = mul(a, a, p))
-            if(x & 1) r = mul(r, a, p);
-        return r;
-    };
-}
+// 模乘/加法/快速幂写成函数内 lambda；p 可接近 ll 上限,两数相加须在 u64 里做,不能直接 ll 相加。
 // 判断 a 是否为奇素数 p 的二次剩余；要求 0 <= a < p。
 bool quadres(u64 a, u64 p) {
-    return !a || QR::pw(a, (p - 1) >> 1, p) == 1;
+    if(!a) return 1;
+    auto mul = [p](u64 x, u64 y) { return (u64) ((unsigned __int128) x * y % p); };
+    auto pw = [&](u64 x, u64 e) {
+        u64 r = 1;
+        for(x %= p; e; e >>= 1, x = mul(x, x))
+            if(e & 1) r = mul(r, x);
+        return r;
+    };
+    return pw(a, (p - 1) >> 1) == 1;
 }
 // 求 x 模奇素数 p 的平方根；要求 0 <= x < p；x 非二次剩余时返回 -1。
 ll sqrtp(ll x, ll p) {
     if(x <= 1) return x;
-    if(QR::pw(x, (p - 1) >> 1, p) != 1) return -1;
-    if(p % 4 == 3) return QR::pw(x, (p + 1) >> 2, p);
+    auto mul = [p](ll a, ll b) { return (ll) ((u64) ((unsigned __int128) a * b % p)); };
+    auto add = [p](ll a, ll b) { return (ll) (((u64) a + (u64) b) % (u64) p); };
+    auto pw = [&](ll a, ll e) {
+        ll r = 1;
+        for(a %= p; e; e >>= 1, a = mul(a, a))
+            if(e & 1) r = mul(r, a);
+        return r;
+    };
+    if(pw(x, (p - 1) >> 1) != 1) return -1;
+    if(p % 4 == 3) return pw(x, (p + 1) >> 2);
     static mt19937_64 gen;
     ll w, a;
-    do a = gen() % p; while (!a || QR::pw(w = (QR::mul(a, a, p) + p - x) % p, (p - 1) >> 1, p) != p - 1);
+    do a = gen() % p; while (!a || pw(w = add(mul(a, a), p - x), (p - 1) >> 1) != p - 1);
     auto prod = [&](pll u, pll v) { // F_p[√w] 里的乘法:(u0 + u1√w)(v0 + v1√w)
-        ll t0 = (QR::mul(u.first, v.first, p) + QR::mul(QR::mul(u.second, v.second, p), w, p)) % p;
-        ll t1 = (QR::mul(u.first, v.second, p) + QR::mul(u.second, v.first, p)) % p;
+        ll t0 = add(mul(u.first, v.first), mul(mul(u.second, v.second), w));
+        ll t1 = add(mul(u.first, v.second), mul(u.second, v.first));
         return make_pair(t0, t1);
     };
     pll r{1, 0}, b{a, 1};
