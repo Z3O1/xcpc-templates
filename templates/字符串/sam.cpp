@@ -1,5 +1,4 @@
 // ins(x): 字符串 · SAM 后缀自动机
-
 // hide
 
 int lst = 1, tot = 1, t[N][26], f[N], l[N], cnt[N];

@@ -1,5 +1,5 @@
-//hide
 // SA(n, a): 字符串 · 后缀数组与 height
+// hide
 
 const int N = 1e6 + 10;
 // a[1..n] 的字符值在 [0, N-2],n < N。

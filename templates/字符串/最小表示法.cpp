@@ -1,4 +1,4 @@
-// 字符串 · 循环同构最小表示法
+// minrep(): 字符串 · 循环同构最小表示法
 
 // a 是支持 size() 与下标的只读序列;返回最小循环表示的起点,空序列返回 0。
 template <class T> int minrep(const T &a) {

@@ -1,5 +1,6 @@
 // exgcd(): 数论 · 扩展欧几里得
-//hide
+// hide
+
 // 返回 gcd(a, b)，并给出满足 a*x + b*y = gcd(a, b) 的一组解。
 // 系数乘法用 ll，大数场景由调用方按需改用 i128 核验。
 ll exgcd(ll a, ll b, ll &x, ll &y) {
