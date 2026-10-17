@@ -1,4 +1,4 @@
-// 三维直线与线段 自测:短段/近乎平行/有限候选最优/唯一交点/独立参考及大随机
+// 三维直线与线段 自测:极端尺度/大平移/短段/近乎平行/有限候选最优/唯一交点/独立参考
 //
 // 对拍方式:
 //   ① 手算常数用例(坐标轴、单位立方体棱、十字交叉、平行、异面)
@@ -257,6 +257,53 @@ int main() {
         }
     }
 
+    {
+        int e = numeric_limits<db>::max_exponent * 3 / 4;
+        for(int k : {-e, -40, 0, 40, e}) {
+            db s = ldexp((db) 1, k);
+            seg3 a{O, P3(3 * s, 4 * s, 0)};
+            p3 pa, pb;
+            seg3 b{P3(1.5L * s, 2 * s, -s), P3(1.5L * s, 2 * s, s)};
+            db d = dis(a, b, pa, pb);
+            CHECK(isfinite(d) && d / s < 1e-14L &&
+                  dis(pa / s - P3(1.5L, 2, 0)) < 1e-14L &&
+                  dis(pb / s - P3(1.5L, 2, 0)) < 1e-14L,
+                  "极端尺度的内部驻点保留安全方向缩放");
+            b = SG(P3(6 * s, 8 * s, -s), P3(6 * s, 8 * s, s));
+            CHECK(abs(dis(a, b, pa, pb) / s - 5) < 1e-14L &&
+                  dis(pa / s - P3(3, 4, 0)) < 1e-14L &&
+                  dis(pb / s - P3(6, 8, 0)) < 1e-14L,
+                  "极端尺度的端点到内点最优距离与最近点");
+            CHECK(abs(dis(SG(O, O), b) / s - 10) < 1e-14L &&
+                  abs(dis(b, SG(O, O)) / s - 10) < 1e-14L &&
+                  abs(dis(SG(O, O), SG(b.x, b.x)) / s - sqrt((db) 101)) < 1e-14L,
+                  "极端尺度的点段、段点、点点均不单位化零方向");
+        }
+        p3 shift{ldexp((db) 1, 40), -ldexp((db) 1, 40), ldexp((db) 1, 40)};
+        db scale = 1.0L / 64;
+        db tol = 16 * numeric_limits<db>::epsilon() * abs(shift.x);
+        for(int i = 0; i < 5000; ++i) {
+            auto point = [&]() { return P3(db(grnd(-32, 32)) / 4, db(grnd(-32, 32)) / 4, db(grnd(-32, 32)) / 4); };
+            seg3 b{point(), point()};
+            db want = refAxisSS(8, b) * scale;
+            seg3 a{shift, shift + X * (8 * scale)};
+            b = SG(shift + b.x * scale, shift + b.y * scale);
+            p3 pa, pb;
+            db got = dis(a, b, pa, pb);
+            if(abs(got - want) > tol || abs(dis(b, a) - want) > tol ||
+               abs(dis(SG(a.y, a.x), SG(b.y, b.x)) - want) > tol ||
+               abs(dis(pa - pb) - got) > tol) {
+                fprintf(stderr, "translated a=%s b=%s got=%Lg want=%Lg tol=%Lg\n",
+                        ps(a).c_str(), ps(b).c_str(), got, want, tol);
+                CHECK(false, "大平移小尺度线段与局部单调导数参考、交换和反转对拍");
+            }
+        }
+        for(db gap : {eps / 2, eps, eps * 2}) {
+            seg3 a{O, X}, b{P3(0, gap, 0), P3(1, gap, 0)};
+            CHECK(chkss(a, b) == (gap <= eps) && abs(dis(a, b) - gap) < eps * 1e-12L,
+                  "平行段距离保持绝对长度 eps 的边界语义");
+        }
+    }
     // ===== 1. 手算常数用例 =====
     CHECK(eq(dis(LN(O, X), P3(3, 4, 0)), 4, 1e-15) && eq(dis(LN(O, X), P3(0, 4, 3)), 5, 1e-15), "点到 x 轴距离 = sqrt(y²+z²):(3,4,0) -> 4、(0,4,3) -> 5");
     CHECK(proj(LN(O, X), P3(3, 4, 5)) == P3(3, 0, 0) && reflect(LN(O, X), P3(3, 4, 5)) == P3(3, -4, -5), "投影到 x 轴取 (3,0,0),对称点 (3,-4,-5)");

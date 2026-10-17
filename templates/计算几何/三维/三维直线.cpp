@@ -75,17 +75,27 @@ bool ons_s(const seg3 &s, p3 p) {
 
 // 返回最短距离及段上的最近点 pa、pb；包括点段、平行段。
 db dis(const seg3 &a, const seg3 &b, p3 &pa, p3 &pb) {
+    db la = dis(a.dir()), lb = dis(b.dir());
+    p3 e = la == 0 ? p3{0, 0, 0} : unit(a.dir());
+    p3 f = lb == 0 ? p3{0, 0, 0} : unit(b.dir());
+    // 四次端点投影与内部驻点共用方向、长度，保留 unit 的安全缩放。
+    auto project = [](const seg3 &s, p3 dir, db len, p3 p) {
+        if(len == 0) return s.x;
+        db t = dot(dir, p - s.x);
+        if(t <= 0) return s.x;
+        if(t >= len) return s.y;
+        return s.x + dir * t;
+    };
     db best = dis(a.x - b.x);
     pa = a.x, pb = b.x;
     auto upd = [&](p3 x, p3 y) {
         db d = dis(x - y);
         if(d < best) best = d, pa = x, pb = y;
     };
-    upd(a.x, proj(b, a.x)), upd(a.y, proj(b, a.y));
-    upd(proj(a, b.x), b.x), upd(proj(a, b.y), b.y);
-    db la = dis(a.dir()), lb = dis(b.dir());
+    upd(a.x, project(b, f, lb, a.x)), upd(a.y, project(b, f, lb, a.y));
+    upd(project(a, e, la, b.x), b.x), upd(project(a, e, la, b.y), b.y);
     if(la == 0 || lb == 0) return best;
-    p3 e = unit(a.dir()), f = unit(b.dir()), n = cross(e, f), w = b.x - a.x;
+    p3 n = cross(e, f), w = b.x - a.x;
     db sn = dis(n);
     if(sn > 0) {
         n /= sn;
