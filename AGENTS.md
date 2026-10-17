@@ -8,7 +8,7 @@
 - **不手改 `sections.typ`**；标题/顺序改 manifest，已有标题不随头注释更新。保留历史 `missing` 条目（同路径回来原位恢复）及 `old_versions/xcpc.typ.bak`。
 - **模板 bug 或注释与实现不符，先报告再修**；先读实现和自测，不凭算法名猜契约，不改代码迎合注释。
 - 来源只读、第三方参考不入库。移植优先：`~/0/Code/` → `~/0/Lib/atcoder/` → `skip2004-ICPC-Templates/contents/`，只取所需内容。
-- `数学/pollard-rho.cpp` 与 `数论/Pollard-Rho.cpp` **有意并存，不合并或删掉一份**。
+- Pollard-Rho 只留 `数论/Pollard-Rho.cpp`（与 `Miller-Rabin.cpp` 共用 `chkp`）；原 `数学/pollard-rho.cpp` 已删除，manifest 保留其 `missing` 条目，同路径回来即原位恢复。
 
 ## 2. 验证与提交
 
