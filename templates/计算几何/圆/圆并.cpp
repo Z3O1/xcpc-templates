@@ -52,9 +52,12 @@ array<db, 2> cir_union(const vector<c2> &a) {
         if(arcs.empty()) { area += pi * r * r; perimeter += 2 * pi * r; continue; }
         p2 o = a[i].o - a[root(i)].o;
         auto add = [&](db l, db h) {
-            db d = h - l, mid = (l + h) / 2;
-            p2 v{cos(mid), sin(mid)};
-            area += r * (r * d / 2 + sin(d / 2) * dot(o, v));
+            db d = h - l, correction = 0;
+            if(o.x != 0 || o.y != 0) {
+                db mid = (l + h) / 2;
+                correction = sin(d / 2) * dot(o, p2{cos(mid), sin(mid)});
+            }
+            area += r * (r * d / 2 + correction);
             perimeter += r * d;
         };
         sort(arcs.begin(), arcs.end());  // 精确排序，不用 eps 破坏严格弱序。
