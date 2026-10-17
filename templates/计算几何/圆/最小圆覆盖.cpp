@@ -16,7 +16,7 @@ c2 mcc(vector<p2> a) {
             c = cir(a[i], a[j]);
             for(int k = 0; k < j; ++k) {
                 if(in_circle(c, a[k])) continue;
-                if(!crossop({a[i], a[j]}, a[k])) {  // 三点共线:最小圆取最远两点的直径
+                if(!turnop(a[i], a[j], a[k])) {  // 最小高<=eps:取最远两点为直径
                     db dij = dis2(a[i] - a[j]), dik = dis2(a[i] - a[k]), djk = dis2(a[j] - a[k]);
                     if(dij >= dik && dij >= djk)
                         c = cir(a[i], a[j]);

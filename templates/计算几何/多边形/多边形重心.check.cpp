@@ -1,4 +1,4 @@
-// 多边形重心 自测:大平移梯形解析/反向/循环移位/退化、逐边积分独立参考、蒙特卡洛数值重心
+// 多边形重心 自测:L1快判/精确周长阈值2万组、大平移/反向/退化、独立积分及蒙特卡洛
 //
 // 参考实现(文件内自写,不用模板):
 //   refCentroidEdge:把多边形看成「每条边与 x 轴围成的竖直梯形」的有向叠加,用积分解析算
@@ -82,6 +82,33 @@ static p2 refCentroidMC(const vector<p2> &a, int N) {
 // 解析/蒙特卡洛参考对照;通过则 PASSED("多边形重心")。
 int main() {
     printf("== 多边形重心.check:逐边积分/蒙特卡洛/已知形状三方对照 ==\n");
+    mt19937_64 threshold_rng(2026102801);
+    for(int t = 0; t < 20000; ++t) {
+        db w = ldexp(db(1 + threshold_rng() % 1024), int(threshold_rng() % 81) - 40);
+        db factor = t % 4 == 0 ? 0.75L : t % 4 == 1 ? 1 - 1e-6L :
+                    t % 4 == 2 ? 1 + 1e-6L : 100;
+        db h = eps * (db(4) / 3) * factor;
+        vector<p2> a{{0,0},{4*w,0},{2*w,h},{0,h}};
+        db P = 6*w + h + hypot(2*w, h);
+        bool flat = 6*w*h / P <= eps;
+        p2 want{w * (flat ? 1.5L : db(14)/9), h * (flat ? 0.5L : db(4)/9)};
+        p2 got = centroid(a);
+        db tol = 64 * numeric_limits<db>::epsilon();
+        if(abs((got.x-want.x)/w) > tol || abs((got.y-want.y)/h) > tol) {
+            printf("centroid threshold case=%d w=%La h=%La flat=%d got=(%La,%La) want=(%La,%La)\n",
+                   t,w,h,int(flat),got.x,got.y,want.x,want.y);
+            return 1;
+        }
+    }
+    {
+        db L = numeric_limits<db>::max() * 0.3L;
+        feclearexcept(FE_ALL_EXCEPT);
+        p2 got = centroid({{0,0},{L,L},{0,0}});
+        CHECK(isfinite(got.x) && got.x == L/3 && got.y == L/3 &&
+              !fetestexcept(FE_OVERFLOW | FE_INVALID | FE_DIVBYZERO),
+              "精确周长有限而L1溢出时半L1仍稳定");
+    }
+    CHECK(true, "L1快判及精确周长回退解析阈值20000组");
 
     for(db width : {db(1e-6L),db(1),db(1e6L)}) {
         for(db height : {eps/4,16*eps}) {

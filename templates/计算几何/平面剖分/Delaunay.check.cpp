@@ -1,4 +1,4 @@
-// Delaunay 自测:空圆性质(暴力 O(n^2) 检查)/ 剖分合法性(覆盖凸包、边恰好被两个三角形共享、
+// Delaunay 自测:小尺度全排列转向、空圆性质(暴力 O(n^2))/ 剖分合法性(覆盖凸包、边共享、
 //   顶点全部用上)/ 与「枚举三点 + 空圆判定」的暴力 Delaunay 对照 / 各种退化输入。
 //
 // 独立依据(不拿另一个 Delaunay 实现对拍,而是直接验证 Delaunay 的定义):
@@ -258,6 +258,20 @@ static bool generalPosition(const vector<p2> &v) {
 // 空圆性质/剖分合法性与暴力 Delaunay 对照;通过则 PASSED("Delaunay")。
 int main() {
     printf("== Delaunay.check:空圆性质 + 剖分合法性 + 暴力 Delaunay 对照 + 退化输入 ==\n");
+    for(int e : {-20,0,20}) {
+        db s=ldexp(db(1),e);
+        vector<p2> small{{0,0},{s,0},{0,s}};
+        array<int,3> p{{0,1,2}};
+        do {
+            Delaunay::pts=small;
+            int parity=((p[0]>p[1])+(p[0]>p[2])+(p[1]>p[2]))%2;
+            CHECK(Delaunay::ori(p[0],p[1],p[2])==(parity?-1:1),
+                  "Delaunay三点转向全排列符号一致，不依赖任意底边");
+            auto out=delaunay({small[p[0]],small[p[1]],small[p[2]]});
+            CHECK(out.size()==3 && turnop(out[0],out[1],out[2])==1,
+                  "小非零三角形Delaunay与凸包共用同一转向契约");
+        } while(next_permutation(p.begin(),p.end()));
+    }
 
     // ===== 1. 接口与退化输入(全同点 / 全共线 / n <= 3 / 重复点) =====
     {

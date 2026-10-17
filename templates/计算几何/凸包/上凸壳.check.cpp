@@ -1,4 +1,4 @@
-// 上凸壳 自测:upper_hull 与「翻转 y 后求标准下凸壳」的独立参考对拍 + 性质断言
+// 上凸壳 自测:小屋顶长度EPS、翻转y参考/凸包截链独立对拍及性质断言
 //
 // 参考实现(文件内自写,不用模板):
 //   refUpper(v):把每个点按 y 取反,套一遍标准 Andrew 下凸链(只留严格左转),再把 y 翻回来 ——
@@ -179,6 +179,12 @@ static int oneCase(const vector<p2> &v, int verbose) {
 // 与两条参考对拍 + 性质断言;通过则 PASSED("上凸壳")。
 int main() {
     printf("== 上凸壳.check:与「翻转 y 求下凸壳」「凸包截上半圈」两条参考对拍 + 性质断言 ==\n");
+    for(int e : {-20,0,20}) {
+        db s=ldexp(db(1),e);
+        vector<p2> roof{{0,0},{s/2,s},{s,0}};
+        auto h=upper_hull(roof);
+        CHECK(h.size()==3 && h[1].y==s, "小屋顶转向不按绝对面积eps误删顶点");
+    }
 
     // ===== 1. 解析用例 =====
     {

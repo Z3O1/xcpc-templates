@@ -35,10 +35,12 @@ bool in_circle(const c2 &a, const c2 &b) {
     // 先减较大项，避免 d+b.r 吞掉小量或溢出。
     return cmp(a.r, x) >= 0 && cmp(a.r - x, min(d, b.r)) >= 0;
 }
-// 三点外接圆直径；三点按 eps 判共线时返回 -1。
+// 三点外接圆直径；最小高<=eps 返回-1，点差及直径须可表示。
 db circumcircle_diameter(p2 a, p2 b, p2 c) {
-    if(!crossop({a, b}, c)) return -1;
-    return dis(a - b) * dis(b - c) * dis(c - a) / abs((b - a).det(c - a));
+    if(!turnop(a, b, c)) return -1;
+    p2 u = scaled_dir(b - a), v = scaled_dir(c - a);
+    db sine = abs(u.det(v)) / sqrt(dis2(u) * dis2(v));
+    return dis(b - c) / sine;
 }
 // 三点外心坐标；要求不共线，点差、局部运算及结果可表示；近共线仍病态；O(1)。
 array<db, 2> circumcenter(p2 a, p2 b, p2 c) {

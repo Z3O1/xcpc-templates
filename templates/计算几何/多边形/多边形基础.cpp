@@ -20,7 +20,7 @@ int contain(const vector<p2> &a, const p2 &p) {
         if(ons({u, v}, p)) return 1;
         if(cmp(u.y, v.y) <= 0) swap(u, v);
         if(cmp(p.y, u.y) > 0 || cmp(p.y, v.y) <= 0) continue;
-        ret ^= crossop({p, u}, v) > 0;
+        ret ^= crossop({u, v}, p) > 0;
     }
     return ret * 2;
 }

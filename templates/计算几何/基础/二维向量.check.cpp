@@ -448,10 +448,12 @@ int main() {
     CHECK(inc(L, P(9, 0)) && inc(L, P(0, 0)) && !inc(L, P(0, 1)), "inc 只看直线不看线段范围");
     CHECK(crossop({P(0, 0), P(1, 1)}, P(2, 2)) == 0 && crossop({P(0, 0), P(1, 1)}, P(2, 3)) == 1, "crossop 斜线段左转/共线");
     {
-        Probe pb;  // crossop 只是 sign(cross),两者必须处处一致
+        Probe pb;  // 独立垂距oracle：叉积/方向长度，而非旧绝对面积门槛
         For(t, 1, 20000) {
             p2 u = P((db) rnd(-1000, 1000), (db) rnd(-1000, 1000)), v = P((db) rnd(-1000, 1000), (db) rnd(-1000, 1000)), q = P((db) rnd(-1000, 1000), (db) rnd(-1000, 1000));
-            if(crossop({u, v}, q) != sign(cross({u, v}, q))) pb.hit("crossop != sign(cross)", crossop({u, v}, q), sign(cross({u, v}, q)));
+            db length = hypot(v.x-u.x, v.y-u.y);
+            int side = length ? sign(refDet(v-u, q-u) / length) : 0;
+            if(crossop({u, v}, q) != side) pb.hit("crossop != 垂距参考", crossop({u, v}, q), side);
             if(crossop({u, v}, q) != -crossop({v, u}, q)) pb.hit("crossop 不反对称", crossop({u, v}, q), -crossop({v, u}, q));
             if(cross({u, v}, q) != -cross({v, u}, q)) pb.hit("cross 不反对称", cross({u, v}, q), -cross({v, u}, q));
             if(u.x != v.x && crossop({u, v}, v) != 0) pb.hit("端点 crossop 不为 0", crossop({u, v}, v), 0);
@@ -577,8 +579,9 @@ int main() {
             int d3 = sign((b2 - b1).det(a1 - b1)), d4 = sign((b2 - b1).det(a2 - b1));
             if(chkss_s(seg{a1, a2}, seg{b1, b2}) != (d1 * d2 < 0 && d3 * d4 < 0)) ++bad;
             db den = (a2 - a1).det(b2 - b1);
-            if(chkll(seg{a1, a2}, seg{b1, b2}) != (Abs(den) > 1e-9)) ++bad;
-            if(Abs(den) > 1e-9) {
+            bool nonparallel = Abs(den) / (hypot(a2.x-a1.x,a2.y-a1.y) * hypot(b2.x-b1.x,b2.y-b1.y)) > angle_eps;
+            if(chkll(seg{a1, a2}, seg{b1, b2}) != nonparallel) ++bad;
+            if(nonparallel) {
                 p2 p = isll(seg{a1, a2}, seg{b1, b2});
                 if(!eqd((a2 - a1).det(p - a1), 0, 1e-6 * (1 + dis(a2 - a1)))) ++bad;
                 if(!eqd((b2 - b1).det(p - b1), 0, 1e-6 * (1 + dis(b2 - b1)))) ++bad;

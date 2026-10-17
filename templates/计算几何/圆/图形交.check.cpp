@@ -1,4 +1,4 @@
-// 图形交 自测:短非零/零方向/方向缩放/平移/近相切解析交点，圆与直线/线段/圆求交及面积
+// 图形交 自测:点圆径向/换序2万组、短非零/零方向/缩放/平移/近切，直线/线段/圆交及面积
 //
 // 测什么:cir_line / cir_seg / cir_cir 的端点集合与个数,cir_cir_area / cir_poly_area 的数值。
 // 对拍方式(内置参考实现,全部不调用模板):
@@ -395,6 +395,30 @@ static double el() { return (double) (clock() - tick0) / CLOCKS_PER_SEC; }
 int main() {
     tick0 = clock();
     printf("== 图形交 自测开始 ==\n");
+    {
+        auto same=cir_cir(c2{{0,0},0},c2{{0,0},0});
+        T(same.size()==1 && same[0].x==0 && same[0].y==0, "重合点圆交集是孤立点");
+        T(cir_cir(c2{{0,0},0},c2{{1+1.5L*eps,0},1}).empty(),
+          "点圆不能用相对输出残差放宽径向长度eps");
+        mt19937_64 gen(2026102804);
+        for(int i=0;i<20000;++i) {
+            db r=i%4==0?0:ldexp(db(1),int(gen()%41)-20);
+            db gap=(i%2?db(0.5L):db(2))*eps*(i%3?-1:1);
+            p2 p{db(int(gen()%2001)-1000),db(int(gen()%2001)-1000)};
+            c2 point{p,0}, circle{p+p2{r+gap,0},r};
+            bool want=abs(hypot(circle.o.x-p.x,circle.o.y-p.y)-r)<=eps;
+            auto a=cir_cir(point,circle),b=cir_cir(circle,point);
+            bool good=a.size()==size_t(want) && b.size()==size_t(want);
+            if(want) good &= dis(a[0]-p)<=eps && dis(b[0]-p)<=eps &&
+                             abs(dis(a[0]-circle.o)-r)<=eps && abs(dis(b[0]-circle.o)-r)<=eps;
+            if(!good) {
+                printf("point-circle eps case=%d r=%La gap=%La got=%zu,%zu want=%d\n",
+                       i,r,gap,a.size(),b.size(),int(want));
+                return 1;
+            }
+        }
+        T(true,"点圆径向长度oracle与换序20000组");
+    }
 
     // 原点直线，圆心在整数垂向：参数根为 ±sqrt(R²-k²)，不复用投影公式。
     for(int t = 0; t < 3000; ++t) {

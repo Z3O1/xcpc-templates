@@ -1,4 +1,4 @@
-// 直线与线段 自测:整数相交/距离4万组、113位投影/距离3万组、偏移全指数2万组、极端/平移/eps
+// 直线与线段 自测:EPS距离/角度/全排列2万113位oracle、整数4万/投影3万/偏移2万、极端退化
 #include "../../_check_base.hpp"
 #include "二维向量.cpp"
 #include "直线与线段.cpp"
@@ -193,8 +193,122 @@ bool projection_offset_range() {
     return true;
 }
 
+// 113位参考使用二进制缩放，不共享模板的最大分量缩放或unit。
+Wide eps_root(Wide x) {
+    Wide y = 1;
+    for(int i = 0; i < 12; ++i) y = (y + x / y) / 2;
+    return y;
+}
+array<Wide, 2> eps_direction(seg l) {
+    Wide x = Wide(l.y.x)-l.x.x, y = Wide(l.y.y)-l.x.y;
+    int e = 0;
+    frexp(db(max(wide_abs(x),wide_abs(y))), &e);
+    return {scale2(x,-e),scale2(y,-e)};
+}
+int distance_side(seg l, p2 p) {
+    auto d = eps_direction(l);
+    if(d[0] == 0 && d[1] == 0) return 0;
+    Wide h = d[0]*(Wide(p.y)-l.x.y)-d[1]*(Wide(p.x)-l.x.x);
+    Wide t = Wide(eps)*eps_root(d[0]*d[0]+d[1]*d[1]);
+    return (h > t)-(h < -t);
+}
+bool angle_reference(seg a, seg b) {
+    auto u=eps_direction(a),v=eps_direction(b);
+    Wide n=(u[0]*u[0]+u[1]*u[1])*(v[0]*v[0]+v[1]*v[1]);
+    if(n == 0) return false;
+    return wide_abs(u[0]*v[1]-u[1]*v[0]) > Wide(angle_eps)*eps_root(n);
+}
+int triangle_reference(p2 a,p2 b,p2 c) {
+    Wide ux=Wide(b.x)-a.x,uy=Wide(b.y)-a.y,vx=Wide(c.x)-a.x,vy=Wide(c.y)-a.y;
+    int e=0;
+    frexp(db(max({wide_abs(ux),wide_abs(uy),wide_abs(vx),wide_abs(vy)})),&e);
+    ux=scale2(ux,-e),uy=scale2(uy,-e),vx=scale2(vx,-e),vy=scale2(vy,-e);
+    Wide n=max({ux*ux+uy*uy,vx*vx+vy*vy,(vx-ux)*(vx-ux)+(vy-uy)*(vy-uy)});
+    if(n == 0) return 0;
+    Wide h=ux*vy-uy*vx,t=scale2(Wide(eps),-e)*eps_root(n);
+    return (h > t)-(h < -t);
+}
+bool eps_contracts() {
+    const int E=numeric_limits<db>::max_exponent*3/4;
+    for(int e : {-E,-40,0,40,E}) for(int reverse : {-1,1}) {
+        db L=ldexp(db(reverse),e);
+        seg x{{0,0},{L,0}},y{{0,0},{0,L}};
+        for(db h : {eps/2,eps,2*eps}) {
+            p2 p{0,h};
+            CHECK(crossop(x,p)==distance_side(x,p) && inc(x,p)==(h<=eps),
+                  "同一直线换正负短长方向，长度eps边界不变");
+        }
+        CHECK(chkll(x,y) && !chkll(x,x), "短长垂直方向不能当作平行");
+        p2 q=isll(x,y);
+        CHECK(q.x==0 && q.y==0, "短方向判相交后分母不能下溢");
+        CHECK(!eqll(x,y), "短垂直线基点相同不算重合");
+    }
+    seg short_s{{0,0},{1e-6L,0}},zero{{0,0},{0,0}};
+    CHECK(ons_s(short_s,{5e-7L,0}) && !ons_s(short_s,{eps/2,0}) &&
+          ons_s(short_s,{2*eps,0}), "严格内部端点排除按投影长度eps");
+    CHECK(!ons_s(zero,{0,0}) && ons(zero,{eps/2,eps/2}) && !chkll(zero,short_s),
+          "真正零方向/点线段与短非零分开");
+    for(db factor : {db(0.5L),db(2)}) {
+        seg a{{0,0},{1,0}},b{{0,1},{1,1+factor*angle_eps}};
+        CHECK(chkll(a,b)==angle_reference(a,b), "夹角无量纲阈值两侧");
+        if(chkll(a,b)) {
+            p2 q=isll(a,b);
+            db want=-1/(b.y.y-b.x.y);
+            CHECK(abs((q.x-want)/want)<64*numeric_limits<db>::epsilon() && q.y==0,
+                  "近角交点使用实际输入而非理想方向参考");
+        }
+    }
+    mt19937_64 gen(2026102802);
+    for(int i=0;i<20000;++i) {
+        p2 d{db(1+gen()%31),db(int(gen()%63)-31)};
+        p2 p{db(int(gen()%101)-50)/8,db(int(gen()%101)-50)/8};
+        int e=int(gen()%(2*E+1))-E, f=int(gen()%(2*E+1))-E;
+        db k=ldexp(db(i%2?-1:1),e),j=ldexp(db(i%3?-1:1),f);
+        seg a{{0,0},d*k},b{{0,0},r90(d)*j};
+        int want=distance_side(a,p);
+        if(crossop(a,p)!=want || !chkll(a,b) || !angle_reference(a,b)) {
+            printf("eps case=%d d=(%La,%La) e=%d f=%d p=(%La,%La) got=%d want=%d\n",
+                   i,d.x,d.y,e,f,p.x,p.y,crossop(a,p),want);
+            return false;
+        }
+        // 非零交点与113位参数方程独立对拍，端点差保留为实际输入。
+        db ka=ldexp(db(1),int(gen()%41)-20),kb=ldexp(db(1),int(gen()%41)-20);
+        a={{0,0},d*ka}; b={{1,-1},p2{1,-1}+r90(d)*kb};
+        auto u=eps_direction(a),v=eps_direction(b);
+        Wide t=(Wide(b.x.x)*v[1]-Wide(b.x.y)*v[0])/(u[0]*v[1]-u[1]*v[0]);
+        p2 q=isll(a,b),ref{db(u[0]*t),db(u[1]*t)};
+        db error=128*numeric_limits<db>::epsilon()*max({db(1),abs(ref.x),abs(ref.y)});
+        if(abs(q.x-ref.x)>error || abs(q.y-ref.y)>error) {
+            printf("intersection eps case=%d got=(%La,%La) ref=(%La,%La)\n",i,q.x,q.y,ref.x,ref.y);
+            return false;
+        }
+        array<p2,3> tri{{{0,0},{d.x,d.y},{p.x,p.y}}};
+        if(i%3==0) for(auto& vtx:tri) vtx=vtx*1e-6L;
+        if(i%3==1) for(auto& vtx:tri) vtx=vtx+p2{1e9L,-1e9L};
+        array<int,3> order{{0,1,2}};
+        do {
+            p2 x=tri[order[0]],y=tri[order[1]],z=tri[order[2]];
+            int sign=triangle_reference(x,y,z);
+            if(turnop(x,y,z)!=sign) {
+                printf("triangle eps case=%d order=%d%d%d got=%d want=%d\n",i,order[0],order[1],order[2],turnop(x,y,z),sign);
+                return false;
+            }
+        } while(next_permutation(order.begin(),order.end()));
+    }
+    for(db height : {eps/2,2*eps}) for(int e : {-10,0,100,E}) {
+        array<p2,3> a{{{0,0},{ldexp(db(1),e),0},{0,height}}};
+        array<int,3> p{{0,1,2}};
+        do {
+            CHECK(turnop(a[p[0]],a[p[1]],a[p[2]])==triangle_reference(a[p[0]],a[p[1]],a[p[2]]),
+                  "最小高长度门槛正反六排列一致");
+        } while(next_permutation(p.begin(),p.end()));
+    }
+    return true;
+}
+
 // 独立参考随机对拍；失败打印两线段及查询点。
 int main() {
+    CHECK(eps_contracts(), "EPS长度/角度/三点全排列113位oracle 20000组");
     CHECK(projection_offset_range(), "投影偏移全指数/巨大分支 oracle 20000组");
     CHECK(projection_extremes(), "113位投影/距离 oracle，3万随机与极端/平移/尺度");
     rng.seed(2026101401);
