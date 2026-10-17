@@ -1,7 +1,7 @@
-// 最近点对 自测:dis_closest 与 O(n²) 全点对暴力对拍 + 退化/极端/大规模用例
+// 最近点对 自测:独立hypot全点对参考、全指数/平方下溢/大平移3000组、随机/退化/20万点
 //
 // 对拍方式(文件内自写,不用模板):
-//   bruteClosest(v):O(n²) 双重循环逐个算 dis() 取最小(独立写一遍,连排序都不用)。
+//   bruteClosest(v):O(n²) 双重循环，用标准 hypot 独立计算距离，不调用模板 dis。
 //   另外两条性质级断言:① 答案必须 <= 任意一对具体点的距离;② 答案 == 0 当且仅当存在重复点。
 //
 // 用例规模:
@@ -39,13 +39,45 @@ static db bruteClosest(const vector<p2> &v) {
     int n = v.size();
     if(n < 2) return -1;
     db ans = 1e100L;
-    for(int i = 0; i < n; ++i) for(int j = i + 1; j < n; ++j) ans = min(ans, dis(v[i] - v[j]));
+    for(int i = 0; i < n; ++i) for(int j = i + 1; j < n; ++j)
+        ans = min(ans, hypot(v[i].x - v[j].x, v[i].y - v[j].y));
     return ans;
+}
+
+static bool exponent_ranges() {
+    mt19937_64 gen(2026101703);
+    vector<int> exponents{numeric_limits<db>::min_exponent - numeric_limits<db>::digits + 3,
+                          numeric_limits<db>::min_exponent * 3 / 4, -100, 0, 100, 300};
+    for(int d = -4; d <= 4; ++d) {
+        exponents.push_back(numeric_limits<db>::min_exponent / 2 + d);
+        exponents.push_back((numeric_limits<db>::min_exponent - numeric_limits<db>::digits) / 2 + d);
+    }
+    for(int t = 0; t < 3000; ++t) {
+        int e = exponents[t % exponents.size()], n = 2 + gen() % 30;
+        db scale = ldexp(db(1), e);
+        db shift = t % 3 == 0 ? ldexp(scale, numeric_limits<db>::digits - 8) : 0;
+        vector<p2> v;
+        for(int i = 0; i < n; ++i)
+            v.push_back({shift + db(int(gen() % 201) - 100) * scale,
+                         -shift + db(int(gen() % 201) - 100) * scale});
+        if(t % 7 == 0) v.push_back(v[0]);
+        // 极小点对与相距极远的点混用，不能因远处点的平方溢出而丢掉局部解。
+        if(t % 5 == 0) v.push_back({1e90L, -1e90L});
+        db got = dis_closest(v), want = bruteClosest(v);
+        db tolerance = 16 * numeric_limits<db>::epsilon() * want + 4 * numeric_limits<db>::denorm_min();
+        if(abs(got - want) > tolerance || (got == 0) != (want == 0)) {
+            printf("closest exponent case=%d e=%d got=%La want=%La\n", t, e, got, want);
+            prv("input", v);
+            return false;
+        }
+    }
+    return true;
 }
 
 // 暴力对拍 + 退化/大规模用例;通过则 PASSED("最近点对")。
 int main() {
     printf("== 最近点对.check:O(n^2) 暴力对拍 + 退化/大规模用例 ==\n");
+    CHECK(exponent_ranges(), "独立hypot参考3000组：全指数/平方下溢边界/大平移/远近混合");
 
     // ===== 1. 解析用例 =====
     {
