@@ -6,9 +6,9 @@ namespace IGeo {
 struct segi { p2i x, y; };
 // 点是否在线段上，包含端点与零长线段。
 bool ons(segi s, p2i p) {
-    return !crossop(s.x, s.y, p) &&
-           min(s.x.x, s.y.x) <= p.x && p.x <= max(s.x.x, s.y.x) &&
-           min(s.x.y, s.y.y) <= p.y && p.y <= max(s.x.y, s.y.y);
+    return min(s.x.x, s.y.x) <= p.x && p.x <= max(s.x.x, s.y.x) &&
+           min(s.x.y, s.y.y) <= p.y && p.y <= max(s.x.y, s.y.y) &&
+           !crossop(s.x, s.y, p);
 }
 // 点是否严格在线段内部；端点和零长线段返回 false。
 bool ons_s(segi s, p2i p) { return ons(s, p) && !(p == s.x) && !(p == s.y); }
