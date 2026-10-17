@@ -1,4 +1,4 @@
-// 半平面交 自测:大平移解析梯形/排列/方向缩放/面积退化、逐半平面暴力裁剪独立对拍
+// 半平面交 自测:缓存排序600组全指数冗余矩形、大平移梯形/接缝/面积退化、逐半平面暴力裁剪对拍
 //
 // 对拍方式(全部为文件内自写的独立参考实现,不用模板):
 //   refClip/refHPI:把一个大正方形(-B..B,B=1e4)按每条直线「保留 cross(l,·) >= 0 一侧」逐条裁剪,
@@ -466,6 +466,35 @@ static int runPatho(int groups) {
 int main() {
     printf("== 半平面交.check:暴力裁剪对拍 + 凸包对拍 + 解析/退化用例 ==\n");
     mt19937 eps_rng(2026102803);
+    {
+        mt19937_64 gen(2026101702);
+        int E = numeric_limits<db>::max_exponent * 3 / 4;
+        for(int t = 0; t < 600; ++t) {
+            db s = ldexp(db(1), (t % 3 - 1) * 20);
+            db shift = t % 4 == 0 && s >= 1 ? ldexp(db(1), 40) : 0;
+            db left = shift - 3 * s, right = shift + 5 * s;
+            db low = shift - 2 * s, high = shift + 7 * s;
+            vector<seg> lines;
+            for(int i = 0; i < 12; ++i) {
+                db k = ldexp(db(1), int(gen() % (2 * E + 1)) - E);
+                db extra = (i % 3) * s;
+                lines.push_back({{0, low - extra}, {k, low - extra}});
+                lines.push_back({{right + extra, 0}, {right + extra, k}});
+                lines.push_back({{0, high + extra}, {-k, high + extra}});
+                lines.push_back({{left - extra, 0}, {left - extra, -k}});
+            }
+            shuffle(lines.begin(), lines.end(), gen);
+            auto p = hpi(lines);
+            bool good = p.size() == 4 && polyArea(p) == (right - left) * (high - low);
+            for(auto q : p) good &= (q.x == left || q.x == right) && (q.y == low || q.y == high);
+            if(!good) {
+                printf("cached HPI rectangle case=%d scale=%La shift=%La\n", t, s, shift);
+                prl("input", lines); prp("got", p);
+                return 1;
+            }
+        }
+        CHECK(true, "缓存排序600组：48条同角冗余约束/全指数方向/小尺度与大平移，矩形解析oracle");
+    }
     for(db L : {db(1),ldexp(db(1),numeric_limits<db>::min_exponent*3/4),numeric_limits<db>::denorm_min()}) {
         vector<seg> seam{{{-1,-1},{1,-1}},{{1,-1},{1,1}},{{-1,1},{-1,-1}},
                          {{0,0},{-L,-0.0L}},{{0,-1e-6L},{-L,-1e-6L}}};

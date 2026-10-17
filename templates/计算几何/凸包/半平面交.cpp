@@ -1,6 +1,6 @@
 // 半平面交(): 计算几何 · 半平面交 (有向直线左侧求交 O(n log n))
 
-// 依赖 基础/直线与线段.cpp；交每条有向直线的左侧及边界，要求方向非零。
+// 依赖 基础/直线与线段.cpp；交每条有向直线的左侧及边界，方向非零、单位法向偏移须有限。
 // 调用方须保证交集有界，通常加入足够大的包围盒；空输入返回空。
 // 返回逆时针边界；空集、点、线段或二倍面积/周长<=eps 返回空，不修改调用方输入。
 // 同向角差在angle_eps内合并；侧别/面积周长比用长度eps，排序不用容差。
@@ -19,19 +19,31 @@ bool hpi_less(const seg &a, const seg &b) {
 bool hpi_stronger(const seg &a, const seg &b) {
     return scaled_dir(b.dir()).det(a.x - b.x) > 0;
 }
-// 求所有左侧半平面的有界交；空集或面积退化返回空。
 vector<p2> hpi(vector<seg> vs) {
     if(vs.empty()) return {};
-    sort(vs.begin(), vs.end(), hpi_less);
-    vector<seg> ls;
+    struct key { db angle, offset; int id; };
+    vector<key> order;
+    order.reserve(vs.size());
     for(int i = 0; i < (int) vs.size(); ++i) {
-        if(!ls.empty() && abs(ls.back().dir().alpha() - vs[i].dir().alpha()) <= angle_eps) {
-            if(hpi_stronger(vs[i], ls.back())) ls.back() = vs[i];
+        p2 d = vs[i].dir();
+        order.push_back({d.alpha(), unit(d).det(vs[i].x), i});
+    }
+    // 与 hpi_less 同序；极角与单位法向偏移各只算一次。
+    sort(order.begin(), order.end(), [](const key &a, const key &b) {
+        return a.angle != b.angle ? a.angle < b.angle : a.offset > b.offset;
+    });
+    vector<seg> ls;
+    db last = 0;
+    for(auto k : order) {
+        seg l = vs[k.id];
+        if(!ls.empty() && abs(last - k.angle) <= angle_eps) {
+            if(hpi_stronger(l, ls.back())) ls.back() = l, last = k.angle;
             continue;
         }
-        ls.push_back(vs[i]);
+        ls.push_back(l);
+        last = k.angle;
     }
-    if(ls.size() > 1 && abs(ls.front().dir().alpha() + 2 * pi - ls.back().dir().alpha()) <= angle_eps) {
+    if(ls.size() > 1 && abs(ls.front().dir().alpha() + 2 * pi - last) <= angle_eps) {
         if(hpi_stronger(ls.back(), ls.front()))
             ls.erase(ls.begin());
         else
