@@ -24,7 +24,7 @@ struct SPQR_tree {
     // add 完后约简 1..n 的度 1/2 顶点，修改 fa/typ/t；每张图只调用一次。
     void build(int n) {
         queue<int> q;
-        auto ins = [&](int u) { if (!vis[u] && t[u].size() <= 2) vis[u] = 1, q.push(u); };
+        auto ins = [&](int u) { if(!vis[u] && t[u].size() <= 2) vis[u] = 1, q.push(u); };
         For(i, 1, n) ins(i);
         while(q.size()) {
             int u = q.front();

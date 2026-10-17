@@ -268,8 +268,6 @@
 
 === 直线与线段
 
-#include "templates/计算几何/基础/直线与线段.typ"
-
 #zebraw(lang: false)[#raw(readcode("templates/计算几何/基础/直线与线段.cpp"), lang: "cpp", block: true)]
 
 === 最近点对

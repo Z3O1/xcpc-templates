@@ -47,7 +47,7 @@ struct EK {
             p[s] = -1;
             queue<int> q;
             q.push(s);
-            while (q.size()) {
+            while(q.size()) {
                 int u = q.front();
                 q.pop();
                 For(v, 1, n) if(!p[v] && c[u][v] > 0) p[v] = u, q.push(v);
@@ -67,7 +67,7 @@ static vector<char> residual_reach() {
     vector<char> vis(f.n + 2, 0);
     vector<int> st;
     st.push_back(f.s), vis[f.s] = 1;
-    while (st.size()) {
+    while(st.size()) {
         int u = st.back();
         st.pop_back();
         for(int i = f.hd[u]; i; i = f.e[i].n)
@@ -161,7 +161,7 @@ int main() {
     For(rep, 1, 400) {
         int n = (int) rnd(2, 30), m = (int) rnd(0, 60);
         int s = (int) rnd(1, n), t = (int) rnd(1, n);
-        while (t == s) t = (int) rnd(1, n);
+        while(t == s) t = (int) rnd(1, n);
         vector<array<int, 3>> es;
         EK ek;
         ek.init(n);

@@ -7,7 +7,7 @@
 int main() {
     auto trial = [](u64 x) {
         vector<u64> r;
-        for(u64 d = 2; d * d <= x; ++d) while (x % d == 0) r.push_back(d), x /= d;
+        for(u64 d = 2; d * d <= x; ++d) while(x % d == 0) r.push_back(d), x /= d;
         if(x > 1) r.push_back(x);
         return r;
     };
@@ -77,8 +77,8 @@ int main() {
     // 随机半素数:p*q 应恰好分解出 p、q，不要求先输出哪一个。
     For(t, 1, 200) {
         u64 p = 0, q = 0;
-        do p = rnd(1000000000LL, 4000000000LL); while (!chkp(p));
-        do q = rnd(1000000000LL, 4000000000LL); while (!chkp(q));
+        do p = rnd(1000000000LL, 4000000000LL); while(!chkp(p));
+        do q = rnd(1000000000LL, 4000000000LL); while(!chkp(q));
         if(check(p * q, vector<u64>{min(p, q), max(p, q)})) {
             printf("  [FAIL] %llu * %llu 分解错误\n", (u64) p, (u64) q);
             return 1;

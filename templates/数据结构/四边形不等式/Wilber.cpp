@@ -7,9 +7,9 @@ pair<vector<T>, vector<int>> Wilber(int n, Q &&que, const T Z = numeric_limits<T
     f[0] = 0;
     vector<int> fp(n + 1, 0);
     int c = 0;
-    while (c < n) {
+    while(c < n) {
         int r = fp[c], p = min(n, c + (c - r + 1));
-        if (c - r + 1 <= B) {
+        if(c - r + 1 <= B) {
             For(j, c + 1, p) For(i, fp[j - 1], j - 1) {
                 T v = f[i] + que(i, j);
                 if(v < f[j]) f[j] = v, fp[j] = i;
@@ -24,7 +24,7 @@ pair<vector<T>, vector<int>> Wilber(int n, Q &&que, const T Z = numeric_limits<T
         auto [h, hp] = SMAWK<T>(p - c, p - c, q2);
         int nc = p; // 默认整段归纳;一旦某行能由第二段取得更优值,就停在该行重算
         For(i, c + 1, p) {
-            if (f[i] > h[i - c]) {
+            if(f[i] > h[i - c]) {
                 f[i] = h[i - c];
                 fp[i] = hp[i - c] + c;
                 nc = i;

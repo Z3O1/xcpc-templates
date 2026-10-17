@@ -19,7 +19,7 @@ template <class T> void SA(int n, const T *a) {
         rFor(i, n, 1) sa[c[rk[b[i]]]--] = b[i];
     };
     bs();
-    for (int t = 1; t < n; t += t) {
+    for(int t = 1; t < n; t += t) {
         int tot = 0;
         For(i, n - t + 1, n) b[++tot] = i;
         For(i, 1, n) if(sa[i] > t) b[++tot] = sa[i] - t;
@@ -41,7 +41,7 @@ template <class T> void SA(int n, const T *a) {
         }
         if(k) --k;
         int j = sa[rk[i] - 1];
-        while (i + k <= n && j + k <= n && a[i + k] == a[j + k]) ++k;
+        while(i + k <= n && j + k <= n && a[i + k] == a[j + k]) ++k;
         height[rk[i]] = k;
     }
 }

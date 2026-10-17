@@ -30,9 +30,9 @@ inline void ok(const char *what) { printf("  [ok] %s\n", what); }
             exit(1);                                                           \
         }                                                                      \
         ok(name);                                                              \
-    } while (0)
+    } while(0)
 #define PASSED(name)                                                           \
     do {                                                                       \
         printf("PASSED %s\n", name);                                           \
         return 0;                                                              \
-    } while (0)
+    } while(0)

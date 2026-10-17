@@ -6,7 +6,7 @@ vector<int> fac_of(int x) {
     for(int i = 2; 1ll * i * i <= x; ++i)
         if(x % i == 0) {
             fac.push_back(i);
-            while (x % i == 0) x /= i;
+            while(x % i == 0) x /= i;
         }
     if(x > 1) fac.push_back(x);
     return fac;
@@ -29,6 +29,6 @@ int ord(int a, int p) {
     int x = p - 1;
     auto fac = fac_of(x);
     for(int q : fac)
-        while (x % q == 0 && qpow(a, x / q, p) == 1) x /= q;
+        while(x % q == 0 && qpow(a, x / q, p) == 1) x /= q;
     return x;
 }

@@ -81,7 +81,7 @@ static void die(const char *name, int line) {
     do {                                           \
         if(!(cond)) die(name, __LINE__);           \
         printf("  [ok] %s\n", name);               \
-    } while (0)
+    } while(0)
 // 浮点断言:失败时打印 got / want
 #define TD(got, want, tol, name)                                                                \
     do {                                                                                        \
@@ -91,7 +91,7 @@ static void die(const char *name, int line) {
             die(name, __LINE__);                                                                \
         }                                                                                       \
         printf("  [ok] %s\n", name);                                                            \
-    } while (0)
+    } while(0)
 
 // ============ 独立参考实现（只用基础模块的点、线段、面积与包含关系） ============
 

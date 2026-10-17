@@ -36,7 +36,7 @@ int main() {
             for(int d = 2; (ll) d * d <= y; ++d) {
                 if(y % d) continue;
                 int c = 0;
-                while (y % d == 0) y /= d, ++c;
+                while(y % d == 0) y /= d, ++c;
                 if(c > 1) { mu = 0; break; }
                 mu = -mu;
             }

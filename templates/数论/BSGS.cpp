@@ -12,7 +12,7 @@ ll BSGS(ll a, ll b, ll p) {
         for(; l % q == 0 && qpow(a, l / q, p) == 1; l /= q);
     if(l > 1 && qpow(a, l - 1, p) == 1) l = 1;
     ll m = (ll) sqrt((db) l);
-    while (m * m < l) ++m;
+    while(m * m < l) ++m;
     for(ll y = 0, w = 1 % p; y < std::min(m, l); ++y) {
         if(w == b) return y;
         w = (i128) w * a % p;

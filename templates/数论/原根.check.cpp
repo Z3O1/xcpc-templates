@@ -56,7 +56,7 @@ int main() {
         int x = p - 1;
         for(int q = 2; (ll) q * q <= x; ++q) {
             if(x % q) continue;
-            while (x % q == 0) x /= q;
+            while(x % q == 0) x /= q;
             if(qpow(g, (p - 1) / q, p) == 1) return printf("  [FAIL] root(%d) 不是原根(素因子 %d)\n", p, q), 1;
         }
         if(x > 1 && qpow(g, (p - 1) / x, p) == 1) return printf("  [FAIL] root(%d) 不是原根(大素因子)\n", p), 1;
@@ -69,7 +69,7 @@ int main() {
             int y = o;
             for(int q = 2; (ll) q * q <= y; ++q) {
                 if(y % q) continue;
-                while (y % q == 0) y /= q;
+                while(y % q == 0) y /= q;
                 if(o % q == 0 && qpow(a, o / q, p) == 1) return printf("  [FAIL] ord 非最小 a=%d p=%d\n", a, p), 1;
             }
             if(y > 1 && qpow(a, o / y, p) == 1) return printf("  [FAIL] ord 非最小(大素因子) a=%d p=%d\n", a, p), 1;

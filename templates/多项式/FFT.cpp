@@ -31,7 +31,7 @@ vector<db> fft_conv(const vector<db> &a, const vector<db> &b) {
     int n = a.size(), m = b.size();
     if(!n || !m) return {};
     int l = 1;
-    while (l < n + m - 1) l <<= 1;
+    while(l < n + m - 1) l <<= 1;
     vector<cp> fa(l), fb(l);
     For(i, 0, n - 1) fa[i] = a[i];
     For(i, 0, m - 1) fb[i] = b[i];

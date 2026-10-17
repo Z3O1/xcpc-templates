@@ -28,12 +28,12 @@ class Dinic_t {
         d[s] = 0;
         queue<int> q;
         q.push(s);
-        while (q.size()) {
+        while(q.size()) {
             int u = q.front();
             q.pop();
-            if (u == t) return 1;
-            for (int i = cur[u]; i; i = e[i].n)
-                if (e[i].w && d[e[i].v] == -1) {
+            if(u == t) return 1;
+            for(int i = cur[u]; i; i = e[i].n)
+                if(e[i].w && d[e[i].v] == -1) {
                     d[e[i].v] = d[u] + 1, q.push(e[i].v);
                 }
         }
@@ -41,23 +41,23 @@ class Dinic_t {
     }
     // bfs 后沿层次图增广，返回实际流量；in >= 0。
     ll dfs(int u, ll in) {
-        if (u == t) return in;
+        if(u == t) return in;
         ll out = 0;
-        for (int &i = cur[u]; i; i = e[i].n)
-            if (e[i].w && d[e[i].v] == d[u] + 1) {
+        for(int &i = cur[u]; i; i = e[i].n)
+            if(e[i].w && d[e[i].v] == d[u] + 1) {
                 ll fl = dfs(e[i].v, min(in, e[i].w));
                 e[i].w -= fl, e[i ^ 1].w += fl;
                 in -= fl, out += fl;
-                if (!in) break;
+                if(!in) break;
             }
-        if (!out) d[u] = -1;
+        if(!out) d[u] = -1;
         return out;
     }
     // 在已建残量网络上求 _s 到 _t 的追加流量；1 <= _s != _t <= _n。
     ll solve(int _s, int _t, int _n) {
         s = _s, t = _t, n = _n;
         ll ans = 0;
-        while (bfs()) ans += dfs(s, Z);
+        while(bfs()) ans += dfs(s, Z);
         return ans;
     }
     // 按已设置的 s,n 覆盖 c[1..n]，0 表示残量可达点；solve 后即为最小割源侧。
@@ -66,11 +66,11 @@ class Dinic_t {
         queue<int> q;
         c[s] = 0;
         q.push(s);
-        while (q.size()) {
+        while(q.size()) {
             int u = q.front();
             q.pop();
-            for (int i = hd[u]; i; i = e[i].n)
-                if (e[i].w && c[e[i].v]) {
+            for(int i = hd[u]; i; i = e[i].n)
+                if(e[i].w && c[e[i].v]) {
                     c[e[i].v] = 0;
                     q.push(e[i].v);
                 }

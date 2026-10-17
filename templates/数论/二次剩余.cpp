@@ -27,7 +27,7 @@ ll sqrtp(ll x, ll p) {
     if(p % 4 == 3) return pw(x, (p + 1) >> 2);
     static mt19937_64 gen;
     ll w, a;
-    do a = gen() % p; while (!a || pw(w = add(mul(a, a), p - x), (p - 1) >> 1) != p - 1);
+    do a = gen() % p; while(!a || pw(w = add(mul(a, a), p - x), (p - 1) >> 1) != p - 1);
     auto prod = [&](pll u, pll v) {
         ll t0 = add(mul(u[0], v[0]), mul(mul(u[1], v[1]), w));
         ll t1 = add(mul(u[0], v[1]), mul(u[1], v[0]));
