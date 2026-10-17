@@ -10,13 +10,10 @@ constexpr bool chkp(u64 p) {
             if(x & 1) r = mul(r, a, p);
         return r;
     };
-    constexpr u64 small[] = {2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37};
-    for(u64 d : small)
-        if(p % d == 0) return p == d;
     constexpr u64 B[] = {2, 325, 9375, 28178, 450775, 9780504, 1795265022};
     u64 s = __builtin_ctzll(p - 1), d = (p - 1) >> s;
     for(u64 a : B) {
-        // 底数被 p 整除时跳过，避免把素数误判为合数（如 73）。
+        // 底数被 p 整除时必须跳过：450775 = 73·6175，否则 73 会被判成合数。
         if(a % p == 0) continue;
         u64 x = pw(a % p, d, p);
         if(x == 1 || x == p - 1) continue;
