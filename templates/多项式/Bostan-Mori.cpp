@@ -1,11 +1,10 @@
 // bostan_mori(): 多项式 · 线性递推第 n 项 (Bostan-Mori)
 
-// 求 [x^n] P(x) / Q(x)。要求 n >= 0,Q[0] != 0;P 可为空,也可比 Q 长。
-// k 阶递推:Q = 1 - Σ c_i x^i,P = (Q * Σ_{i<k} a_i x^i) mod x^k。
-// 复杂度 O(k log k log(n+2)),k 为输入长度上界。依赖:mul、ksm、M = 998244353;系数在 [0, M)。
+// 系数在 [0,M)，M=998244353；依赖 mul、ksm，O(k log k log(n+2))，k 为输入长度上界。
+// k 阶递推：Q=1-Σ c_i x^i，P=(Q * Σ_{i<k} a_i x^i) mod x^k。
 
 using poly = vector<int>;
-// 求有理生成函数第 n 项；要求 n >= 0 且 Q[0] != 0；返回 [x^n]P/Q。
+// 返回 [x^n]P/Q；n>=0、Q 非空且 Q[0]!=0；P 可空或长于 Q。
 int bostan_mori(poly P, poly Q, ll n) {
     if(P.empty()) return 0;
     if(Q.size() == 1) return n < (ll)P.size() ? 1ll * P[n] * ksm(Q[0], M - 2, M) % M : 0;

@@ -1,12 +1,9 @@
 // fft_conv(): 多项式 · 复数 FFT 卷积 (double 精度)
 
-// 求两个实系数多项式的卷积。返回的向量长度是 n + m - 1。
-// 前置:结果系数绝对值要明显小于 1e15(否则 double 精度不够,请用本目录 ntt.cpp 的模意义卷积)。
-// 复杂度 O((n + m) log(n + m))。
+// 实系数卷积，O((n+m) log(n+m))；结果系数绝对值须明显小于 1e15，否则改用模卷积。
 
-// cp:复数类型,用于 FFT 的变换域。
 using cp = complex<db>;
-// 原地做长度为 n 的 FFT(k=1)/逆 FFT(k=-1,含除以 n)；要求 n 为 2 的幂；空或长度 1 直接返回。
+// 原地 FFT：k=1 正变换，k=-1 逆变换（含除以 n）；长度须为 2 的幂，空输入也可。
 void fft(vect<cp> &a, int k) {
     int n = a.size();
     if(n <= 1) return;
@@ -29,7 +26,7 @@ void fft(vect<cp> &a, int k) {
     }
     if(k == -1) For(i, 0, n - 1) a[i] /= n;
 }
-// 求两个实系数多项式的卷积；任一为空返回空；返回长度 n+m-1 的结果（精度约束见头注释）。
+// 返回长度 |a|+|b|-1 的实系数卷积；任一为空则返回空。
 vect<db> fft_conv(const vect<db> &a, const vect<db> &b) {
     int n = a.size(), m = b.size();
     if(!n || !m) return {};

@@ -1,21 +1,17 @@
 // poly_interp(): 多项式 · 快速插值 (分治 多点求值)
 
-// 契约:xs 与 ys 等长(可空),要求 xs 两两不同(否则 M'(xs[i]) = 0 无法除)。
-//       返回唯一的 deg < m 的多项式 f 满足 f(xs[i]) = ys[i],长度恰为 m(m = |xs|)。
-// 做法:记 M = Π(x - xs[i]),则 f = Σ_i ys[i]/M'(xs[i]) · M(x)/(x - xs[i]);
-//       M'(xs[i]) 用一点多点求值,后面用分治卷积合并。
-// 复杂度:O(m log² m)。依赖:poly_eval、mul、常量 M = 998244353;所有输入在 [0, M)。
-// 注意:点数重复时 M'(x_i) = 0 会除零,调用前请保证互异。
+// 所有输入在 [0,M)，M=998244353；依赖 poly_eval、mul，O(m log² m)，m=|xs|。
+// 卷积长度须满足 mul 的上限。
 
 using poly = vector<int>;
-// 分治建线段树，节点存该段 Π(x - xs[i])；要求 t 已分配 4m；返回时 t[k] 为该段乘积。
+// 建乘积树：t[k]=Π_{i=l..r}(x-xs[i])，t 由入口分配 4m 个节点。
 static void _interp_build(poly *t, int k, int l, int r, const poly &xs) {
     if(l == r) return void(t[k] = poly{(M - xs[l]) % M, 1});  // x - xs[l]
     int mid = (l + r) >> 1;
     _interp_build(t, k + k, l, mid, xs), _interp_build(t, k + k + 1, mid + 1, r, xs);
     t[k] = mul(t[k + k], t[k + k + 1]);
 }
-// 分治合并插值：P_node = P_left·t[right] + P_right·t[left]；要求 t 已建好；返回该段的插值多项式。
+// 用已建乘积树合并该段的插值贡献，w[i]=ys[i]/Π_{j!=i}(xs[i]-xs[j])。
 static poly _interp_rec(const poly *t, int k, int l, int r, const poly &w) {
     if(l == r) return poly{w[l]};
     int mid = (l + r) >> 1;
@@ -25,7 +21,7 @@ static poly _interp_rec(const poly *t, int k, int l, int r, const poly &w) {
     For(i, 0, (int) b.size() - 1) a[i] = (a[i] + b[i]) % M;
     return a;
 }
-// 求过 (xs[i],ys[i]) 的唯一 deg < m 多项式；要求 xs、ys 等长且 xs 互异；返回长度 m 的系数，空输入返回空。
+// 返回过各 (xs[i],ys[i]) 的唯一 deg<m 多项式（恰好 m 项）；xs、ys 等长且 xs 互异，空输入返回空。
 poly poly_interp(const poly &xs, const poly &ys) {
     int m = xs.size();
     if(!m) return poly();
