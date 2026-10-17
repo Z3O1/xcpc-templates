@@ -49,7 +49,7 @@ static bool ref_prime(u64 n) {
 // 只调用公开 chkp，以筛法/试除/独立倍增参考验证判素；覆盖 u64 边界与强伪素数。
 int main() {
     // 小值全量与试除对照
-    vect<char> isp(2000001, 1);
+    vector<char> isp(2000001, 1);
     isp[0] = isp[1] = 0;
     for(int i = 2; (ll) i * i <= 2000000; ++i)
         if(isp[i]) for(int j = i * i; j <= 2000000; j += i) isp[j] = 0;

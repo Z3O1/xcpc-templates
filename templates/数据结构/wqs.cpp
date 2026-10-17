@@ -4,7 +4,7 @@
 // 打包值与 DP 中间和须在 i128 及内层 Wilber 的无穷大范围内。
 // 构造恰好 k 段的最优划分；que(l,r) 为 (l,r] 的代价，0 <= l < r <= n。
 // 返回以 0 开始、n 结束的划分边界序列。
-template <typename Q> vect<int> wqs(int n, int k, Q &&que, i128 up) {
+template <typename Q> vector<int> wqs(int n, int k, Q &&que, i128 up) {
     int B = __lg(n) + 1;
     ll T = (1ll << B) - 1;
     auto chk = [&](i128 dt) {
@@ -13,9 +13,9 @@ template <typename Q> vect<int> wqs(int n, int k, Q &&que, i128 up) {
     };
     auto get = [&](i128 dt) {
         auto [f, fp] = chk(dt);
-        vect<int> pt;
-        for (int i = n; i; i = fp[i]) pt += i;
-        pt += 0;
+        vector<int> pt;
+        for (int i = n; i; i = fp[i]) pt.push_back(i);
+        pt.push_back(0);
         reverse(all(pt));
         return pt;
     };
@@ -31,7 +31,9 @@ template <typename Q> vect<int> wqs(int n, int k, Q &&que, i128 up) {
     For(i, 1, (int)gp.size() - 2) {
         while (fp[j] < gp[i]) ++j;
         if (fp[j - 1] <= gp[i - 1] && fp.size() - j + i - 1 == k) {
-            return gp.substr(0, i) + fp.substr(j);
+            vector<int> r(gp.begin(), gp.begin() + i);
+            r.insert(r.end(), fp.begin() + j, fp.end());
+            return r;
         }
     }
     assert(0);

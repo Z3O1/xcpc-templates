@@ -7,11 +7,11 @@ struct fgcd_t {
     bitset<n + 1> b;
     // 对象含大数组不宜放栈上；单个对象可重复查询。
     fgcd_t() {
-        vect<int> p;
+        vector<int> p;
         a[1] = {1, 1, 1};
         For(i, 2, n) {
             if(!b[i]) {
-                if(i <= B) p += i;
+                if(i <= B) p.push_back(i);
                 a[i] = {i, 1, 1};
             }
             for(auto z : p) {

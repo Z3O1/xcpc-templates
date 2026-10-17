@@ -30,7 +30,7 @@ int brute_ord(int a, int p) {
 // 运行原根与阶契约自测；覆盖最小性、大素数和 fac_of 上界；失败返回 1。
 int main() {
     // 1) 小素数全量:root 与 ord 都跟暴力对照
-    vect<int> primes;
+    vector<int> primes;
     For(x, 2, 500) {
         bool ok = 1;
         for(int d = 2; d * d <= x; ++d) if(x % d == 0) { ok = 0; break; }
@@ -88,17 +88,17 @@ int main() {
     // 4) fac_of 的大值回归:独立 64 位试除对照 + INT_MAX 明确上界
     {
         auto ref = [](int x) {
-            vect<int> f;
+            vector<int> f;
             for(ll i = 2; i * i <= x; ++i)
                 if(x % i == 0) {
-                    f += (int) i;
+                    f.push_back((int) i);
                     while(x % i == 0) x /= i;
                 }
-            if(x > 1) f += x;
+            if(x > 1) f.push_back(x);
             return f;
         };
         // INT_MAX = 2^31 - 1 是素数;旧 int 比较条件会在 i = 46341 处触发有符号溢出
-        vect<int> mx = fac_of(2147483647);
+        vector<int> mx = fac_of(2147483647);
         if(mx.size() != 1 || mx[0] != 2147483647)
             return printf("  [FAIL] fac_of(INT_MAX) 应只有因子 2147483647,实得 %zu 个\n", mx.size()), 1;
         for(int x : {2147483647, 2147483629, 2147483587, 2147483646, 2147483645, 2147483643,

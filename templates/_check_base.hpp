@@ -1,5 +1,5 @@
-// check 自测基座:直接包含读者基础头 通用/头文件.cpp(vect 即 basic_string、pll 即 array、
-// cmin/cmax 严格同型),再补 check 专用常量与断言工具。因此自测里可用的宏/类型与读者一致,
+// check 自测基座:直接包含读者基础头 通用/头文件.cpp(For/rFor、cmin/cmax、all 等宏与
+// pii/pll 等别名),再补 check 专用常量与断言工具。因此自测里可用的宏/类型与读者一致,
 // 本文件不得再定义任何与头文件重叠的符号(类型、宏、For/rFor 之类),否则会掩盖模板在
 // 真实头文件下的编译问题。改模板语义后先跑 ./check.sh -x <模板名>,收尾跑 ./check.sh -j 4。
 // 用法:check 文件先 #include 本文件(小节里用 ../../),再 #include 被测模板本体,

@@ -11,8 +11,8 @@ static char S2BUF[2 * MAXN + 8];    // 偶回文:s' = |c1|c2|...|cn| ,长度 2n+
 static int D2BUF[2 * MAXN + 8];
 
 // 暴力:1-indexed 串 t,每个中心的奇回文半径(最大 r 使 t[i-r..i+r] 回文)
-static vect<int> brute_odd(int n, const string &t) {
-    vect<int> rad(n + 1, 0);
+static vector<int> brute_odd(int n, const string &t) {
+    vector<int> rad(n + 1, 0);
     For(i, 1, n) {
         int r = 0;
         while(i - r - 1 >= 1 && i + r + 1 <= n && t[i - r - 1] == t[i + r + 1]) ++r;
@@ -72,10 +72,10 @@ int main() {
             int mx = sig == 2 ? 16 : 9;
             For(n, 1, mx) {
                 string t(n + 1, ' ');
-                vect<int> cur(n + 1, 0);
+                vector<int> cur(n + 1, 0);
                 while(true) {
                     For(i, 1, n) t[i] = (char) ('a' + cur[i]);
-                    vect<int> want = brute_odd(n, t);
+                    vector<int> want = brute_odd(n, t);
                     run_odd(n, t, DBUF);
                     For(i, 1, n) if(DBUF[i] - 1 != want[i]) {
                         printf("  [FAIL] 穷举 n=%d s=%s 中心 %d:模板 %d 暴力 %d\n", n, t.c_str() + 1, i,
@@ -100,7 +100,7 @@ int main() {
             int n = (int) rnd(1, 50), sig = (int) rnd(1, 3);
             string s(n + 1, ' ');
             For(i, 1, n) s[i] = (char) ('a' + rnd(0, sig - 1));
-            vect<int> want = brute_odd(n, s);
+            vector<int> want = brute_odd(n, s);
             run_odd(n, s, DBUF);
             For(i, 1, n) if(DBUF[i] - 1 != want[i]) {
                 printf("  [FAIL] 随机 n=%d s=%s 中心 %d:模板 %d 暴力 %d\n", n, s.c_str() + 1, i, DBUF[i] - 1,
@@ -113,7 +113,7 @@ int main() {
             int n = (int) rnd(100, 500), sig = (int) rnd(1, 3);
             string s(n + 1, ' ');
             For(i, 1, n) s[i] = (char) ('a' + rnd(0, sig - 1));
-            vect<int> want = brute_odd(n, s);
+            vector<int> want = brute_odd(n, s);
             run_odd(n, s, DBUF);
             For(i, 1, n) if(DBUF[i] - 1 != want[i]) {
                 printf("  [FAIL] 中等 n=%d 中心 %d:模板 %d 暴力 %d\n", n, i, DBUF[i] - 1, want[i]);
@@ -130,7 +130,7 @@ int main() {
             string s(n + 1, ' ');
             For(i, 1, n) s[i] = (char) ('a' + (i % p));
             For(k, 1, (int) rnd(0, 3)) s[rnd(1, n)] = (char) ('a' + rnd(0, 2));
-            vect<int> want = brute_odd(n, s);
+            vector<int> want = brute_odd(n, s);
             run_odd(n, s, DBUF);
             For(i, 1, n) if(DBUF[i] - 1 != want[i]) {
                 printf("  [FAIL] 周期串 n=%d p=%d s=%s 中心 %d:模板 %d 暴力 %d\n", n, p, s.c_str() + 1, i,
@@ -151,7 +151,7 @@ int main() {
             }
             int n = (int) rnd(1, 60);
             s.resize(n + 1);
-            vect<int> want = brute_odd(n, s);
+            vector<int> want = brute_odd(n, s);
             run_odd(n, s, DBUF);
             For(i, 1, n) if(DBUF[i] - 1 != want[i]) {
                 printf("  [FAIL] 回文块 n=%d s=%s 中心 %d:模板 %d 暴力 %d\n", n, s.c_str() + 1, i, DBUF[i] - 1,
@@ -168,7 +168,7 @@ int main() {
         long long cnt = 0;
         auto cmp = [&](const string &s) {
             int n = (int) s.size() - 1;
-            vect<int> want = brute_odd(n, s);
+            vector<int> want = brute_odd(n, s);
             run_odd(n, s, DBUF);
             For(i, 1, n) if(DBUF[i] - 1 != want[i]) {
                 printf("  [FAIL] 特殊结构 n=%d s=%s 中心 %d:模板 %d 暴力 %d\n", n, s.c_str() + 1, i,
@@ -217,7 +217,7 @@ int main() {
     {
         long long small = 0, mid = 0, evens = 0;
         auto check_even = [&](int n, const string &t) {
-            vect<int> od = brute_odd(n, t);
+            vector<int> od = brute_odd(n, t);
             int m = build_interleaved(n, t, S2BUF);
             manacher(m, S2BUF, D2BUF);
             For(i, 1, n) {   // s' 的奇数中心 2i 对应原串奇回文中心 i

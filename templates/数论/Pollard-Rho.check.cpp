@@ -6,19 +6,19 @@
 // 运行 fact_rec 契约自测；验证因子重数、整除关系和保留原前缀的追加；失败返回 1。
 int main() {
     auto trial = [](u64 x) {
-        vect<u64> r;
-        for(u64 d = 2; d * d <= x; ++d) while (x % d == 0) r += d, x /= d;
-        if(x > 1) r += x;
+        vector<u64> r;
+        for(u64 d = 2; d * d <= x; ++d) while (x % d == 0) r.push_back(d), x /= d;
+        if(x > 1) r.push_back(x);
         return r;
     };
     // 故意使用无序且含非素数的前缀，不能把调用方数据当成因子，也不能清空或重排它。
-    const vect<u64> prefix{17, 0, ULLONG_MAX, 1};
-    auto check = [&](u64 x, const vect<u64> &want) {
-        vect<u64> f = prefix;
+    const vector<u64> prefix{17, 0, ULLONG_MAX, 1};
+    auto check = [&](u64 x, const vector<u64> &want) {
+        vector<u64> f = prefix;
         fact_rec(x, f);
         if(f.size() < prefix.size() || !equal(prefix.begin(), prefix.end(), f.begin()))
             return printf("  [FAIL] fact_rec(%llu) 改动了原有前缀\n", x), 1;
-        vect<u64> got(f.begin() + prefix.size(), f.end());
+        vector<u64> got(f.begin() + prefix.size(), f.end());
         // 用逐次整除验证乘积及重数，避免 u64 累乘回绕后伪装成正确结果。
         u64 remaining = x;
         for(u64 v : got) {
@@ -44,16 +44,16 @@ int main() {
 
     // 平方数、高次幂与 2^62:旧版 rho 在这些输入上退化空转
     for(u64 p : {101ULL, 99991ULL, 1000003ULL, 2147483647ULL, 4294967291ULL})
-        if(check(p * p, vect<u64>{p, p})) return 1;
-    vect<u64> two(62, 2);
+        if(check(p * p, vector<u64>{p, p})) return 1;
+    vector<u64> two(62, 2);
     if(check(1ULL << 62, two)) return 1;
     for(u64 p : {999983ULL, 1000003ULL})
-        if(check(p * p * p, vect<u64>{p, p, p}) || check(p * p, vect<u64>{p, p})) return 1;
+        if(check(p * p * p, vector<u64>{p, p, p}) || check(p * p, vector<u64>{p, p})) return 1;
     ok("平方数(含 4.29e9 素数平方)、p^3 与 2^62");
 
     // 大因子带重数 / 三个大素数:走批量 gcd 的那条路径
-    if(check(1000003ULL * 1000003ULL * 999983ULL, vect<u64>{999983ULL, 1000003ULL, 1000003ULL})) return 1;
-    if(check(999983ULL * 1000003ULL * 1000033ULL, vect<u64>{999983ULL, 1000003ULL, 1000033ULL})) return 1;
+    if(check(1000003ULL * 1000003ULL * 999983ULL, vector<u64>{999983ULL, 1000003ULL, 1000003ULL})) return 1;
+    if(check(999983ULL * 1000003ULL * 1000033ULL, vector<u64>{999983ULL, 1000003ULL, 1000033ULL})) return 1;
     ok("p^2*q 与三素数乘积(不限定输出顺序，核对重数)");
 
     // 大数与多因子数
@@ -63,7 +63,7 @@ int main() {
         {18446744073709551557ULL, 1}, {123456789123456789ULL, 9}, {999999999999999989ULL, 1},
     };
     for(auto c : big) {
-        vect<u64> f;
+        vector<u64> f;
         fact_rec(c.x, f);
         if((int) f.size() != c.cnt) {
             printf("  [FAIL] fact_rec(%llu) 因子数 %d(期望 %d)\n", c.x, (int) f.size(), c.cnt);
@@ -79,7 +79,7 @@ int main() {
         u64 p = 0, q = 0;
         do p = rnd(1000000000LL, 4000000000LL); while (!chkp(p));
         do q = rnd(1000000000LL, 4000000000LL); while (!chkp(q));
-        if(check(p * q, vect<u64>{min(p, q), max(p, q)})) {
+        if(check(p * q, vector<u64>{min(p, q), max(p, q)})) {
             printf("  [FAIL] %llu * %llu 分解错误\n", (unsigned long long) p, (unsigned long long) q);
             return 1;
         }

@@ -18,7 +18,7 @@ static void bug(const char *fmt, ...) {
 
 // ———— 独立暴力 1:枚举所有割(s 侧子集),min cut == max flow ————
 // 枚举最小割容量；要求 n 小且点编号 1..n、容量非负；返回 s-t 割最小容量。
-static ll brute_mincut(int n, int s, int t, const vect<array<int, 3>> &es) {
+static ll brute_mincut(int n, int s, int t, const vector<array<int, 3>> &es) {
     ll best = LLONG_MAX;
     for(int mask = 0; mask < 1 << n; ++mask) {
         bool inS[32] = {};
@@ -34,16 +34,16 @@ static ll brute_mincut(int n, int s, int t, const vect<array<int, 3>> &es) {
 // ———— 独立暴力 2:矩阵 Edmonds–Karp ————
 struct EK {
     int n;
-    vector<vect<ll>> c;
+    vector<vector<ll>> c;
     // 初始化矩阵容量图；要求点编号 1.._n；覆盖旧状态。
-    void init(int _n) { n = _n, c.assign(n + 1, vect<ll>(n + 1, 0)); }
+    void init(int _n) { n = _n, c.assign(n + 1, vector<ll>(n + 1, 0)); }
     // 加一条有向容量；要求已 init 且容量非负；平行边累加。
     void add(int u, int v, ll w) { c[u][v] += w; }
     // 求矩阵 Edmonds-Karp 最大流；要求 s,t 在 1..n；修改容量矩阵并返回流量。
     ll maxflow(int s, int t) {
         ll res = 0;
         while(1) {
-            vect<int> p(n + 1, 0);
+            vector<int> p(n + 1, 0);
             p[s] = -1;
             queue<int> q;
             q.push(s);
@@ -63,9 +63,9 @@ struct EK {
 
 // ———— 从模板自身残余网络重算 s 可达集(独立于 cut()) ————
 // 重算 f.s 的残余可达集；要求 f 已 solve；返回 1..f.n 的可达标记。
-static vect<char> residual_reach() {
-    vect<char> vis(f.n + 2, 0);
-    vect<int> st;
+static vector<char> residual_reach() {
+    vector<char> vis(f.n + 2, 0);
+    vector<int> st;
     st.push_back(f.s), vis[f.s] = 1;
     while (st.size()) {
         int u = st.back();
@@ -78,12 +78,12 @@ static vect<char> residual_reach() {
 
 // 对当前 f 中已建好的图做割集检查;cap 由调用方按原图容量算
 // 校验 cut() 输出与残量可达性、割容量一致；要求 f 保留求流后的残量；失败直接退出。
-static void cut_checks(int n, int s, int t, ll flow, const vect<array<int, 3>> &es, const char *tag) {
-    static vect<int> cut;
+static void cut_checks(int n, int s, int t, ll flow, const vector<array<int, 3>> &es, const char *tag) {
+    static vector<int> cut;
     cut.assign(n + 2, 0);
     f.cut(cut.data());
     if(cut[s] != 0) return (void) printf("  [FAIL] %s cut()[s] != 0\n", tag), exit(1);
-    vect<char> reach = residual_reach();
+    vector<char> reach = residual_reach();
     For(v, 1, n) {
         if((cut[v] == 0) != (reach[v] != 0))
             return (void) printf("  [FAIL] %s cut()[%d]=%d 与残余可达性 %d 不符\n", tag, v, cut[v], (int) (reach[v] != 0)), exit(1);
@@ -126,10 +126,10 @@ int main() {
     // ———— 1) 小规模穷举:枚举割求和验证 max-flow == min-cut ————
     For(n, 2, 4) {
         int m = n * (n - 1) / 2;
-        vect<array<int, 3>> all;
+        vector<array<int, 3>> all;
         For(u, 1, n) For(v, u + 1, n) all.push_back({u, v, (int) rnd(1, 3)});
         for(int mask = 0; mask < 1 << m; ++mask) {
-            vect<array<int, 3>> es;
+            vector<array<int, 3>> es;
             for(int i = 0; i < m; ++i) if(mask >> i & 1) es.push_back(all[i]);
             int s = 1, t = n;
             EK ek;
@@ -162,7 +162,7 @@ int main() {
         int n = (int) rnd(2, 30), m = (int) rnd(0, 60);
         int s = (int) rnd(1, n), t = (int) rnd(1, n);
         while (t == s) t = (int) rnd(1, n);
-        vect<array<int, 3>> es;
+        vector<array<int, 3>> es;
         EK ek;
         ek.init(n);
         f.clear();
@@ -190,7 +190,7 @@ int main() {
     // ———— 3) clear() 复位是否干净 ————
     // 同一实例连跑同一张图 50 次(每次都 clear + 重建),结果必须完全一致
     {
-        vect<ll> res;
+        vector<ll> res;
         For(rep, 1, 50) {
             f.clear();
             For(u, 1, 20) f.add(u, u + 1, (u % 7) + 1);

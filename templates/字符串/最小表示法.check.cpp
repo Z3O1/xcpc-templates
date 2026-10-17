@@ -48,12 +48,12 @@ static string brute_min_rot_s(const string &a, int &ties) {
 }
 
 // Booth 独立预言机；要求整数序列可随机访问；返回一个最小循环移位起点，空/单元素为 0。
-static int booth(const vect<int> &s) {
+static int booth(const vector<int> &s) {
     int n = (int) s.size();
     if(n <= 1) return 0;
-    vect<int> ss(2 * n, 0);
+    vector<int> ss(2 * n, 0);
     For(i, 0, 2 * n - 1) ss[i] = s[i % n];
-    vect<int> f(2 * n, -1);
+    vector<int> f(2 * n, -1);
     int k = 0;
     for(int j = 1; j < 2 * n; ++j) {
         int b = ss[j], i = f[j - k - 1];
@@ -73,11 +73,11 @@ static int booth(const vect<int> &s) {
 // 双基哈希:大 n 上比较两个循环移位的字典序(LCP 二分)
 struct RotCmp {
     int n;
-    vect<int> a;              // 原始串(比较两个起点的下一个元素时要用值,不是下标)
+    vector<int> a;              // 原始串(比较两个起点的下一个元素时要用值,不是下标)
     u64 B[2];
-    vect<u64> f[2], pw[2];
+    vector<u64> f[2], pw[2];
     // 构建双倍串哈希；要求 s 非空；覆盖 n/a/f/pw。
-    void build(const vect<int> &s) {
+    void build(const vector<int> &s) {
         n = (int) s.size(), a = s;
         B[0] = 0x9E3779B97F4A7C15ull, B[1] = 0xC2B2AE3D27D4EB4Full;
         For(k, 0, 1) {
@@ -115,16 +115,16 @@ struct RotCmp {
 int main() {
     // ---------- 1) 退化/边界:空、单字符、两字符 ----------
     {
-        vect<int> empty;
+        vector<int> empty;
         int p = minrep(empty);
         printf("  [ok] 空容器:minrep 返回 %d(退化输入,调用方需自行避免 rotate 空区间)\n", p);
-        vect<int> one{7};
+        vector<int> one{7};
         CHECK(minrep(one) == 0, "单元素:返回 0");
-        vect<int> two{2, 1};
+        vector<int> two{2, 1};
         CHECK(minrep(two) == 1, "两元素 {2,1}:从 1 开始最小");
-        vect<int> two2{1, 2};
+        vector<int> two2{1, 2};
         CHECK(minrep(two2) == 0, "两元素 {1,2}:从 0 开始最小");
-        vect<int> two3{1, 1};
+        vector<int> two3{1, 1};
         CHECK(minrep(two3) == 0, "两元素相同:返回合法起点 0");
     }
 
@@ -134,11 +134,11 @@ int main() {
         For(sig, 2, 3) {
             int mx = sig == 2 ? 14 : 9;
             For(n, 1, mx) {
-                vect<int> cur(n, 0);
+                vector<int> cur(n, 0);
                 while(true) {
-                    vect<int> a = cur;
+                    vector<int> a = cur;
                     int t = 0;
-                    vect<int> want = brute_min_rot(a, t);
+                    vector<int> want = brute_min_rot(a, t);
                     int p = minrep(a);
                     if(p < 0 || p >= n) {
                         printf("  [FAIL] 穷举 n=%d 起点 %d 越界\n", n, p);
@@ -164,10 +164,10 @@ int main() {
         long long small = 0, mid = 0, ties = 0;
         For(t, 1, 30000) {
             int n = (int) rnd(1, 40), sig = (int) rnd(1, 3);
-            vect<int> a(n, 0);
+            vector<int> a(n, 0);
             For(i, 0, n - 1) a[i] = (int) rnd(0, sig - 1);
             int tt = 0;
-            vect<int> want = brute_min_rot(a, tt);
+            vector<int> want = brute_min_rot(a, tt);
             int p = minrep(a);
             if(p < 0 || p >= n || rot(a, p) != want) {
                 printf("  [FAIL] 随机 n=%d sig=%d p=%d 不是最小循环移位\n", n, sig, p);
@@ -177,10 +177,10 @@ int main() {
         }
         For(t, 1, 3000) {
             int n = (int) rnd(100, 300), sig = (int) rnd(1, 2);
-            vect<int> a(n, 0);
+            vector<int> a(n, 0);
             For(i, 0, n - 1) a[i] = (int) rnd(0, sig - 1);
             int tt = 0;
-            vect<int> want = brute_min_rot(a, tt);
+            vector<int> want = brute_min_rot(a, tt);
             int p = minrep(a);
             if(p < 0 || p >= n || rot(a, p) != want) {
                 printf("  [FAIL] 中等 n=%d sig=%d p=%d\n", n, sig, p);
@@ -191,8 +191,8 @@ int main() {
         // 结构串
         long long spec = 0;
         For(n, 1, 300) {
-            vector<vect<int>> cases;
-            vect<int> same(n, 5), alt(n, 0), incr(n, 0), decr(n, 0), per(n, 0), tail(n, 0), aa(n, 1);
+            vector<vector<int>> cases;
+            vector<int> same(n, 5), alt(n, 0), incr(n, 0), decr(n, 0), per(n, 0), tail(n, 0), aa(n, 1);
             For(i, 0, n - 1) {
                 alt[i] = i & 1;
                 incr[i] = i;
@@ -204,7 +204,7 @@ int main() {
             cases = {same, alt, incr, decr, per, tail, aa};
             for(auto &a : cases) {
                 int tt = 0;
-                vect<int> want = brute_min_rot(a, tt);
+                vector<int> want = brute_min_rot(a, tt);
                 int p = minrep(a);
                 if(p < 0 || p >= n || rot(a, p) != want) {
                     printf("  [FAIL] 结构串 n=%d 起点 %d\n", n, p);
@@ -273,10 +273,10 @@ int main() {
             long long c1 = 0, c2 = 0;
             For(t, 1, 3000) {
                 int n = (int) rnd(1, 60), sig = (int) rnd(1, 2);
-                vect<int> a(n, 0);
+                vector<int> a(n, 0);
                 For(i, 0, n - 1) a[i] = (int) rnd(0, sig - 1);
                 int tt = 0;
-                vect<int> want = brute_min_rot(a, tt);
+                vector<int> want = brute_min_rot(a, tt);
                 if(rot(a, booth(a)) != want) {
                     printf("  [FAIL] Booth 预言机在小规模上与暴力不符 n=%d\n", n);
                     return 1;
@@ -284,13 +284,13 @@ int main() {
                 ++c1;
             }
             For(n, 1, 200) {   // 结构串上的 Booth 也要跟暴力一致(全同/周期/递增)
-                vector<vect<int>> cases;
-                vect<int> same(n, 3), alt(n, 0), per(n, 0);
+                vector<vector<int>> cases;
+                vector<int> same(n, 3), alt(n, 0), per(n, 0);
                 For(i, 0, n - 1) alt[i] = i & 1, per[i] = i % 3;
                 cases = {same, alt, per};
                 for(auto &a : cases) {
                     int tt = 0;
-                    vect<int> want = brute_min_rot(a, tt);
+                    vector<int> want = brute_min_rot(a, tt);
                     if(rot(a, booth(a)) != want) {
                         printf("  [FAIL] Booth 预言机在结构串 n=%d 上与暴力不符\n", n);
                         return 1;
@@ -305,7 +305,7 @@ int main() {
         for(auto cs : {Case{"全同", 0}, Case{"交替", 1}, Case{"递增前缀 aaa..ab", 2}, Case{"随机 0/1", 3},
                        Case{"周期 abcabc...", 4}}) {
             int n = 1000000;
-            vect<int> a(n, 0);
+            vector<int> a(n, 0);
             For(i, 0, n - 1) {
                 if(cs.kind == 0) a[i] = 7;
                 else if(cs.kind == 1) a[i] = i & 1;
@@ -313,7 +313,7 @@ int main() {
                 else if(cs.kind == 3) a[i] = (int) rnd(0, 1);
                 else a[i] = i % 3;
             }
-            vect<int> a_copy = a;
+            vector<int> a_copy = a;
             auto t0 = chrono::steady_clock::now();
             int p = minrep(a);
             double ms = chrono::duration<double, milli>(chrono::steady_clock::now() - t0).count();

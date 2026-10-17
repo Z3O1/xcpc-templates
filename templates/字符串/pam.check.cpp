@@ -65,7 +65,7 @@ static void brute_pals(const vector<string> &strs, set<string> &S, long long &to
 // 双基哈希(数不同回文个数用,给中大 n)
 struct H2 {
     u64 B[2];
-    vect<u64> f[2], pw[2];
+    vector<u64> f[2], pw[2];
     // 构建 1-indexed 前缀哈希；要求 s 为普通 0-indexed 字符串；覆盖内部数组。
     void build(const string &s) {
         B[0] = 0x9E3779B97F4A7C15ull, B[1] = 0xC2B2AE3D27D4EB4Full;
@@ -82,7 +82,7 @@ struct H2 {
 };
 // 用中心扩展和哈希统计不同回文串数；要求字符串为小写普通串；返回去重后的数量。
 static long long brute_pal_count_hash(const vector<string> &strs) {
-    vect<pair<u64, u64>> hs;
+    vector<pair<u64, u64>> hs;
     for(auto &s : strs) {
         int n = (int) s.size();
         H2 h;
@@ -104,7 +104,7 @@ static long long brute_pal_count_hash(const vector<string> &strs) {
 // 从全局 PAM 还原每个非根节点的回文串；要求已建图；覆盖 ns/reach，失败返回 false。
 static bool collect_nodes(vector<string> &ns, int &reach) {
     ns.assign(tot + 1, string());
-    vect<int> q;
+    vector<int> q;
     q.push_back(1), ns[1] = "";
     For(c, 0, 25) if(t[0][c]) {
         int u = t[0][c];
@@ -184,7 +184,7 @@ int main() {
             int mx = alpha == 2 ? 10 : 6;
             vector<string> strs;
             For(n, 1, mx) {
-                vect<int> cur(n, 0);
+                vector<int> cur(n, 0);
                 while(true) {
                     string s;
                     For(i, 0, n - 1) s += (char) ('a' + cur[i]);
@@ -210,7 +210,7 @@ int main() {
         long long cnt = 0;
         vector<string> all4;
         For(n, 1, 4) {
-            vect<int> cur(n, 0);
+            vector<int> cur(n, 0);
             while(true) {
                 string s;
                 For(i, 0, n - 1) s += (char) ('a' + cur[i]);

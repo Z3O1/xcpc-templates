@@ -8,7 +8,7 @@
 #include "../_check_base.hpp"
 
 // 注意成员名必须是 first/second:模板既用 `auto [f, fp] = chk(dt)` 结构化绑定,
-// 也用 `chk(m).first[n]` 直接取 dp 数组(house header 里大概就是 pair<vect<T>, vect<int>>)。
+// 也用 `chk(m).first[n]` 直接取 dp 数组(house header 里大概就是 pair<vector<T>, vector<int>>)。
 template <class T> struct Wilber {
     vector<T> first;    // f:dp 值(已打包段数)
     vector<int> second; // fp:前驱边界,链 n → ... → 0
@@ -59,7 +59,7 @@ static i128 opt_k(int k) {
     return dp[gn];
 }
 // 校验边界序列是否合法且恰好 k 段；返回真实代价到 cost。
-static bool check_partition(const vect<int> &pt, int k, i128 &cost) {
+static bool check_partition(const vector<int> &pt, int k, i128 &cost) {
     if((int) pt.size() != k + 1) return false;
     if(pt.front() != 0 || pt.back() != gn) return false;
     cost = 0;
@@ -70,7 +70,7 @@ static bool check_partition(const vect<int> &pt, int k, i128 &cost) {
     return true;
 }
 // 格式化边界序列；返回末尾带空格的调试字符串。
-static string show(const vect<int> &v) {
+static string show(const vector<int> &v) {
     string s;
     for(int x : v) s += to_string(x) + " ";
     return s;
@@ -108,7 +108,7 @@ int main() {
             For(i, 1, nn) gpre[i] = gpre[i - 1] + rnd(1, 50);
             i128 up = (i128) gpre[nn] * gpre[nn];
             For(k, 1, nn) {
-                vect<int> pt = wqs(nn, k, que, up);
+                vector<int> pt = wqs(nn, k, que, up);
                 i128 cost = 0;
                 if(!check_partition(pt, k, cost)) {
                     printf("  [FAIL] n=%d k=%d 返回的划分不合法: %s\n", nn, k, show(pt).c_str());
@@ -140,7 +140,7 @@ int main() {
             int ks[] = {1, 2, 3, nn / 2, nn - 1, nn};
             for(int k : ks) {
                 if(k < 1 || k > nn) continue;
-                vect<int> pt = wqs(nn, k, que, up);
+                vector<int> pt = wqs(nn, k, que, up);
                 i128 cost = 0;
                 if(!check_partition(pt, k, cost)) return printf("  [FAIL] 大 n=%d k=%d 划分不合法\n", nn, k), 1;
                 i128 want = opt_k(k);
@@ -158,7 +158,7 @@ int main() {
             For(i, 1, gn) gpre[i] = gpre[i - 1] + 7; // 全等
             i128 up = (i128) gpre[gn] * gpre[gn];
             For(k, 1, gn) {
-                vect<int> pt = wqs(gn, k, que, up);
+                vector<int> pt = wqs(gn, k, que, up);
                 i128 cost = 0;
                 if(!check_partition(pt, k, cost) || cost != opt_k(k))
                     return printf("  [FAIL] 全等数据 k=%d\n", k), 1;
@@ -169,16 +169,16 @@ int main() {
             gn = 1;
             gpre.assign(2, 0);
             gpre[1] = 12345;
-            vect<int> pt = wqs(1, 1, que, (i128) 12345 * 12345);
+            vector<int> pt = wqs(1, 1, que, (i128) 12345 * 12345);
             CHECK((int) pt.size() == 2 && pt[0] == 0 && pt[1] == 1, "n = k = 1 边界");
         }
         {
             gn = 2;
             gpre.assign(3, 0);
             gpre[1] = 5, gpre[2] = 9;
-            vect<int> p1 = wqs(2, 1, que, 81), p2 = wqs(2, 2, que, 81);
-            CHECK((p1 == vect<int>{0, 2}), "n = 2, k = 1 → 划分 [0,2]");
-            CHECK((p2 == vect<int>{0, 1, 2}), "n = 2, k = 2 → 划分 [0,1,2]");
+            vector<int> p1 = wqs(2, 1, que, 81), p2 = wqs(2, 2, que, 81);
+            CHECK((p1 == vector<int>{0, 2}), "n = 2, k = 1 → 划分 [0,2]");
+            CHECK((p2 == vector<int>{0, 1, 2}), "n = 2, k = 2 → 划分 [0,1,2]");
         }
     }
 

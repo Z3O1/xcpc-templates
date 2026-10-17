@@ -6,5 +6,5 @@
 - 前提: $n >= 1$、$1 <= k <= n$,恰好 $k$ 段的最优值关于 $k$ 凸;`up >= 0`,二分范围 -up..1 必须覆盖所需惩罚值
 - 打包值与 DP 中间和须在 i128 和内层无穷大范围内。零代价允许;负值用乘 $2^B$ 打包,不能左移负数
 - 返回: 0-based 分割点数组(以 0 起、n 终),恰含 $k$ 个区间段
-- 依赖: 事先提供 `Wilber<T>(n, que, INF)`,返回 `pair<vect<T>, vect<int>>`(DP 值、前驱边界);本书实现还需 `SMAWK`
+- 依赖: 事先提供 `Wilber<T>(n, que, INF)`,返回 `pair<vector<T>, vector<int>>`(DP 值、前驱边界);本书实现还需 `SMAWK`
 - 复杂度: `O(log C)` 次内层 Wilber

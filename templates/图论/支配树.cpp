@@ -5,11 +5,11 @@ namespace DOM {
 
 const int N = 1e6 + 10;
 int n;
-vect<int> t[N], t2[N], q1[N];
+vector<int> t[N], t2[N], q1[N];
 int fa[N], f1[N], dfn[N], pos[N], dt, sd[N], dm[N];
 pii f[N];
 void add(int u, int v) {
-    t[u] += v, t2[v] += u;
+    t[u].push_back(v), t2[v].push_back(u);
 }
 void dfs(int u) {
     dfn[u] = ++dt, pos[dt] = u;
@@ -34,7 +34,7 @@ void getdom(int _n) {
         for(auto x : q1[u]) dm[x] = que(x)[1];
         if(i == 1) break;
         for(auto x : t2[u]) if(dfn[x]) cmin(s, que(x)[0]);
-        sd[u] = pos[s], q1[sd[u]] += u, f[u] = {dfn[sd[u]], u};
+        sd[u] = pos[s], q1[sd[u]].push_back(u), f[u] = {dfn[sd[u]], u};
         for(auto v : t[u]) if(f1[v] == u) fa[v] = u;
     }
     For(i, 2, dt) {

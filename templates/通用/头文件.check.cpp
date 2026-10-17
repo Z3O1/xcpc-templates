@@ -1,5 +1,5 @@
 // 头文件 自测:宏与类型别名的语义(For/rFor 闭区间与右端只求值一次、cmin/cmax 改左值、
-// vect 即 basic_string、mtc 多测循环、宏重命名 y0/y1 不冲突)
+// mtc 多测循环)
 //
 // 本条目直接包含 头文件.cpp(不经 ../_check_base.hpp):这里要跑完全部断言再统一报错,
 // 用自己的累计式 CHECK;而 _check_base 的 CHECK 首次失败即 exit。
@@ -10,9 +10,7 @@
 int rounds;
 void work() { ++rounds; }
 
-static_assert(is_same_v<vect<int>, basic_string<int>>);
 static_assert(is_same_v<pii, array<int, 2>> && is_same_v<pll, array<ll, 2>>);
-static_assert(is_same_v<a3, array<int, 3>> && is_same_v<a4, array<int, 4>> && is_same_v<a5, array<int, 5>>);
 static_assert(is_same_v<u32, unsigned> && is_same_v<i64, ll> && is_same_v<u64, ull>);
 static_assert(numeric_limits<db>::digits > numeric_limits<double>::digits);
 #if __SIZEOF_POINTER__ == 8
@@ -62,28 +60,21 @@ int main() {
     cmin(m, 4);
     cmax(m, -1);
     CHECK(m == 4, "cmin/cmax 该改时改");
-    vect<int> t = {9, 4};
+    vector<int> t = {9, 4};
     cmin(t[0], t[1]);
     cmax(t[1], 100);
     CHECK(t[0] == 4 && t[1] == 100, "cmin/cmax 可用于容器元素");
 
-    // vect 即 basic_string:下标、追加、substr、find、all(...) 都照常。
-    vect<int> v = {3, 1, 2};
+    // all(...) 配 std 容器照常;头文件不再自带容器别名。
+    vector<int> v = {3, 1, 2};
     sort(all(v));
     CHECK(v.size() == 3 && v[0] == 1 && v[1] == 2 && v[2] == 3, "all(...) 配 sort");
-    vect<int> w = v.substr(1, 2);
-    CHECK(w.size() == 2 && w[0] == 2 && w[1] == 3, "vect.substr 截取");
-    w.push_back(9);
-    w += 4;
-    CHECK(w.size() == 4 && w[3] == 4 && w.find(3) == 1, "vect 追加与查找");
-    w.pop_back();
-    CHECK(w.size() == 3 && !w.empty(), "vect pop_back/empty");
-    vect<int> z;
-    CHECK(z.empty() && z.size() == 0, "vect 默认构造为空");
-
-    // y0/y1 被宏改名,用户仍可正常使用这两个标识符。
-    int y0 = 1, y1 = 2;
-    CHECK(y0 + y1 == 3, "y0/y1 重命名");
+    v.push_back(9);
+    CHECK(v.size() == 4 && v[3] == 9, "vector push_back");
+    v.pop_back();
+    CHECK(v.size() == 3 && !v.empty(), "vector pop_back/empty");
+    vector<int> z;
+    CHECK(z.empty() && z.size() == 0, "vector 默认构造为空");
 
     // mtc() 读入 T 并执行 T 轮 work()。
     rounds = 0;

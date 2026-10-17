@@ -40,7 +40,7 @@ static const int MX = 1024;   // check 用到的最大点数上界(模板自己�
 static_assert(sizeof(DOM::f1) == sizeof(int) * (size_t) DOM::N, "DOM::f1 必须是 namespace DOM 里的 int[N] 公开数组");
 
 // ———— 各用例隔离输入图/参考状态;另有不清算法状态的重复调用回归 ————
-static vect<int> adj[MX];   // check 自己的邻接表(与模板的 t[] 无关, 暴力用)
+static vector<int> adj[MX];   // check 自己的邻接表(与模板的 t[] 无关, 暴力用)
 // 清空模板图和参考图状态；要求用例点号小于 MX；覆盖算法数组与邻接表。
 static void reset_dom() {
     For(i, 0, MX - 1) {
@@ -52,7 +52,7 @@ static void reset_dom() {
     DOM::dt = 0;
 }
 // 构造模板图与暴力参考图；n 参数不用；先清空再加边，保留输入边供 getdom 读取。
-static void build(int, const vect<array<int, 2>> &es) {   // n 用不到, 保留参数为了调用处对称
+static void build(int, const vector<array<int, 2>> &es) {   // n 用不到, 保留参数为了调用处对称
     reset_dom();
     for(auto &e : es) DOM::add(e[0], e[1]), adj[e[0]].push_back(e[1]);
 }
@@ -60,7 +60,7 @@ static void build(int, const vect<array<int, 2>> &es) {   // n 用不到, 保留
 // ———— 暴力: 删点可达性 ————
 // 判断删 ban 后 1 是否还能到 v；要求 adj 已按当前图构造；返回可达性。
 static bool reach(int v, int ban, int n) {
-    vect<char> vis(n + 2, 0);
+    vector<char> vis(n + 2, 0);
     deque<int> q;
     if(ban != 1) q.push_back(1), vis[1] = 1;   // 源点 1 被删掉时谁都到不了
     while(q.size()) {
@@ -76,7 +76,7 @@ static bool reach(int v, int ban, int n) {
 static int n_ambig = 0;
 // 按定义求 v 的直接支配点；要求 v 从 1 可达且 v!=1；返回唯一最近支配点。
 static int brute_idom(int n, int v) {
-    vect<int> D;
+    vector<int> D;
     For(u, 1, n) if(u != v && !reach(v, u, n)) D.push_back(u);   // u 支配 v(删 u 后 v 不可达)
     int best = -1, cnt = 0;
     for(int u : D) {
@@ -90,7 +90,7 @@ static int brute_idom(int n, int v) {
 }
 // 某图是否存在"可达点的不可达前驱"(已知 bug (A) 的触发条件)
 // 检查历史缺陷触发形态；要求 adj 已建好；返回是否有可达点带不可达前驱。
-static bool has_unreach_pred(int n, const vect<array<int, 2>> &es) {
+static bool has_unreach_pred(int n, const vector<array<int, 2>> &es) {
     For(v, 1, n) if(reach(v, 0, n))
         for(auto &e : es) if(e[1] == v && !reach(e[0], 0, n)) return true;
     return false;
@@ -98,7 +98,7 @@ static bool has_unreach_pred(int n, const vect<array<int, 2>> &es) {
 
 static long long n_case = 0;
 // 输出反例边集；要求点编号 1..n；只打印诊断信息。
-static void dump_edges(int n, const vect<array<int, 2>> &es) {
+static void dump_edges(int n, const vector<array<int, 2>> &es) {
     printf("  (n=%d, 边:", n);
     for(auto &e : es) printf(" %d>%d", e[0], e[1]);
     printf(")\n");
@@ -107,7 +107,7 @@ static void dump_edges(int n, const vect<array<int, 2>> &es) {
 // ———— 单用例 ————
 // hard: true 表示"该用例必须全对"(全图从 1 可达 / 穷举里全可达的那些 / 手算用例)
 // 构建并校验单图支配树；要求点编号 1..n；失败直接退出。
-static void run_case(const char *tag, int n, const vect<array<int, 2>> &es, bool hard) {
+static void run_case(const char *tag, int n, const vector<array<int, 2>> &es, bool hard) {
     build(n, es);
     DOM::getdom(n);
     ++n_case;
@@ -172,7 +172,7 @@ int main() {
     rng.seed(20240515);   // 固定种子: 每次跑同一批随机用例, 出问题可复现
     puts("— 手算用例 —");
     {
-        struct C { const char *name; int n; vect<array<int, 2>> es; };
+        struct C { const char *name; int n; vector<array<int, 2>> es; };
         vector<C> cs;
         cs.push_back({"n=1 单点无边", 1, {}});
         cs.push_back({"1->2", 2, {{1, 2}}});
@@ -198,10 +198,10 @@ int main() {
         // n=3: 全部 9 条有向边(含自环)的任意子集
         {
             int n = 3;
-            vect<array<int, 2>> all;
+            vector<array<int, 2>> all;
             For(u, 1, n) For(v, 1, n) all.push_back({u, v});
             for(int mask = 0; mask < 1 << (int) all.size(); ++mask) {
-                vect<array<int, 2>> es;
+                vector<array<int, 2>> es;
                 for(int i = 0; i < all.size(); ++i) if(mask >> i & 1) es.push_back(all[i]);
                 build(n, es);
                 bool h = all_reach(n);
@@ -213,12 +213,12 @@ int main() {
         // n=4: 16 条有向边里取 <= 5 条的所有组合
         {
             int n = 4;
-            vect<array<int, 2>> all;
+            vector<array<int, 2>> all;
             For(u, 1, n) For(v, 1, n) all.push_back({u, v});
             int m = (int) all.size();
             for(int mask = 0; mask < 1 << m; ++mask) {
                 if(__builtin_popcount((unsigned) mask) > 5) continue;
-                vect<array<int, 2>> es;
+                vector<array<int, 2>> es;
                 for(int i = 0; i < m; ++i) if(mask >> i & 1) es.push_back(all[i]);
                 build(n, es);
                 bool h = all_reach(n);
@@ -235,7 +235,7 @@ int main() {
         long long cnt = 0;
         For(rep, 1, 6000) {
             int n = (int) rnd(2, 12);
-            vect<array<int, 2>> es;
+            vector<array<int, 2>> es;
             For(v, 2, n) es.push_back({(int) rnd(1, v - 1), v});   // 生成树 → 必全可达
             int extra = (int) rnd(0, 2 * n);
             For(e, 1, extra) es.push_back({(int) rnd(1, n), (int) rnd(1, n)});
@@ -252,7 +252,7 @@ int main() {
         long long cnt = 0;
         For(rep, 1, 6000) {
             int n = (int) rnd(2, 10);
-            vect<array<int, 2>> es;
+            vector<array<int, 2>> es;
             int m = (int) rnd(0, n * n);
             For(e, 1, m) es.push_back({(int) rnd(1, n), (int) rnd(1, n)});
             build(n, es);
@@ -266,7 +266,7 @@ int main() {
     puts("— 中等规模(健壮性/性能) —");
     {
         int n = 300;
-        vect<array<int, 2>> es;
+        vector<array<int, 2>> es;
         For(v, 2, n) es.push_back({(int) rnd(1, v - 1), v});
         For(e, 1, 3 * n) es.push_back({(int) rnd(1, n), (int) rnd(1, n)});
         build(n, es);

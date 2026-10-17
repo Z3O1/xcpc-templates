@@ -54,7 +54,7 @@ int main() {
     // 多方程串联(文档里的用法),与暴力对照
     For(t, 1, 20000) {
         int n = (int) rnd(2, 4);
-        vect<ll> a(n, 0), p(n, 0);
+        vector<ll> a(n, 0), p(n, 0);
         ll mod = 1;
         For(i, 0, n - 1) p[i] = rnd(1, 20), a[i] = rnd(0, p[i] - 1), mod = mod / std::gcd(mod, p[i]) * p[i];
         if(mod > 20000) continue;

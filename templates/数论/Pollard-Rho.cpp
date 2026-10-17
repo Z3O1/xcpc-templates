@@ -34,9 +34,9 @@ u64 rho(u64 x) {
         }
     }
 }
-void fact_rec(u64 x, vect<u64> &res) {
+void fact_rec(u64 x, vector<u64> &res) {
     if(x == 1) return;
-    if(chkp(x)) return res += x, void();
+    if(chkp(x)) return res.push_back(x), void();
     u64 d = rho(x);
     fact_rec(d, res), fact_rec(x / d, res);
 }

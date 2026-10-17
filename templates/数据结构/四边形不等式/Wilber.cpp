@@ -2,10 +2,10 @@
 
 // 求在线 1D1D DP；要求 que(k,i) 定义于 0 <= k < i <= n 且决策单调；返回 f 与前驱 fp。
 template <typename T, int B = 16, typename Q>
-pair<vect<T>, vect<int>> Wilber(int n, Q &&que, const T Z = numeric_limits<T>::max()) {
-    vect<T> f(n + 1, Z);
+pair<vector<T>, vector<int>> Wilber(int n, Q &&que, const T Z = numeric_limits<T>::max()) {
+    vector<T> f(n + 1, Z);
     f[0] = 0;
-    vect<int> fp(n + 1, 0);
+    vector<int> fp(n + 1, 0);
     int c = 0;
     while (c < n) {
         int r = fp[c], p = min(n, c + (c - r + 1));

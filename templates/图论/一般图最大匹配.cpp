@@ -3,7 +3,7 @@
 // n: 点数，t: 无向边，点编号 1..n；mat 为函数内静态匹配，仅支持单图构建。
 
 int n, fa[N];
-vect<int> t[N];
+vector<int> t[N];
 int fd(int u) { return fa[u] == u ? u : fa[u] = fd(fa[u]); }
 // 从未匹配点 rt 尝试增广；外层依次对仍未匹配的点调用，匹配保留在内部 mat。
 void getmat(int rt) {

@@ -30,8 +30,8 @@ int main() {
     //    独立路径:直接线性筛到 2e6/3e6(不经过本模板的递推),再与之比较
     {
         const int M = 3000000;
-        vect<int> mu2(M + 1, 0), phi2(M + 1, 0);
-        vect<int> pr; vect<char> comp(M + 1, 0);
+        vector<int> mu2(M + 1, 0), phi2(M + 1, 0);
+        vector<int> pr; vector<char> comp(M + 1, 0);
         phi2[1] = mu2[1] = 1;
         for(int i = 2; i <= M; ++i) {
             if(!comp[i]) pr.push_back(i), phi2[i] = i - 1, mu2[i] = -1;
@@ -42,9 +42,9 @@ int main() {
                 phi2[i * p] = phi2[i] * (p - 1), mu2[i * p] = -mu2[i];
             }
         }
-        vect<ll> s2(M + 1, 0);
+        vector<ll> s2(M + 1, 0);
         For(i, 1, M) s2[i] = s2[i - 1] + mu2[i];
-        vect<ll> p2(M + 1, 0);
+        vector<ll> p2(M + 1, 0);
         For(i, 1, M) p2[i] = p2[i - 1] + phi2[i];
         int checked = 0;
         for(ll n : {1000001LL, 1234567LL, 1500000LL, 2000000LL, 2999999LL, 3000000LL}) {
@@ -57,7 +57,7 @@ int main() {
 
     // 4) 记忆化必须生效:同一 n 反复查询结果稳定,且答案不随调用顺序改变
     {
-        vect<ll> a, b;
+        vector<ll> a, b;
         for(ll n : {4000000LL, 5000000LL, 4000000LL, 12345678LL, 5000000LL, 12345678LL, 4000000LL})
             a.push_back(DJS_phi(n)), b.push_back(DJS_mu(n));
         // 相同 n 的值必须相同

@@ -1,14 +1,14 @@
 // root(): 数论 · 原根与阶
 
 // x 的所有互异素因子。
-vect<int> fac_of(int x) {
-    vect<int> fac;
+vector<int> fac_of(int x) {
+    vector<int> fac;
     for(int i = 2; 1ll * i * i <= x; ++i)
         if(x % i == 0) {
-            fac += i;
+            fac.push_back(i);
             while (x % i == 0) x /= i;
         }
-    if(x > 1) fac += x;
+    if(x > 1) fac.push_back(x);
     return fac;
 }
 // 求模素数 p 的最小原根；要求 p 为素数；p=2 返回 1，无原根返回 -1。

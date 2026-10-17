@@ -7,10 +7,10 @@ int main() {
     // 1) 随机对拍(系数小,double 精度足够)
     For(t, 1, 30000) {
         int n = (int) rnd(1, 40), m = (int) rnd(1, 40);
-        vect<db> a(n, 0), b(m, 0);
+        vector<db> a(n, 0), b(m, 0);
         For(i, 0, n - 1) a[i] = (db) rnd(-1000, 1000);
         For(i, 0, m - 1) b[i] = (db) rnd(-1000, 1000);
-        vect<db> got = fft_conv(a, b), want(n + m - 1, 0);
+        vector<db> got = fft_conv(a, b), want(n + m - 1, 0);
         For(i, 0, n - 1) For(j, 0, m - 1) want[i + j] += a[i] * b[j];
         if((int) got.size() != n + m - 1) return printf("  [FAIL] 长度 %zu 应 %d\n", got.size(), n + m - 1), 1;
         For(i, 0, n + m - 2) {
@@ -27,11 +27,11 @@ int main() {
         CHECK(single.size() == 1 && single[0] == cp(3, -2), "长度1的正逆FFT均为恒等");
         fft(empty, 1), fft(empty, -1);
         CHECK(empty.empty(), "缓存曾使用大长度后,空FFT仍安全");
-        vect<db> a{3}, b{4};
+        vector<db> a{3}, b{4};
         CHECK(fft_conv(a, b).size() == 1 && fabs(fft_conv(a, b)[0] - 12) < 1e-9, "1×1 卷积 = 12");
         for(int m : {1, 2, 3, 5, 17, 33, 100}) {
-            vect<db> x{2}, y(m, 1);
-            vect<db> g = fft_conv(x, y);
+            vector<db> x{2}, y(m, 1);
+            vector<db> g = fft_conv(x, y);
             if((int) g.size() != m) return printf("  [FAIL] 1×%d 长度\n", m), 1;
             For(i, 0, m - 1) if(!isfinite(g[i]) || fabs(g[i] - 2) > 1e-9) return printf("  [FAIL] 1×%d 值\n", m), 1;
         }
@@ -41,8 +41,8 @@ int main() {
     // 3) 空输入与含 0 元素
     CHECK(fft_conv({}, {1}).empty() && fft_conv({1}, {}).empty(), "空输入返回空");
     {
-        vect<db> a{0, 0, 0}, b{1, 2};
-        vect<db> g = fft_conv(a, b);
+        vector<db> a{0, 0, 0}, b{1, 2};
+        vector<db> g = fft_conv(a, b);
         if((int) g.size() != 4) return printf("  [FAIL] 全零长度\n"), 1;
         For(i, 0, 3) if(!isfinite(g[i]) || fabs(g[i]) > 1e-9) return printf("  [FAIL] 全零结果非零\n"), 1;
         ok("空输入 + 全零多项式");
@@ -51,10 +51,10 @@ int main() {
     // 4) 精度边界:系数 ~1e6、长度 1024(结果 ~1e15,仍在 double 能力内但误差会放大)
     {
         int n = 1024;
-        vect<db> a(n, 0), b(n, 0);
+        vector<db> a(n, 0), b(n, 0);
         For(i, 0, n - 1) a[i] = (db) rnd(-1000000, 1000000);
         For(i, 0, n - 1) b[i] = (db) rnd(-1000000, 1000000);
-        vect<db> got = fft_conv(a, b);
+        vector<db> got = fft_conv(a, b);
         CHECK((int) got.size() == 2 * n - 1, "大卷积长度");
         for(db x : got) CHECK(isfinite(x), "有限输入的大卷积不得返回 NaN/Inf");
         // 抽样几个位置与暴力对照

@@ -26,7 +26,7 @@ int main() {
         // 注意:初始项 a_0..a_{d-1} 不能随便取 —— 分子必须是它跟 Q 的乘积截到前 d 项
         // (即 P = (a_0 + a_1 x + ... + a_{d-1} x^{d-1}) * Q mod x^d),
         // 这样 P/Q 展开的前 d 项才是 a_0..a_{d-1},之后按递推走
-        vect<int> a0(d, 0);
+        vector<int> a0(d, 0);
         For(i, 0, d - 1) a0[i] = rnd(0, 998244352);
         {
             poly A(d), QQ(d + 1, 0);
@@ -37,7 +37,7 @@ int main() {
         }
         ll k = rnd(1, 300);
         // 暴力:生成函数求第 k 项 = 按 a_n = -Σ Q[i]*a_{n-i} 递推
-        vect<int> a(k + d + 2, 0);
+        vector<int> a(k + d + 2, 0);
         For(i, 0, d - 1) a[i] = a0[i];
         For(n, d, (int) k) {
             ll s = 0;

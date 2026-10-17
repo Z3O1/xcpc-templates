@@ -7,7 +7,7 @@ using cp = complex<db>;
 void fft(vector<cp> &a, int k) {
     int n = a.size();
     if(n <= 1) return;
-    static vect<int> r;
+    static vector<int> r;
     if((int) r.size() != n) {
         int l = __lg(n);
         r.resize(n);
@@ -27,7 +27,7 @@ void fft(vector<cp> &a, int k) {
     if(k == -1) For(i, 0, n - 1) a[i] /= n;
 }
 // 返回长度 |a|+|b|-1 的实系数卷积；任一为空则返回空。
-vect<db> fft_conv(const vect<db> &a, const vect<db> &b) {
+vector<db> fft_conv(const vector<db> &a, const vector<db> &b) {
     int n = a.size(), m = b.size();
     if(!n || !m) return {};
     int l = 1;
@@ -38,7 +38,7 @@ vect<db> fft_conv(const vect<db> &a, const vect<db> &b) {
     fft(fa, 1), fft(fb, 1);
     For(i, 0, l - 1) fa[i] *= fb[i];
     fft(fa, -1);
-    vect<db> res(n + m - 1, 0);
+    vector<db> res(n + m - 1, 0);
     For(i, 0, n + m - 2) res[i] = fa[i].real();
     return res;
 }

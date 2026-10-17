@@ -71,11 +71,11 @@ static void reset() {
 // 原图无负环时可保证第 k 次增广后就是"流量 k 的最小费用"。
 struct RefMCMF {
     struct E { int v, n, w; ll c; };
-    vect<E> e;
+    vector<E> e;
     int hd[MAXV + 8]{}, tot = 1, n = 0;
     int flow = 0;
     ll cost = 0;
-    vect<pair<int, ll>> steps;   // 每次增广后的 (流量, 累计费用)
+    vector<pair<int, ll>> steps;   // 每次增广后的 (流量, 累计费用)
     // 初始化参考图；要求点编号 1..n_；覆盖旧边和答案。
     void init(int n_) {
         n = n_, tot = 1, e.assign(2, E{});
@@ -91,9 +91,9 @@ struct RefMCMF {
         const ll INF = LLONG_MAX / 4;
         flow = 0, cost = 0, steps.clear();
         while(1) {
-            vect<ll> d(n + 2, INF);
-            vect<int> pe(n + 2, 0);
-            vect<char> inq(n + 2, 0);
+            vector<ll> d(n + 2, INF);
+            vector<int> pe(n + 2, 0);
+            vector<char> inq(n + 2, 0);
             deque<int> q;
             d[s] = 0, q.push_back(s), inq[s] = 1;
             while(q.size()) {
@@ -119,16 +119,16 @@ struct RefMCMF {
 // ———— 独立参考实现 2: 矩阵 Edmonds–Karp(只求最大流, 用来交叉验证参考实现 1) ————
 struct EK {
     int n;
-    vector<vect<ll>> c;
+    vector<vector<ll>> c;
     // 初始化矩阵容量图；要求点编号 1.._n；覆盖旧状态。
-    void init(int _n) { n = _n, c.assign(n + 1, vect<ll>(n + 1, 0)); }
+    void init(int _n) { n = _n, c.assign(n + 1, vector<ll>(n + 1, 0)); }
     // 加一条有向容量；要求已 init 且容量非负；平行边累加。
     void add(int u, int v, ll w) { c[u][v] += w; }
     // 求矩阵 Edmonds-Karp 最大流；要求 s,t 在 1..n；修改容量矩阵并返回流量。
     ll maxflow(int s, int t) {
         ll res = 0;
         while(1) {
-            vect<int> p(n + 1, 0);
+            vector<int> p(n + 1, 0);
             p[s] = -1;
             queue<int> q;
             q.push(s);
@@ -148,8 +148,8 @@ struct EK {
 
 // 原图是否有负环(有负环时"最小费用"无定义, 模板的 spfa() 也会死循环 → 这类用例必须剔除)
 // Bellman-Ford 判负环；要求 es/cs 等长且点编号 1..n；返回是否存在负费用环。
-static bool has_neg_cycle(int n, const vect<array<int, 3>> &es, const vect<ll> &cs) {
-    vect<ll> d(n + 2, 0);
+static bool has_neg_cycle(int n, const vector<array<int, 3>> &es, const vector<ll> &cs) {
+    vector<ll> d(n + 2, 0);
     For(it, 1, n) {
         bool upd = false;
         for(int i = 0; i < es.size(); ++i) if(d[es[i][0]] + cs[i] < d[es[i][1]])
@@ -373,10 +373,10 @@ int main() {
         typedef array<int, 3> E3;   // u, v, w
         int bad = 0, cnt = 0, skipped = 0;
         const int M = 9;            // 1..3 之间所有有向边对(含自环)
-        vect<E3> all;
+        vector<E3> all;
         For(u, 1, 3) For(v, 1, 3) all.push_back({u, v, (int) rnd(0, 3)});
         for(int mask = 0; mask < 1 << M; ++mask) {
-            vect<E3> es;
+            vector<E3> es;
             for(int i = 0; i < M; ++i) if(mask >> i & 1) es.push_back(all[i]);
             if(es.size() && rnd(0, 1)) {    // 一半用例再复制一条边 → 平行边
                 E3 d = es[(size_t) rnd(0, (ll) es.size() - 1)];
@@ -384,7 +384,7 @@ int main() {
                 es.push_back(d);
             }
             bool neg = rnd(0, 1);
-            vect<ll> cs;
+            vector<ll> cs;
             for(int i = 0; i < es.size(); ++i) cs.push_back(neg ? rnd(-4, 4) : rnd(0, 6));
             if(has_neg_cycle(3, es, cs)) {   // 负环(如负自环)下最小费用无定义, 剔除
                 ++skipped;
@@ -429,8 +429,8 @@ int main() {
             int s = (int) rnd(1, n), t = (int) rnd(1, n);
             while(t == s) t = (int) rnd(1, n);
             bool neg = rnd(0, 1);
-            vect<array<int, 3>> es;
-            vect<ll> cs;
+            vector<array<int, 3>> es;
+            vector<ll> cs;
             For(e, 1, m) {
                 int u = (int) rnd(1, n), v = (int) rnd(1, n);
                 int w = (int) rnd(0, 6);                     // 含零容量
@@ -475,8 +475,8 @@ int main() {
             int n = (int) rnd(2, 7), m = (int) rnd(1, 10);
             int s = (int) rnd(1, n), t = (int) rnd(1, n);
             while(t == s) t = (int) rnd(1, n);
-            vect<array<int, 3>> es;
-            vect<ll> cs;
+            vector<array<int, 3>> es;
+            vector<ll> cs;
             For(e, 1, m) {
                 int u = (int) rnd(1, n), v = (int) rnd(1, n);
                 int w = (int) rnd(1, 5);
@@ -563,7 +563,7 @@ int main() {
     // ———— 6) 同一实例反复复用(手工复位, 绕开 clear() 的 bug) ————
     puts("— 复用同一实例 50 次 —");
     {
-        vect<pair<int, ll>> res;
+        vector<pair<int, ll>> res;
         For(rep, 1, 50) {
             reset();
             For(u, 1, 12) mf.add(u, u + 1, (u % 5) + 1, (u % 3) - 1);
@@ -695,13 +695,13 @@ int main() {
         typedef array<int, 3> E3;   // u, v, w
         int bad = 0, cnt = 0, skipped = 0;
         const int M = 9;            // 1..3 之间所有有向边对(含自环)
-        vect<E3> all;
+        vector<E3> all;
         For(u, 1, 3) For(v, 1, 3) all.push_back({u, v, (int) rnd(0, 3)});
         for(int mask = 0; mask < 1 << M; ++mask) {
-            vect<E3> es;
+            vector<E3> es;
             for(int i = 0; i < M; ++i) if(mask >> i & 1) es.push_back(all[i]);
             bool neg = rnd(0, 1);
-            vect<ll> cs;
+            vector<ll> cs;
             for(int i = 0; i < es.size(); ++i) cs.push_back(neg ? rnd(-4, 4) : rnd(0, 6));
             if(has_neg_cycle(3, es, cs)) {   // 负环下最小费用无定义, 剔除
                 ++skipped;
@@ -736,8 +736,8 @@ int main() {
             int s = (int) rnd(1, n), t = (int) rnd(1, n);
             while(t == s) t = (int) rnd(1, n);
             bool neg = rnd(0, 1);
-            vect<array<int, 3>> es;
-            vect<ll> cs;
+            vector<array<int, 3>> es;
+            vector<ll> cs;
             For(e, 1, m) {
                 int u = (int) rnd(1, n), v = (int) rnd(1, n);
                 int w = (int) rnd(0, 6);                     // 含零容量

@@ -67,7 +67,7 @@ static void warn(const char *fmt, ...) {
     fflush(stdout);
 }
 // 输出反例边集；要求点编号 1..n；只打印诊断信息。
-static void dump_edges(int n, const vect<array<int, 2>> &es) {
+static void dump_edges(int n, const vector<array<int, 2>> &es) {
     printf("  (n=%d, 边:", n);
     for(auto &e : es) printf(" %d-%d", e[0], e[1]);
     printf(")\n");
@@ -85,14 +85,14 @@ struct MatchOut {
     bool done = false;
     int hung_at = 0;              // 挂死时的搜索根(0 = 没挂, -1 = 子进程异常)
     int msz = 0;
-    vect<int> mm;
+    vector<int> mm;
     vector<pair<int, int>> trace;   // (根, 该次调用返回后的 mat[0])
     bool polluted = false;        // 是否观测到 mat[0] != 0(已知 bug 的指纹)
 };
 
 // 在子进程里跑标准驱动; done = false 表示挂死/异常
 // 隔离运行模板标准驱动；要求 n<=CHK_MAXN；返回匹配、轨迹和是否超时。
-static MatchOut run_match(int n, const vect<array<int, 2>> &es) {
+static MatchOut run_match(int n, const vector<array<int, 2>> &es) {
     MatchOut out;
     int fd[2];
     if(pipe(fd)) return out;
@@ -102,7 +102,7 @@ static MatchOut run_match(int n, const vect<array<int, 2>> &es) {
         ::n = n;
         For(i, 1, n) t[i].clear();
         for(int i = 0; i < n + 2; ++i) MAT[i] = 0;
-        for(auto &e : es) t[e[0]] += e[1], t[e[1]] += e[0];
+        for(auto &e : es) t[e[0]].push_back(e[1]), t[e[1]].push_back(e[0]);
         Rec r{};
         For(i, 1, n) if(!MAT[i]) {
             r = Rec{}, r.tag = 1, r.step = i, r.m0 = MAT[0];
@@ -125,7 +125,7 @@ static MatchOut run_match(int n, const vect<array<int, 2>> &es) {
     }
     close(fd[1]);
     fcntl(fd[0], F_SETFL, O_NONBLOCK);   // 读端必须非阻塞, 否则父进程卡在 read 上、看门狗失效
-    vect<char> buf;
+    vector<char> buf;
     char tmp[4096];
     int st = 0;
     long long polls = (long long) WATCHDOG_MS * 20;   // 每轮约 50us
@@ -177,7 +177,7 @@ static MatchOut run_match(int n, const vect<array<int, 2>> &es) {
 
 // ———— 独立暴力 1: 枚举所有边子集 ————
 // 枚举边子集求最大匹配；要求边数不大于 20；过大返回 -1。
-static int brute_edges(int, const vect<array<int, 2>> &es) {   // n 用不到(只按边枚举), 保留参数是为了两个暴力接口一致
+static int brute_edges(int, const vector<array<int, 2>> &es) {   // n 用不到(只按边枚举), 保留参数是为了两个暴力接口一致
     int m = (int) es.size(), best = 0;
     if(m > 20) return -1;
     for(int mask = 0; mask < 1 << m; ++mask) {
@@ -199,11 +199,11 @@ static int brute_edges(int, const vect<array<int, 2>> &es) {   // n 用不到(�
 
 // ———— 独立暴力 2: 子集 DP(与带花树/增广路算法完全无关) ————
 // 子集 DP 求最大匹配；要求 n<=20 且简单无向语义；过大返回 -1。
-static int brute_dp(int n, const vect<array<int, 2>> &es) {
+static int brute_dp(int n, const vector<array<int, 2>> &es) {
     if(n > 20) return -1;
-    vect<int> adj(n + 2, 0);
+    vector<int> adj(n + 2, 0);
     for(auto &e : es) if(e[0] != e[1]) adj[e[0]] |= 1 << (e[1] - 1), adj[e[1]] |= 1 << (e[0] - 1);
-    vect<int> dp(1 << n, 0);
+    vector<int> dp(1 << n, 0);
     for(int mask = 1; mask < 1 << n; ++mask) {
         int v = __builtin_ctz(mask);
         int rest = mask ^ (1 << v);
@@ -235,7 +235,7 @@ struct Verdict {
     bool polluted = false;
 };
 // 对单图运行模板并与暴力比较；要求 n<=CHK_MAXN；返回分类结论和反例信息。
-static Verdict check_case(int n, const vect<array<int, 2>> &es) {
+static Verdict check_case(int n, const vector<array<int, 2>> &es) {
     Verdict v;
     MatchOut o = run_match(n, es);
     v.polluted = o.polluted;
@@ -297,7 +297,7 @@ int main() {
         struct C {
             const char *name;
             int n;
-            vect<array<int, 2>> es;
+            vector<array<int, 2>> es;
             int opt;
             bool known_good;   // true: 实测该用例正确 → 偏差即 FAIL
         };
@@ -377,11 +377,11 @@ int main() {
     {
         long long cnt = 0, bad = 0, hang = 0;
         For(n, 2, 5) {
-            vect<array<int, 2>> all;
+            vector<array<int, 2>> all;
             For(u, 1, n) For(v, u + 1, n) all.push_back({u, v});
             int m = (int) all.size();
             for(int mask = 0; mask < 1 << m; ++mask) {
-                vect<array<int, 2>> es;
+                vector<array<int, 2>> es;
                 for(int i = 0; i < m; ++i) if(mask >> i & 1) es.push_back(all[i]);
                 Verdict v = check_case(n, es);
                 ++cnt, ++n_case;
@@ -410,7 +410,7 @@ int main() {
         const int REPS = 240;
         For(rep, 1, REPS) {
             int n = (int) rnd(6, 10);
-            vect<array<int, 2>> es;
+            vector<array<int, 2>> es;
             int style = (int) rnd(0, 3);
             if(style == 0) {                       // 稠密随机图
                 For(u, 1, n) For(v, u + 1, n) if(rnd(0, 1)) es.push_back({u, v});

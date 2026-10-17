@@ -8,7 +8,7 @@ int main() {
     S.work();
     // 1) 素数表与小规模试除对照
     {
-        vect<char> isp(N + 1, 1);
+        vector<char> isp(N + 1, 1);
         isp[0] = isp[1] = 0;
         for(int i = 2; (ll) i * i <= N; ++i) if(isp[i]) for(int j = i * i; j <= N; j += i) isp[j] = 0;
         int cnt = 0;
@@ -22,7 +22,7 @@ int main() {
 
     // 2) φ 用积性 + 独立公式对照
     {
-        vect<int> phi(N + 1, 0);
+        vector<int> phi(N + 1, 0);
         For(i, 1, N) phi[i] = i;
         for(int i = 2; i <= N; ++i) if(phi[i] == i) for(int j = i; j <= N; j += i) phi[j] -= phi[j] / i;
         For(i, 1, N) if(S.phi[i] != phi[i]) return printf("  [FAIL] phi(%d)=%d 应 %d\n", i, S.phi[i], phi[i]), 1;

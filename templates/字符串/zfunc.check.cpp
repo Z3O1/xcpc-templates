@@ -10,8 +10,8 @@ static int Z[MAXN + 8];        // 零初始化 z
 static int SAVE[MAXN + 8];     // 用于核对 s 没被改
 
 // 暴力:z[i] = LCP(s[1..n], s[i..n])
-static vect<int> brute_z(int n, const int *s) {
-    vect<int> z(n + 1, 0);
+static vector<int> brute_z(int n, const int *s) {
+    vector<int> z(n + 1, 0);
     z[1] = n;
     For(i, 2, n) {
         int k = 0;
@@ -32,7 +32,7 @@ static void setup(int n, const char *t, int sentinel = 0) {   // t 1-indexed 的
 struct RH {
     static const int K = 2;
     u64 B[K];
-    vect<u64> f[K], pw[K];
+    vector<u64> f[K], pw[K];
     // 构建 1-indexed 双基前缀哈希；要求 s[1..n] 已填好；覆盖内部数组。
     void build(const int *s, int n) {
         B[0] = 0x9E3779B97F4A7C15ull, B[1] = 0xC2B2AE3D27D4EB4Full;
@@ -58,9 +58,9 @@ int main() {
     zfunc(0, nullptr, nullptr);
     For(t, 1, 2000) {
         int n = rnd(1, 40);
-        vect<int> s(n + 1, 0), z(n + 2, 12345);
+        vector<int> s(n + 1, 0), z(n + 2, 12345);
         For(i, 0, n) s[i] = rnd(0, 3);
-        const vect<int> saved = s;
+        const vector<int> saved = s;
         zfunc(n, s.data(), z.data());
         auto want = brute_z(n, s.data());
         if(s != saved || z[0] != 12345 || z[n + 1] != 12345)
@@ -75,12 +75,12 @@ int main() {
         long long cnt = 0;
         For(n, 1, 16) {
             string t(n + 1, ' ');
-            vect<int> cur(n + 1, 0);
+            vector<int> cur(n + 1, 0);
             while(true) {
                 For(i, 1, n) t[i] = (char) ('a' + cur[i]);
                 setup(n, t.c_str());
                 zfunc(n, S, Z);
-                vect<int> want = brute_z(n, S);
+                vector<int> want = brute_z(n, S);
                 For(i, 1, n) if(Z[i] != want[i]) {
                     printf("  [FAIL] 穷举 n=%d s=%s i=%d:z=%d 暴力 %d\n", n, t.c_str() + 1, i, Z[i], want[i]);
                     return 1;
@@ -96,12 +96,12 @@ int main() {
         printf("  [ok] 穷举 %lld 个 2 字母串(长 1..16)全吻合\n", cnt);
         For(n, 1, 9) {   // 3 字母
             string t(n + 1, ' ');
-            vect<int> cur(n + 1, 0);
+            vector<int> cur(n + 1, 0);
             while(true) {
                 For(i, 1, n) t[i] = (char) ('a' + cur[i]);
                 setup(n, t.c_str());
                 zfunc(n, S, Z);
-                vect<int> want = brute_z(n, S);
+                vector<int> want = brute_z(n, S);
                 For(i, 1, n) if(Z[i] != want[i]) {
                     printf("  [FAIL] 穷举 3 字母 n=%d i=%d:z=%d 暴力 %d\n", n, i, Z[i], want[i]);
                     return 1;
@@ -125,7 +125,7 @@ int main() {
             For(i, 1, n) s[i] = (char) ('a' + rnd(0, sig - 1));
             setup(n, s.c_str());
             zfunc(n, S, Z);
-            vect<int> want = brute_z(n, S);
+            vector<int> want = brute_z(n, S);
             For(i, 1, n) if(Z[i] != want[i]) {
                 printf("  [FAIL] 随机 n=%d s=%s i=%d:z=%d 暴力 %d\n", n, s.c_str() + 1, i, Z[i], want[i]);
                 return 1;
@@ -139,7 +139,7 @@ int main() {
             For(i, 1, n) s[i] = (char) ('a' + rnd(0, sig - 1));
             setup(n, s.c_str());
             zfunc(n, S, Z);
-            vect<int> want = brute_z(n, S);
+            vector<int> want = brute_z(n, S);
             For(i, 1, n) if(Z[i] != want[i]) {
                 printf("  [FAIL] 中等 n=%d i=%d:z=%d 暴力 %d\n", n, i, Z[i], want[i]);
                 return 1;
@@ -156,7 +156,7 @@ int main() {
             int n = (int) s.size() - 1;
             setup(n, s.c_str());
             zfunc(n, S, Z);
-            vect<int> want = brute_z(n, S);
+            vector<int> want = brute_z(n, S);
             For(i, 1, n) if(Z[i] != want[i]) {
                 printf("  [FAIL] 特殊结构 n=%d s=%.40s... i=%d:z=%d 暴力 %d\n", n, s.c_str() + 1, i, Z[i],
                        want[i]);
