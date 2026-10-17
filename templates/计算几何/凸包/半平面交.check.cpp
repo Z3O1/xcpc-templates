@@ -466,6 +466,19 @@ static int runPatho(int groups) {
 int main() {
     printf("== 半平面交.check:暴力裁剪对拍 + 凸包对拍 + 解析/退化用例 ==\n");
     mt19937 eps_rng(2026102803);
+    for(db L : {db(1),ldexp(db(1),numeric_limits<db>::min_exponent*3/4),numeric_limits<db>::denorm_min()}) {
+        vector<seg> seam{{{-1,-1},{1,-1}},{{1,-1},{1,1}},{{-1,1},{-1,-1}},
+                         {{0,0},{-L,-0.0L}},{{0,-1e-6L},{-L,-1e-6L}}};
+        for(int t=0;t<24;++t) {
+            shuffle(seam.begin(),seam.end(),eps_rng);
+            auto p=hpi(seam); db A=0,high=-2;
+            for(auto q:p) high=max(high,q.y);
+            for(int i=1;i+1<(int)p.size();++i) A+=(p[i]-p[0]).det(p[i+1]-p[0]);
+            db round=64*numeric_limits<db>::epsilon();
+            CHECK(p.size()==4 && abs(high+1e-6L)<=round && abs(A/2-2*(1-1e-6L))<=round,
+                  "角接缝的极短非零方向不能下溢丢掉强约束");
+        }
+    }
     for(int e : {-20,0,20}) for(int d : {-40,-20,0,20,40}) {
         db s=ldexp(db(1),e),k=ldexp(db(1),d);
         vector<seg> lines{{{0,0},{2*s,0}},{{2*s,0},{2*s,s}},{{2*s,s},{0,s}},

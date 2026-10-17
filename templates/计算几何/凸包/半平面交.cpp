@@ -13,6 +13,10 @@ bool hpi_less(const seg &a, const seg &b) {
     if(x != y) return x < y;
     return unit(a.dir()).det(a.x) > unit(b.dir()).det(b.x);
 }
+// 近同向合并时a基点在b左侧则取a；缩放后比较，避免极短方向乘积下溢。
+bool hpi_stronger(const seg &a, const seg &b) {
+    return scaled_dir(b.dir()).det(a.x - b.x) > 0;
+}
 // 求所有左侧半平面的有界交；空集或面积退化返回空。
 vector<p2> hpi(vector<seg> vs) {
     if(vs.empty()) return {};
@@ -20,13 +24,13 @@ vector<p2> hpi(vector<seg> vs) {
     vector<seg> ls;
     for(int i = 0; i < (int) vs.size(); ++i) {
         if(!ls.empty() && abs(ls.back().dir().alpha() - vs[i].dir().alpha()) <= angle_eps) {
-            if(cross(ls.back(), vs[i].x) > 0) ls.back() = vs[i];
+            if(hpi_stronger(vs[i], ls.back())) ls.back() = vs[i];
             continue;
         }
         ls.push_back(vs[i]);
     }
     if(ls.size() > 1 && abs(ls.front().dir().alpha() + 2 * pi - ls.back().dir().alpha()) <= angle_eps) {
-        if(cross(ls.front(), ls.back().x) > 0)
+        if(hpi_stronger(ls.back(), ls.front()))
             ls.erase(ls.begin());
         else
             ls.pop_back();
