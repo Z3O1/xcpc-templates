@@ -11,7 +11,8 @@
 //   连成新面。返回面片(顺序不保证;输入数组不会被修改)。
 //   点数 < 4、或全部重合/共线/共面时不存在三维凸包,返回空 vector。
 //   重复点、落在已有面/棱上(距离 <= eps)的点不会被当成新顶点。
-// 前置条件:eps 是**绝对**容差(1e-10),坐标量级很大时请自行放宽(否则点会被误当共面)。
+// eps 为绝对距离容差；选种子、可见性与造面统一平移到输入首点为原点。
+// 要求输入点差可分辨、中间结果可表示，局部舍入误差须小于 eps。
 // 复杂度:O(n * 当前面数) = 期望 O(n²),n <= 2000 量级够用。
 //
 // db hull_area(a, f)   f 是 convex3d 的返回值:凸包表面积
@@ -27,10 +28,12 @@ struct face3 {
 };
 
 // 三维凸包(增量法);返回三角面片(法向朝外,下标为输入数组下标),退化输入返回空。
-vector<face3> convex3d(const vector<p3> &a) {
-    int n = a.size();
+vector<face3> convex3d(const vector<p3> &input) {
+    int n = input.size();
     vector<face3> ret;
     if(n < 4) return ret;
+    vector<p3> a(n);
+    for(int i = 0; i < n; ++i) a[i] = input[i] - input[0];
     // ---- 1. 找一个不共面的初始四面体 A,B,C,D ----
     int A = 0, B = -1, C = -1, D = -1;
     for(int i = 0; i < n; ++i) if(sign(dis(a[i] - a[A]))) { B = i; break; }  // 与 A 不重合

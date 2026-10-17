@@ -1,4 +1,4 @@
-// 三维凸包 自测:大平移剪切四面体解析体积/排列/面反向，薄长种子正反面/缩放/暴力支撑面/拓扑
+// 三维凸包 自测:大平移局部构造与剪切体积/全排列/面反向/薄长种子/独立支撑面/拓扑与包含
 //
 // 对拍方式:
 //   ① 手算常数用例:单位四面体(表面积 √3、体积 1/6)、单位立方体(表面积 6、体积 1)、
@@ -180,6 +180,43 @@ db mcVolume(const vector<p3> &a, const vector<face3> &f, int N) {
     return box * cnt / N;
 }
 
+// 自测独立体积 oracle：以局部点集重心为顶点累加四面体，展开行列式而不调用 hull_volume。
+db localTetraVolume(const vector<p3> &a, const vector<face3> &f) {
+    p3 c{0,0,0};
+    for(p3 p : a) c += p;
+    c /= db(a.size());
+    db sum = 0;
+    for(auto q : f) {
+        p3 x = a[q.a] - c, y = a[q.b] - c, z = a[q.c] - c;
+        sum += x.x*(y.y*z.z-y.z*z.y) - x.y*(y.x*z.z-y.z*z.x) + x.z*(y.x*z.y-y.y*z.x);
+    }
+    return abs(sum) / 6;
+}
+// 以未平移的实际可表示点为独立支撑面/包含 oracle，返回局部四面体体积。
+db translatedHullCheck(const vector<p3> &input, p3 offset) {
+    vector<p3> world, local;
+    for(p3 p : input) { world.push_back(p + offset); local.push_back(world.back() - offset); }
+    auto before = world;
+    auto f = convex3d(world);
+    auto bf = bruteFacets(local, eps);
+    set<array<int,3>> got, want;
+    for(auto q : f) { array<int,3> v{q.a,q.b,q.c}; sort(v.begin(),v.end()); got.insert(v); }
+    for(auto q : bf) want.insert({q.i,q.j,q.k});
+    string msg;
+    bool valid = !f.empty() && checkTopo(local, f, msg) && outwardOK(local, f, msg) &&
+                 maxOutside(local, f) <= eps && got == want;
+    for(int i = 0; i < world.size(); ++i)
+        valid &= world[i].x == before[i].x && world[i].y == before[i].y && world[i].z == before[i].z;
+    db v = valid ? localTetraVolume(local, f) : -1;
+    db ref = bruteVolume(local, bf);
+    if(!valid || abs(v - ref) > 1e-12L * (1 + ref)) {
+        fprintf(stderr, "translated hull offset=%s local=%s faces=%zu ref=%zu volume=%Lg/%Lg reason=%s\n",
+                ps(offset).c_str(), ps(local).c_str(), f.size(), bf.size(), v, ref, msg.c_str());
+        CHECK(false, "大平移：原下标互异、闭合、朝向、全点包含、独立支撑面与局部体积");
+    }
+    return v;
+}
+
 // 手算/暴力参考对照与拓扑性质检查;通过则 PASSED("三维凸包")。
 int main() {
     CHECK(hull_volume({}, {}) == 0, "空面集体积0");
@@ -206,6 +243,39 @@ int main() {
             }
         }
     }
+    // 大平移曾把种子自身误判离面，D 重复 C，生成含重复顶点的假面。
+    {
+        vector<p3> tet{{72,0,0},{31,-91,26},{87,66,0},{0,0,0}};
+        CHECK(abs(translatedHullCheck(tet, P3(1e12L,-1e12L,1e12L)) - 20592) < 1e-10L,
+              "解析反例：大平移四面体的稳定局部体积为 20592，不依赖 hull_volume");
+        int count = 0;
+        for(auto a : {tet, vector<p3>{{72,0,0},{31,-91,26},{87,66,0},{0,0,0},{150,20,40}},
+                       vector<p3>{{0,0,0},{.03125L,0,0},{100,1,0},{0,0,-1},{0,1,1}}}) {
+            vector<int> id(a.size()); iota(id.begin(),id.end(),0);
+            do {
+                vector<p3> b;
+                for(int i : id) b.push_back(a[i]);
+                for(p3 shift : {P3(0,0,0), P3(1e12L,-1e12L,1e12L),
+                                P3(-1e15L+3.25L,2e15L+.5L,3e15L-.75L)}) {
+                    translatedHullCheck(b, shift);
+                    ++count;
+                }
+            } while(next_permutation(id.begin(),id.end()));
+        }
+        printf("  [note] 大平移/非零偏移/外点插入/薄长混合全排列 %d 组\n", count);
+        int accepted = 0;
+        for(int trial = 0; trial < 3000; ++trial) {
+            vector<p3> a;
+            int n = grnd(4, 10);
+            for(int i = 0; i < n; ++i) a.push_back(P3(grnd(-100,100),grnd(-100,100),grnd(-100,100)));
+            if(!generalPosition(a)) continue;
+            db t = trial % 2 ? 1e12L : 1e18L;
+            translatedHullCheck(a, P3(t+3.25L,-2*t+.5L,3*t-.75L));
+            ++accepted;
+        }
+        printf("  [note] 大平移随机独立支撑面对拍 %d 组\n", accepted);
+    }
+
     // P1：同一薄长三角形按不同底边判退化，不能重新构造反向种子面。
     {
         vector<p3> a{{0,0,0}, {2*eps,0,0}, {10,1,0}, {0,0,-1}, {0,1,1}};
