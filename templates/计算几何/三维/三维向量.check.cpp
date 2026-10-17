@@ -1,4 +1,4 @@
-// 三维向量 自测:p3 运算/独立参考/随机性质/极大极小有限向量与尺度不变角度
+// 三维向量 自测:p3 运算/独立参考/随机性质/极端尺度夹角与半角公式对拍
 //
 // 对拍方式:
 //   ① 手算常数用例(基向量叉积、单位四面体体积 6 倍、直角三角形面积 2 倍…)
@@ -81,6 +81,13 @@ db refVolume6BaseHeight(p3 a, p3 b, p3 c, p3 d) {
     db h = abs(dot(n, d - a)) / area2v;  // |高| = |(d-a)·n̂|
     return area2v / 2 * h * 2;        // 体积*6 = 底面积 * 高 * 2
 }
+// 独立半角公式；参考输入分量有界，不调用模板的角度或单位化。
+db refAngle(p3 a, p3 b) {
+    db na = sqrt(a.x * a.x + a.y * a.y + a.z * a.z);
+    db nb = sqrt(b.x * b.x + b.y * b.y + b.z * b.z);
+    return 2 * atan2(hypot(nb * a.x - na * b.x, nb * a.y - na * b.y, nb * a.z - na * b.z),
+                     hypot(nb * a.x + na * b.x, nb * a.y + na * b.y, nb * a.z + na * b.z));
+}
 // 带容差的标量判等。
 db eq(db x, db y, db tol) { return abs(x - y) <= tol; }
 
@@ -113,6 +120,31 @@ int main() {
         CHECK(abs(angle(a, b) / 1e-12L - 1) < 1e-14L &&
               abs(angle(a, -b) - acos((db) -1) + 1e-12L) < 1e-14L,
               "近零角和近 pi 角不经 acos 消减");
+    }
+    {
+        int e = numeric_limits<db>::max_exponent * 3 / 4;
+        for(int i = 0; i < 20000; ++i) {
+            p3 a{db(grnd(1, 100)), db(grnd(-100, 100)), db(grnd(-100, 100))};
+            p3 b{db(grnd(-100, 100)), db(grnd(1, 100)), db(grnd(-100, 100))};
+            db sa = ldexp((db) 1, int(grnd(-e, e))), sb = ldexp((db) 1, int(grnd(-e, e)));
+            db got = angle(a * sa, b * sb), want = refAngle(a, b);
+            if(!isfinite(got) || abs(got - want) > 2e-15L) {
+                fprintf(stderr, "angle a=%s b=%s exponents=%d,%d got=%Lg want=%Lg\n",
+                        ps(a).c_str(), ps(b).c_str(), ilogb(sa), ilogb(sb), got, want);
+                CHECK(false, "独立缩放的任意三维方向与半角公式对拍");
+            }
+        }
+        for(db t : {eps / 2, eps, eps * 2, 1e-15L}) {
+            for(int s : {-1, 1}) {
+                p3 a{1, 1, 0}, b{db(s), db(s), t};
+                db want = s > 0 ? atan(t / sqrt((db) 2)) : acos((db) -1) - atan(t / sqrt((db) 2));
+                CHECK(abs(angle(a, b) - want) < 1e-18L, "近同向/反向及 eps 邻域夹角不丢失");
+            }
+        }
+        p3 o{ldexp((db) 1, 40), -ldexp((db) 1, 40), ldexp((db) 1, 40)};
+        p3 a{3, 4, 2}, b{-2, 1, 5};
+        CHECK(abs(angle((o + a) - o, (o + b) - o) - refAngle(a, b)) < 1e-15L,
+              "大平移后可精确分辨的局部向量夹角保持不变");
     }
     // ===== 1. 手算常数用例 =====
     p3 X{1, 0, 0}, Y{0, 1, 0}, Z{0, 0, 1}, O{0, 0, 0};
