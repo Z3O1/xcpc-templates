@@ -7,9 +7,7 @@ namespace IGeo {
 
 struct p2i {
     ll x, y;
-    // 精确判等。
     bool operator==(const p2i &b) const { return x == b.x && y == b.y; }
-    // 精确字典序，供排序与二分使用。
     bool operator<(const p2i &b) const { return x != b.x ? x < b.x : y < b.y; }
 };
 // 三点转向 (b-a)×(c-a)，逆时针为正。

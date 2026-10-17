@@ -1,7 +1,16 @@
-// 整数线段 自测:有理参数独立参考、九点网格穷举、6万组全尺度随机、点段/共线/端点/ll极值回归
+// 整数线段 自测:有理参数独立参考、九点网格穷举、6万组全尺度随机、退化/ll极值、包围盒短路计数
 #include "../../_check_base.hpp"
 #include "整数点.cpp"
+namespace IGeo {
+size_t cross_calls = 0;
+int counted_crossop(p2i a, p2i b, p2i c) {
+    ++cross_calls;
+    return crossop(a, b, c);
+}
+}
+#define crossop counted_crossop
 #include "线段.cpp"
+#undef crossop
 #include "../../../tests/geometry_int_reference.hpp"
 using IGeo::p2i;
 using IGeo::segi;
@@ -48,5 +57,13 @@ int main() {
     verify({{0, 0}, {1, 1}}, {{1, 1}, {2, 2}}, {1, 1});
     verify({{0, 0}, {0, 0}}, {{0, 0}, {0, 0}}, {0, 0});
     verify({{0, 0}, {0, 0}}, {{1, 0}, {1, 0}}, {1, 0});
+    for(segi s : vector<segi>{{{-10, -5}, {8, 9}}, {{8, 9}, {-10, -5}}, {{0, 0}, {0, 0}}}) {
+        for(p2i p : vector<p2i>{{-B, 0}, {B, 0}, {0, -B}, {0, B}}) {
+            IGeo::cross_calls = 0;
+            IntCheck::need(!ons(s, p) && IGeo::cross_calls == 0, "包围盒外无需叉积", {s.x, s.y, p});
+        }
+        IGeo::cross_calls = 0;
+        IntCheck::need(ons(s, s.x) && IGeo::cross_calls == 1, "包围盒内仍须精确叉积", {s.x, s.y});
+    }
     PASSED("整数线段");
 }
