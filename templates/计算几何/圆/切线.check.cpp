@@ -1,4 +1,4 @@
-// 切线 自测:法向角独立参考/5万随机，0/1/2条与内外切/点圆/同心，切点垂直共线、交换、极端缩放、大平移
+// 切线 自测:3-4-5内外切线解析顺序、法向角独立参考/5万随机，退化/交换/极端缩放/大平移
 #include "../../_check_base.hpp"
 #include "../基础/二维向量.cpp"
 #include "../基础/直线与线段.cpp"
@@ -63,6 +63,20 @@ void verify(c2 a, c2 b, bool inner) {
 }
 // 全类别与尺度回归，以及固定种子的随机独立对拍。
 int main() {
+    for(db s : {db(1e-2000L), db(1e-12L), db(1), db(1e12L), db(1e2000L)}) {
+        p2 origin{16 * s, -16 * s};
+        for(bool inner : {false, true}) {
+            c2 a{origin, (inner ? 2 : 4) * s}, b{origin + p2{5 * s, 0}, s};
+            auto got = tangents(a, b, inner);
+            need(got.size() == 2, a, b, inner, "3-4-5解析两切线");
+            for(int i = 0; i < 2; ++i) {
+                p2 normal{0.6L, i ? -0.8L : 0.8L};
+                need(dis((got[i].a - origin) / s - normal * (a.r / s)) < 1e-14L &&
+                     dis((got[i].b - origin) / s - (p2{5, 0} + normal * (inner ? -1 : 1))) < 1e-14L,
+                     a, b, inner, "3-4-5解析切点顺序");
+            }
+        }
+    }
     mt19937_64 gen(2026101602);
     for(int t = 0; t < 50000; ++t) {
         auto point = [&]() -> p2 { return {db(int(gen() % 201) - 100), db(int(gen() % 201) - 100)}; };
