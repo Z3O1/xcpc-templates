@@ -2,14 +2,14 @@
 #include "../_check_base.hpp"
 #include "类欧.cpp"
 
-// 独立求 Σ_{i=0}^{n-1} floor((a*i+b)/m)，返回 unsigned __int128。
+// 独立求 Σ_{i=0}^{n-1} floor((a*i+b)/m)，返回 u128。
 // 要求 m>0，所有中间乘积与累计和不溢出 u128。
-static unsigned __int128 ref_floor_sum(u64 n, u64 m, u64 a, u64 b) {
-    unsigned __int128 ans = 0;
+static u128 ref_floor_sum(u64 n, u64 m, u64 a, u64 b) {
+    u128 ans = 0;
     for(;;) {
-        if(a >= m) ans += (unsigned __int128) n * (n - 1) / 2 * (a / m), a %= m;
-        if(b >= m) ans += (unsigned __int128) n * (b / m), b %= m;
-        unsigned __int128 y = (unsigned __int128) a * n + b;
+        if(a >= m) ans += (u128) n * (n - 1) / 2 * (a / m), a %= m;
+        if(b >= m) ans += (u128) n * (b / m), b %= m;
+        u128 y = (u128) a * n + b;
         if(y < m) break;
         n = (u64) (y / m), b = (u64) (y % m);
         u64 t = m;
@@ -20,8 +20,8 @@ static unsigned __int128 ref_floor_sum(u64 n, u64 m, u64 a, u64 b) {
 // 求 Σ_{i=0}^{n} floor((a*i+b)/c) mod M；要求 c>0，n+1 不溢出 u64。
 // 复用上述 u128 参考求和，要求所有中间乘积与累计和不溢出。
 static int ref_sum(u64 n, u64 a, u64 b, u64 c) {
-    unsigned __int128 s = ref_floor_sum(n + 1, c, a, b);
-    return (int) (s % (unsigned __int128) M);
+    u128 s = ref_floor_sum(n + 1, c, a, b);
+    return (int) (s % (u128) M);
 }
 
 // 运行类欧自测；覆盖小规模暴力、中等随机、大参数 floor_sum 与 int 上界边界。

@@ -51,13 +51,13 @@ int main() {
 
     // 契约边界:答案必须 <= 2^64 - 1(实现用 u128 累加,只在返回时窄化到 u64)。
     // 用 i128 版对照,只在答案放得下时比较。
-    auto i128_version = [](u64 n, u64 m, u64 a, u64 b) -> unsigned __int128 {
-        unsigned __int128 ans = 0;
+    auto i128_version = [](u64 n, u64 m, u64 a, u64 b) -> u128 {
+        u128 ans = 0;
         for(;;) {
-            if(a >= m) ans += (unsigned __int128) n * (n - 1) / 2 * (a / m), a %= m;
-            if(b >= m) ans += (unsigned __int128) n * (b / m), b %= m;
-            unsigned __int128 y = (unsigned __int128) a * n + b;
-            if(y < (unsigned __int128) m) break;
+            if(a >= m) ans += (u128) n * (n - 1) / 2 * (a / m), a %= m;
+            if(b >= m) ans += (u128) n * (b / m), b %= m;
+            u128 y = (u128) a * n + b;
+            if(y < (u128) m) break;
             n = (u64) (y / m), b = (u64) (y % m);
             u64 t = m; m = a; a = t;
         }
@@ -66,10 +66,10 @@ int main() {
     int big = 0;
     For(t, 1, 30000) {
         u64 n = rnd(0, (u64) 1e6), m = rnd(1, (u64) 1e9), a = rnd(0, (u64) 1e12), b = rnd(0, (u64) 1e12);
-        unsigned __int128 exact = i128_version(n, m, a, b);
-        if(exact > (unsigned __int128) ~(u64) 0) continue; // 超出契约,跳过
+        u128 exact = i128_version(n, m, a, b);
+        if(exact > (u128) ~(u64) 0) continue; // 超出契约,跳过
         ++big;
-        if((unsigned __int128) floor_sum(n, m, a, b) != exact)
+        if((u128) floor_sum(n, m, a, b) != exact)
             return printf("  [FAIL] 大值 n=%llu m=%llu a=%llu b=%llu\n",
                           (unsigned long long) n, (unsigned long long) m,
                           (unsigned long long) a, (unsigned long long) b), 1;

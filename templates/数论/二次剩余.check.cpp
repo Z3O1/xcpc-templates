@@ -23,8 +23,8 @@ bool euler_ref_u64(u64 x, u64 p) {
     u64 r = 1, e = (p - 1) / 2;
     // 从高位向低位扫描,不调用被测模乘/幂。
     for(int bit = 63; bit >= 0; --bit) {
-        r = (unsigned __int128) r * r % p;
-        if((e >> bit) & 1) r = (unsigned __int128) r * x % p;
+        r = (u128) r * r % p;
+        if((e >> bit) & 1) r = (u128) r * x % p;
     }
     return r == 1;
 }
@@ -83,7 +83,7 @@ int main() {
         u64 x = rng() % p, y = rng() % p;
         if(quadres(x, p) != euler_ref_u64(x, p))
             return printf("  [FAIL] u64 p=%llu x=%llu\n", (unsigned long long) p, (unsigned long long) x), 1;
-        u64 square = (unsigned __int128) y * y % p;
+        u64 square = (u128) y * y % p;
         CHECK(quadres(square, p), "完整 u64 的平方数必须为二次剩余");
     }
     ok("1000 组完整 u64 判别与平方性质,不缩窄公开接口");

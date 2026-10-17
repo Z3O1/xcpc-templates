@@ -1,14 +1,14 @@
 // floor_sum(): 数论 · 下取整和 (sum floor((a * i + b) / m))
 
 u64 floor_sum(u64 n, u64 m, u64 a, u64 b) {
-    unsigned __int128 ans = 0;
+    u128 ans = 0;
     for(;;) {
         if(a >= m) {
-            ans += (unsigned __int128)n * (n - 1) / 2 * (a / m);
+            ans += (u128)n * (n - 1) / 2 * (a / m);
             a %= m;
         }
         if(b >= m) {
-            ans += (unsigned __int128)n * (b / m);
+            ans += (u128)n * (b / m);
             b %= m;
         }
         u64 y = (i128) a * n + b;

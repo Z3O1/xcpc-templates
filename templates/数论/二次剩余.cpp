@@ -3,7 +3,7 @@
 // 判断 a 是否为奇素数 p 的二次剩余；要求 0 <= a < p。
 bool quadres(u64 a, u64 p) {
     if(!a) return 1;
-    auto mul = [p](u64 x, u64 y) { return (u64) ((unsigned __int128) x * y % p); };
+    auto mul = [p](u64 x, u64 y) { return (u64) ((u128) x * y % p); };
     auto pw = [&](u64 x, u64 e) {
         u64 r = 1;
         for(x %= p; e; e >>= 1, x = mul(x, x))
@@ -15,7 +15,7 @@ bool quadres(u64 a, u64 p) {
 // 求 x 模奇素数 p 的平方根；要求 0 <= x < p；x 非二次剩余时返回 -1。
 ll sqrtp(ll x, ll p) {
     if(x <= 1) return x;
-    auto mul = [p](ll a, ll b) { return (ll) ((u64) ((unsigned __int128) a * b % p)); };
+    auto mul = [p](ll a, ll b) { return (ll) ((u64) ((u128) a * b % p)); };
     auto add = [p](ll a, ll b) { return (ll) (((u64) a + (u64) b) % (u64) p); };
     auto pw = [&](ll a, ll e) {
         ll r = 1;
