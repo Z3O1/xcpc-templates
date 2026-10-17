@@ -10,7 +10,7 @@ struct c2 {
 };
 // 以 ab 为直径的圆；允许 a=b。
 c2 cir(p2 a, p2 b) { return {(a + b) / 2, dis(a - b) / 2}; }
-// 三角形内切圆，O(1)；要求点差及结果有限；共线时 r=0，全重合时圆心取 a。
+// 三角形内切圆；点差及结果须有限；共线时 r=0，全重合时圆心取 a。
 c2 incir(p2 a, p2 b, p2 c) {
     auto span = [](p2 p) { return max(abs(p.x), abs(p.y)); };
     if(span(c - b) < min(span(b - a), span(c - a))) swap(a, b);  // 基点放在短边上。
@@ -42,7 +42,7 @@ db circumcircle_diameter(p2 a, p2 b, p2 c) {
     db sine = abs(u.det(v)) / sqrt(dis2(u) * dis2(v));
     return dis(b - c) / sine;
 }
-// 三点外心坐标；要求不共线，点差、局部运算及结果可表示；近共线仍病态；O(1)。
+// 三点外心 {x,y}；要求不共线，点差、局部运算及结果可表示；近共线仍病态。
 array<db, 2> circumcenter(p2 a, p2 b, p2 c) {
     p2 u = b - a, v = c - a;
     db U = max(abs(u.x), abs(u.y)), V = max(abs(v.x), abs(v.y));
