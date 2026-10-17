@@ -29,12 +29,12 @@ ll sqrtp(ll x, ll p) {
     ll w, a;
     do a = gen() % p; while (!a || pw(w = add(mul(a, a), p - x), (p - 1) >> 1) != p - 1);
     auto prod = [&](pll u, pll v) {
-        ll t0 = add(mul(u.first, v.first), mul(mul(u.second, v.second), w));
-        ll t1 = add(mul(u.first, v.second), mul(u.second, v.first));
-        return make_pair(t0, t1);
+        ll t0 = add(mul(u[0], v[0]), mul(mul(u[1], v[1]), w));
+        ll t1 = add(mul(u[0], v[1]), mul(u[1], v[0]));
+        return pll{t0, t1};
     };
     pll r{1, 0}, b{a, 1};
     for(ll k = (p + 1) >> 1; k; k >>= 1, b = prod(b, b))
         if(k & 1) r = prod(r, b);
-    return r.first;
+    return r[0];
 }
