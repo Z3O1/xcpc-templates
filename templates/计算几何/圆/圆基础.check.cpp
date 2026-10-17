@@ -1,4 +1,4 @@
-// 圆基础 自测:外心大平移/全排列/独立尺度/直径/联编，内切圆2万对拍，圆包含3万精确对拍/退化/极端
+// 圆基础 自测:小尺度直径六排列、外心大平移/独立尺度/联编，内切圆2万、包含3万及极端
 #include "../../_check_base.hpp"
 #include <cfenv>
 #include "../基础/二维向量.cpp"
@@ -145,6 +145,18 @@ void check_containment() {
 }
 // 验证大平移/各向异尺度外心、已知圆，及两个圆算法模块共用同一 c2 定义。
 int main() {
+    for(int e : {-20,0,100,1000}) {
+        db s=ldexp(db(1),e);
+        array<p2,3> p{{{0,0},{s,0},{0,s}}};
+        array<int,3> order{{0,1,2}};
+        do {
+            db D=circumcircle_diameter(p[order[0]],p[order[1]],p[order[2]]);
+            CHECK(abs(D/hypot(s,s)-1)<64*numeric_limits<db>::epsilon(),
+                  "小直角三角形外接圆直径六排列相同且不混面积eps");
+        } while(next_permutation(order.begin(),order.end()));
+    }
+    CHECK(circumcircle_diameter({0,0},{eps/2,0},{0,eps/2})==-1,
+          "真正低于长度分辨率的三角形不求外接圆");
     rng.seed(2026101404);
     for(int t = 0; t < 3000; ++t) {
         db k = rnd(1,100), m = rnd(1,100);

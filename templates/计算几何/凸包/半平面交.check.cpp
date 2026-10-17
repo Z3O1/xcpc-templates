@@ -465,6 +465,21 @@ static int runPatho(int groups) {
 // 暴力裁剪/凸包/解析用例;通过则 PASSED("半平面交")。
 int main() {
     printf("== 半平面交.check:暴力裁剪对拍 + 凸包对拍 + 解析/退化用例 ==\n");
+    mt19937 eps_rng(2026102803);
+    for(int e : {-20,0,20}) for(int d : {-40,-20,0,20,40}) {
+        db s=ldexp(db(1),e),k=ldexp(db(1),d);
+        vector<seg> lines{{{0,0},{2*s,0}},{{2*s,0},{2*s,s}},{{2*s,s},{0,s}},
+                          {{0,s},{0,0}},{{1.5L*s,0},{0,1.5L*s}}};
+        for(auto& l:lines) l.y=l.x+l.dir()*k;
+        for(int t=0;t<24;++t) {
+            shuffle(lines.begin(),lines.end(),eps_rng);
+            auto p=hpi(lines);
+            db A=0;
+            for(int i=1;i+1<(int)p.size();++i) A+=(p[i]-p[0]).det(p[i+1]-p[0]);
+            CHECK(p.size()==4 && abs(A-2*s*s)<=64*numeric_limits<db>::epsilon()*s*s,
+                  "小区域HPI正方向重参数化/乱序不变，保留numeric面积周长契约");
+        }
+    }
     {
         vector<seg> near;
         for(db y : {db(0), eps * 0.75L, eps * 1.5L})

@@ -1,4 +1,4 @@
-// 多边形基础 自测:大平移整数积分面积/反向/循环移位、矩形解析、凹星形有向角，5000 组及退化输入
+// 多边形基础 自测:长度EPS边界/细分不变、大平移整数积分/反向/矩形/凹星形角，5000组
 #include "../../_check_base.hpp"
 #include "../基础/二维向量.cpp"
 #include "../基础/直线与线段.cpp"
@@ -17,6 +17,19 @@ int angle_contain(const vector<p2> &a, p2 p) {
 }
 // 解析/独立有向角参考与顺逆时针性质对拍。
 int main() {
+    for(int e : {-20,0,20}) for(int pieces : {1,8,64}) {
+        db s=ldexp(db(1),e);
+        vector<p2> a;
+        for(int i=0;i<pieces;++i) a.push_back({2*s*i/pieces,0});
+        a.push_back({2*s,0}); a.push_back({2*s,s}); a.push_back({0,s});
+        for(db h : {-2*eps,-eps/2,eps/2,2*eps}) {
+            int want=abs(h)<=eps?1:h>0?2:0;
+            CHECK(contain(a,{s/2,h})==want, "多边形长度eps两侧，细分共线边不改边界含义");
+            reverse(a.begin(),a.end());
+            CHECK(contain(a,{s/2,h})==want, "反向不改长度eps包含关系");
+            reverse(a.begin(),a.end());
+        }
+    }
     rng.seed(2026101402);
     for(int t = 0; t < 3000; ++t) {
         int n = rnd(3, 20);

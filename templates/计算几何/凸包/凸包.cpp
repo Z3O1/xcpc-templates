@@ -4,7 +4,8 @@
 namespace Geo {
 
 // a 原地排序、精确去重，返回逆时针凸包，不重复首点；nos=1 保留边上共线点，默认只留端点。
-// O(n log n)；空/单点照常返回；全共线默认留两端点，nos=1 按字典序各输出一次。
+// O(n log n)；转向用三点最小高eps，不依赖任意底边；空/单点照常返回。
+// 全共线默认留两端点，nos=1 按字典序各输出一次。
 vector<p2> convex_hull(vector<p2> &a, bool nos = false) {
     sort(a.begin(), a.end());
     a.erase(unique(a.begin(), a.end(), [](p2 x, p2 y) { return x.x == y.x && x.y == y.y; }), a.end());
@@ -12,19 +13,19 @@ vector<p2> convex_hull(vector<p2> &a, bool nos = false) {
     if(n <= 1) return a;
     if(nos) {
         bool collinear = true;
-        For(i, 1, n - 2) if(crossop({a[0], a[n - 1]}, a[i])) collinear = false;
+        For(i, 1, n - 2) if(turnop(a[0], a[n - 1], a[i])) collinear = false;
         if(collinear) return a;
     }
     vector<p2> b;
     b.reserve(a.size() + 1);
     for(auto p : a) {
-        while(b.size() > 1 && crossop({b[b.size() - 2], b.back()}, p) <= -nos)
+        while(b.size() > 1 && turnop(b[b.size() - 2], b.back(), p) <= -nos)
             b.pop_back();
         b.push_back(p);
     }
     size_t t = b.size();
     rFor(i, n - 2, 0) {
-        while(b.size() > t && crossop({b[b.size() - 2], b.back()}, a[i]) <= -nos)
+        while(b.size() > t && turnop(b[b.size() - 2], b.back(), a[i]) <= -nos)
             b.pop_back();
         if(i) b.push_back(a[i]);
     }

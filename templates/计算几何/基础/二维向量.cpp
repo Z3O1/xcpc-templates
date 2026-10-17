@@ -1,11 +1,13 @@
 // p2(): 计算几何 · 二维点与向量
 
 // 后续几何模板共用此文件；p2 兼作点与向量，坐标须有限，角度单位为弧度。
-// eps 是绝对容差，位置判定按题目尺度调整；排序用精确比较，不能带 eps。
+// eps 是长度绝对容差，按坐标单位调整；angle_eps 是无量纲角容差。
+// sign/cmp 仅比较标量，量纲由调用处约定；排序精确比较，不能带 eps。
 // 点积写 dot(a,b)，* 只表示数乘。
 namespace Geo {
 
 const db eps = 1e-10;
+const db angle_eps = 1e-10;
 const db pi = acos(db(-1));
 // 带容差取符号；|x| <= eps 返回 0，否则返回 ±1。
 int sign(db x) { return x < -eps ? -1 : x > eps; }

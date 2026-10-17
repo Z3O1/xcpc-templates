@@ -1,4 +1,4 @@
-// 凸包 自测:独立 Jarvis 凸包/逐边枚举共线点、暴力直径、解析裁剪，12000 组含空/重/共线点
+// 凸包 自测:小尺度/方向重参数化裁剪、独立Jarvis/共线枚举/暴力直径，12000组
 #include "../../_check_base.hpp"
 #include "../基础/二维向量.cpp"
 #include "../基础/直线与线段.cpp"
@@ -42,6 +42,18 @@ vector<p2> boundary(vector<p2> a, const vector<p2> &h) {
 }
 // 随机独立参考对拍；输出缓冲带哨兵，失败打印完整点集。
 int main() {
+    for(int e : {-20,0,20}) {
+        db s=ldexp(db(1),e);
+        vector<p2> a{{0,0},{s,0},{s,s},{0,s},{s/2,s/2}};
+        auto h=convex_hull(a);
+        CHECK(h.size()==4 && convex_diameter(h)==2*s*s, "小非零凸包用排列一致的长度阈值");
+        for(int d : {-40,-20,0,20,40}) {
+            db k=ldexp(db(1),d);
+            auto cut=convex_cut(h,{{s/2,0},{s/2,k*s}});
+            CHECK(abs(area(cut)-s*s/2)<=16*numeric_limits<db>::epsilon()*s*s,
+                  "裁剪无限直线仅改方向长度不改区域");
+        }
+    }
     rng.seed(2026101403);
     for(int t = 0; t < 12000; ++t) {
         int n = rnd(0, 30);

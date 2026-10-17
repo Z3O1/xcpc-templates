@@ -4,7 +4,8 @@
 // 返回拼平的三角形顶点坐标，每连续 3 点为逆时针三角形；无非退化三角形返回空。
 // 内部 Tri::v 存 pts 的下标，公开返回值不是下标；每次调用重置内部状态，不修改调用方输入。
 // 先剖分凸包，再随机插入内部点并 Lawson 翻边；固定随机种子可复现。
-// 内圆判定用 1e-12 相对容差；需坐标精度足以区分输入的转向与内圆关系。
+// 转向用三点最小高的长度eps（排列一致），内圆判定仍用1e-12相对容差。
+// 需坐标精度足以区分转向/内圆门槛；不把点对直线垂距当任意底边的三点转向。
 // 最坏 O(n^2) 时间、O(n) 空间；不承诺 O(n log n)。
 namespace Delaunay {
 
@@ -30,7 +31,7 @@ void rm(int t) { live[t] = 0, fre.push_back(t); }
 // 按 (x, y) 精确字典序比较。
 bool lt(p2 u, p2 v) { return u.x != v.x ? u.x < v.x : u.y < v.y; }
 // 三点叉积的容差符号；a,b,c 为 pts 中的下标。
-int ori(int a, int b, int c) { return sign((pts[b] - pts[a]).det(pts[c] - pts[a])); }
+int ori(int a, int b, int c) { return turnop(pts[a], pts[b], pts[c]); }
 // 按相对容差判断 p 是否在外接圆内；要求 a,b,c 按逆时针排列。
 int ill(int p, int a, int b, int c) {
     p2 A = pts[a] - pts[p], B = pts[b] - pts[p], C = pts[c] - pts[p];

@@ -1,4 +1,4 @@
-// 最小圆覆盖 自测:mcc(随机增量法)与「枚举两点直径圆 / 三点外接圆」的暴力最小覆盖圆对拍
+// 最小圆覆盖 自测:小锐角三角形EPS及排列、枚举两点/三点圆独立暴力对拍
 //
 // 参考实现(文件内自写,不依赖模板):
 //   bruteMCC(v):枚举所有点对的直径圆与所有非共线三点组的外接圆,取「能覆盖全部点」的最小半径。
@@ -132,6 +132,17 @@ static int oneCase(const vector<p2> &v, int full) {
 
 // 模板 vs 暴力(全点/凸包);通过则 PASSED("最小圆覆盖")。
 int main() {
+    for(int e : {-20,0,20}) {
+        db s=ldexp(db(1),e);
+        vector<p2> p{{0,0},{s,0},{s/2,s}};
+        for(int i=0;i<6;++i) {
+            auto c=mcc(p);
+            CHECK(abs(c.r/(s*5/8)-1)<64*numeric_limits<db>::epsilon(),
+                  "小锐角三角形最小圆不能误用两点直径");
+            rotate(p.begin(),p.begin()+1,p.end());
+            if(i==2) reverse(p.begin(),p.end());
+        }
+    }
     printf("== 最小圆覆盖.check:枚举两点/三点暴力对拍 + 退化/极端用例 ==\n");
 
     // ===== 1. 解析用例 =====

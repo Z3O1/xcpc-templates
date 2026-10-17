@@ -8,7 +8,7 @@ vector<p2> upper_hull(vector<p2> &a, bool nos = false) {
     b.reserve(a.size());
     for(auto p : a) {
         if(!b.empty() && b.back().x == p.x) continue;
-        while(b.size() > 1 && crossop({b[b.size() - 2], b.back()}, p) >= (int) nos)
+        while(b.size() > 1 && turnop(b[b.size() - 2], b.back(), p) >= (int) nos)
             b.pop_back();
         b.push_back(p);
     }
