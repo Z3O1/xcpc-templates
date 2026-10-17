@@ -1,4 +1,5 @@
 // 介绍: 类欧几里得
+// hide
 $O(op("log") n)$ 求 $f = sum_(i=0)^n floor((a i + b)/c)$ 及其平方、带权。
 
 - `nd f(int n, int a, int b, int c)`: _参数顺序 (n, a, b, c)_,一次递归同时得到 `{f, g, h}`:

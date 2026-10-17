@@ -12,8 +12,3 @@ $ g_k(n, j) = g_k(n, j-1) - p_j^k (g_k(floor(n / p_j), j-1) - sum_(i=1)^(j-1) p_
 $ S(n, m) = (sum_(p <= n) f(p) - sum_(i=1)^m f(p_i)) + sum_(j > m, p_j^2 <= n) sum_(e >= 1, p_j^(e+1) <= n) (f(p_j^e) S(floor(n / p_j^e), j) + f(p_j^(e+1))) $
 
 答案 $= S(n, 0) + f(1)$;模板里的 `f(n, m)` 就是这个 $S(n, m)$,$m$ 表示"前 $m$ 个素数已经排除"。只有 $O(sqrt(n))$ 个不同的 $floor(n / i)$,所以状态数是 $O(sqrt(n))$。
-
-- 接口: `solve(n)`,内部依次 `init()`(线性筛出 $10^5$ 内质数与 `s1/s2/s`: $sum p_i$、$sum p_i^2$、$sum (p_i^2 - p_i)$)+ `solveg(n)`(求 g 数组)+ `f(n, m)` 递归求和
-- `func(x)`: *素数幂 $x = p^k$ 处 $f$ 的取值*,题变则改(示例 $x (x - 1)$ 即 $f(p) = p(p-1)$,欧拉函数类)
-- 上限: $sqrt(n) <= 10^5$,即 $n <= 10^10$;模数就用公共常量 $M$
-- g 数组大小 `2e5`(双值映射 `id(n)`)

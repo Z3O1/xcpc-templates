@@ -1,4 +1,5 @@
 // 介绍: Wilber
+// hide
 在线求 $f_i = min_(j < i) {f_j + w(j, i)}$（$f_0 = 0$），只要 $O(n)$ 次 `que`，比二分栈少一个 $log$。
 
 - `Wilber<T>(n, que, Z)`：`que(j, i)` 给 $w(j, i)$（$j < i$）；`Z` 是极大值，`ll` 用 `LLONG_MAX / 4`
