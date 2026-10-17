@@ -1,21 +1,19 @@
 // rot3(): 计算几何 · 三维旋转 (罗德里格斯/旋转矩阵/坐标基底)
 
 // 依赖本节 三维向量.cpp（unit / cross / perp）；角度单位为弧度。
-// 约定:轴方向必须非零(内部会单位化);零轴会得到 NaN。
-// 旋转保长度、保夹角;rot 与 rotmat 是同一件事的两种写法(可互相校验)。
+// rot / rotmat 的轴与 basis 的 n 须非零且分量有限，内部安全单位化。
+// 同轴同角旋转多个向量时，复用 rotmat 的结果。
 // 复杂度:全部 O(1)。
 namespace Geo {
 
 struct mat3 {
     db a[3][3];
-    // 矩阵作用于向量。
     p3 operator*(p3 v) const {
         return {a[0][0] * v.x + a[0][1] * v.y + a[0][2] * v.z,
                 a[1][0] * v.x + a[1][1] * v.y + a[1][2] * v.z,
                 a[2][0] * v.x + a[2][1] * v.y + a[2][2] * v.z};
     }
 };
-// 矩阵相乘。
 mat3 operator*(const mat3 &x, const mat3 &y) {
     mat3 r{};
     for(int i = 0; i < 3; ++i)
@@ -26,21 +24,20 @@ mat3 operator*(const mat3 &x, const mat3 &y) {
         }
     return r;
 }
-// 转置。
 mat3 transpose(const mat3 &m) {
     mat3 r{};
     for(int i = 0; i < 3; ++i)
         for(int j = 0; j < 3; ++j) r.a[i][j] = m.a[j][i];
     return r;
 }
-// 罗德里格斯:v' = v·cos + (k×v)·sin + k·(k·v)·(1-cos)
+// 绕过原点、方向为 axis 的轴作右手旋转。
 p3 rot(p3 v, p3 axis, db ang) {
     p3 k = unit(axis), c = cross(k, v), d = k * dot(k, v);
     return v * cos(ang) + c * sin(ang) + d * (1 - cos(ang));
 }
-// 绕「过点 o、方向 axis」的轴转 ang 弧度;要求 axis 非零。
+// 绕过点 o、方向为 axis 的轴旋转。
 p3 rot(p3 v, p3 axis, db ang, p3 o) { return o + rot(v - o, axis, ang); }
-// 旋转矩阵 R=I·cos+sin·[k]×+(1-cos)·k kᵀ；要求 axis 非零，k 为单位轴。
+// 返回与 rot 相同的旋转矩阵。
 mat3 rotmat(p3 axis, db ang) {
     p3 k = unit(axis);
     db c = cos(ang), s = sin(ang), t = 1 - c;
@@ -56,16 +53,16 @@ mat3 rotmat(p3 axis, db ang) {
     m.a[2][2] = t * k.z * k.z + c;
     return m;
 }
-// 以 n 为第三个基向量造右手正交基(u, v, w 两两垂直、都是单位向量、det(u,v,w) = 1)
+// 返回右手单位正交基，w 与 n 同向。
 void basis(p3 n, p3 &u, p3 &v, p3 &w) {
     w = unit(n), u = unit(perp(w)), v = cross(w, u);
 }
-// 世界坐标转局部坐标(以 o 为原点、u/v/w 为基)。
+// 世界坐标转局部坐标；以 o 为原点，u/v/w 须为单位正交基。
 p3 tolocal(p3 x, p3 o, p3 u, p3 v, p3 w) {
     p3 d = x - o;
     return {dot(u, d), dot(v, d), dot(w, d)};
 }
-// 局部坐标转世界坐标(tolocal 的逆)。
+// 局部坐标转世界坐标，与 tolocal 使用同一原点和基。
 p3 toworld(p3 l, p3 o, p3 u, p3 v, p3 w) { return o + u * l.x + v * l.y + w * l.z; }
 
 }  // namespace Geo
