@@ -5,20 +5,19 @@
 // 按 eps 相等的站点互不裁剪；精确重合时区域相同。严格划分须先去重，否则面积和会重复计。
 // 非空输入重设 box（左下/右上），四周外扩 max(宽,高)+1；空输入返回空，保留旧 box。
 // 允许共线与共圆，要求数据尺度适合绝对 eps；不修改调用方输入。
+// 裁剪采用站点局部坐标；点差、包围盒外扩及返回坐标须可表示。
 // 最坏 O(n^3) 时间、O(n^2) 输出空间；大规模请用 Delaunay 对偶算法。
 namespace Geo {
 namespace Voronoi {
 
 array<p2, 2> box;  // 裁剪用的包围盒:box[0] 左下、box[1] 右上
 
-// 到 a 比到 b 近的半平面:以 ab 的中垂线为界,方向取 r90(b - a),这样 a 在它的左侧
-// (convex_cut 保留 cross(q, ·) >= 0 的一侧,正好是 a 这一侧)。
+// ab 中垂线，a 在左侧；要求 a!=b。
 seg bisector(p2 a, p2 b) {
     p2 m = (a + b) / 2;
     return {m, m + r90(b - a)};
 }
 
-// 求各站点的 Voronoi 区域(半平面交逐站点裁剪包围盒);返回第 i 个元素为站点 i 的逆时针区域。
 vector<vector<p2>> voronoi(const vector<p2> &a) {
     int n = a.size();
     vector<vector<p2>> res;
@@ -31,10 +30,12 @@ vector<vector<p2>> voronoi(const vector<p2> &a) {
                    {box[1].x, box[1].y}, {box[0].x, box[1].y}};  // 逆时针
     for(int i = 0; i < n; ++i) {
         vector<p2> cur = ini;
+        for(p2 &p : cur) p -= a[i];
         for(int j = 0; j < n; ++j) {
             if(j == i || a[i] == a[j] || cur.size() < 3) continue;
-            cur = convex_cut(cur, bisector(a[i], a[j]));
+            cur = convex_cut(cur, bisector({0, 0}, a[j] - a[i]));
         }
+        for(p2 &p : cur) p += a[i];
         res.push_back(move(cur));
     }
     return res;
