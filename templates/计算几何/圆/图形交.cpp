@@ -28,17 +28,20 @@ vector<p2> cir_seg(const c2 &c, const seg &l) {
     return r;
 }
 
-// 两圆的交点:0(外离/内含/内离/同心/重合)/ 1(内切或外切)/ 2 个,按相对 c1.o 的极角排序。
+// 两圆交点按相对c1.o的精确极角排序；点圆用径向长度eps，重合点圆返回该点。
+// 两点圆在eps内取c1.o；非点圆圆心距<=eps视同心，按第一圆h²/r长度门槛判近切。
 // 做法:沿 o1->o2 方向量 d,再沿垂线取 +-h,并逐个验证到两圆心的距离确实都是 r。O(1)
 vector<p2> cir_cir(const c2 &c1, const c2 &other) {
     p2 dv = other.o - c1.o;
     db d = dis(dv);
+    if(c1.r == 0) return !cmp(d, other.r) ? vector<p2>{c1.o} : vector<p2>{};
+    if(other.r == 0) return !cmp(d, c1.r) ? vector<p2>{other.o} : vector<p2>{};
     if(!sign(d)) return {};                                   // 同心/重合:无孤立交点
     p2 u = dv / d;                                            // o1 -> o2 的单位方向
     db x = (d * d + c1.r * c1.r - other.r * other.r) / (2 * d);      // 交点连线到 o1 的距离
     db h2 = c1.r * c1.r - x * x;
     // 判别式按半径换算到长度量纲。
-    db sc2 = cmp(c1.r, 0) > 0 ? h2 / c1.r : h2;
+    db sc2 = h2 / c1.r;
     if(sign(sc2) < 0) return {};                              // 两圆相离(含内含)
     vector<p2> r;
     p2 base = c1.o + u * x;
@@ -51,8 +54,8 @@ vector<p2> cir_cir(const c2 &c1, const c2 &other) {
         r.push_back(base);                                    // 相切:两处解重合,只留 1 个
     auto good = [&](const p2 &p) {
         db t1 = dis(p - c1.o) - c1.r, t2 = dis(p - other.o) - other.r;
-        db e = eps * (1 + max(c1.r, other.r));
-        return abs(t1) <= e && abs(t2) <= e;                  // 防止 r = 0 / 极端半径比下的伪交点
+        db e = eps + db(1e-10) * max(c1.r, other.r);  // 输出残差：长度eps+独立相对误差。
+        return abs(t1) <= e && abs(t2) <= e;                  // 极端半径比下过滤数值伪交点
     };
     vector<p2> q;
     for(p2 p : r)
