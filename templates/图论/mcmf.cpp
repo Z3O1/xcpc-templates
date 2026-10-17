@@ -1,6 +1,7 @@
 // MCMF_t: 图论 · 费用流 (势优化 + mcmf2 负环/下界修正)
 
-// 点编号 1..n；容量为非负 int、费用为 ll；要求无可增广负环且总流量/费用在返回类型内。
+// 点编号 1..n，源汇不同；容量为非负 int、费用为 ll；求流修改残量网络。
+// 要求无负环，总流量在 int 内，费用及势能运算在 ll 内，有限距离小于 Z；实例须零初始化。
 struct MCMF_t {
     static constexpr int N = 1e6 + 10, FL = 1e9;
     static constexpr ll Z = 1e18;
@@ -9,24 +10,23 @@ struct MCMF_t {
         ll c;
     } e[N];
     int n, mx, hd[N], tot = 1, s, t, p[N];
-    // 加一条残量边；要求容量非负；只修改邻接表和边池。
     void _add(int u, int v, int w, ll c) {
         e[++tot] = {v, hd[u], w, c}, hd[u] = tot;
     }
-    // 加一条有向费用容量边；要求端点为正、容量非负；平行边保留为多条边。
+    // 加有向费用容量边及反向残量边，保留平行边。
     void add(int u, int v, int w, ll c) {
         // 新建但尚未求流的点也要计入 clear 的清零范围。
         cmax(mx, u), cmax(mx, v);
         _add(u, v, w, c), _add(v, u, 0, -c);
     }
-    // 清空用过点的邻接表；要求边已不再需要；重置边池和源汇但保留 mx 作为清零上界。
+    // 清空图、边池和源汇；保留 mx 作为历次用点的清零上界。
     void clear() {
         // 包括 mcmf2 的超级源/汇，不能只清到当前 n。
         For(i, 1, mx) hd[i] = 0;
         tot = 1, s = t = 0;
     }
     ll h[N], d[N];
-    // 求初始势能；要求 s,n 已设置且不存在可达负环；覆盖 h[1..n]。
+    // 按已设置的 s,n 覆盖初始势能 h[1..n]。
     void spfa() {
         static bool vis[N];
         For(i, 1, n) h[i] = Z;
@@ -45,7 +45,7 @@ struct MCMF_t {
             }
         }
     }
-    // 用非负约化费用找最短增广路；要求势能 h 有效；修改 d,p,h，返回 t 是否可达。
+    // h 有效时找最短增广路并更新 d,p,h，返回 t 是否可达。
     bool dij() {
         For(i, 1, n) d[i] = Z;
         priority_queue<pair<ll, int>> q;
@@ -65,7 +65,7 @@ struct MCMF_t {
         For(i, 1, n) if(d[i] != Z) d[i] += h[i], h[i] = d[i];
         return d[t] != Z;
     }
-    // 求最小费用最大流；要求图无负环、点编号 1.._n；mcf=1 时只推负费用增广，返回(流量,费用)。
+    // 须显式传 _n；返回追加的(流量,费用)，mcf=1 时只作负费用增广。
     pair<int, ll> mcmf(int _s, int _t, bool mcf = 0, int _n = 0) {
         s = _s, t = _t, n = _n, cmax(mx, _n);
         spfa();
@@ -79,7 +79,7 @@ struct MCMF_t {
         }
         return {a1, a2};
     }
-    // 先饱和负费用边再求费用流；要求无负环且 _n+2 不越界；会临时加辅助点并返回(流量,费用)。
+    // 新建图上先饱和负费用边再求流；须传 _n 且 _n+2 < N，返回(流量,费用)。
     pair<int, ll> mcmf2(int _s, int _t, bool mcf = 0, int _n = 0) {
         s = _s, t = _t, n = _n, cmax(mx, _n + 2);
         static int ex[N];

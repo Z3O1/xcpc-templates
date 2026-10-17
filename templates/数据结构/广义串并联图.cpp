@@ -8,13 +8,13 @@ struct SPQR_tree {
     bool typ[N];
     unordered_map<int, int> t[N];
     bitset<N> vis;
-    // 新建串/并联内部结点；要求 u、v 是已有边/内部结点编号；返回新结点编号并设父指针。
+    // 合并已有边/结点 u,v，返回新父结点；kind 为串/并联类型。
     int node(int u, int v, bool kind) {
         typ[++m] = kind;
         fa[u] = fa[v] = m;
         return m;
     }
-    // 加入无自环边 u-v，边号为 w；平行边会合并成新的并联结点并覆盖邻接表边号。
+    // 加边 u-v，编号 w；平行边合并为并联结点。
     void add(int u, int v, int w) {
         if(t[u].count(v)) {
             t[u][v] = t[v][u] = node(t[u][v], w, 0);
@@ -22,7 +22,7 @@ struct SPQR_tree {
             t[u][v] = t[v][u] = w;
         }
     }
-    // 约简 n 点图的度 1/2 顶点；要求已先 add 原边；修改 fa/typ/t 并保留不可约核。
+    // add 完后约简 1..n 的度 1/2 顶点，修改 fa/typ/t；每张图只调用一次。
     void build(int n) {
         queue<int> q;
         auto ins = [&](int u) { if (!vis[u] && t[u].size() <= 2) vis[u] = 1, q.push(u); };
