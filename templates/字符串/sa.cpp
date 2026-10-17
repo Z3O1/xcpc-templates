@@ -5,7 +5,7 @@ const int N = 1e6 + 10;
 // a[1..n] 的字符值在 [0, N-2],n < N。
 // height[1] = 0;height[i] 是 sa[i-1] 与 sa[i] 两个后缀的最长公共前缀长度。
 int sa[N], rk[N << 1], height[N];
-// 构造 sa/rk/height；要求 a[1..n] 只读且字符值在 [0,N-2]；n=0 时不改数组，LCP 查询需另配 RMQ。
+// 从只读 a[1..n] 覆盖构建 sa/rk/height，可重复调用；n=0 时不读写数组。
 template <class T> void SA(int n, const T *a) {
     if(!n) return;
     static int b[N], c[N];

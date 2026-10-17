@@ -16,11 +16,9 @@ const int N = 1e6 + 10;
 const int INF = 1e9;
 struct mat {
     int a[2][2];
-    // 访问第 k 行；要求 k 为 0/1；返回可修改行指针。
     int *operator[](int k) { return a[k]; }
-    // 只读访问第 k 行；要求 k 为 0/1；返回行指针。
     const int *operator[](int k) const { return a[k]; }
-    // 计算 max-plus 矩阵乘积；要求两矩阵元素相加不越过 int 有效范围。
+    // max-plus 矩阵乘法。
     mat operator*(const mat &b) const {
         mat c;
         For(i, 0, 1)
@@ -31,7 +29,7 @@ struct mat {
 int n;
 vector<int> t[N];
 int sz[N], s[N], tp[N], dw[N], fa[N];
-// 第一遍 DFS 定根并选重儿子；要求 t 是以 1 为根的无向树且全局状态干净；会删父边和重儿子边。
+// 无向树定根、选重儿子；会从 t 删除父边和重儿子边。
 void dfs0(int u) {
     sz[u] = 1;
     for(auto v : t[u]) {
@@ -45,7 +43,7 @@ void dfs0(int u) {
 }
 int dfn[N], wt[N], rt[N];
 int f[N][2];
-// 第二遍 DFS 剖分重链并初始化轻儿子 DP；单进程 dt 不重置，只能按模板流程建一次。
+// 剖分重链并初始化轻儿子 DP；内部 dt 不重置。
 pll dfs1(int u) {
     static int dt;
     dfn[u] = ++dt;
@@ -70,7 +68,7 @@ struct tree_t {
 } tr[N << 1];
 #define ls (tr[k].ls)
 #define rs (tr[k].rs)
-// 构建链上加权分治树；要求 1 <= l <= r 且 wt[l..r] 已设置；返回根结点编号。
+// 按 wt[l..r] 构建重链的加权分治树，返回根编号；1 <= l <= r。
 int build(int l, int r) {
     if(l == r) return l << 1;
     int s1 = 0, s2 = 0, m = l;
@@ -87,9 +85,8 @@ int build(int l, int r) {
     tr[k] = {build(l, m), build(m + 1, r)};
     return k;
 }
-// 由左右儿子维护结点矩阵；要求 k 为非叶分治树结点。
 void pushup(int k) { tr[k].x = tr[rs].x * tr[ls].x; }
-// 单点修改链分治树位置 p；要求 p 在 [l,r] 内；覆盖该叶矩阵并回溯维护。
+// 覆盖分治树位置 p 的矩阵；p 在当前区间 [l,r] 内。
 void upd(int p, mat x, int k, int l, int r) {
     if(l == r) {
         tr[k].x = x;
@@ -100,7 +97,7 @@ void upd(int p, mat x, int k, int l, int r) {
     else upd(p, x, rs, m + 1, r);
     pushup(k);
 }
-// 查询闭区间 [L,R] 的矩阵积；要求 [L,R] 包含于当前结点区间 [l,r]。
+// 查询 [L,R] 从右到左的矩阵积；[L,R] 包含于当前区间 [l,r]。
 mat que(int L, int R, int k, int l, int r) {
     if(L <= l && r <= R) return tr[k].x;
     int m = k >> 1;
@@ -110,7 +107,7 @@ mat que(int L, int R, int k, int l, int r) {
 }
 #undef ls
 #undef rs
-// 把点 p 的当前 DP 写回所在重链；要求链分治树已 build。
+// build 后把点 p 的当前 DP 写回所在重链。
 void apply(int p) {
     int l = dfn[tp[p]], r = dfn[dw[tp[p]]]; // l/r 是底层树要更新的覆盖范围
     upd(dfn[p], {f[p][0], f[p][1], f[p][0], -INF}, rt[tp[p]], l, r);
@@ -121,7 +118,7 @@ pll que(int p) {
     auto res = que(dfn[p], r, rt[tp[p]], l, r);
     return {max(res[0][0], res[1][0]), max(res[0][1], res[1][1])};
 }
-// 给点 p 的选中态增量 dt 并沿祖先链更新；要求初始化完成且 p 为 1-based 点号。
+// 初始化后给点 p 的点权增加 dt 并沿祖先链更新；不修改 a[p]。
 void upd(int p, int dt) {
     f[p][1] += dt;
     auto fix = [&](int k, int sgn) {
@@ -136,7 +133,6 @@ void upd(int p, int dt) {
         fix(tp[p], 1);
     }
 }
-// 查询整棵树最大权独立集；要求根 1 所在链状态已维护。
 int getans() {
     auto [x, y] = que(1);
     return max(x, y);

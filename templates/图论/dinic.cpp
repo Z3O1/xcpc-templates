@@ -11,20 +11,19 @@ class Dinic_t {
         ll w;
     } e[N];
     int n, hd[N], cur[N], d[N], tot = 1, s, t;
-    // 加一条残量边；要求端点为正且容量非负；只修改邻接表和边池。
     void _add(int u, int v, ll w) {
         e[++tot] = {v, hd[u], w}, hd[u] = tot;
     }
-    // 加一条有向容量边；要求容量非负；同时加入反向 0 容量残量边。
+    // 加有向边，同时加入反向零容量边。
     void add(int u, int v, ll w) {
         _add(u, v, w), _add(v, u, 0);
     }
-    // 清空上一次 solve 记录的 1..n 邻接表；要求未解图不要只靠它回滚；重置边池和源汇。
+    // 清空上次 solve 的 1..n 邻接表及边池；未 solve 的图不能靠 clear 回滚。
     void clear() {
         For(i, 1, n) hd[i] = 0;
         n = s = t = 0, tot = 1;
     }
-    // 在当前残量网络上建层次图；要求 solve 已设置 s,t,n；返回 t 是否可达。
+    // 按已设置的 s,t,n 建层次图，返回 t 是否可达。
     bool bfs() {
         // d[s] = 0、其余 -1(未访问)。注意不能写成 d[i] = -(i == s):
         // 那样邻居会拿到 0,而下面的判空条件 d[v] == -1 只认 -1,于是 BFS 一个点都进不去。
@@ -43,7 +42,7 @@ class Dinic_t {
         }
         return 0;
     }
-    // 沿层次图增广；要求 bfs 后调用且 in 非负；修改残量，返回实际推出的流量。
+    // bfs 后沿层次图增广，返回实际流量；in >= 0。
     ll dfs(int u, ll in) {
         if (u == t) return in;
         ll out = 0;
@@ -57,14 +56,14 @@ class Dinic_t {
         if (!out) d[u] = -1;
         return out;
     }
-    // 求 _s 到 _t 的最大流；要求点编号 1.._n 且已建图；返回流量并保留最终残量。
+    // 在已建残量网络上求 _s 到 _t 的追加流量；1 <= _s != _t <= _n。
     ll solve(int _s, int _t, int _n) {
         s = _s, t = _t, n = _n;
         ll ans = 0;
         while (bfs()) ans += dfs(s, Z);
         return ans;
     }
-    // 标出当前残量下 s 可达割；要求 solve 后或已设置 s,n；c[1..n] 被覆盖，0 表示源侧。
+    // 按已设置的 s,n 覆盖 c[1..n]，0 表示残量可达点；solve 后即为最小割源侧。
     void cut(int *c) {
         For(i, 1, n) c[i] = 1;
         queue<int> q;

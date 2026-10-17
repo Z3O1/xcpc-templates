@@ -1,22 +1,23 @@
 // rmq_t: 数据结构 · O(1) RMQ(四毛子)
 
+// 下标从 dt 开始，查询闭区间；cmp=less<T> 取最大值，greater<T> 取最小值。
 template <typename T, typename cmp = less<T>, int dt = 1>
 struct rmq_t {
     static constexpr int B = 20;
     vector<T> a, pre, suf;
     vector<vector<T>> st;
     vector<int> f;
-    // 查询整块稀疏表区间 [L,R] 的最优块值；要求 0 <= L <= R 且块编号有效。
+    // 查询块编号闭区间 [L,R]，块号从 0 开始。
     T _que(int L, int R) {
         int k = __lg(R - L + 1);
         return max(st[k][L], st[k][R - (1 << k) + 1], cmp());
     }
-    // 查询第 k 个块内原数组闭区间 [L,R]；要求 L,R 属于同一块且 f 已由 bd 构造。
+    // 查询第 k 块内的 0-based 闭区间 [L,R]。
     T _que_bitc(int k, int L, int R) {
         int l = k * B, x = f[R] & ~((1 << (L - l)) - 1);
         return a[l + __lg(x & -x)];
     }
-    // 构建 RMQ；要求 n >= 1，_a[dt..dt+n-1] 可读；覆盖内部数组与稀疏表。
+    // 从 _a[dt..dt+n-1] 构建，可重复调用；n >= 1。
     void bd(int n, T *_a) {
         a.resize(n), pre.resize(n), suf.resize(n), f.resize(n);
         For(i, 0, n - 1) pre[i] = suf[i] = a[i] = _a[i + dt];
@@ -41,15 +42,15 @@ struct rmq_t {
             For(j, 0, m) st[i][j] = max(st[i - 1][j], st[i - 1][j + (1 << (i - 1))], cmp());
         }
     }
-    // 从连续容器构建；要求 v 非空，查询下标仍按 dt 偏移约定。
+    // 从非空 v 构建，查询下标仍从 dt 开始。
     void bd(vector<T> &v) { bd(v.size(), v.data() - dt); }
-    // 用生成函数构建；func 收到下标 dt..dt+n-1，结果覆盖当前结构。
+    // 从 func(dt..dt+n-1) 构建；n >= 1。
     template <class F> void bd(int n, F func) {
         vector<T> v(n);
         For(i, 0, n - 1) v[i] = func(i + dt);
         bd(v);
     }
-    // 查询闭区间 [l,r] 最优值；要求已 bd，dt <= l <= r < dt+n。
+    // bd 后查询 [l,r]；dt <= l <= r < dt+n。
     T que(int l, int r) {
         l -= dt, r -= dt;
         int il = l / B, ir = r / B;
