@@ -34,8 +34,6 @@
 
 == LCT
 
-#include "templates/数据结构/lct.typ"
-
 #zebraw(lang: false)[#raw(readcode("templates/数据结构/lct.cpp"), lang: "cpp", block: true)]
 
 == 广义串并联图
@@ -48,31 +46,21 @@
 
 === 决策单调性分治
 
-#include "templates/数据结构/四边形不等式/分治.typ"
-
 #zebraw(lang: false)[#raw(readcode("templates/数据结构/四边形不等式/分治.cpp"), lang: "cpp", block: true)]
 
 === SMAWK
-
-#include "templates/数据结构/四边形不等式/SMAWK.typ"
 
 #zebraw(lang: false)[#raw(readcode("templates/数据结构/四边形不等式/SMAWK.cpp"), lang: "cpp", block: true)]
 
 === Wilber
 
-#include "templates/数据结构/四边形不等式/Wilber.typ"
-
 #zebraw(lang: false)[#raw(readcode("templates/数据结构/四边形不等式/Wilber.cpp"), lang: "cpp", block: true)]
 
 === 二分栈
 
-#include "templates/数据结构/四边形不等式/二分栈.typ"
-
 #zebraw(lang: false)[#raw(readcode("templates/数据结构/四边形不等式/二分栈.cpp"), lang: "cpp", block: true)]
 
 == wqs 二分构造方案
-
-#include "templates/数据结构/wqs.typ"
 
 #zebraw(lang: false)[#raw(readcode("templates/数据结构/wqs.cpp"), lang: "cpp", block: true)]
 
@@ -108,8 +96,6 @@
 
 == 类欧
 
-#include "templates/数学/类欧.typ"
-
 #zebraw(lang: false)[#raw(readcode("templates/数学/类欧.cpp"), lang: "cpp", block: true)]
 
 == 反射容斥
@@ -119,8 +105,6 @@
 = 数论
 
 == 分数还原
-
-#include "templates/数论/分数还原.typ"
 
 #zebraw(lang: false)[#raw(readcode("templates/数论/分数还原.cpp"), lang: "cpp", block: true)]
 
@@ -172,8 +156,6 @@
 
 == 下取整和
 
-#include "templates/数论/下取整和.typ"
-
 #zebraw(lang: false)[#raw(readcode("templates/数论/下取整和.cpp"), lang: "cpp", block: true)]
 
 == 高斯整数
@@ -190,13 +172,9 @@
 
 == 多项式复合
 
-#include "templates/多项式/多项式复合.typ"
-
 #zebraw(lang: false)[#raw(readcode("templates/多项式/多项式复合.cpp"), lang: "cpp", block: true)]
 
 == 多项式复合逆
-
-#include "templates/多项式/多项式复合逆.typ"
 
 #zebraw(lang: false)[#raw(readcode("templates/多项式/多项式复合逆.cpp"), lang: "cpp", block: true)]
 
