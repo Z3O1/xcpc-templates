@@ -7,7 +7,6 @@ namespace Geo {
 
 struct seg {
     p2 x, y;
-    // 方向向量。
     p2 dir() const { return y - x; }
 };
 // 有向直线与点的叉积；q 在左侧为正。
@@ -19,7 +18,11 @@ int crossop(const seg &l, const p2 &q) {
     p2 d = l.dir();
     if(d.x == 0 && d.y == 0) return 0;
     d = scaled_dir(d);
-    db h = d.det(q - l.x), t = eps * sqrt(dis2(d));
+    db h = d.det(q - l.x);
+    // 缩放后模长在 [1,sqrt(2)]，只在容差附近开方。
+    if(abs(h) > 2 * eps) return (h > 0) - (h < 0);
+    if(abs(h) <= eps) return 0;
+    db t = eps * sqrt(dis2(d));
     return (h > t) - (h < -t);
 }
 // 点是否在直线上；要求 l 非零长。
@@ -29,7 +32,10 @@ bool chkll(const seg &a, const seg &b) {
     p2 u = a.dir(), v = b.dir();
     if((u.x == 0 && u.y == 0) || (v.x == 0 && v.y == 0)) return false;
     u = scaled_dir(u), v = scaled_dir(v);
-    return abs(u.det(v)) > angle_eps * sqrt(dis2(u) * dis2(v));
+    db h = abs(u.det(v));
+    if(h > 2 * angle_eps) return true;
+    if(h <= angle_eps) return false;
+    return h > angle_eps * sqrt(dis2(u) * dis2(v));
 }
 // 两直线近似重合：平行且两基点到另一条线均在eps内；要求均非零长。
 bool eqll(const seg &a, const seg &b) {
