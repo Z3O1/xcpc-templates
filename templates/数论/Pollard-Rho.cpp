@@ -1,6 +1,6 @@
 // fact(): 数论 · Pollard-Rho 分解质因数 (配合 chkp 使用)
 
-// 求整数平方根；要求 x 为 u64；返回最大 r 使 r^2 <= x,乘法用 u128 防溢出。
+// 返回最大 r 满足 r^2 <= x。
 u64 isqrt(u64 x) {
     if(x < 2) return x;
     u64 r = sqrtl((long double) x);
@@ -8,9 +8,8 @@ u64 isqrt(u64 x) {
     for(; (unsigned __int128) (r + 1) * (r + 1) <= x; ++r);
     return r;
 }
-// 返回 x 的一个非平凡因子；要求 x>=2 且 chkp 可用，x 为素数时返回 x。
-// 先检查 2、3、5 的因子与完全平方，其余用 Floyd；每 127 步对差积求一次 gcd。
-// 差积为 0 等退化批次会重启；随机过程不保证固定运行时间。
+// 返回 x 的一个非平凡因子；x 为素数时返回 x；要求 x>=2 且 chkp 可用。
+// 随机化实现，不保证固定运行时间。
 u64 rho(u64 x) {
     if(x % 2 == 0) return 2;
     if(x % 3 == 0) return 3;
@@ -38,7 +37,7 @@ u64 rho(u64 x) {
         }
     }
 }
-// 递归分解质因数；要求 x >= 1 且 chkp 可用；把未排序质因子带重数追加到 res。
+// 要求 x >= 1；把质因子（未排序、带重数）追加到 res。
 void fact_rec(u64 x, vect<u64> &res) {
     if(x == 1) return;
     if(chkp(x)) return res += x, void();

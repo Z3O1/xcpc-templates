@@ -1,13 +1,10 @@
 // chkp(): 数论 · Miller-Rabin 素性检验 (确定性判定 u64)
 
 // 模乘用 unsigned __int128 覆盖完整 u64 乘积；不要换成普通 ksm。
-// 模乘与快速幂沿用 lambda，保持 C++17 constexpr 调用兼容。
-// 判定 p 是否为素数；u64 全范围确定性判定，支持编译期调用。
+// 判定 p 是否为素数；u64 全范围确定性，支持编译期调用（constexpr）。
 constexpr bool chkp(u64 p) {
     if(p < 2) return 0;
-    // 返回 (a*b) mod p，覆盖完整 u64；要求 p>0。
     auto mul = [](u64 a, u64 b, u64 p) { return (unsigned __int128) a * b % p; };
-    // 求 r*a^x mod p；要求 p>0；x=0 时原样返回 r，不额外取模。
     auto pw = [&](u64 a, u64 x, u64 p, u64 r = 1) {
         for(; x; x >>= 1, a = mul(a, a, p))
             if(x & 1) r = mul(r, a, p);
@@ -19,7 +16,7 @@ constexpr bool chkp(u64 p) {
     constexpr u64 B[] = {2, 325, 9375, 28178, 450775, 9780504, 1795265022};
     u64 s = __builtin_ctzll(p - 1), d = (p - 1) >> s;
     for(u64 a : B) {
-        // 合数底数的素因子会整除底数，须跳过以免误判 73 等素数。
+        // 底数被 p 整除时跳过，避免把素数误判为合数（如 73）。
         if(a % p == 0) continue;
         u64 x = pw(a % p, d, p);
         if(x == 1 || x == p - 1) continue;

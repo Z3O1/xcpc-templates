@@ -1,9 +1,8 @@
 // lag()/lag_i()/lag_p(): 数学 · 拉格朗日插值
 
-// 依赖:For/rFor/ll/ksm、常量 M = 998244353;所有点值与系数在 [0, M)。
-// lag 的横坐标须两两不同,返回点数+1 项(最高项为 0)。
-// lag_i/lag_p 要求 1 <= n < M,并提供返回 int 的 ifac(n)。
-// 由任意互异横坐标点值还原多项式；要求点值次数小于点数；返回低到高系数且末项为 0。
+// 依赖：For/rFor/ll/ksm 与常量 M = 998244353；点值与系数都在 [0, M)。
+// lag_i/lag_p 要求 1 <= n < M，并需要返回 int 的 ifac(n)。
+// 由互异横坐标点值还原多项式；要求点值次数小于点数；返回低到高系数，末项为 0。
 vector<int> lag(vector<pair<int, int>> a) {
     int n = a.size();
     vector<int> f(n + 1), ans(n + 1, 0);
