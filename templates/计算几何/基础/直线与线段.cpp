@@ -77,14 +77,15 @@ bool isMid(const p2 &a, const p2 &m, const p2 &b) {
     return isMid(a.x, m.x, b.x) && isMid(a.y, m.y, b.y);
 }
 // 点在线段的eps垂距带且在eps扩展包围盒内；含端点，点线段按坐标eps。
-bool ons(const seg &s, const p2 &q) { return !crossop(s, q) && isMid(s.x, q, s.y); }
+bool ons(const seg &s, const p2 &q) { return isMid(s.x, q, s.y) && !crossop(s, q); }
 // 严格内部：垂距<=eps，沿段方向距两端均>eps；长度<=2eps及点线段无内部。
 bool ons_s(const seg &s, const p2 &q) {
     p2 d = s.dir();
     if(d.x == 0 && d.y == 0) return false;
     d = scaled_dir(d);
     db t = eps * sqrt(dis2(d));
-    return !crossop(s, q) && dot(q - s.x, d) > t && dot(q - s.y, d) < -t;
+    p2 w = q - s.x;
+    return abs(d.det(w)) <= t && dot(w, d) > t && dot(q - s.y, d) < -t;
 }
 // 闭线段是否相交，含端点与共线重叠；支持点线段。
 bool chkss(const seg &a, const seg &b) {
