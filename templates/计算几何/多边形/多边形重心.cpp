@@ -12,7 +12,7 @@ db perimeter(const vector<p2> &a) {
     for(int i = 0; i < n; ++i) s += dis(a[(i + 1) % n] - a[i]);
     return s;
 }
-// 面积重心；简单多边形；|二倍面积|/周长<=eps 时返回顶点平均，空集返回 (0,0)。
+// 面积重心；|二倍面积|/周长<=eps 时返回顶点平均，空集返回 (0,0)。
 p2 centroid(const vector<p2> &a) {
     int n = a.size();
     if(n == 0) return {0, 0};

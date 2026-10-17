@@ -6,7 +6,6 @@
 // 要求 2n 在 int 内、平方距离可可靠比较；不用 eps，不适用于含内部点的任意点集。
 namespace Geo {
 
-// 求所有凸多边形顶点的最远点；输入与并列规则见上。
 vector<int> convex_farthest(const vector<p2> &a) {
     int n = a.size();
     vector<int> ans(n);

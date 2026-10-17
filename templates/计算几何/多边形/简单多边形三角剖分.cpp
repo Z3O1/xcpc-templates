@@ -9,7 +9,6 @@
 
 namespace Geo {
 
-// 对简单多边形耳切；要求如上，输出三角形不重不漏。
 vector<array<int, 3>> ear_clip(const vector<p2> &a) {
     int n = a.size();
     vector<array<int, 3>> ret;

@@ -3,9 +3,8 @@
 // 依赖 基础/直线与线段.cpp；凸多边形顶点不重复首点，size() 须在 int 内。
 namespace Geo {
 
-// a 原地排序、精确去重，返回逆时针凸包，不重复首点；nos=1 保留边上共线点，默认只留端点。
-// O(n log n)；转向用三点最小高eps，不依赖任意底边；空/单点照常返回。
-// 全共线默认留两端点，nos=1 按字典序各输出一次。
+// a 原地排序、精确去重，返回逆时针凸包（不重复首点）；nos=1 留边上共线点，默认只留端点。
+// O(n log n)，转向用最小高eps；空/单点照常返回，全共线时默认留两端点，nos=1 按字典序各输出一次。
 vector<p2> convex_hull(vector<p2> &a, bool nos = false) {
     sort(a.begin(), a.end());
     a.erase(unique(a.begin(), a.end(), [](p2 x, p2 y) { return x.x == y.x && x.y == y.y; }), a.end());
