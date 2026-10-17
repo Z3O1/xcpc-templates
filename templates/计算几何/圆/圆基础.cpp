@@ -40,14 +40,14 @@ db circumcircle_diameter(p2 a, p2 b, p2 c) {
     if(!crossop({a, b}, c)) return -1;
     return dis(a - b) * dis(b - c) * dis(c - a) / abs((b - a).det(c - a));
 }
-// 三点外心坐标；要求三点不共线；返回 {x,y}，O(1)。
+// 三点外心坐标；要求不共线，点差、局部运算及结果可表示；近共线仍病态；O(1)。
 array<db, 2> circumcenter(p2 a, p2 b, p2 c) {
-    db A = dis2(a), B = dis2(b), C = dis2(c);
-    db u1 = a.x - b.x, u2 = a.x - c.x;
-    db v1 = a.y - b.y, v2 = a.y - c.y;
-    db d = 2 * (u1 * v2 - u2 * v1);
-    return {((C - A) * v1 - (B - A) * v2) / d,
-            ((B - A) * u2 - (C - A) * u1) / d};
+    p2 u = b - a, v = c - a;
+    db U = max(abs(u.x), abs(u.y)), V = max(abs(v.x), abs(v.y));
+    u = u / U, v = v / V;  // 分别缩放，避免边长平方上溢/下溢。
+    db d = 2 * u.det(v);
+    p2 o = (r90(u) * (dis2(v) * V) - r90(v) * (dis2(u) * U)) / d;
+    return {a.x + o.x, a.y + o.y};
 }
 
 }  // namespace Geo

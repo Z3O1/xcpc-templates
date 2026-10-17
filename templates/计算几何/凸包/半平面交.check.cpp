@@ -1,4 +1,4 @@
-// 半平面交 自测:hpi(有向直线左侧求交)与「逐半平面暴力裁剪多边形」独立实现对拍 + 性质断言
+// 半平面交 自测:大平移解析梯形/排列/方向缩放/面积退化、逐半平面暴力裁剪独立对拍
 //
 // 对拍方式(全部为文件内自写的独立参考实现,不用模板):
 //   refClip/refHPI:把一个大正方形(-B..B,B=1e4)按每条直线「保留 cross(l,·) >= 0 一侧」逐条裁剪,
@@ -46,10 +46,13 @@ static void prl(const char *s, const vector<seg> &v) {
     for(seg x : v) printf(" "), pr(x.x), printf("->"), pr(x.y);
     printf("\n");
 }
-// 多边形带号面积。
+// 竖直梯形积分 -∮(y-y0)dx，独立于模板末尾的扇形剖分；先减局部基准。
 static db polyArea(const vector<p2> &v) {
     db s = 0;
-    for(int i = 0; i < (int) v.size(); ++i) s += v[i].det(v[(i + 1) % v.size()]);
+    for(int i = 0; i < (int) v.size(); ++i) {
+        p2 a = v[i], b = v[(i + 1) % v.size()];
+        s -= (b.x-a.x) * ((a.y-v[0].y) + (b.y-v[0].y));
+    }
     return s / 2;
 }
 static p2 gg = P(0, 0);  // 打印反例时固定用的输入缓存(见 runCase)
@@ -488,6 +491,41 @@ int main() {
         auto p = hpi(seam);
         CHECK(p.size() == 4 && fetestexcept(FE_INVALID | FE_DIVBYZERO) == 0,
               "负零导致的正负pi同向接缝，不产生0/0");
+    }
+    for(int t = 0; t < 2500; ++t) {
+        db b = rnd(1,100), c = rnd(1,100), h = rnd(1,100), want = (b+c)*h/2;
+        for(db shift : {db(0), db(1e12L), db(-1e15L)}) {
+            vector<p2> a{{shift,shift},{shift+b,shift},{shift+c,shift+h},{shift,shift+h}};
+            CHECK(polyArea(a) == want, "面积oracle:大平移梯形解析值");
+            reverse(a.begin(), a.end());
+            CHECK(polyArea(a) == -want, "面积oracle:反向变号");
+            reverse(a.begin(), a.end());
+            vector<seg> lines;
+            for(int i = 0; i < 4; ++i) lines.push_back({a[i], a[i]+(a[(i+1)%4]-a[i]) * db(1 << (t%4))});
+            shuffle(lines.begin(), lines.end(), rng);
+            auto got = hpi(lines);
+            if(got.size() != 4 || abs(polyArea(got)-want) > 1e-9L) {
+                printf("translated hpi case=%d shift=%Lg b=%Lg c=%Lg h=%Lg area=%Lg want=%Lg\n",t,shift,b,c,h,polyArea(got),want);
+                prl("input", lines); prp("got", got);
+                return 1;
+            }
+        }
+    }
+    for(db h : {eps/4, eps*2}) {
+        vector<seg> lines{{{0,0},{1,0}},{{1,0},{1,h}},{{1,h},{0,h}},{{0,h},{0,0}}};
+        auto got = hpi(lines);
+        CHECK((h < eps ? got.empty() : got.size() == 4), "面积/周长按长度eps判退化");
+    }
+    for(db scale : {db(1e-6L),db(1),db(1e6L)}) {
+        for(auto a : {vector<p2>{{0,0},{scale,0},{scale,scale},{0,scale}},
+                      vector<p2>{{0,0},{4*scale,0},{2*scale,2*scale},{0,2*scale}}}) {
+            db want = a[1].x == scale ? scale*scale : 6*scale*scale;
+            vector<seg> lines;
+            for(int i = 0; i < 4; ++i) lines.push_back({a[i],a[(i+1)%4]});
+            auto got = hpi(lines);
+            CHECK(got.size() == 4 && abs(polyArea(got)/want-1) < 1e-12L,
+                  "小/大方形与梯形面积解析值，不能将平方量与线性eps混比");
+        }
     }
     analytic();
 

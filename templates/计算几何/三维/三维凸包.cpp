@@ -92,10 +92,12 @@ db hull_area(const vector<p3> &a, const vector<face3> &f) {
     for(int t = 0; t < f.size(); ++t) s += area2(a[f[t].a], a[f[t].b], a[f[t].c]);
     return s / 2;
 }
-// 凸包体积:每个面与原点围成的四面体带号体积求和(朝向一致时符号相同,取绝对值)
+// 凸包体积；f 须闭合且朝向一致，局部三重积须有限；空面集返回 0。
 db hull_volume(const vector<p3> &a, const vector<face3> &f) {
+    if(f.empty()) return 0;
+    p3 o = a[f[0].a];  // 用凸包顶点作公共锚点，避免绝对坐标三重积相消。
     db s = 0;
-    for(int t = 0; t < f.size(); ++t) s += det(a[f[t].a], a[f[t].b], a[f[t].c]);
+    for(int t = 0; t < f.size(); ++t) s += det(a[f[t].a] - o, a[f[t].b] - o, a[f[t].c] - o);
     return abs(s) / 6;
 }
 

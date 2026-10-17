@@ -2,7 +2,7 @@
 
 // 依赖 基础/直线与线段.cpp；交每条有向直线的左侧及边界，要求方向非零。
 // 调用方须保证交集有界，通常加入足够大的包围盒；空输入返回空。
-// 返回逆时针边界；空集、点、线段或二倍带号面积<=eps 返回空，不修改调用方输入。
+// 返回逆时针边界；空集、点、线段或二倍面积/周长<=eps 返回空，不修改调用方输入。
 // 同向角差在 eps 内合并并保留较强限制；非平行线夹角接近 0 或 pi 时不保证数值精度。
 // 极角排序 + 双端队列，O(n log n) 时间、O(n) 空间。
 
@@ -50,7 +50,9 @@ vector<p2> hpi(vector<seg> vs) {
     while(qs.size() > 1 && qs.front() == qs.back()) qs.pop_back();
     if(qs.size() < 3) return {};
     db s = 0;
-    for(int i = 0; i < (int) qs.size(); ++i) s += qs[i].det(qs[(i + 1) % qs.size()]);
-    if(sign(s) <= 0) return {};
+    for(int i = 1; i + 1 < (int) qs.size(); ++i) s += (qs[i] - qs[0]).det(qs[i + 1] - qs[0]);
+    db p = 0;
+    for(int i = 0; i < (int) qs.size(); ++i) p += dis(qs[(i + 1) % qs.size()] - qs[i]);
+    if(sign(s / p) <= 0) return {};  // 面积/周长是长度，三角形时等于内切圆半径。
     return qs;
 }

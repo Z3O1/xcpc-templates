@@ -3,19 +3,20 @@
 // 依赖 圆/圆基础.cpp；与最小圆覆盖共用 c2，可同时抄入。
 // 交点/圆圆面积 O(1)，圆多边形面积 O(n)；无孤立交点返回空，点圆面积为 0。
 
-// 圆与直线交点；按 l.x→l.y 方向递增，返回 0/1/2 个点；退化直线返回空。
+// 圆与直线返回 0/1/2 交点，沿 l.x→l.y 递增；按径向距离差 eps 判相切。
+// 仅数学零方向退化；点差及局部运算须有限，圆心距直线的舍入误差须小于 eps。
 vector<p2> cir_line(const c2 &c, const seg &l) {
     p2 d = l.y - l.x;
-    db L2 = dis2(d);
-    if(!sign(L2)) return {};
-    p2 f = proj(l, c.o);
-    db x = c.r * c.r - dis2(c.o - f);
-    // 判别式约为 2r(r-|of|)，除以半径后才能与绝对 eps 比较，避免小圆误判相切。
-    db sc = cmp(c.r, 0) > 0 ? x / c.r : x;
-    if(sign(sc) < 0) return {};
-    db h = sign(sc) > 0 ? sqrtl(x) : 0;
-    if(!sign(h)) return {f};
-    p2 u = d / sqrtl(L2);
+    db s = max(abs(d.x), abs(d.y));
+    if(s == 0) return {};
+    p2 u = d / s;
+    u = u / dis(u);
+    db side = u.det(l.x - c.o), dist = abs(side);
+    p2 f = c.o + r90(u) * side;
+    int k = cmp(c.r, dist);
+    if(k < 0) return {};
+    if(k == 0) return {f};  // 点圆也只按长度容差判相交，不比较平方判别式。
+    db h = sqrtl(c.r - dist) * sqrtl(c.r + dist);
     return {f - u * h, f + u * h};
 }
 
@@ -36,7 +37,7 @@ vector<p2> cir_cir(const c2 &c1, const c2 &other) {
     p2 u = dv / d;                                            // o1 -> o2 的单位方向
     db x = (d * d + c1.r * c1.r - other.r * other.r) / (2 * d);      // 交点连线到 o1 的距离
     db h2 = c1.r * c1.r - x * x;
-    // 同 cir_line：相切判据按半径缩放。
+    // 判别式按半径换算到长度量纲。
     db sc2 = cmp(c1.r, 0) > 0 ? h2 / c1.r : h2;
     if(sign(sc2) < 0) return {};                              // 两圆相离(含内含)
     vector<p2> r;

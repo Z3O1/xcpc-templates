@@ -1,4 +1,4 @@
-// 多边形重心 自测:centroid 与「逐边积分」独立参考 + 蒙特卡洛数值重心 + 已知形状对拍
+// 多边形重心 自测:大平移梯形解析/反向/循环移位/退化、逐边积分独立参考、蒙特卡洛数值重心
 //
 // 参考实现(文件内自写,不用模板):
 //   refCentroidEdge:把多边形看成「每条边与 x 轴围成的竖直梯形」的有向叠加,用积分解析算
@@ -82,6 +82,48 @@ static p2 refCentroidMC(const vector<p2> &a, int N) {
 // 解析/蒙特卡洛参考对照;通过则 PASSED("多边形重心")。
 int main() {
     printf("== 多边形重心.check:逐边积分/蒙特卡洛/已知形状三方对照 ==\n");
+
+    for(db width : {db(1e-6L),db(1),db(1e6L)}) {
+        for(db height : {eps/4,16*eps}) {
+            vector<p2> a{{0,0},{4*width,0},{2*width,height},{0,height}};
+            p2 g = centroid(a);
+            db x = height < eps ? db(1.5L) : db(14)/9;
+            db y = height < eps ? db(0.5L) : db(4)/9;
+            CHECK(abs(g.x/width-x) < 1e-12L && abs(g.y/height-y) < 1e-12L,
+                  "退化阈值按面积/周长的长度，小宽度/大宽度均不混比面积eps");
+        }
+    }
+    for(db scale : {db(1e-6L),db(1),db(1e6L)}) {
+        vector<p2> a{{0,0},{4*scale,0},{2*scale,2*scale},{0,2*scale}};
+        p2 g = centroid(a);
+        CHECK(abs(g.x/scale-db(14)/9) < 1e-12L && abs(g.y/scale-db(8)/9) < 1e-12L,
+              "小/大梯形不因绝对面积误退化");
+    }
+    // 大平移下用局部解析答案，只允许最终坐标舍入的两个 ULP，不按平移量放宽 eps。
+    for(int t = 0; t < 2500; ++t) {
+        db b = rnd(1, 100), c = rnd(1, 100), h = rnd(1, 100);
+        p2 want{(b*b + b*c + c*c) / (3*(b+c)), h*(b+2*c) / (3*(b+c))};
+        for(db shift : {db(0), db(1e12L), db(-1e15L)}) {
+            p2 o{shift, -shift};
+            vector<p2> a{o, o+p2{b,0}, o+p2{c,h}, o+p2{0,h}};
+            for(int k = 0; k < 8; ++k) {
+                p2 got = centroid(a), target = o + want;
+                auto close = [](db x, db y) { return abs(x-y) <= 1e-10L + 2*abs(nextafterl(y, INFINITY)-y); };
+                if(!close(got.x, target.x) || !close(got.y, target.y)) {
+                    printf("translated centroid case=%d b=%Lg c=%Lg h=%Lg shift=%Lg order=%d\n", t,b,c,h,shift,k);
+                    printf("got-offset=(%Lg,%Lg) want-offset=(%Lg,%Lg)\n", got.x-shift,got.y+shift,want.x,want.y);
+                    return 1;
+                }
+                rotate(a.begin(), a.begin()+1, a.end());
+                if(k == 3) reverse(a.begin(), a.end());
+            }
+        }
+    }
+    for(db shift : {db(1e12L), db(-1e15L)}) {
+        vector<p2> a{{shift,shift},{shift+1,shift+2},{shift+5,shift+10}};
+        p2 g = centroid(a);
+        CHECK(g.x == shift+2 && g.y == shift+4, "共线顶点平均也在局部坐标计算");
+    }
 
     // ===== 1. 解析用例 =====
     {

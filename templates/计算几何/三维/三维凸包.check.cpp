@@ -1,4 +1,4 @@
-// 三维凸包 自测:薄长种子正反面/全排列/缩放四面体/暴力支撑面/大随机拓扑与包含
+// 三维凸包 自测:大平移剪切四面体解析体积/排列/面反向，薄长种子正反面/缩放/暴力支撑面/拓扑
 //
 // 对拍方式:
 //   ① 手算常数用例:单位四面体(表面积 √3、体积 1/6)、单位立方体(表面积 6、体积 1)、
@@ -182,6 +182,30 @@ db mcVolume(const vector<p3> &a, const vector<face3> &f, int N) {
 
 // 手算/暴力参考对照与拓扑性质检查;通过则 PASSED("三维凸包")。
 int main() {
+    CHECK(hull_volume({}, {}) == 0, "空面集体积0");
+    for(int t = 0; t < 2500; ++t) {
+        db x = grnd(1,100), y = grnd(1,100), z = grnd(1,100);
+        db u = grnd(-100,100), v = grnd(-100,100), w = grnd(-100,100);
+        db want = x*y*z/6;  // 上三角边矩阵，剪切不改变体积。
+        vector<p3> local{{0,0,0},{x,0,0},{u,y,0},{v,w,z}};
+        shuffle(local.begin(),local.end(),g_rng);
+        auto faces = convex3d(local);
+        for(db shift : {db(0),db(1e12L),db(-1e15L)}) {
+            vector<p3> a = local;
+            for(auto &p : a) p = p + p3{shift,-shift,shift};
+            auto f = faces;  // 单测体积，不混入绝对点法式构造面的舍入条件。
+            for(int k = 0; k < 4; ++k) {
+                db got = hull_volume(a,f);
+                if(f.size() != 4 || abs(got-want) > 1e-10L) {
+                    printf("translated volume case=%d shift=%Lg sides=(%Lg,%Lg,%Lg) shear=(%Lg,%Lg,%Lg) got=%Lg want=%Lg points=%s\n",
+                           t,shift,x,y,z,u,v,w,got,want,ps(a).c_str());
+                    return 1;
+                }
+                shuffle(f.begin(),f.end(),g_rng);
+                for(auto &face : f) swap(face.b,face.c);  // 换锚点且整体反向，体积不变。
+            }
+        }
+    }
     // P1：同一薄长三角形按不同底边判退化，不能重新构造反向种子面。
     {
         vector<p3> a{{0,0,0}, {2*eps,0,0}, {10,1,0}, {0,0,-1}, {0,1,1}};
