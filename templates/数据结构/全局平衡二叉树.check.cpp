@@ -29,19 +29,8 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
-// 模板用的是 house header 里的 pll(支持 sf[0]/sf[1]),_check_base.hpp 把 pll 定义成 std::pair
-// (没有 operator[])。这里就地补一个等价局部类型,不动物模板、也不动公共 header。
-struct gbt_pll {
-    ll first, second;
-    // 按模板约定访问第 0/1 个分量；非 0 下标返回 second。
-    ll &operator[](int i) { return i ? second : first; }
-    // 按模板约定只读访问第 0/1 个分量；非 0 下标返回 second。
-    const ll &operator[](int i) const { return i ? second : first; }
-};
-#define pll gbt_pll
 #include "全局平衡二叉树.cpp"
 static int a[N];
-#undef pll
 
 // ———————— 固定种子的随机数(_check_base 的 rnd 用 steady_clock 播种,不可复现)————————
 static mt19937_64 FRng(0x20240911ULL);
@@ -332,7 +321,7 @@ static int run_fn(const char *name, void (*fn)()) {
 static void case_subranges() {
     For(t, 1, 200) {
         int n = frnd(2, 30);
-        vect<mat> a(n + 1);
+        vector<mat> a(n + 1);
         For(i, 1, n) {
             wt[i] = i == 1 ? 1000 : frnd(1, 20);
             For(x, 0, 1) For(y, 0, 1) a[i][x][y] = frnd(-20, 20);

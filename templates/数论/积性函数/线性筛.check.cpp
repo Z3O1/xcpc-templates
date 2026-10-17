@@ -22,7 +22,7 @@ int main() {
 
     // 2) φ 用积性 + 独立公式对照
     {
-        vect<int> phi(N + 1);
+        vect<int> phi(N + 1, 0);
         For(i, 1, N) phi[i] = i;
         for(int i = 2; i <= N; ++i) if(phi[i] == i) for(int j = i; j <= N; j += i) phi[j] -= phi[j] / i;
         For(i, 1, N) if(S.phi[i] != phi[i]) return printf("  [FAIL] phi(%d)=%d 应 %d\n", i, S.phi[i], phi[i]), 1;

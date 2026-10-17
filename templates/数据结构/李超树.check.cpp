@@ -6,24 +6,14 @@
 #include "../_check_base.hpp"
 const ll Z = 0x3f3f3f3f3f3f3f3fLL; // 模板里「没有直线」时的返回值(必须够大)
 
-// 模板用的是 house header 里的 pll(支持 [0]/[1] 下标,见 eval() 的 x[0]*y+x[1]),
-// 而 _check_base.hpp 把 pll 定义成 std::pair(没有 operator[])。这里就地补一个等价的局部类型,
-// 不动物模板、也不动公共 header(结构化绑定 / 聚合初始化 / first-second 都保留)。
-struct pll2 {
-    ll first, second;
-    // 按模板约定访问斜率/截距；i=0 返回 first，非 0 返回 second。
-    ll &operator[](int i) { return i ? second : first; }
-    // 按模板约定只读访问斜率/截距；i=0 返回 first，非 0 返回 second。
-    const ll &operator[](int i) const { return i ? second : first; }
-};
-#define pll pll2
+// 模板用的是 house header 里的 pll(= array<ll,2>,支持 [0]/[1] 下标,见 eval() 的 x[0]*y+x[1]),
+// _check_base.hpp 已直接包含该 header,所以这里的 pll 就是 array<ll,2>;下文的直线统一用 [0]/[1] 访问。
 #include "李超树.cpp"
-#undef pll
 
 static const int LO = 1, HI = 1000000;
 // 参考计算直线值；要求测试生成的乘加结果落在 ll 内。
-static ll eval_ref(const pll2 &l, ll x) {
-    return (ll) ((i128) l.first * x + l.second); // 取样范围内在 ll 中,不调用 DS::eval。
+static ll eval_ref(const pll &l, ll x) {
+    return (ll) ((i128) l[0] * x + l[1]); // 取样范围内在 ll 中,不调用 DS::eval。
 }
 
 // 覆盖随机直线、边界点与空树契约；失败返回非 0。
@@ -36,7 +26,7 @@ int main() {
         For(t, 1, 3000) {
             int n = (int) rnd(1, 8);
             int rt = 0;
-            vector<pll2> ls;
+            vector<pll> ls;
             For(i, 1, n) {
                 ll k, b;
                 switch(i % 4) {
@@ -45,7 +35,7 @@ int main() {
                     case 2: k = (ll) rnd(-1000000, 1000000), b = (ll) rnd(-1000000000, 1000000000); break;
                     default: k = (ll) rnd(-1000, 1000), b = (ll) rnd(-100000, 100000); break;
                 }
-                if(t % 5 == 0 && !ls.empty()) k = ls[0].first, b = ls[0].second; // 重复直线
+                if(t % 5 == 0 && !ls.empty()) k = ls[0][0], b = ls[0][1]; // 重复直线
                 ls.push_back({k, b});
                 DS::ins({k, b}, rt);
             }
@@ -56,7 +46,7 @@ int main() {
                 ll got = DS::que(x, rt);
                 if(got != want) {
                     printf("  [FAIL] x=%d want=%lld got=%lld(直线 %d 条)\n", x, want, got, n);
-                    for(auto &l : ls) printf("        k=%lld b=%lld\n", l.first, l.second);
+                    for(auto &l : ls) printf("        k=%lld b=%lld\n", l[0], l[1]);
                     return 1;
                 }
                 ++cnt;
@@ -69,7 +59,7 @@ int main() {
     {
         For(t, 1, 40) {
             int n = 300, rt = 0;
-            vector<pll2> ls;
+            vector<pll> ls;
             For(i, 1, n) {
                 ll k = (ll) rnd(-1000000, 1000000), b = (ll) rnd(-1000000000LL, 1000000000LL);
                 ls.push_back({k, b});
@@ -110,9 +100,9 @@ int main() {
         }
         {
             int rt = 0;
-            vector<pll2> ls;
+            vector<pll> ls;
             For(i, 1, 500) { // 斜率递增(插入顺序最坏)
-                pll2 l{(ll) i * 2000 - 500000, (ll) (i % 7) * 100000000};
+                pll l{(ll) i * 2000 - 500000, (ll) (i % 7) * 100000000};
                 ls.push_back(l);
                 DS::ins(l, rt);
             }

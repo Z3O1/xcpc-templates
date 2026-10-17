@@ -7,9 +7,9 @@
 #include "最小表示法.cpp"
 
 // 把容器 a 从 p 开始的循环移位拼出来；要求 0 <= p < |a|；返回新序列。
-template <class T> static vect<T> rot(const vect<T> &a, int p) {
+template <class C> static C rot(const C &a, int p) {
     int n = (int) a.size();
-    vect<T> r;
+    C r;
     r.reserve(n);
     For(i, 0, n - 1) r.push_back(a[(p + i) % n]);
     return r;
@@ -23,12 +23,12 @@ static string rot_s(const string &a, int p) {
     return r;
 }
 // 暴力枚举最小循环移位；要求 a 非空且元素可比较；返回最小序列并写入并列个数。
-template <class T> static vect<T> brute_min_rot(const vect<T> &a, int &ties) {
+template <class C> static C brute_min_rot(const C &a, int &ties) {
     int n = (int) a.size();
-    vect<T> best = rot(a, 0);
+    C best = rot(a, 0);
     ties = 1;
     For(p, 1, n - 1) {
-        vect<T> r = rot(a, p);
+        C r = rot(a, p);
         if(r < best) best = r, ties = 1;
         else if(!(best < r)) ++ties;
     }
@@ -51,7 +51,7 @@ static string brute_min_rot_s(const string &a, int &ties) {
 static int booth(const vect<int> &s) {
     int n = (int) s.size();
     if(n <= 1) return 0;
-    vect<int> ss(2 * n);
+    vect<int> ss(2 * n, 0);
     For(i, 0, 2 * n - 1) ss[i] = s[i % n];
     vect<int> f(2 * n, -1);
     int k = 0;
@@ -164,7 +164,7 @@ int main() {
         long long small = 0, mid = 0, ties = 0;
         For(t, 1, 30000) {
             int n = (int) rnd(1, 40), sig = (int) rnd(1, 3);
-            vect<int> a(n);
+            vect<int> a(n, 0);
             For(i, 0, n - 1) a[i] = (int) rnd(0, sig - 1);
             int tt = 0;
             vect<int> want = brute_min_rot(a, tt);
@@ -177,7 +177,7 @@ int main() {
         }
         For(t, 1, 3000) {
             int n = (int) rnd(100, 300), sig = (int) rnd(1, 2);
-            vect<int> a(n);
+            vect<int> a(n, 0);
             For(i, 0, n - 1) a[i] = (int) rnd(0, sig - 1);
             int tt = 0;
             vect<int> want = brute_min_rot(a, tt);
@@ -191,8 +191,8 @@ int main() {
         // 结构串
         long long spec = 0;
         For(n, 1, 300) {
-            vect<vect<int>> cases;
-            vect<int> same(n, 5), alt(n), incr(n), decr(n), per(n), tail(n), aa(n, 1);
+            vector<vect<int>> cases;
+            vect<int> same(n, 5), alt(n, 0), incr(n, 0), decr(n, 0), per(n, 0), tail(n, 0), aa(n, 1);
             For(i, 0, n - 1) {
                 alt[i] = i & 1;
                 incr[i] = i;
@@ -233,37 +233,37 @@ int main() {
                 return 1;
             }
             // vector<char>
-            vect<char> cs(all(s));
+            vector<char> cs(all(s));
             int t2 = 0;
-            vect<char> want2 = brute_min_rot(cs, t2);
+            vector<char> want2 = brute_min_rot(cs, t2);
             int p2 = minrep(cs);
             if(p2 < 0 || p2 >= n || rot(cs, p2) != want2) {
                 printf("  [FAIL] vector<char> n=%d\n", n);
                 return 1;
             }
             // vector<ll>
-            vect<ll> ls(n);
+            vector<ll> ls(n, 0);
             For(i, 0, n - 1) ls[i] = rnd(-3, 3);
             int t3 = 0;
-            vect<ll> want3 = brute_min_rot(ls, t3);
+            vector<ll> want3 = brute_min_rot(ls, t3);
             int p3 = minrep(ls);
             if(p3 < 0 || p3 >= n || rot(ls, p3) != want3) {
                 printf("  [FAIL] vector<ll> n=%d\n", n);
                 return 1;
             }
-            // vector<pair>
-            vect<pii> ps(n);
+            // vector<pii>(pii 即 array<int,2>)
+            vector<pii> ps(n, pii{});
             For(i, 0, n - 1) ps[i] = {(int) rnd(-1, 1), (int) rnd(-1, 1)};
             int t4 = 0;
-            vect<pii> want4 = brute_min_rot(ps, t4);
+            vector<pii> want4 = brute_min_rot(ps, t4);
             int p4 = minrep(ps);
             if(p4 < 0 || p4 >= n || rot(ps, p4) != want4) {
-                printf("  [FAIL] vector<pair> n=%d\n", n);
+                printf("  [FAIL] vector<pii> n=%d\n", n);
                 return 1;
             }
             ++cnt;
         }
-        printf("  [ok] 4 种容器(string / vector<char> / vector<ll> / vector<pair>)各 %lld 组全吻合\n", cnt);
+        printf("  [ok] 4 种容器(string / vector<char> / vector<ll> / vector<pii>)各 %lld 组全吻合\n", cnt);
     }
 
     // ---------- 5) 大 n:Booth 独立预言机 + 哈希比较 ----------
@@ -273,7 +273,7 @@ int main() {
             long long c1 = 0, c2 = 0;
             For(t, 1, 3000) {
                 int n = (int) rnd(1, 60), sig = (int) rnd(1, 2);
-                vect<int> a(n);
+                vect<int> a(n, 0);
                 For(i, 0, n - 1) a[i] = (int) rnd(0, sig - 1);
                 int tt = 0;
                 vect<int> want = brute_min_rot(a, tt);
@@ -284,8 +284,8 @@ int main() {
                 ++c1;
             }
             For(n, 1, 200) {   // 结构串上的 Booth 也要跟暴力一致(全同/周期/递增)
-                vect<vect<int>> cases;
-                vect<int> same(n, 3), alt(n), per(n, 0);
+                vector<vect<int>> cases;
+                vect<int> same(n, 3), alt(n, 0), per(n, 0);
                 For(i, 0, n - 1) alt[i] = i & 1, per[i] = i % 3;
                 cases = {same, alt, per};
                 for(auto &a : cases) {
@@ -305,7 +305,7 @@ int main() {
         for(auto cs : {Case{"全同", 0}, Case{"交替", 1}, Case{"递增前缀 aaa..ab", 2}, Case{"随机 0/1", 3},
                        Case{"周期 abcabc...", 4}}) {
             int n = 1000000;
-            vect<int> a(n);
+            vect<int> a(n, 0);
             For(i, 0, n - 1) {
                 if(cs.kind == 0) a[i] = 7;
                 else if(cs.kind == 1) a[i] = i & 1;

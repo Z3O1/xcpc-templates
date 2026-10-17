@@ -2,17 +2,9 @@
 //
 // calc 严格拒绝域外区间,不夹端点;包括空候选区间与上一组残留数据的旧越界回归。
 //
-// 说明:模板用的是 house header 的 pii(带 [0]/[1] 下标,见 q.front()[0]),这里就地补局部类型。
+// 模板用的是 house header 的 pii(= array<int,2>,带 [0]/[1] 下标,见 q.front()[0]);
+// _check_base.hpp 已直接包含该 header,所以这里的 pii 就是 array<int,2>,不再需要局部 shim。
 #include "../../_check_base.hpp"
-
-struct pii2 {
-    int first, second;
-    // 按模板约定访问左右端信息；i=0 返回 first，非 0 返回 second。
-    int &operator[](int i) { return i ? second : first; }
-    // 按模板约定只读访问左右端信息；i=0 返回 first，非 0 返回 second。
-    const int &operator[](int i) const { return i ? second : first; }
-};
-#define pii pii2
 
 const int N = 4005;
 int n;
@@ -29,7 +21,6 @@ static ll calc(int l, int r) {
     return s * s;
 }
 #include "二分栈.cpp"
-#undef pii
 
 // 朴素 DP；要求 n/pre 已设置；返回带罚分 dt 下的最优 (值,段数)。
 static nd naive_work(ll dt) {

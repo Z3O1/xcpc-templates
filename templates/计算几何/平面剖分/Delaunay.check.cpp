@@ -91,7 +91,7 @@ static bool onSeg(p2 A, p2 B, p2 P) {
     return min(A.x, B.x) <= P.x && P.x <= max(A.x, B.x) && min(A.y, B.y) <= P.y && P.y <= max(A.y, B.y);
 }
 // 返回空串 = 通过;否则返回第一处问题的描述。in 是原始输入(可含重复点),out 是模板返回的拼平三角形。
-static string verify(const vector<p2> &in, const vect<p2> &out, bool exactCircle, bool needAllVerts, bool verbose = false) {
+static string verify(const vector<p2> &in, const vector<p2> &out, bool exactCircle, bool needAllVerts, bool verbose = false) {
     char buf[512];
     if(out.size() % 3) return "输出点数不是 3 的倍数";
     vector<p2> u = in;
@@ -241,9 +241,6 @@ static vector<p2> rndPts(int n, ll R) {
     }
     return v;
 }
-// vector<p2> 转 vect<p2>。
-static vect<p2> V(const vector<p2> &v) { return vect<p2>(v.begin(), v.end()); }
-
 // 一般位置:没有三点共线、没有四点共圆(小坐标下用 i128 精确判断)
 static bool generalPosition(const vector<p2> &v) {
     int n = v.size();
@@ -276,8 +273,8 @@ int main() {
     // ===== 1. 接口与退化输入(全同点 / 全共线 / n <= 3 / 重复点) =====
     {
         int bad = 0;
-        auto one = [&](vect<p2> a, int wantF, const char *what) {
-            vect<p2> r = delaunay(a);
+        auto one = [&](vector<p2> a, int wantF, const char *what) {
+            vector<p2> r = delaunay(a);
             if((int) r.size() / 3 != wantF) printf("      %s:三角形个数 %d != %d\n", what, (int) r.size() / 3, wantF), ++bad;
         };
         one({}, 0, "空输入");
@@ -293,8 +290,8 @@ int main() {
         one({IP(0, 0), IP(4, 0), IP(0, 3), IP(1, 1), IP(1, 1)}, 3, "5 个点 4 个不同(1 个内部点)");
         CHECK(bad == 0, "退化输入:全同点/全共线/n<=2/重复点 都返回空或正确的三角形个数");
 
-        vect<p2> a = {IP(0, 0), IP(4, 0), IP(0, 3)};
-        vect<p2> r = delaunay(a);
+        vector<p2> a = {IP(0, 0), IP(4, 0), IP(0, 3)};
+        vector<p2> r = delaunay(a);
         CHECK(r.size() == 3 && abs(ar3(r[0], r[1], r[2]) - 6) < 1e-9, "n=3 返回唯一的三角形,顶点逆时针,面积 = 6");
         a = {IP(0, 0), IP(4, 0), IP(0, 3), IP(1, 1)};
         r = delaunay(a);
@@ -316,7 +313,7 @@ int main() {
                     vector<p2> in = rndPts(n, R);
                     if((int) in.size() < 3) continue;
                     ++cases;
-                    string e = verify(in, delaunay(V(in)), R <= 10000, true);
+                    string e = verify(in, delaunay(in), R <= 10000, true);
                     if(!e.empty() && first.empty()) {
                         first = e;
                         printf("      反例(坐标范围 %d, n=%d):%s\n      点集:", R, n, e.c_str());
@@ -353,7 +350,7 @@ int main() {
             }
             map<K, int> id;
             for(int i = 0; i < n; ++i) id[key(in[i])] = i;
-            vect<p2> r = delaunay(V(in));
+            vector<p2> r = delaunay(in);
             for(int i = 0; i < (int) r.size() / 3; ++i) {
                 array<int, 3> t{id[key(r[3 * i])], id[key(r[3 * i + 1])], id[key(r[3 * i + 2])]};
                 sort(t.begin(), t.end());
@@ -378,7 +375,7 @@ int main() {
     {
         int bad = 0;
         auto one = [&](vector<p2> in, const char *what, bool exact = true) {
-            string e = verify(in, delaunay(V(in)), exact, true);
+            string e = verify(in, delaunay(in), exact, true);
             if(!e.empty()) {
                 printf("      %s: %s\n", what, e.c_str());
                 ++bad;
@@ -444,7 +441,7 @@ int main() {
             int n = (int) frnd(3, 30);
             vector<p2> in = rndPts(n, 1000000000LL);
             if((int) in.size() < 3) continue;
-            string e = verify(in, delaunay(V(in)), false, true);
+            string e = verify(in, delaunay(in), false, true);
             if(!e.empty()) {
                 if(!bad) {
                     printf("      反例(±1e9):%s\n      点集:", e.c_str());
@@ -457,7 +454,7 @@ int main() {
         {
             vector<p2> v = {IP(-1000000000LL, -1000000000LL), IP(1000000000LL, -1000000000LL), IP(1000000000LL, 1000000000LL), IP(-1000000000LL, 1000000000LL),
                             IP(0, 0), IP(1, 0), IP(0, 1), IP(-1, -1), IP(999999999LL, 0), IP(0, 999999999LL), IP(-999999999LL, -1)};
-            string e = verify(v, delaunay(V(v)), false, true);
+            string e = verify(v, delaunay(v), false, true);
             CHECK(e.empty(), "±1e9 的正方形 + 内部点/边上的点:通过全部性质检查(相对容差 1e-9)");
             if(!e.empty()) printf("      %s\n", e.c_str());
         }
@@ -476,7 +473,7 @@ int main() {
                 for(p2 p : in) moved.push_back(o + p * s);
                 auto out = delaunay(moved);
                 for(p2 &p : out) p = (p - o) / s;
-                string err = verify(in, V(out), true, true);
+                string err = verify(in, out, true, true);
                 for(int t = 0; t < (int)Delaunay::tri.size(); ++t) if(Delaunay::live[t]) {
                     auto q = Delaunay::tri[t];
                     for(int j = 0; j < 3; ++j) if(q.f[j] >= 0) {
@@ -509,41 +506,35 @@ int main() {
     // ===== 6. 反向自检:验证器能抓到错的东西(证明本 check 不是恒绿) =====
     {
         vector<p2> in = {IP(0, 0), IP(10, 0), IP(10, 10), IP(0, 10), IP(4, 5), IP(6, 4)};
-        vect<p2> good = delaunay(V(in));
+        vector<p2> good = delaunay(in);
         CHECK(verify(in, good, true, true).empty(), "基准:模板输出能通过验证器");
         // 6.1 丢掉一个三角形 -> 面积不足
-        vect<p2> drop(good.begin(), good.end() - 3);
+        vector<p2> drop(good.begin(), good.end() - 3);
         CHECK(!verify(in, drop, true, true).empty(), "变异:丢掉一个三角形 -> 验证器报「面积和 != 凸包面积」");
         // 6.2 把一条边换成非法的对角线(用同一个四边形换另一种剖分,必然有一个不 Delaunay)
         {
             // 四点共圆的正方形:两种剖分都合法,所以这里用非共圆的四点
             vector<p2> q = {IP(0, 0), IP(10, 0), IP(9, 9), IP(1, 3)};
-            vect<p2> r1;
-            r1 += IP(0, 0), r1 += IP(10, 0), r1 += IP(9, 9);
-            r1 += IP(0, 0), r1 += IP(9, 9), r1 += IP(1, 3);
-            vect<p2> r2;
-            r2 += IP(0, 0), r2 += IP(10, 0), r2 += IP(1, 3);
-            r2 += IP(10, 0), r2 += IP(9, 9), r2 += IP(1, 3);
+            vector<p2> r1 = {IP(0, 0), IP(10, 0), IP(9, 9), IP(0, 0), IP(9, 9), IP(1, 3)};
+            vector<p2> r2 = {IP(0, 0), IP(10, 0), IP(1, 3), IP(10, 0), IP(9, 9), IP(1, 3)};
             bool ok1 = verify(q, r1, true, true).empty(), ok2 = verify(q, r2, true, true).empty();
             CHECK(ok1 != ok2, "变异:凸四边形的两条对角线只有一条是 Delaunay -> 验证器只放行合法的那一条");
         }
         // 6.3 丢顶点
         {
-            vect<p2> r;
-            r += IP(0, 0), r += IP(10, 0), r += IP(10, 10);
-            r += IP(0, 0), r += IP(10, 10), r += IP(0, 10);
+            vector<p2> r = {IP(0, 0), IP(10, 0), IP(10, 10), IP(0, 0), IP(10, 10), IP(0, 10)};
             string e = verify(in, r, true, true);
             CHECK(!e.empty(), "变异:只做凸包(内部点全丢了)-> 验证器报「输入点不是顶点」或覆盖不全");
         }
         // 6.4 重复三角形
         {
-            vect<p2> r = good;
-            r += good[0], r += good[1], r += good[2];
+            vector<p2> r = good;
+            r.push_back(good[0]), r.push_back(good[1]), r.push_back(good[2]);
             CHECK(!verify(in, r, true, true).empty(), "变异:复制一个三角形 -> 验证器报「重复三角形」或边重数超限");
         }
         // 6.5 顺时针三角形
         {
-            vect<p2> r = good;
+            vector<p2> r = good;
             for(int i = 0; i + 3 <= (int) r.size(); i += 3) swap(r[i + 1], r[i + 2]);
             CHECK(!verify(in, r, true, true).empty(), "变异:把三角形顶点顺序反过来 -> 验证器报「不是逆时针」");
         }
@@ -555,7 +546,7 @@ int main() {
         for(int rep = 0; rep < 6; ++rep) {
             int n = (int) frnd(150, 400);
             vector<p2> in = rndPts(n, 100000);
-            string e = verify(in, delaunay(V(in)), true, true);
+            string e = verify(in, delaunay(in), true, true);
             if(!e.empty()) {
                 if(!bad) printf("      反例(n=%d):%s\n", n, e.c_str());
                 ++bad;
@@ -569,7 +560,7 @@ int main() {
                 ll x = (ll) roundl(1000000 * cosl(2 * pi * i / 300)), y = (ll) roundl(1000000 * sinl(2 * pi * i / 300));
                 if(!s.count({x, y})) s.insert({x, y}), v.push_back(IP(x, y));
             }
-            string e = verify(v, delaunay(V(v)), false, true);
+            string e = verify(v, delaunay(v), false, true);
             if(!e.empty()) printf("      反例(凸位置 300 点):%s\n", e.c_str()), ++bad;
         }
         CHECK(bad == 0, "n 到 400 的随机点集与 300 个凸位置点:性质检查全部通过(check 里不做 n 很大的性能测试)");

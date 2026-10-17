@@ -27,7 +27,7 @@
 //       dm[2] = 0, dm[3] = 2(正确是 1, 1)。本 check 每个用例前都手工重置, 所以能一直测下去。
 //
 // 另注: 模板依赖 house 的 `pii = array<int,2>`(f[i] = {dfn[i]} 与 que(x)[1]),
-//       _check_base.hpp 里的 pii 正是 array<int,2>, 所以这里能直接编译。
+//       _check_base.hpp 直接包含 头文件.cpp, 所以这里的 pii 就是 array<int,2>, 能直接编译。
 //
 // 失败不依赖 XCPC_CHECK_STRICT,默认运行就必须抓住历史回归。
 #include "../_check_base.hpp"
@@ -173,7 +173,7 @@ int main() {
     puts("— 手算用例 —");
     {
         struct C { const char *name; int n; vect<array<int, 2>> es; };
-        vect<C> cs;
+        vector<C> cs;
         cs.push_back({"n=1 单点无边", 1, {}});
         cs.push_back({"1->2", 2, {{1, 2}}});
         cs.push_back({"1->2,1->3,2->3(菱形一边)", 3, {{1, 2}, {1, 3}, {2, 3}}});

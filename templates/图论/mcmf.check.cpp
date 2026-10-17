@@ -119,7 +119,7 @@ struct RefMCMF {
 // ———— 独立参考实现 2: 矩阵 Edmonds–Karp(只求最大流, 用来交叉验证参考实现 1) ————
 struct EK {
     int n;
-    vect<vect<ll>> c;
+    vector<vect<ll>> c;
     // 初始化矩阵容量图；要求点编号 1.._n；覆盖旧状态。
     void init(int _n) { n = _n, c.assign(n + 1, vect<ll>(n + 1, 0)); }
     // 加一条有向容量；要求已 init 且容量非负；平行边累加。
@@ -423,7 +423,7 @@ int main() {
     puts("— mcmf() 本体: 随机图 vs 独立 SPFA 费用流 —");
     {
         int bad = 0, cnt = 0, skipped = 0;
-        vect<string> firstbad;
+        vector<string> firstbad;
         For(rep, 1, 1500) {
             int n = (int) rnd(2, 8), m = (int) rnd(0, 14);
             int s = (int) rnd(1, n), t = (int) rnd(1, n);

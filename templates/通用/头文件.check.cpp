@@ -1,8 +1,8 @@
 // 头文件 自测:宏与类型别名的语义(For/rFor 闭区间与右端只求值一次、cmin/cmax 改左值、
 // vect 即 basic_string、mtc 多测循环、宏重命名 y0/y1 不冲突)
 //
-// 本条目自带 house 宏与类型,与 ../_check_base.hpp 的 For/vect/pll 定义冲突,
-// 故不包含兼容层,这里只放一份最小断言报告。
+// 本条目直接包含 头文件.cpp(不经 ../_check_base.hpp):这里要跑完全部断言再统一报错,
+// 用自己的累计式 CHECK;而 _check_base 的 CHECK 首次失败即 exit。
 
 #include "头文件.cpp"
 

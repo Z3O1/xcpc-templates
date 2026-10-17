@@ -86,7 +86,7 @@ struct MatchOut {
     int hung_at = 0;              // 挂死时的搜索根(0 = 没挂, -1 = 子进程异常)
     int msz = 0;
     vect<int> mm;
-    vect<pair<int, int>> trace;   // (根, 该次调用返回后的 mat[0])
+    vector<pair<int, int>> trace;   // (根, 该次调用返回后的 mat[0])
     bool polluted = false;        // 是否观测到 mat[0] != 0(已知 bug 的指纹)
 };
 
@@ -301,7 +301,7 @@ int main() {
             int opt;
             bool known_good;   // true: 实测该用例正确 → 偏差即 FAIL
         };
-        vect<C> cs;
+        vector<C> cs;
         cs.push_back({"空图 n=2", 2, {}, 0, true});
         cs.push_back({"单边", 2, {{1, 2}}, 1, true});
         cs.push_back({"路径 1-2-3", 3, {{1, 2}, {2, 3}}, 1, true});

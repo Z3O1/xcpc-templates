@@ -7,7 +7,7 @@ int main() {
     // 1) 随机对拍(系数小,double 精度足够)
     For(t, 1, 30000) {
         int n = (int) rnd(1, 40), m = (int) rnd(1, 40);
-        vect<db> a(n), b(m);
+        vect<db> a(n, 0), b(m, 0);
         For(i, 0, n - 1) a[i] = (db) rnd(-1000, 1000);
         For(i, 0, m - 1) b[i] = (db) rnd(-1000, 1000);
         vect<db> got = fft_conv(a, b), want(n + m - 1, 0);
@@ -22,7 +22,7 @@ int main() {
 
     // 2) 长度边界:直接FFT空/长度1、1×1、1×k、k×1、非2的幂卷积长度
     {
-        vect<cp> single{cp(3, -2)}, empty;
+        vector<cp> single{cp(3, -2)}, empty;
         fft(single, 1), fft(single, -1);
         CHECK(single.size() == 1 && single[0] == cp(3, -2), "长度1的正逆FFT均为恒等");
         fft(empty, 1), fft(empty, -1);
@@ -51,7 +51,7 @@ int main() {
     // 4) 精度边界:系数 ~1e6、长度 1024(结果 ~1e15,仍在 double 能力内但误差会放大)
     {
         int n = 1024;
-        vect<db> a(n), b(n);
+        vect<db> a(n, 0), b(n, 0);
         For(i, 0, n - 1) a[i] = (db) rnd(-1000000, 1000000);
         For(i, 0, n - 1) b[i] = (db) rnd(-1000000, 1000000);
         vect<db> got = fft_conv(a, b);

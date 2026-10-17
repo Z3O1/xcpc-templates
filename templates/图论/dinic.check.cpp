@@ -34,7 +34,7 @@ static ll brute_mincut(int n, int s, int t, const vect<array<int, 3>> &es) {
 // ———— 独立暴力 2:矩阵 Edmonds–Karp ————
 struct EK {
     int n;
-    vect<vect<ll>> c;
+    vector<vect<ll>> c;
     // 初始化矩阵容量图；要求点编号 1.._n；覆盖旧状态。
     void init(int _n) { n = _n, c.assign(n + 1, vect<ll>(n + 1, 0)); }
     // 加一条有向容量；要求已 init 且容量非负；平行边累加。

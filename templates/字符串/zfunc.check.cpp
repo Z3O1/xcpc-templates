@@ -58,7 +58,7 @@ int main() {
     zfunc(0, nullptr, nullptr);
     For(t, 1, 2000) {
         int n = rnd(1, 40);
-        vect<int> s(n + 1), z(n + 2, 12345);
+        vect<int> s(n + 1, 0), z(n + 2, 12345);
         For(i, 0, n) s[i] = rnd(0, 3);
         const vect<int> saved = s;
         zfunc(n, s.data(), z.data());

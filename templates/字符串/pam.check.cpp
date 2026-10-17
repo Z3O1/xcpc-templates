@@ -36,7 +36,7 @@ static void run_template() {
 #include "pam.cpp"
 }
 // 喂 m 个小写串进 cin 并跑一遍模板；必要时扩容，覆盖重建全局 PAM。
-static void pam_run(const vect<string> &strs) {
+static void pam_run(const vector<string> &strs) {
     int total = 0;
     for(auto &s : strs) total += (int) s.size();
     if(total + 2 > pam_cap) pam_alloc(total + 2);
@@ -51,7 +51,7 @@ static void pam_run(const vect<string> &strs) {
 
 // ---------- 暴力 ----------
 // 所有串的所有回文子串(精确字符串集合 + 总个数)
-static void brute_pals(const vect<string> &strs, set<string> &S, long long &total) {
+static void brute_pals(const vector<string> &strs, set<string> &S, long long &total) {
     for(auto &s : strs) {
         int n = (int) s.size();
         For(i, 0, n - 1) For(j, i, n - 1) {
@@ -81,7 +81,7 @@ struct H2 {
     }
 };
 // 用中心扩展和哈希统计不同回文串数；要求字符串为小写普通串；返回去重后的数量。
-static long long brute_pal_count_hash(const vect<string> &strs) {
+static long long brute_pal_count_hash(const vector<string> &strs) {
     vect<pair<u64, u64>> hs;
     for(auto &s : strs) {
         int n = (int) s.size();
@@ -102,7 +102,7 @@ static long long brute_pal_count_hash(const vect<string> &strs) {
 
 // ---------- 把模板建出来的自动机"读出来"并核对 ----------
 // 从全局 PAM 还原每个非根节点的回文串；要求已建图；覆盖 ns/reach，失败返回 false。
-static bool collect_nodes(vect<string> &ns, int &reach) {
+static bool collect_nodes(vector<string> &ns, int &reach) {
     ns.assign(tot + 1, string());
     vect<int> q;
     q.push_back(1), ns[1] = "";
@@ -124,7 +124,7 @@ static bool collect_nodes(vect<string> &ns, int &reach) {
     return reach == tot - 1;   // q = {偶根 1} + 真节点(编号 3..tot,共 tot-2 个)
 }
 // 核对节点数、长度和 fail 链；要求全局 PAM 对应 strs，exact=true 时逐节点对照集合。
-static bool check_against_brute(const vect<string> &strs, bool exact) {
+static bool check_against_brute(const vector<string> &strs, bool exact) {
     set<string> S;
     long long total = 0;
     brute_pals(strs, S, total);
@@ -133,7 +133,7 @@ static bool check_against_brute(const vect<string> &strs, bool exact) {
         return false;
     }
     if(exact) {
-        vect<string> ns;
+        vector<string> ns;
         int reach = 0;
         if(!collect_nodes(ns, reach)) {
             printf("    [FAIL] 节点从根不可达/有环\n");
@@ -182,7 +182,7 @@ int main() {
         long long cnt = 0;
         For(alpha, 2, 3) {
             int mx = alpha == 2 ? 10 : 6;
-            vect<string> strs;
+            vector<string> strs;
             For(n, 1, mx) {
                 vect<int> cur(n, 0);
                 while(true) {
@@ -208,7 +208,7 @@ int main() {
     // ---------- 2) 穷举所有两串组合(长 1..4,{a,b})----------
     {
         long long cnt = 0;
-        vect<string> all4;
+        vector<string> all4;
         For(n, 1, 4) {
             vect<int> cur(n, 0);
             while(true) {
@@ -222,7 +222,7 @@ int main() {
             }
         }
         for(auto &x : all4) for(auto &y : all4) {
-            vect<string> strs{x, y};
+            vector<string> strs{x, y};
             pam_run(strs);
             if(!check_against_brute(strs, true)) {
                 printf("  [FAIL] 两串 \"%s\" + \"%s\"\n", x.c_str(), y.c_str());
@@ -238,7 +238,7 @@ int main() {
         long long cnt = 0, nodes = 0;
         For(t, 1, 20000) {
             int k = (int) rnd(1, 3);
-            vect<string> strs;
+            vector<string> strs;
             For(i, 1, k) {
                 int n = (int) rnd(1, 14);
                 string s;
@@ -262,7 +262,7 @@ int main() {
         long long cnt = 0;
         For(t, 1, 2000) {
             int k = (int) rnd(1, 3);
-            vect<string> strs;
+            vector<string> strs;
             For(i, 1, k) {
                 int n = (int) rnd(1, 120);
                 string s;
@@ -281,7 +281,7 @@ int main() {
             int n = (int) rnd(1000, 2000), p = (int) rnd(1, 2);
             string s;
             For(j, 1, n) s += (char) ('a' + (j % p));
-            vect<string> strs{s};
+            vector<string> strs{s};
             pam_run(strs);
             long long want = brute_pal_count_hash(strs);
             if(tot - 2 != want) {
@@ -300,7 +300,7 @@ int main() {
             For(j, 1, nn) s += (char) ('a' + rnd(0, 1));
             int st0 = (int) rnd(1, nn - run);
             For(j, st0, st0 + run - 1) s[j - 1] = 'a';   // 插一段长同字符 run
-            vect<string> strs{s};
+            vector<string> strs{s};
             pam_run(strs);
             long long want = brute_pal_count_hash(strs);
             if(tot - 2 != want) {
@@ -317,7 +317,7 @@ int main() {
         int n = 1000000;
         // 全同串:不同回文个数恰好 n
         {
-            vect<string> strs{string(n, 'a')};
+            vector<string> strs{string(n, 'a')};
             auto t0 = chrono::steady_clock::now();
             pam_run(strs);
             double ms = chrono::duration<double, milli>(chrono::steady_clock::now() - t0).count();
@@ -337,7 +337,7 @@ int main() {
                 int nn = 1000 + k;
                 string s;
                 For(j, 1, nn) s += (char) ('a' + (j & 1));
-                vect<string> strs{s};
+                vector<string> strs{s};
                 pam_run(strs);
                 long long want = brute_pal_count_hash(strs);
                 if(tot - 2 != want) return printf("  [FAIL] 交替 n=%d 公式核对失败\n", nn), 1;
@@ -346,7 +346,7 @@ int main() {
             }
             string s(n, 'a');
             For(j, 1, n) s[j - 1] = (char) ('a' + (j & 1));
-            vect<string> strs{s};
+            vector<string> strs{s};
             pam_run(strs);
             if(tot - 2 != n) return printf("  [FAIL] 1e6 交替串节点 %d != %d\n", tot - 2, n), 1;
             ok("n=1e6 交替串节点数 = n(公式先在中规模经暴力验证)");
@@ -356,7 +356,7 @@ int main() {
             string s1, s2;
             For(j, 1, n / 2) s1 += (char) ('a' + rnd(0, 1));
             For(j, 1, n / 2) s2 += (char) ('a' + rnd(0, 1));
-            vect<string> strs{s1, s2};
+            vector<string> strs{s1, s2};
             auto t0 = chrono::steady_clock::now();
             pam_run(strs);
             double ms = chrono::duration<double, milli>(chrono::steady_clock::now() - t0).count();
@@ -365,9 +365,9 @@ int main() {
                 return printf("  [FAIL] 两串节点 %d 不变量坏\n", u), 1;
             }
             int single1 = tot;
-            pam_run(vect<string>{s1});
+            pam_run(vector<string>{s1});
             int c1 = tot - 2;
-            pam_run(vect<string>{s2});
+            pam_run(vector<string>{s2});
             int c2 = tot - 2;
             pam_run(strs);
             if(tot - 2 < max(c1, c2) || tot - 2 > c1 + c2) {

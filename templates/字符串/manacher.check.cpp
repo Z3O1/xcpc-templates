@@ -12,7 +12,7 @@ static int D2BUF[2 * MAXN + 8];
 
 // 暴力:1-indexed 串 t,每个中心的奇回文半径(最大 r 使 t[i-r..i+r] 回文)
 static vect<int> brute_odd(int n, const string &t) {
-    vect<int> rad(n + 1);
+    vect<int> rad(n + 1, 0);
     For(i, 1, n) {
         int r = 0;
         while(i - r - 1 >= 1 && i + r + 1 <= n && t[i - r - 1] == t[i + r + 1]) ++r;
