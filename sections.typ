@@ -386,6 +386,10 @@
 
 = 通用
 
+== 头文件
+
+#zebraw(lang: false)[#raw(readcode("templates/通用/头文件.cpp"), lang: "cpp", block: true)]
+
 == 大质数表
 
 #include "templates/通用/大质数表.typ"

@@ -617,6 +617,12 @@
    "hidden": false
   },
   {
+   "key": "通用/头文件.cpp",
+   "title": "头文件",
+   "missing": false,
+   "hidden": false
+  },
+  {
    "key": "通用/大质数表.typ",
    "title": "大质数表",
    "missing": false,

@@ -35,7 +35,7 @@ python3 -m unittest discover -s tests # 改生成、构建、选测工具时必�
 
 ## 3. 文件与生成规则
 
-- `templates/<章>/` 放源码、同名介绍 `.typ` 与自测 `.check.cpp`；`templates/_check_base.hpp` 是不进 PDF 的自测兼容层。
+- `templates/<章>/` 放源码、同名介绍 `.typ` 与自测 `.check.cpp`；`templates/_check_base.hpp` 是不进 PDF 的自测兼容层，读者 base header 上书在 `通用/头文件.cpp`。
 - `gen.py` 扫描、对账并生成 `sections.typ`，跳过 check 与隐藏项；`xcpc.typ` include 生成章节，编译为 `xcpc.pdf`；工具回归放 `tests/`。
 
 - 章节是 `templates/` 的一级目录；新章节/模板自动追加，已有标题**以 manifest 为准**，修改头注释不会覆盖它。
@@ -56,7 +56,7 @@ python3 -m unittest discover -s tests # 改生成、构建、选测工具时必�
 - **面向现场手抄**：优先清楚、紧凑、容易照抄和核对的写法，不为工程化或泛用性增加不必要的封装、抽象或依赖；不得为缩短代码牺牲正确性或隐藏必要约束。
 - 第一行注释用于新条目的标题，用短名词；尾部备注按配平括号剥离，无标题注释则回退文件名。**标题后留空行**；渲染只丢第一个非空行，后面的契约照常打印。
 - 隐藏标记放在开头连续行注释区（允许空行）；放在正文中不会隐藏。
-- 片段不写 `main`、`#include`、`using namespace std;`，不重复定义读者 base header 的宏和基础类型；算法自身的结构体正常保留。
+- 片段不写 `main`、`#include`、`using namespace std;`，不重复定义读者 base header 的宏和基础类型；唯一例外是 `通用/头文件.cpp`（它本身就是读者可整段抄的 base header）。算法自身的结构体正常保留。
 - 使用 `For/rFor`、`vect<T>`、`ll/db/poly/ksm`；`pii` 是 `array<int,2>`，不是 pair。几何沿用 `p2/seg/line` 与 `eps/cmp/sgn/cross/det`。
 - `vect` 追加用 `+=`，不假设用户容器有 `push_back`；需要标准容器就明确用 `std::vector`。自测兼容层继承 vector，不能反推用户 header 的接口。
 - 几何点积写 `dot(a,b)`；`p2/p3` 的 `*` 仅作数乘，不重引入点点乘法重载。
