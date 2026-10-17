@@ -1,4 +1,4 @@
-// 图形交 自测:点圆径向/换序2万组、短非零/零方向/缩放/平移/近切，直线/线段/圆交及面积
+// 图形交 自测:原地筛点顺序/解析弦尺度平移、点圆径向换序2万组、直线/线段/圆交及面积
 //
 // 测什么:cir_line / cir_seg / cir_cir 的端点集合与个数,cir_cir_area / cir_poly_area 的数值。
 // 对拍方式(内置参考实现,全部不调用模板):
@@ -395,6 +395,29 @@ static double el() { return (double) (clock() - tick0) / CLOCKS_PER_SEC; }
 int main() {
     tick0 = clock();
     printf("== 图形交 自测开始 ==\n");
+    // 轴向3-4-5弦：筛去前/后/全部交点，及两圆交点的有序输出；不复用求交公式。
+    for(db s : {db(1e-6L), db(1), db(1e1000L)}) for(db shift : {db(0), 16 * s}) {
+        c2 a{{shift, -shift}, 5 * s}, b{{shift + 6 * s, -shift}, 5 * s};
+        auto points = cir_cir(a, b);
+        bool good = points.size() == 2;
+        for(int i = 0; i < (int) points.size(); ++i)
+            good &= dis((points[i] - a.o) / s - p2{3, i ? db(4) : db(-4)}) < 1e-14L;
+        if(!good) { prC(a, "a"); prC(b, "b"); prPs(points); die("解析圆圆弦", __LINE__); }
+        for(auto ends : {array<int, 2>{-6, 6}, {-6, 0}, {0, 6}, {-2, 2}}) {
+            seg l{{shift + ends[0] * s, -shift + 3 * s}, {shift + ends[1] * s, -shift + 3 * s}};
+            for(bool reverse_direction : {false, true}) {
+                if(reverse_direction) swap(l.x, l.y);
+                vector<p2> want;
+                for(int x : {-4, 4}) if(x >= ends[0] && x <= ends[1]) want.push_back({db(x), 3});
+                if(reverse_direction) reverse(want.begin(), want.end());
+                auto got = cir_seg(a, l);
+                good = got.size() == want.size();
+                for(int i = 0; i < (int) min(got.size(), want.size()); ++i)
+                    good &= dis((got[i] - a.o) / s - want[i]) < 1e-14L;
+                if(!good) { prC(a, "a"); prS(l, "l"); prPs(got); die("原地筛点保序", __LINE__); }
+            }
+        }
+    }
     {
         auto same=cir_cir(c2{{0,0},0},c2{{0,0},0});
         T(same.size()==1 && same[0].x==0 && same[0].y==0, "重合点圆交集是孤立点");

@@ -22,17 +22,15 @@ vector<p2> cir_line(const c2 &c, const seg &l) {
     return {f - u * h, f + u * h};
 }
 
-// 圆与线段的交点(直线交点再用 ons 过滤)。按 t 递增。O(1)
+// 圆与线段的交点，沿 l.x→l.y 递增；用 ons 过滤直线交点。
 vector<p2> cir_seg(const c2 &c, const seg &l) {
-    vector<p2> r;
-    for(p2 x : cir_line(c, l))
-        if(ons(l, x)) r.push_back(x);
+    auto r = cir_line(c, l);
+    r.erase(remove_if(r.begin(), r.end(), [&](p2 p) { return !ons(l, p); }), r.end());
     return r;
 }
 
-// 两圆交点按相对c1.o的精确极角排序；点圆用径向长度eps，重合点圆返回该点。
-// 两点圆在eps内取c1.o；非点圆圆心距<=eps视同心，按第一圆h²/r长度门槛判近切。
-// 做法:沿 o1->o2 方向量 d,再沿垂线取 +-h,并逐个验证到两圆心的距离确实都是 r。O(1)
+// 交点按相对 c1.o 的精确极角递增；点圆按径向长度 eps，两点圆在 eps 内取 c1.o。
+// 非点圆圆心距<=eps 视同心，按第一圆 h²/r 的长度 eps 判近切，再过滤径向残差。
 vector<p2> cir_cir(const c2 &c1, const c2 &other) {
     p2 dv = other.o - c1.o;
     db d = dis(dv);
@@ -46,6 +44,7 @@ vector<p2> cir_cir(const c2 &c1, const c2 &other) {
     db sc2 = h2 / c1.r;
     if(sign(sc2) < 0) return {};                              // 两圆相离(含内含)
     vector<p2> r;
+    r.reserve(2);
     p2 base = c1.o + u * x;
     if(sign(sc2) > 0) {
         db h = sqrtl(h2);
@@ -59,18 +58,12 @@ vector<p2> cir_cir(const c2 &c1, const c2 &other) {
         db e = eps + db(1e-10) * max(c1.r, other.r);  // 输出残差：长度eps+独立相对误差。
         return abs(t1) <= e && abs(t2) <= e;                  // 极端半径比下过滤数值伪交点
     };
-    vector<p2> q;
-    for(p2 p : r)
-        if(good(p)) q.push_back(p);
-    sort(q.begin(), q.end(), [&](const p2 &a, const p2 &b) { return (a - c1.o).alpha() < (b - c1.o).alpha(); });
-    return q;
+    r.erase(remove_if(r.begin(), r.end(), [&](p2 p) { return !good(p); }), r.end());
+    sort(r.begin(), r.end(), [&](const p2 &a, const p2 &b) { return (a - c1.o).alpha() < (b - c1.o).alpha(); });
+    return r;
 }
 
-// 两圆「交」面积(解析法:两个弓形之和)。设 d 为圆心距(0 < |r1 - r2| < d < r1 + r2),
-// x = (d^2 + r1^2 - r2^2) / (2d) 是公共弦到圆 1 圆心的距离,h = sqrt(r1^2 - x^2) 是公共弦的一半,
-// a_i = 2 * acos(...) 是交点在圆 i 里的圆心角;则 S = (r1^2 a1 / 2 - d h / 2) + (r2^2 a2 / 2 - d h / 2),
-// 即两个「扇形 - 三角形」弓形之和。内含/内切/重合返回 pi * min(r1,r2)^2(小圆整个被盖住),
-// 外离/外切返回 0(容差 eps)。形参无半径大小要求,内部按 r 归一。O(1)
+// 两圆交面积；按长度 eps 判内外切，内含取小圆面积，外离返回 0；平方等中间量须可表示。
 db cir_cir_area(const c2 &c1, const c2 &other) {
     db r1 = c1.r, r2 = other.r;
     if(r1 < r2) swap(r1, r2);                                 // 保证 r1 >= r2
@@ -84,20 +77,13 @@ db cir_cir_area(const c2 &c1, const c2 &other) {
     return max((db) 0, (r1 * r1 * a1 / 2 - d * h / 2) + (r2 * r2 * a2 / 2 - d * h / 2));
 }
 
-// —— cir_poly_area 的零件:圆盘与「三角形 (圆心, a, b)」的交(有向面积 * 2) ——
-// 从 u 到 v 的**有向**夹角,取值 (-pi, pi]:atan2(叉积, 点积)。
-// 这里必须用有向角,不能把角差归一到 [0, 2pi) —— 圆心落在多边形外时各边扇形角的有向和是 0,
-// 归一化之后会变成 2pi,于是「圆完全在多边形外」会算出整整一块圆面积。
+// 有向夹角，保留 atan2 的正负号，不能归一到 [0,2pi)。
 db arg2(const p2 &u, const p2 &v) { return atan2l(u.det(v), dot(u, v)); }
-// a、b 先平移到「以圆心为原点」;va/vb = a、b 是否在圆盘内(含边界)。三种情形:
-//   · a、b 都在圆内 -> 整块三角形都在圆内:a.det(b)
-//   · 线段 ab 与圆盘无交 -> 只贡献一个扇形:arg2(a, b) * r^2
-//   · 否则 -> 沿 a -> b 把「弧 + 弦上那段直线段」依次拼起来(扇形 + 三角形)
+// 圆盘与三角形 (c.o,a,b) 的有向交面积的两倍；内部平移到圆心。
 db tri_disk2(const c2 &c, p2 a, p2 b) {
     a = a - c.o, b = b - c.o;
     db r2 = c.r * c.r;
-    // 判「点是否在圆盘内」比的是**距离**而不是平方距离:平方距离在半径 1e-6 时只有 1e-12,
-    // 会被基础库的绝对 eps = 1e-10 全部判成「在圆内」
+    // eps 是长度容差，不能直接比较平方距离。
     int va = cmp(dis(a), c.r) <= 0, vb = cmp(dis(b), c.r) <= 0;
     if(va && vb) return a.det(b);
     vector<p2> v = cir_seg(c2{{0, 0}, c.r}, {a, b});  // 圆(圆心在原点)与线段 ab 的交点,按 a->b 递增
@@ -109,10 +95,7 @@ db tri_disk2(const c2 &c, p2 a, p2 b) {
     return s;
 }
 
-// 逆时针**简单**多边形 a[0..n-1](凹也对)与圆的交面积,恒 >= 0。O(n)
-// 做法:对每条边 (a[i], a[i+1]) 求「三角形(圆心, a[i], a[i+1]) 与圆盘」的有向交面积并累加 ——
-// 这些三角形是圆心的「扇形剖分」,有向面积自动抵消外部与凹口,所以凹多边形同样正确。
-// 退化:r 在 eps 内按 0 处理;多边形面积 0 时结果 0。顺时针多边形不在契约内(会返回 0)。
+// 逆时针简单多边形（可凹）与圆的交面积，非负；r<=eps 或不足三点返回 0。
 db cir_poly_area(const vector<p2> &a, const c2 &c) {
     int n = a.size();
     if(n < 3 || !sign(c.r)) return 0;

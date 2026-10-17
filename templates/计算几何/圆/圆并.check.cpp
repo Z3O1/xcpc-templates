@@ -1,4 +1,4 @@
-// 圆并 自测:自适应纵切积分/交点分段周长独立参考、500组随机，重合/包含/相切/洞/跨角/极端缩放/远簇，2000圆性能
+// 圆并 自测:自适应积分/分段周长参考、500组随机，旋转换根/隐藏根、退化/洞/跨角/极端缩放/远簇/2000圆
 #include "../../_check_base.hpp"
 #include "../基础/二维向量.cpp"
 #include "../基础/直线与线段.cpp"
@@ -140,6 +140,17 @@ int main() {
         }
     }
     db two_area = 4 * pi / 3 + sqrt(db(3)) / 2, two_perimeter = 8 * pi / 3;
+    // 同一解析并集旋转、平移并换根；覆盖小圆也可能成为连通块原点。
+    for(db scale : {db(1e-2000L), db(1e-12L), db(1), db(1e12L), db(1e2000L)})
+        for(int angle = 0; angle < 16; ++angle) for(bool hidden_root : {false, true}) {
+            p2 origin{16 * scale, -16 * scale}, v = rot({scale, 0}, angle * pi / 8);
+            vector<c2> cluster{{origin, scale}, {origin + v, scale}};
+            if(hidden_root) cluster.push_back({origin + v / 2, scale / 4});
+            for(int i = 0; i < (int) cluster.size(); ++i) {
+                analytic(cluster, two_area, two_perimeter, scale);
+                rotate(cluster.begin(), cluster.begin() + 1, cluster.end());
+            }
+        }
     for(db scale : {db(1e-2000L), db(1e-12L), db(1), db(1e12L), db(1e2000L)})
         analytic({{{0, 0}, scale}, {{scale, 0}, scale}}, two_area, two_perimeter, scale);
     analytic({{{0, 0}, 1}, {{0, 0}, 1}, {{0, 0}, 0}}, pi, 2 * pi);
