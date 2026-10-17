@@ -1,4 +1,4 @@
-// 整数极角排序 自测:独立四象限参考、6000组严格弱序、零/同反向/近轴/叉积1、中心与i128边界、20万点排序
+// 整数极角排序 自测:独立四象限参考、6000组严格弱序、八向同射线/零/近轴/叉积1、平移与i128边界、20万点排序
 #include "../../_check_base.hpp"
 #include "整数点.cpp"
 #include "极角排序.cpp"
@@ -67,6 +67,14 @@ int main() {
     verify({{0, 0}, {0, 0}, {1, 0}, {2, 0}, {-1, 0}, {-2, 0}, {0, 1}, {0, -1},
             {B, 1}, {B, -1}, {-B, 1}, {-B, -1}, {1, B}, {-1, B}, {1, -B}, {-1, -B},
             {B, B - 1}, {B - 1, B - 2}});
+    for(p2i o : vector<p2i>{{0, 0}, {B - 100, -B + 100}}) {
+        vector<p2i> rays{o, o};
+        for(ll k : {1, 2, 7, 31}) for(ll x : {-1, 0, 1}) for(ll y : {-1, 0, 1})
+            if(x || y) rays.push_back({o.x + k * x, o.y + k * y});
+        verify(rays, o);
+    }
+    verify({{-S, -S}, {-S + 1, -S + 1}, {-1, -1}, {0, 0}, {1, 1}, {S - 1, S - 1}, {S, S}});
+    verify({{0, -S}, {0, -S + 1}, {0, -1}, {0, 0}, {0, 1}, {0, S - 1}, {0, S}});
     vector<p2i> corners{{-B, -B}, {-B, B}, {B, -B}, {B, B}, {0, 0}};
     for(auto o : corners) verify(corners, o);
     verify({{LLONG_MIN, LLONG_MIN}, {-1, -1}, {LLONG_MIN, -1}, {-1, LLONG_MIN}},

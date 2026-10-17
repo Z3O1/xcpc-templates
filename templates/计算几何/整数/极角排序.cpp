@@ -16,7 +16,7 @@ int direction_cmp(i128 ax, i128 ay, i128 bx, i128 by) {
 }
 // sort(a.begin(), a.end(), polar_less{中心})；默认原点；中心点最先，同向由近到远。
 // 要求各坐标减中心后的绝对值 < 2^63（均在 |坐标|<2^62 内自动满足）。
-// 平方和 < 2^127；比较为严格弱序，仅完全相同的点等价，不修改输入。
+// 比较为严格弱序，仅完全相同的点等价，不修改输入。
 struct polar_less {
     p2i center{0, 0};
     bool operator()(p2i a, p2i b) const {
@@ -24,7 +24,9 @@ struct polar_less {
         i128 bx = i128(b.x) - center.x, by = i128(b.y) - center.y;
         int c = direction_cmp(ax, ay, bx, by);
         if(c) return c < 0;
-        return ax * ax + ay * ay < bx * bx + by * by;
+        // 同向时按非零分量比较远近，无须平方。
+        if(ax != bx) return ax < 0 ? ax > bx : ax < bx;
+        return ay < 0 ? ay > by : ay < by;
     }
 };
 
