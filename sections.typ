@@ -156,6 +156,8 @@
 
 == 下取整和
 
+#include "templates/数论/下取整和.typ"
+
 #zebraw(lang: false)[#raw(readcode("templates/数论/下取整和.cpp"), lang: "cpp", block: true)]
 
 == 高斯整数

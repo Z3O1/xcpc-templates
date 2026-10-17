@@ -7,11 +7,10 @@ ll BSGS(ll a, ll b, ll p) {
     if(p == 1) return 0;
     if(b == 1) return 0;
     if(!a) return -1;
-    // l = a 的阶（l | p-1）
     ll l = p - 1;
     for(ll q = 2; q * q <= l; ++q)
         for(; l % q == 0 && ksm(a, l / q, p) == 1; l /= q);
-    if(l > 1 && ksm(a, l - 1, p) == 1) l = 1; // 阶为 1（a ≡ 1）
+    if(l > 1 && ksm(a, l - 1, p) == 1) l = 1;
     ll m = (ll) sqrt((db) l);
     while (m * m < l) ++m;
     for(ll y = 0, w = 1 % p; y < std::min(m, l); ++y) {
