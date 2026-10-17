@@ -1,4 +1,4 @@
-// Delaunay 自测:小尺度全排列转向、空圆性质(暴力 O(n^2))/ 剖分合法性(覆盖凸包、边共享、
+// Delaunay 自测:小尺度全排列转向、二进制缩放/平移及邻接、空圆性质(暴力 O(n^2))/ 剖分合法性(覆盖凸包、边共享、
 //   顶点全部用上)/ 与「枚举三点 + 空圆判定」的暴力 Delaunay 对照 / 各种退化输入。
 //
 // 独立依据(不拿另一个 Delaunay 实现对拍,而是直接验证 Delaunay 的定义):
@@ -14,8 +14,8 @@
 //   4. 反向自检(证明本 check 不是恒绿):把合法输出做变异(丢三角形/换对角线/丢顶点)后,
 //      验证器必须报错 —— 见最后一节。
 //
-// 所有测试点都用整数坐标(量级到 1e9),这样方向判定、面积、边去重、凸包都是精确的,
-// 空圆判定在 1e4 以内还能用 i128 精确算。随机种子固定(20240915),不 flaky。
+// 主验证器使用整数点(量级到 1e9)，空圆判定在 1e4 内用 i128 精确算。
+// 尺度/平移回归先精确还原整数点，另单测 eps 门槛附近转向；随机种子固定(20240915)。
 #include "../../_check_base.hpp"
 #include "../基础/二维向量.cpp"
 #include "../基础/直线与线段.cpp"
@@ -462,6 +462,48 @@ int main() {
             if(!e.empty()) printf("      %s\n", e.c_str());
         }
         CHECK(bad == 0, "±1e9 随机点集 40 组:空圆性质(相对容差 1e-9)与剖分合法性全部通过");
+    }
+
+    // 二进制变换可精确还原整数点，复用独立整数空圆/拓扑验证，不依赖大数外心消减。
+    {
+        int bad = 0, cases = 0;
+        for(int rep = 0; rep < 40; ++rep) {
+            vector<p2> in = rep ? rndPts(12, 30) : vector<p2>{{0,0},{8,0},{8,8},{0,8},{4,0},{4,4},{4,8},{2,2},{6,6}};
+            for(int e : {-20, 0, 20, 1000, 4000}) for(int shift : {0, 1}) {
+                db s = ldexp(db(1), e);
+                p2 o = p2{ldexp(db(1), 20), -ldexp(db(1), 19)} * (s * shift);
+                vector<p2> moved;
+                for(p2 p : in) moved.push_back(o + p * s);
+                auto out = delaunay(moved);
+                for(p2 &p : out) p = (p - o) / s;
+                string err = verify(in, V(out), true, true);
+                for(int t = 0; t < (int)Delaunay::tri.size(); ++t) if(Delaunay::live[t]) {
+                    auto q = Delaunay::tri[t];
+                    for(int j = 0; j < 3; ++j) if(q.f[j] >= 0) {
+                        int g = q.f[j], k = Delaunay::finde(g, q.v[(j+2)%3], q.v[(j+1)%3]);
+                        if(!Delaunay::live[g] || k < 0 || Delaunay::tri[g].f[k] != t) err = "邻接不互反";
+                    }
+                }
+                if(!err.empty() && !bad) {
+                    printf("      缩放反例 rep=%d e=%d shift=%d: %s\n      输入:", rep, e, shift, err.c_str());
+                    for(p2 p : in) printf(" (%.0Lf,%.0Lf)", p.x, p.y);
+                    printf("\n");
+                }
+                bad += !err.empty();
+                ++cases;
+            }
+        }
+        printf("      缩放/平移回归 %d 组，指数 -20..4000\n", cases);
+        CHECK(!bad, "缩放/平移后仍满足独立精确空圆、剖分合法性及双向邻接");
+        for(db f : {1.2L, 2.0L}) {
+            Delaunay::pts = {{0,0},{eps*f,0},{0,eps*f}};
+            array<int,3> p{0,1,2};
+            do {
+                int parity = ((p[0]>p[1])+(p[0]>p[2])+(p[1]>p[2]))%2;
+                CHECK(Delaunay::ori(p[0],p[1],p[2]) == (f < 1.5L ? 0 : parity ? -1 : 1),
+                      "最小高 eps 两侧的全排列转向保持一致");
+            } while(next_permutation(p.begin(),p.end()));
+        }
     }
 
     // ===== 6. 反向自检:验证器能抓到错的东西(证明本 check 不是恒绿) =====

@@ -18,7 +18,7 @@ vector<char> live;
 vector<int> fre;
 int verc;
 
-// 分配一个新三角形(优先复用空闲槽),返回其下标。
+// 分配三角形槽，优先复用空闲下标。
 int nw() {
     if(!fre.empty()) {
         int t = fre.back();
@@ -28,11 +28,9 @@ int nw() {
     tri.push_back(Tri()), live.push_back(1);
     return (int) tri.size() - 1;
 }
-// 释放三角形 t(标记死亡并回收下标)。
 void rm(int t) { live[t] = 0, fre.push_back(t); }
-// 按 (x, y) 精确字典序比较。
 bool lt(p2 u, p2 v) { return u.x != v.x ? u.x < v.x : u.y < v.y; }
-// 三点叉积的容差符号；a,b,c 为 pts 中的下标。
+// pts 下标对应的三点转向，与凸包共用容差。
 int ori(int a, int b, int c) { return turnop(pts[a], pts[b], pts[c]); }
 // 按相对容差判断 p 是否在外接圆内；要求 a,b,c 按逆时针排列。
 int ill(int p, int a, int b, int c) {
@@ -45,8 +43,7 @@ int finde(int t, int a, int b) {
     for(int i = 0; i < 3; ++i) if(tri[t].v[(i + 1) % 3] == a && tri[t].v[(i + 2) % 3] == b) return i;
     return -1;
 }
-// 将 t 的边 i 与三角形 g 双向相连；须共享反向边，0 <= i < 3。
-// g=-1 时仅将该边标为凸包边。
+// 将 t 的边 i 与共享反向边的 g 双向相连；g=-1 标记凸包边。
 void lnk(int t, int i, int g) {
     tri[t].f[i] = g;
     if(g >= 0) tri[g].f[finde(g, tri[t].v[(i + 2) % 3], tri[t].v[(i + 1) % 3])] = t;
@@ -87,7 +84,6 @@ void flipall(vector<Tst> &st) {
     }
 }
 
-// 构建 Delaunay 剖分；返回拼平的逆时针三角形坐标，覆盖内部状态，可重复调用。
 vector<p2> delaunay(vector<p2> a) {
     pts = move(a);
     tri.clear();
@@ -117,15 +113,21 @@ vector<p2> delaunay(vector<p2> a) {
     shuffle(in.begin(), in.end(), rng);
     int last = fs[0];
     for(int ii = 0; ii < (int) in.size(); ++ii) {
-        int p = in[ii], cur = last, go;
+        int p = in[ii], cur = last, go, side[3];
         for(;;) {  // 游走定位:p 一定在凸包内(或凸包边上),所以走不出三角剖分
             go = -1;
-            for(int j = 0; j < 3; ++j) if(ori(tri[cur].v[(j + 1) % 3], tri[cur].v[(j + 2) % 3], p) < 0) { go = j; break; }
+            for(int j = 0; j < 3; ++j) {
+                side[j] = ori(tri[cur].v[(j + 1) % 3], tri[cur].v[(j + 2) % 3], p);
+                if(side[j] < 0) { go = j; break; }
+            }
             if(go < 0 || tri[cur].f[go] < 0) break;
             cur = tri[cur].f[go];
         }
+        // 复用末次定位的转向；在凸包边提前停步时补齐未检查的边。
+        for(int j = go + 1; go >= 0 && j < 3; ++j)
+            side[j] = ori(tri[cur].v[(j + 1) % 3], tri[cur].v[(j + 2) % 3], p);
         int e = -1;  // p 正好落在某条边上
-        for(int j = 0; j < 3; ++j) if(!ori(tri[cur].v[(j + 1) % 3], tri[cur].v[(j + 2) % 3], p)) { e = j; break; }
+        for(int j = 0; j < 3; ++j) if(!side[j]) { e = j; break; }
         st.clear();
         if(e < 0) {  // 1. p 在三角形内:拆成 3 个
             int a = tri[cur].v[0], b = tri[cur].v[1], c = tri[cur].v[2];
