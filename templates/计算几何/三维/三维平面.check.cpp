@@ -1,4 +1,4 @@
-// 三维平面 自测:缩放三点/线性高度退化/点面距/平面交线/线面交点/两平面夹角
+// 三维平面 自测:旋转平移缩放/三点高度退化/点面距/平面交线/线面交点/两平面夹角
 //
 // 对拍方式:
 //   ① 手算常数用例(z=0 / z=3 / x+y+z=1 平面,点到面距离、投影、对称)
@@ -68,9 +68,47 @@ line3 ln(p3 o, p3 d) {
     return l;
 }
 
+// 自测用显式 Euler 旋转，独立于模板的法向和投影公式。
+static p3 ref_rotate(p3 p, db a, db b) {
+    p3 q{p.x * cos(a) + p.z * sin(a), p.y, -p.x * sin(a) + p.z * cos(a)};
+    return {q.x, q.y * cos(b) - q.z * sin(b), q.y * sin(b) + q.z * cos(b)};
+}
+
 // 手算/参考对照与退化用例;通过则 PASSED("三维平面")。
 int main() {
     p3 X{1, 0, 0}, Y{0, 1, 0}, Z{0, 0, 1}, O{0, 0, 0};
+
+    For(i, 1, 8000) {
+        db scale = pow(db(10), grnd(-6, 4));
+        db angle_a = db(grnd(-3000, 3000)) / 1000;
+        db angle_b = db(grnd(-3000, 3000)) / 1000;
+        p3 shift{db(grnd(-128, 128)) * scale, db(grnd(-128, 128)) * scale, db(grnd(-128, 128)) * scale};
+        auto transform = [&](p3 p) { return ref_rotate(p, angle_a, angle_b) * scale + shift; };
+        p3 a = transform(O);
+        p3 b = transform(pt3(grnd(1, 10), 0, 0));
+        p3 c = transform(pt3(0, grnd(1, 10), 0));
+        p3 local{db(grnd(-16, 16)) / 2, db(grnd(-16, 16)) / 2, db(grnd(-16, 16)) / 2};
+        p3 p = transform(local);
+        p3 normal = ref_rotate(Z, angle_a, angle_b);
+        plane surface(a, b, c);
+        plane reverse(a, c, b);
+        plane flat(a, b, a);
+        db tol = 2e-12L * scale;
+        p3 want_proj = transform(pt3(local.x, local.y, 0));
+        p3 want_reflect = transform(pt3(local.x, local.y, -local.z));
+        bool valid = dis(surface.n - normal) < 1e-14L && abs(surface.side(p) - local.z * scale) <= tol &&
+                     abs(reverse.side(p) + surface.side(p)) <= tol && dis(surface.proj(p) - want_proj) <= tol &&
+                     dis(surface.reflect(p) - want_reflect) <= tol && dis(surface.reflect(surface.reflect(p)) - p) <= tol &&
+                     dis(flat.n) == 0 && abs(surface.side(a)) <= tol && abs(surface.side(b)) <= tol && abs(surface.side(c)) <= tol;
+        line3 through = ln(p, normal);
+        valid &= dis(islp(surface, through) - want_proj) <= tol;
+        if(!valid) {
+            fprintf(stderr, "similarity plane i=%d scale=%Lg angles=%Lg,%Lg shift=%s a=%s b=%s c=%s local=%s plane=%s\n",
+                    i, scale, angle_a, angle_b, ps(shift).c_str(), ps(a).c_str(), ps(b).c_str(), ps(c).c_str(), ps(local).c_str(), ps(surface).c_str());
+            CHECK(false, "相似变换的解析法向/带号距离/投影/反射/反向/退化及线面交");
+        }
+    }
+    ok("8000 组非轴对齐相似变换与局部坐标解析参考");
 
     // 三点退化必须比较高而非叉积面积；底边尺度不应改变高度 eps。
     for(db base : {1e-8L, 1e-6L, 1.0L, 1e6L, 1e8L}) {

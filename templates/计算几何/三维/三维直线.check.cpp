@@ -1,4 +1,4 @@
-// 三维直线与线段 自测:极端尺度/大平移/短段/近乎平行/有限候选最优/唯一交点/独立参考
+// 三维直线与线段 自测:旋转平移缩放/极端尺度/短段/近平行/内点与端点交/独立参考
 //
 // 对拍方式:
 //   ① 手算常数用例(坐标轴、单位立方体棱、十字交叉、平行、异面)
@@ -189,9 +189,61 @@ db ref_axis_ss(db len, seg3 b) {
     return hypot(p.x - max((db) 0, min(len, p.x)), p.y, p.z);
 }
 
+// 自测用显式 Euler 旋转，不调用模板 rot / rotmat；保持长度和朝向。
+static p3 ref_rotate(p3 p, db a, db b) {
+    p3 q{p.x * cos(a) + p.z * sin(a), p.y, -p.x * sin(a) + p.z * cos(a)};
+    return {q.x, q.y * cos(b) - q.z * sin(b), q.y * sin(b) + q.z * cos(b)};
+}
+
 // 手算/参考对照与退化用例;通过则 PASSED("三维直线")。
 int main() {
     p3 X{1, 0, 0}, Y{0, 1, 0}, Z{0, 0, 1}, O{0, 0, 0};
+
+    // 独立轴段凸导数参考先在局部求解，再将两段共同作非轴对齐相似变换。
+    For(i, 1, 12000) {
+        db len = grnd(1, 8);
+        db scale = pow(db(10), grnd(-6, 4));
+        db angle_a = db(grnd(-3000, 3000)) / 1000;
+        db angle_b = db(grnd(-3000, 3000)) / 1000;
+        p3 shift{db(grnd(-128, 128)) * scale, db(grnd(-128, 128)) * scale, db(grnd(-128, 128)) * scale};
+        auto transform = [&](p3 p) { return ref_rotate(p, angle_a, angle_b) * scale + shift; };
+        auto point = [&]() { return pt3(db(grnd(-16, 16)) / 2, db(grnd(-16, 16)) / 2, db(grnd(-16, 16)) / 2); };
+        seg3 local{point(), point()};
+        int kind = i % 7;
+        if(kind == 1) local = sg(pt3(len / 2, 0, 0), pt3(len / 2, 2, 1));  // 端点落在另一段内部
+        if(kind == 2) local = sg(pt3(len, 0, 0), pt3(len + 1, 2, 1));      // 两段端点相接
+        if(kind == 3) local = sg(pt3(len / 2, 0, 0), pt3(len / 2, 0, 0));  // 段内点
+        if(kind == 4) {
+            db k = pow(db(10), grnd(-8, -3));
+            db z = i % 2 ? 0 : .125L;
+            local = sg(pt3(0, -k, z), pt3(len, k, z));  // 近平行，最近点在内部
+        }
+        if(kind == 5) local = sg(pt3(len / 2, 1, 0), pt3(len / 2, 1, 0));  // 段外点
+        if(kind == 6) local = sg(pt3(len / 2, -1, -2), pt3(len / 2, 1, 2));
+        db want = ref_axis_ss(len, local) * scale;
+        seg3 a{transform(O), transform(pt3(len, 0, 0))};
+        seg3 b{transform(local.x), transform(local.y)};
+        p3 pa;
+        p3 pb;
+        p3 ip{9, 9, 9};
+        db got = dis(a, b, pa, pb);
+        db tol = 5e-12L * scale;
+        bool valid = abs(got - want) <= tol && abs(dis(b, a) - want) <= tol &&
+                     abs(dis(sg(a.y, a.x), sg(b.y, b.x)) - want) <= tol &&
+                     abs(dis(pa - pb) - got) <= tol && dis(a, pa) <= tol && dis(b, pb) <= tol;
+        if(kind != 0) {
+            bool hit = kind != 5 && (kind != 4 || i % 2);
+            bool strict = hit && (kind == 4 || kind == 6);
+            valid &= chkss(a, b) == hit && chkss_s(a, b) == strict && isss(a, b, ip) == hit;
+            if(hit) valid &= dis(a, ip) <= eps && dis(b, ip) <= eps;
+        }
+        if(!valid) {
+            fprintf(stderr, "similarity segments i=%d kind=%d scale=%Lg angles=%Lg,%Lg shift=%s local=%s a=%s b=%s got=%Lg want=%Lg pa=%s pb=%s\n",
+                    i, kind, scale, angle_a, angle_b, ps(shift).c_str(), ps(local).c_str(), ps(a).c_str(), ps(b).c_str(), got, want, ps(pa).c_str(), ps(pb).c_str());
+            CHECK(false, "相似变换后距离参考、最近点、交换反转、内点/端点/退化/近平行相交语义");
+        }
+    }
+    ok("12000 组旋转平移缩放与局部单调导数参考及交点性质");
 
     // 短非零段不能按长度平方与线性 eps 比较；真正零长仍按点处理。
     for(db len : {1e-6L, 1e-9L, 1e-15L}) {

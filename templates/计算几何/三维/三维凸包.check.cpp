@@ -1,4 +1,4 @@
-// 三维凸包 自测:大平移局部构造与剪切体积/全排列/面反向/薄长种子/独立支撑面/拓扑与包含
+// 三维凸包 自测:旋转平移缩放/大平移局部构造/全排列/薄长种子/独立支撑面/拓扑与包含
 //
 // 对拍方式:
 //   ① 手算常数用例:单位四面体(表面积 √3、体积 1/6)、单位立方体(表面积 6、体积 1)、
@@ -217,8 +217,62 @@ db translated_hull_check(const vector<p3> &input, p3 offset) {
     return v;
 }
 
+// 自测用显式 Euler 旋转，不依赖模板的几何构造。
+static p3 ref_rotate(p3 p, db a, db b) {
+    p3 q{p.x * cos(a) + p.z * sin(a), p.y, -p.x * sin(a) + p.z * cos(a)};
+    return {q.x, q.y * cos(b) - q.z * sin(b), q.y * sin(b) + q.z * cos(b)};
+}
+
 // 手算/暴力参考对照与拓扑性质检查;通过则 PASSED("三维凸包")。
 int main() {
+    // 一般位置小整数点的支撑面 oracle 在变换前求出；尺度远离 eps 退化带。
+    For(i, 1, 2000) {
+        vector<p3> local;
+        do {
+            local.clear();
+            For(j, 1, int(grnd(4, 10))) local.push_back(pt3(grnd(-10, 10), grnd(-10, 10), grnd(-10, 10)));
+        } while(!general_position(local));
+        db scale = pow(db(10), grnd(-5, 3));
+        db angle_a = db(grnd(-3000, 3000)) / 1000;
+        db angle_b = db(grnd(-3000, 3000)) / 1000;
+        p3 shift{db(grnd(-128, 128)) * scale, db(grnd(-128, 128)) * scale, db(grnd(-128, 128)) * scale};
+        vector<p3> world;
+        vector<p3> relative;
+        for(p3 p : local) {
+            world.push_back(ref_rotate(p, angle_a, angle_b) * scale + shift);
+            relative.push_back(world.back() - shift);
+        }
+        auto before = world;
+        auto reference = brute_facets(local, 1e-12L);
+        auto faces = convex3d(world);
+        set<array<int, 3>> got;
+        set<array<int, 3>> want;
+        for(auto face : faces) {
+            array<int, 3> v{face.a, face.b, face.c};
+            sort(all(v));
+            got.insert(v);
+        }
+        for(auto face : reference) want.insert({face.i, face.j, face.k});
+        db want_area = brute_area(local, reference) * scale * scale;
+        db want_volume = brute_volume(local, reference) * scale * scale * scale;
+        db area = hull_area(world, faces);
+        db volume = hull_volume(world, faces);
+        string reason;
+        bool valid = got == want && check_topo(relative, faces, reason) && outward_ok(relative, faces, reason) &&
+                     max_outside(relative, faces) <= eps && abs(area - want_area) <= 2e-12L * want_area &&
+                     abs(volume - want_volume) <= 2e-12L * want_volume;
+        For(j, 0, int(world.size()) - 1)
+            valid &= world[j].x == before[j].x && world[j].y == before[j].y && world[j].z == before[j].z;
+        for(auto &face : faces) swap(face.b, face.c);
+        valid &= abs(hull_volume(world, faces) - want_volume) <= 2e-12L * want_volume;
+        if(!valid) {
+            fprintf(stderr, "similarity hull i=%d scale=%Lg angles=%Lg,%Lg shift=%s local=%s world=%s faces=%zu/%zu area=%Lg/%Lg volume=%Lg/%Lg reason=%s\n",
+                    i, scale, angle_a, angle_b, ps(shift).c_str(), ps(local).c_str(), ps(world).c_str(), got.size(), want.size(), area, want_area, volume, want_volume, reason.c_str());
+            CHECK(false, "相似变换后独立支撑面、面积体积缩放、拓扑/朝向/包含、输入不变与面反向");
+        }
+    }
+    ok("2000 组随机点集旋转平移缩放与独立暴力支撑面参考");
+
     CHECK(hull_volume({}, {}) == 0, "空面集体积0");
     for(int t = 0; t < 2500; ++t) {
         db x = grnd(1,100), y = grnd(1,100), z = grnd(1,100);
