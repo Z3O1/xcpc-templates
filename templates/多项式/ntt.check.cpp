@@ -14,21 +14,20 @@
 #include "../_check_base.hpp"
 #include "ntt.cpp"
 
-
 // 朴素参考卷积；要求系数非负 int；用 i128 精确累加后按 P 取模，空输入返回空。
 static poly naive(const poly &a, const poly &b, int P) {
     if(a.empty() || b.empty()) return {};
     vector<i128> s(a.size() + b.size() - 1, 0);
-    For(i, 0, (int) a.size() - 1) For(j, 0, (int) b.size() - 1) s[i + j] += (i128) a[i] * b[j];
+    For(i, 0, (int)a.size() - 1) For(j, 0, (int)b.size() - 1) s[i + j] += (i128)a[i] * b[j];
     poly r(s.size());
-    For(i, 0, (int) s.size() - 1) r[i] = (int) (s[i] % P);
+    For(i, 0, (int)s.size() - 1) r[i] = (int)(s[i] % P);
     return r;
 }
 // 边加边取模的朴素卷积；要求 P < 2^31 保证 ll 不溢出；返回与 naive 一致的卷积，空输入返回空。
 static poly naive2(const poly &a, const poly &b, int P) {
     if(a.empty() || b.empty()) return {};
     poly r(a.size() + b.size() - 1, 0);
-    For(i, 0, (int) a.size() - 1) For(j, 0, (int) b.size() - 1) r[i + j] = (int) ((r[i + j] + (ll) a[i] * b[j]) % P);
+    For(i, 0, (int)a.size() - 1) For(j, 0, (int)b.size() - 1) r[i + j] = (int)((r[i + j] + (ll)a[i] * b[j]) % P);
     return r;
 }
 // 判断两向量长度与内容是否完全一致；返回布尔值。
@@ -36,13 +35,13 @@ static bool same(const poly &a, const poly &b) { return a.size() == b.size() && 
 // 格式化向量前 k 项；要求 k >= 0；返回“长度 + 前若干项”的调试字符串。
 static string pstr(const poly &a, int k = 10) {
     string s = "[" + to_string(a.size()) + "]";
-    For(i, 0, min((int) a.size(), k) - 1) s += " " + to_string(a[i]);
-    return s + ((int) a.size() > k ? " ..." : "");
+    For(i, 0, min((int)a.size(), k) - 1) s += " " + to_string(a[i]);
+    return s + ((int)a.size() > k ? " ..." : "");
 }
 // 打印失败现场（两组输入、期望、实际）并返回 1；用于对拍失败时给出可复现信息。
 static int bad(const char *what, const poly &a, const poly &b, int P, const poly &want, const poly &got, const char *extra = "") {
     printf("  [FAIL] %s\n    %s_p = %d, n = %d, m = %d\n    a    = %s\n    b    = %s\n    want = %s\n    got  = %s\n",
-           what, extra, P, (int) a.size(), (int) b.size(), pstr(a).c_str(), pstr(b).c_str(), pstr(want).c_str(), pstr(got).c_str());
+           what, extra, P, (int)a.size(), (int)b.size(), pstr(a).c_str(), pstr(b).c_str(), pstr(want).c_str(), pstr(got).c_str());
     return 1;
 }
 // 用 Mul::mul 与 naive 参考对拍；一致返回 0，否则打印失败现场返回 1。
@@ -55,10 +54,10 @@ static int cmp(const char *what, const poly &a, const poly &b, int P, const char
 static poly rpoly(int n, int P, int mode) {  // mode: 0 稠密 1 稀疏(一半 0) 2 全 P-1 3 小值 4 全 0
     poly a(n);
     For(i, 0, n - 1) {
-        int v = (int) rnd(0, P - 1);
+        int v = (int)rnd(0, P - 1);
         if(mode == 1 && (i & 1)) v = 0;
         if(mode == 2) v = P - 1;
-        if(mode == 3) v = (int) rnd(0, min(P - 1, 4));
+        if(mode == 3) v = (int)rnd(0, min(P - 1, 4));
         if(mode == 4) v = 0;
         a[i] = v;
     }
@@ -68,17 +67,17 @@ static poly rpoly(int n, int P, int mode) {  // mode: 0 稠密 1 稀疏(一半 0
 // 运行任意模数 NTT 自测；覆盖模数表、长度扫描、边界、代数性质与大长度；失败返回非零。
 int main() {
     // 覆盖「模板支持模数范围」的模数表:P 任意 int,含极小、合数、三个 NTT 模数本身及其 ±1、2^31-1
-    const poly mods{2,      3,       4,        5,         6,       7,       8,     9,      10,       11,
-                  16,     17,      31,       32,        64,      100,     997,   1000,   65536,    65537,
-                  999983, 1000003, 1000000007, 1000000009, 2147483647, 2147483646, 1073741824, 2000000000,
-                  998244352, 998244353, 998244354, 1004535808, 1004535809, 1004535810, 469762048, 469762049, 469762050};
-    const int NM = (int) mods.size();
+    const poly mods{2, 3, 4, 5, 6, 7, 8, 9, 10, 11,
+                    16, 17, 31, 32, 64, 100, 997, 1000, 65536, 65537,
+                    999983, 1000003, 1000000007, 1000000009, 2147483647, 2147483646, 1073741824, 2000000000,
+                    998244352, 998244353, 998244354, 1004535808, 1004535809, 1004535810, 469762048, 469762049, 469762050};
+    const int NM = (int)mods.size();
 
     // ——— 1) 参考实现自检(i128 累加版 vs 边加边取模版) ———
     {
         For(t, 1, 3000) {
-            int P = (int) rnd(2, 2147483647);
-            int n = (int) rnd(1, 12), m = (int) rnd(1, 12);
+            int P = (int)rnd(2, 2147483647);
+            int n = (int)rnd(1, 12), m = (int)rnd(1, 12);
             poly a = rpoly(n, P, 0), b = rpoly(m, P, 0);
             if(!same(naive(a, b, P), naive2(a, b, P))) {
                 printf("  [FAIL] 参考实现自相矛盾 P=%d a=%s b=%s\n", P, pstr(a).c_str(), pstr(b).c_str());
@@ -102,17 +101,18 @@ int main() {
                     pool.push_back(v);
                 }
             }
-            for(const poly &a : pool) for(const poly &b : pool) {
-                if(cmp("全枚举", a, b, P)) return 1;
-                ++cnt;
-            }
+            for(const poly &a : pool)
+                for(const poly &b : pool) {
+                    if(cmp("全枚举", a, b, P)) return 1;
+                    ++cnt;
+                }
             // 长度 4 的模式
-            vector<poly> p4{{0, 0, 0, 0}, {1, 1, 1, 1}, {P - 1, P - 1, P - 1, P - 1},
-                          {1, 0, P - 1, 0}, {P - 1, 1, 0, 1}, {2 % P, 0, 0, 1 % P}};
-            for(const poly &a : p4) for(const poly &b : p4) {
-                if(cmp("全枚举(长度4)", a, b, P)) return 1;
-                ++cnt;
-            }
+            vector<poly> p4{{0, 0, 0, 0}, {1, 1, 1, 1}, {P - 1, P - 1, P - 1, P - 1}, {1, 0, P - 1, 0}, {P - 1, 1, 0, 1}, {2 % P, 0, 0, 1 % P}};
+            for(const poly &a : p4)
+                for(const poly &b : p4) {
+                    if(cmp("全枚举(长度4)", a, b, P)) return 1;
+                    ++cnt;
+                }
         }
         printf("  [ok] 小规模全枚举 %lld 组一致(9 个模数 × 39×39 + 长度 4 的 6×6)\n", cnt);
     }
@@ -123,7 +123,10 @@ int main() {
             int n, m;
             if(L % 7 == 0) n = 1, m = L;
             else if(L % 11 == 0) n = L, m = 1;
-            else { n = (int) rnd(1, L); m = L + 1 - n; }
+            else {
+                n = (int)rnd(1, L);
+                m = L + 1 - n;
+            }
             int P = mods[L % NM];
             poly a = rpoly(n, P, L % 5), b = rpoly(m, P, (L + 2) % 5);
             if(cmp("长度扫描 n+m-1 = L", a, b, P)) return 1;
@@ -131,8 +134,8 @@ int main() {
         ok("长度 1..600 全覆盖(n+m-1 = L,含 1×L / L×1 / 稠密 / 稀疏 / 全 0 / 全 P-1 / 小值)一致");
 
         For(t, 1, 900) {
-            int P = mods[(int) rnd(0, NM - 1)];
-            int n = (int) rnd(1, 600), m = (int) rnd(1, 600);
+            int P = mods[(int)rnd(0, NM - 1)];
+            int n = (int)rnd(1, 600), m = (int)rnd(1, 600);
             poly a = rpoly(n, P, t % 4), b = rpoly(m, P, (t / 4) % 4);
             if(cmp("随机长度", a, b, P)) return 1;
         }
@@ -153,18 +156,18 @@ int main() {
             For(n, 1, 8) For(m, 1, 8) {
                 poly a(n, 0), b(m, 0);
                 poly got = Mul::mul(a, b, P);
-                if((int) got.size() != n + m - 1 || !same(got, poly(n + m - 1, 0)))
+                if((int)got.size() != n + m - 1 || !same(got, poly(n + m - 1, 0)))
                     return bad("全零 × 全零:长度/取值", a, b, P, poly(n + m - 1, 0), got, "应保留长度 n+m-1 且全 0;");
             }
             // 全零 × 非零
             {
                 poly a(5, 0), b{1, 2, 3, 4};
                 poly got = Mul::mul(a, b, P);
-                if((int) got.size() != 8 || !same(got, poly(8, 0))) return bad("全零 × 非零", a, b, P, poly(8, 0), got);
+                if((int)got.size() != 8 || !same(got, poly(8, 0))) return bad("全零 × 非零", a, b, P, poly(8, 0), got);
             }
             // 单元素:1×1 = 纯乘法
-            poly x{ (int) rnd(0, P - 1) }, y{ (int) rnd(0, P - 1) };
-            poly want{(int) ((ll) x[0] * y[0] % P)};
+            poly x{(int)rnd(0, P - 1)}, y{(int)rnd(0, P - 1)};
+            poly want{(int)((ll)x[0] * y[0] % P)};
             if(!same(Mul::mul(x, y, P), want)) return bad("1×1(触发 __lg(0) 分支)", x, y, P, want, Mul::mul(x, y, P));
         }
         ok("全零多项式保留长度 / 全零×非零 / 1×1(3 个模数)全部符合契约");
@@ -172,10 +175,10 @@ int main() {
         // 1×k / k×1(k = 1..64):结果必须就是原样缩放
         for(int P : {2, 998244353, 2147483647}) {
             For(k, 1, 64) {
-                poly a = rpoly(k, P, 3), one{1}, zero{0}, c{(int) rnd(1, P - 1)};
+                poly a = rpoly(k, P, 3), one{1}, zero{0}, c{(int)rnd(1, P - 1)};
                 if(!same(Mul::mul(a, one, P), a)) return bad("k×1(单位元)", a, one, P, a, Mul::mul(a, one, P));
                 poly want(k);
-                For(i, 0, k - 1) want[i] = (int) ((ll) a[i] * c[0] % P);
+                For(i, 0, k - 1) want[i] = (int)((ll)a[i] * c[0] % P);
                 if(!same(Mul::mul(a, c, P), want)) return bad("k×1(常量倍)", a, c, P, want, Mul::mul(a, c, P));
                 if(!same(Mul::mul(c, a, P), want)) return bad("1×k(常量倍)", c, a, P, want, Mul::mul(c, a, P));
                 if(!same(Mul::mul(a, zero, P), poly(k, 0))) return bad("k×[0] → 长度 k 全零", a, zero, P, poly(k, 0), Mul::mul(a, zero, P));
@@ -203,8 +206,8 @@ int main() {
     // ——— 5) 代数性质:交换律 / 结合律 / 分配律 / 数乘线性(不只比相等) ———
     {
         For(t, 1, 60) {
-            int P = mods[(int) rnd(0, NM - 1)];
-            int n = (int) rnd(1, 40), m = (int) rnd(1, 40), q = (int) rnd(1, 40);
+            int P = mods[(int)rnd(0, NM - 1)];
+            int n = (int)rnd(1, 40), m = (int)rnd(1, 40), q = (int)rnd(1, 40);
             poly a = rpoly(n, P, t % 4), b = rpoly(m, P, (t + 1) % 4), c = rpoly(q, P, (t + 2) % 4);
             poly ab = Mul::mul(a, b, P), ba = Mul::mul(b, a, P);
             if(!same(ab, ba)) return bad("交换律 a*b == b*a", a, b, P, ab, ba);
@@ -212,18 +215,18 @@ int main() {
             if(!same(abc1, abc2)) return bad("结合律 (a*b)*c == a*(b*c)", a, c, P, abc1, abc2);
             int nq = max(m, q);
             poly bcsum(nq, 0);
-            For(i, 0, nq - 1) bcsum[i] = (int) (((ll) (i < m ? b[i] : 0) + (i < q ? c[i] : 0)) % P);
+            For(i, 0, nq - 1) bcsum[i] = (int)(((ll)(i < m ? b[i] : 0) + (i < q ? c[i] : 0)) % P);
             poly lhs = Mul::mul(a, bcsum, P), rhs = Mul::mul(a, b, P);
             poly r2 = Mul::mul(a, c, P);
             rhs.resize(lhs.size(), 0);
-            For(i, 0, (int) rhs.size() - 1) rhs[i] = (int) (((ll) rhs[i] + (i < (int) r2.size() ? r2[i] : 0)) % P);
+            For(i, 0, (int)rhs.size() - 1) rhs[i] = (int)(((ll)rhs[i] + (i < (int)r2.size() ? r2[i] : 0)) % P);
             if(!same(lhs, rhs)) return bad("分配律 a*(b+c) == a*b + a*c", a, b, P, lhs, rhs);
-            int s = (int) rnd(1, P - 1);
+            int s = (int)rnd(1, P - 1);
             poly bs(b.size());
-            For(i, 0, (int) b.size() - 1) bs[i] = (int) ((ll) b[i] * s % P);
+            For(i, 0, (int)b.size() - 1) bs[i] = (int)((ll)b[i] * s % P);
             poly l2 = Mul::mul(a, bs, P);
             poly r3(ab.size());
-            For(i, 0, (int) ab.size() - 1) r3[i] = (int) ((ll) ab[i] * s % P);
+            For(i, 0, (int)ab.size() - 1) r3[i] = (int)((ll)ab[i] * s % P);
             if(!same(l2, r3)) {
                 printf("  [FAIL] 数乘线性 a*(s·b) == s·(a*b) 不成立(s = %d)\n", s);
                 return bad("数乘线性", a, b, P, l2, r3);
@@ -237,25 +240,25 @@ int main() {
         for(int P : mods) {
             // 6a) 随机中等长度
             For(t, 1, 12) {
-                int n = (int) rnd(1, 40), m = (int) rnd(1, 40);
+                int n = (int)rnd(1, 40), m = (int)rnd(1, 40);
                 if(cmp("按表遍历模数:随机", rpoly(n, P, t % 4), rpoly(m, P, (t + 1) % 4), P, "6a ")) return 1;
             }
             // 6b) 更大长度
             For(t, 1, 2) {
-                int n = (int) rnd(150, 400), m = (int) rnd(150, 400);
+                int n = (int)rnd(150, 400), m = (int)rnd(150, 400);
                 if(cmp("按表遍历模数:大长度", rpoly(n, P, 0), rpoly(m, P, 1), P, "6b ")) return 1;
             }
             // 6c) 全 P-1 系数(即全部 -1)
             {
-                poly a = rpoly((int) rnd(1, 30), P, 2), b = rpoly((int) rnd(1, 30), P, 2);
+                poly a = rpoly((int)rnd(1, 30), P, 2), b = rpoly((int)rnd(1, 30), P, 2);
                 if(cmp("按表遍历模数:全 P-1", a, b, P, "6c ")) return 1;
             }
             // 6d) 非归一的非负系数(系数 >= P,三模 CRT 在整数上精确,应当仍然对)
             {
-                int n = (int) rnd(1, 12), m = (int) rnd(1, 12);
+                int n = (int)rnd(1, 12), m = (int)rnd(1, 12);
                 poly a(n), b(m);
-                For(i, 0, n - 1) a[i] = (int) rnd(0, 2147483647);
-                For(j, 0, m - 1) b[j] = (int) rnd(0, 2147483647);
+                For(i, 0, n - 1) a[i] = (int)rnd(0, 2147483647);
+                For(j, 0, m - 1) b[j] = (int)rnd(0, 2147483647);
                 if(cmp("按表遍历模数:系数 >= P(未归一)", a, b, P, "6d ")) return 1;
             }
         }
@@ -270,15 +273,15 @@ int main() {
         for(int k = 16; k <= 20; k += 2) {
             int L = 1 << k, m = L - 2;
             poly a{1, 2, 3}, b(m);
-            For(i, 0, m - 1) b[i] = (int) rnd(0, P - 1);
+            For(i, 0, m - 1) b[i] = (int)rnd(0, P - 1);
             poly got = Mul::mul(a, b, P);
-            if((int) got.size() != m + 2) return bad("大长度:结果长度", a, b, P, poly(m + 2, 0), got);
+            if((int)got.size() != m + 2) return bad("大长度:结果长度", a, b, P, poly(m + 2, 0), got);
             For(i, 0, m + 1) {
                 ll s = 0;
                 int w[3] = {1, 2, 3};
-                For(j, 0, 2) if(i - j >= 0 && i - j < m) s += (ll) w[j] * b[i - j] % P;
-                if(got[i] != (int) (s % P)) {
-                    printf("  [FAIL] 大长度 l=2^%d 第 %d 位不符:want %d got %d(P=%d)\n", k, i, (int) (s % P), got[i], P);
+                For(j, 0, 2) if(i - j >= 0 && i - j < m) s += (ll)w[j] * b[i - j] % P;
+                if(got[i] != (int)(s % P)) {
+                    printf("  [FAIL] 大长度 l=2^%d 第 %d 位不符:want %d got %d(P=%d)\n", k, i, (int)(s % P), got[i], P);
                     return 1;
                 }
             }
@@ -289,14 +292,17 @@ int main() {
         {
             int L = 1 << 21, m = L - 2;
             poly a{1, 2, 3}, b(m);
-            For(i, 0, m - 1) b[i] = (int) (((ll) i * i + 7) % P);
+            For(i, 0, m - 1) b[i] = (int)(((ll)i * i + 7) % P);
             poly got = Mul::mul(a, b, P);
             int first = -1;
             For(i, 0, m + 1) {
                 ll s = 0;
                 int w[3] = {1, 2, 3};
-                For(j, 0, 2) if(i - j >= 0 && i - j < m) s += (ll) w[j] * b[i - j] % P;
-                if(got[i] != (int) (s % P)) { first = i; break; }
+                For(j, 0, 2) if(i - j >= 0 && i - j < m) s += (ll)w[j] * b[i - j] % P;
+                if(got[i] != (int)(s % P)) {
+                    first = i;
+                    break;
+                }
             }
             printf("  [note] l = 2^21 已超出契约(2^20),P=1e9+7 时结果%s(首个错位 i=%d);"
                    "注意 P 恰为 998244353 时 CRT 退化成单模,同样的 2^21 反而看着正确 —— 别用单模 P 试上限\n",
@@ -307,7 +313,7 @@ int main() {
     // ——— 8) 普通 mul(a, b) 按常量 M 取模;任意模数显式传给 Mul::mul ———
     {
         For(t, 1, 400) {
-            int n = (int) rnd(1, 40), m = (int) rnd(1, 40);
+            int n = (int)rnd(1, 40), m = (int)rnd(1, 40);
             poly a = rpoly(n, M, t % 5), b = rpoly(m, M, t % 5);
             poly want = naive(a, b, M), got = mul(a, b);
             if(!same(want, got)) return bad("普通 mul", a, b, M, want, got);
@@ -341,11 +347,11 @@ int main() {
                     For(i, 0, n - 1) {
                         int pw = 1;
                         For(j, 0, n - 1) {
-                            want[i] = (want[i] + (ll) a[j] * pw) % M;
-                            pw = (ll) pw * step % M;
+                            want[i] = (want[i] + (ll)a[j] * pw) % M;
+                            pw = (ll)pw * step % M;
                         }
-                        step = (ll) step * root % M;
-                        if(direction == -1) want[i] = (ll) want[i] * qpow(n, M - 2, M) % M;
+                        step = (ll)step * root % M;
+                        if(direction == -1) want[i] = (ll)want[i] * qpow(n, M - 2, M) % M;
                     }
                     poly got = a;
                     NTT(got, direction);
@@ -366,7 +372,7 @@ int main() {
                     printf("[FAIL] 2^%d 单项式频谱 i=%d want=%d got=%d\n", k, i, M - pw, a[i]);
                     return 1;
                 }
-                pw = (ll) pw * root % M;
+                pw = (ll)pw * root % M;
             }
             fill(all(a), M - 1);
             NTT(a, 1);
@@ -386,7 +392,7 @@ int main() {
         for(int k : {23, 22, 18, 3, 1, 0, 12}) {
             int len = 1 << k;
             poly a(len > 2 ? len - 2 : len);
-            For(i, 0, (int) a.size() - 1) a[i] = ((ll) i * i + 7) % M;
+            For(i, 0, (int)a.size() - 1) a[i] = ((ll)i * i + 7) % M;
             poly b = len > 2 ? poly{1, 2, 3} : poly{M - 1};
             poly got = mul(a, b);
             poly want = naive(a, b, M);
@@ -402,12 +408,12 @@ int main() {
         CHECK(Mul::mul({P - 1}, {1}, P) == poly({P - 1}), "-1 必须先归一为 P-1");
         std::mt19937 seedfix(20040924);
         For(t, 1, 300) {
-            int n = (int) (seedfix() % 8) + 1, m = (int) (seedfix() % 8) + 1;
+            int n = (int)(seedfix() % 8) + 1, m = (int)(seedfix() % 8) + 1;
             poly a(n), b(m);
-            For(i, 0, n - 1) a[i] = (int) (seedfix() % (2 * P)) - P;
-            For(j, 0, m - 1) b[j] = (int) (seedfix() % (2 * P)) - P;
+            For(i, 0, n - 1) a[i] = (int)(seedfix() % (2 * P)) - P;
+            For(j, 0, m - 1) b[j] = (int)(seedfix() % (2 * P)) - P;
             vector<i128> s(n + m - 1, 0);
-            For(i, 0, n - 1) For(j, 0, m - 1) s[i + j] += (i128) a[i] * b[j];
+            For(i, 0, n - 1) For(j, 0, m - 1) s[i + j] += (i128)a[i] * b[j];
             for(int &v : a) v = (v % P + P) % P;
             for(int &v : b) v = (v % P + P) % P;
             poly g = Mul::mul(a, b, P), want(n + m - 1);
