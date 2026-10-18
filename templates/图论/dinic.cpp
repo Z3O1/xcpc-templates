@@ -3,7 +3,7 @@
 
 // 点编号 1..n；容量非负，最大流及残量加法需在 ll 内；solve 会修改残量网络。
 class Dinic_t {
-  public:
+public:
     static constexpr int N = 1e6 + 10;
     static constexpr ll Z = 1e18;
     struct edge {
