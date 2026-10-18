@@ -66,7 +66,7 @@ void NTT(poly &a, int k) {
     static vector<u64> tmp;
     int n = a.size();
     if(n == 1) return;
-    if((int) rev.size() != n) {
+    if((int)rev.size() != n) {
         rev.resize(n);
         int l = __lg(n);
         For(i, 0, n - 1) rev[i] = (rev[i >> 1] >> 1) | ((i & 1) << (l - 1));
@@ -75,7 +75,7 @@ void NTT(poly &a, int k) {
         roots.resize(m << 1);
         int w = qpow(3, (M - 1) / (m << 1), M);
         roots[m] = 1;
-        For(j, 1, m - 1) roots[m + j] = (ll) roots[m + j - 1] * w % M;
+        For(j, 1, m - 1) roots[m + j] = (ll)roots[m + j - 1] * w % M;
     }
     tmp.resize(n);
     For(i, 0, n - 1) tmp[i] = a[rev[i]];
@@ -94,7 +94,7 @@ void NTT(poly &a, int k) {
     if(k == -1) {
         reverse(a.begin() + 1, a.end());
         int inv = qpow(n, M - 2, M);
-        For(i, 0, n - 1) a[i] = (ll) a[i] * inv % M;
+        For(i, 0, n - 1) a[i] = (ll)a[i] * inv % M;
     }
 }
 // 返回普通卷积的 |a|+|b|-1 项，任一为空返回空；系数在 [0,M)，变换长度不超过 2^23。
@@ -107,7 +107,7 @@ poly mul(poly a, poly b) {
     b.resize(n);
     NTT(a, 1);
     NTT(b, 1);
-    For(i, 0, n - 1) a[i] = (ll) a[i] * b[i] % M;
+    For(i, 0, n - 1) a[i] = (ll)a[i] * b[i] % M;
     NTT(a, -1);
     a.resize(len);
     return a;

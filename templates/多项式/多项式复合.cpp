@@ -19,9 +19,9 @@ polys solve(const poly &f, const polys &g, int n, int m) {
     poly b(s);
     For(i, 0, m)
         For(j, 0, n - 1) {
-            a[i * d + j] = g[i][j];
-            b[i * d + j] = (j & 1) && g[i][j] ? M - g[i][j] : g[i][j];
-        }
+        a[i * d + j] = g[i][j];
+        b[i * d + j] = (j & 1) && g[i][j] ? M - g[i][j] : g[i][j];
+    }
     a = mul(move(a), b);
     int u = (n + 1) / 2;
     int v = 2 * m;

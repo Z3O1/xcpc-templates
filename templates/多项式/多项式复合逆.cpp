@@ -2,6 +2,7 @@
 
 // 系数低次在前且在 [0,M)，M=998244353；依赖 ntt.cpp 的 NTT、mul，无需预处理。
 // 每轮展平卷积的变换长度须 <=2^23；幂投影 O(n log² n)，末尾幂运算 O(n log n log M)。
+// 按值复制整个输入另需 O(|f|) 时间/空间，不计入上述以 n 为参数的界。
 
 using poly = vector<int>;
 namespace reversion {
@@ -23,10 +24,10 @@ poly pw_pj(const poly &f, int n) {
         poly pc(len);
         For(i, 0, m)
             For(j, 0, d) {
-                pa[i * stride + j] = a[i][j];
-                pb[i * stride + j] = b[i][j];
-                pc[i * stride + j] = (j & 1) && b[i][j] ? M - b[i][j] : b[i][j];
-            }
+            pa[i * stride + j] = a[i][j];
+            pb[i * stride + j] = b[i][j];
+            pc[i * stride + j] = (j & 1) && b[i][j] ? M - b[i][j] : b[i][j];
+        }
         NTT(pa, 1);
         NTT(pb, 1);
         NTT(pc, 1);
