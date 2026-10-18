@@ -5,10 +5,19 @@
 // word-RAM 字长 >= ceil(log2(n+1))，位运算/clz 为 O(1)；int 下用 u64。
 // 初始化 O(n)，q 次操作总 O(n+q)，空间 O(n)；非逐次最坏 O(1)。微宏划分与证明见同名介绍。
 struct tree_dsu_t {
-    int root, width;
-    vector<int> cluster, index, offset, vertex, boundary, macro_id;
-    vector<u64> mask, alive;
-    vector<int> parent, rank, top;
+    int root;
+    int width;
+    vector<int> cluster;
+    vector<int> index;
+    vector<int> offset;
+    vector<int> vertex;
+    vector<int> boundary;
+    vector<int> macro_id;
+    vector<u64> mask;
+    vector<u64> alive;
+    vector<int> parent;
+    vector<int> rank;
+    vector<int> top;
 
     void init(const vector<int> &p) {
         int n = p.size();
@@ -24,7 +33,9 @@ struct tree_dsu_t {
         vertex.clear();
         boundary.clear();
         alive.clear();
-        vector<int> head(n, -1), sibling(n, -1), order;
+        vector<int> head(n, -1);
+        vector<int> sibling(n, -1);
+        vector<int> order;
         For(v, 0, n - 1) {
             if(p[v] == -1) root = v;
             else sibling[v] = head[p[v]], head[p[v]] = v;
@@ -33,7 +44,10 @@ struct tree_dsu_t {
         For(i, 0, n - 1) {
             for(int u = head[order[i]]; u != -1; u = sibling[u]) order.push_back(u);
         }
-        vector<int> first(n), last(n), length(n), next(n, -1);
+        vector<int> first(n);
+        vector<int> last(n);
+        vector<int> length(n);
+        vector<int> next(n, -1);
         // 残余用链表 O(1) 拼接；成簇时每点仅遍历一次，禁止逐层复制 vector。
         auto emit = [&](int begin, int outside) {
             int c = alive.size();
@@ -49,7 +63,9 @@ struct tree_dsu_t {
         };
         rFor(i, n - 1, 0) {
             int v = order[i];
-            int begin = -1, end = -1, count = 0;
+            int begin = -1;
+            int end = -1;
+            int count = 0;
             for(int u = head[v]; u != -1; u = sibling[u]) {
                 if(count) next[end] = first[u];
                 else begin = first[u];

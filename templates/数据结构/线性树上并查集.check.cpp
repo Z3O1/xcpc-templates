@@ -2,7 +2,9 @@
 #include "../_check_base.hpp"
 #include "线性树上并查集.cpp"
 
-static vector<int> input_parent, cut, depth;
+static vector<int> input_parent;
+static vector<int> cut;
+static vector<int> depth;
 static vector<vector<int>> graph;
 static vector<pii> history;
 static string context;
@@ -22,7 +24,8 @@ static void require(bool cond, const char *what) {
 }
 // 不使用跳祖先或并查集：在已收缩原边构成的无向图上搜整个分量，选深度最小点。
 static int ref_find(int x) {
-    vector<int> seen(input_parent.size()), queue{x};
+    vector<int> seen(input_parent.size());
+    vector<int> queue{x};
     seen[x] = 1;
     int best = x;
     int i = 0;
@@ -91,7 +94,8 @@ static void query(tree_dsu_t &ds, int v) {
 }
 static vector<int> relabel(const vector<int> &p) {
     int n = p.size();
-    vector<int> permutation(n), result(n);
+    vector<int> permutation(n);
+    vector<int> result(n);
     iota(all(permutation), 0);
     shuffle(all(permutation), rng);
     For(v, 0, n - 1) result[permutation[v]] = p[v] == -1 ? -1 : permutation[p[v]];

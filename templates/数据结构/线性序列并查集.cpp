@@ -4,9 +4,12 @@
 // word-RAM：字长 >= ceil(log2(n+1))，位运算/ctz 为 O(1)；int 下用 u64。
 // 初始化 O(n)，q 次操作总 O(n+q)，空间 O(n/log(n+1)+1)；非逐次最坏 O(1)。证明见同名介绍。
 struct sequence_dsu_t {
-    int n, width;
+    int n;
+    int width;
     vector<u64> alive;
-    vector<int> parent, rank, right;
+    vector<int> parent;
+    vector<int> rank;
+    vector<int> right;
 
     void init(int size) {
         n = size;
