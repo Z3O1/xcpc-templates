@@ -675,6 +675,36 @@
    "title": "凸包直线求交",
    "missing": false,
    "hidden": false
+  },
+  {
+   "key": "数据结构/二区间合并.cpp",
+   "title": "二区间合并",
+   "missing": false,
+   "hidden": false
+  },
+  {
+   "key": "图论/k短路.cpp",
+   "title": "k 短路",
+   "missing": false,
+   "hidden": false
+  },
+  {
+   "key": "图论/拟阵交.cpp",
+   "title": "拟阵交",
+   "missing": false,
+   "hidden": false
+  },
+  {
+   "key": "数学/特征多项式.cpp",
+   "title": "特征多项式",
+   "missing": false,
+   "hidden": false
+  },
+  {
+   "key": "数学/行列式多项式.cpp",
+   "title": "行列式多项式",
+   "missing": false,
+   "hidden": false
   }
  ]
 }

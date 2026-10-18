@@ -68,6 +68,10 @@
 
 #zebraw(lang: false)[#raw(readcode("templates/数据结构/rmq.cpp"), lang: "cpp", block: true)]
 
+== 二区间合并
+
+#zebraw(lang: false)[#raw(readcode("templates/数据结构/二区间合并.cpp"), lang: "cpp", block: true)]
+
 = 图论
 
 == 费用流
@@ -81,6 +85,16 @@
 == 一般图最大匹配
 
 #zebraw(lang: false)[#raw(readcode("templates/图论/一般图最大匹配.cpp"), lang: "cpp", block: true)]
+
+== k 短路
+
+#zebraw(lang: false)[#raw(readcode("templates/图论/k短路.cpp"), lang: "cpp", block: true)]
+
+== 拟阵交
+
+#include "templates/图论/拟阵交.typ"
+
+#zebraw(lang: false)[#raw(readcode("templates/图论/拟阵交.cpp"), lang: "cpp", block: true)]
 
 = 数学
 
@@ -101,6 +115,14 @@
 == 反射容斥
 
 #include "templates/数学/反射容斥.typ"
+
+== 特征多项式
+
+#zebraw(lang: false)[#raw(readcode("templates/数学/特征多项式.cpp"), lang: "cpp", block: true)]
+
+== 行列式多项式
+
+#zebraw(lang: false)[#raw(readcode("templates/数学/行列式多项式.cpp"), lang: "cpp", block: true)]
 
 = 数论
 
