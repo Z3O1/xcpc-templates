@@ -705,6 +705,18 @@
    "title": "行列式多项式",
    "missing": false,
    "hidden": false
+  },
+  {
+   "key": "数据结构/线性序列并查集.cpp",
+   "title": "线性序列并查集",
+   "missing": false,
+   "hidden": false
+  },
+  {
+   "key": "数据结构/线性树上并查集.cpp",
+   "title": "线性树上并查集",
+   "missing": false,
+   "hidden": false
   }
  ]
 }

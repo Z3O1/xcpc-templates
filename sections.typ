@@ -72,6 +72,18 @@
 
 #zebraw(lang: false)[#raw(readcode("templates/数据结构/二区间合并.cpp"), lang: "cpp", block: true)]
 
+== 线性序列并查集
+
+#include "templates/数据结构/线性序列并查集.typ"
+
+#zebraw(lang: false)[#raw(readcode("templates/数据结构/线性序列并查集.cpp"), lang: "cpp", block: true)]
+
+== 线性树上并查集
+
+#include "templates/数据结构/线性树上并查集.typ"
+
+#zebraw(lang: false)[#raw(readcode("templates/数据结构/线性树上并查集.cpp"), lang: "cpp", block: true)]
+
 = 图论
 
 == 费用流
