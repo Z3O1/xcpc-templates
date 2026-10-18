@@ -472,13 +472,13 @@ int main() {
         CHECK(pb.bad == 0, "cross/crossop 反对称、端点归零、直线两侧反号(2 万组,含线上参数点)");
     }
 
-    // ===== 5. is_mid / ons / ons_s =====
-    CHECK(is_mid(0.0L, 0.5L, 1.0L) && is_mid(1.0L, 0.5L, 0.0L), "is_mid 区间内(两端顺序无关)");
-    CHECK(is_mid(0.0L, 0.0L, 1.0L) && is_mid(0.0L, 1.0L, 1.0L) && is_mid(2.0L, 2.0L, 2.0L), "is_mid 端点算在区间内");
-    CHECK(!is_mid(0.0L, 1.5L, 1.0L) && !is_mid(0.0L, -0.5L, 1.0L), "is_mid 区间外为假");
-    CHECK(!is_mid(0.0L, 5.0L, 0.0L), "is_mid 零长区间只包含端点");
-    CHECK(is_mid(P(0, 0), P(1, 1), P(2, 2)) && is_mid(P(0, 0), P(1, 2), P(2, 2)), "is_mid 点版:逐坐标落在区间内(即落在包围盒里)");
-    CHECK(!is_mid(P(0, 0), P(3, 2), P(2, 2)) && !is_mid(P(0, 0), P(-1, 1), P(2, 2)), "is_mid 点版:任一坐标出界即为假");
+    // ===== 5. isMid / ons / ons_s =====
+    CHECK(isMid(0.0L, 0.5L, 1.0L) && isMid(1.0L, 0.5L, 0.0L), "isMid 区间内(两端顺序无关)");
+    CHECK(isMid(0.0L, 0.0L, 1.0L) && isMid(0.0L, 1.0L, 1.0L) && isMid(2.0L, 2.0L, 2.0L), "isMid 端点算在区间内");
+    CHECK(!isMid(0.0L, 1.5L, 1.0L) && !isMid(0.0L, -0.5L, 1.0L), "isMid 区间外为假");
+    CHECK(!isMid(0.0L, 5.0L, 0.0L), "isMid 零长区间只包含端点");
+    CHECK(isMid(P(0, 0), P(1, 1), P(2, 2)) && isMid(P(0, 0), P(1, 2), P(2, 2)), "isMid 点版:逐坐标落在区间内(即落在包围盒里)");
+    CHECK(!isMid(P(0, 0), P(3, 2), P(2, 2)) && !isMid(P(0, 0), P(-1, 1), P(2, 2)), "isMid 点版:任一坐标出界即为假");
     CHECK(ons(L, P(1, 0)) && ons(L, P(0, 0)) && ons(L, P(2, 0)), "ons 线段内部与端点");
     CHECK(!ons(L, P(3, 0)) && !ons(L, P(-1, 0)) && !ons(L, P(1, eps * 100)), "ons 延长线与线外为假");
     CHECK(ons_s(L, P(1, 0)) && !ons_s(L, P(0, 0)) && !ons_s(L, P(2, 0)) && !ons_s(L, P(1, eps * 100)), "ons_s 严格在线段内部");
@@ -535,14 +535,14 @@ int main() {
             if(!eqd(dd(h, ha), 0, 1e-12L * sc)) pb.hit("proj != 解析解", dd(h, ha), 0);
             if(!eqd(dot(q - h, v - u), 0, 1e-9L * dis(v - u) * (1 + dis(q - u)))) pb.hit("垂线不垂直于方向", dot(q - h, v - u), 0);
             // 垂足若落在线段内,则它到 q 的距离 <= 端点到 q 的距离(垂距最短)
-            if(is_mid(u, h, v)) {
+            if(isMid(u, h, v)) {
                 db d1 = dd(h, q), d2 = min(dd(u, q), dd(v, q));
                 if(d1 > d2 + 1e-6L * (1 + d2)) pb.hit("垂足不是最近点", d1, d2);
             }
             if(!eqd(dd(reflect(s, q), q), 4 * dd(h, q), 1e-9L * (1 + 4 * dd(h, q)))) pb.hit("reflect 到 q 的距离不是 2*hq", dd(reflect(s, q), q), 4 * dd(h, q));
             if(!eqp(reflect(s, reflect(s, q)), q, 1e-9L * (1 + dis(q - u)))) pb.hitp("reflect 不是对合", reflect(s, reflect(s, q)), q);
             if(!eqd(dis(reflect(s, q) - u), dis(q - u), 1e-9L * (1 + dis(q - u)))) pb.hit("reflect 不保端点距离", dis(reflect(s, q) - u), dis(q - u));
-            if(!eqd(nearest(s, q), min(dd(h, q), min(dd(u, q), dd(v, q))) == dd(h, q) && is_mid(u, h, v) ? dd(h, q) : min(dd(u, q), dd(v, q)), 1e-9L * (1 + dd(q, u)))) pb.hit("nearest 与垂足/端点公式不一致", nearest(s, q), dd(h, q));
+            if(!eqd(nearest(s, q), min(dd(h, q), min(dd(u, q), dd(v, q))) == dd(h, q) && isMid(u, h, v) ? dd(h, q) : min(dd(u, q), dd(v, q)), 1e-9L * (1 + dd(q, u)))) pb.hit("nearest 与垂足/端点公式不一致", nearest(s, q), dd(h, q));
         }
         CHECK(pb.bad == 0, "proj/reflect:解析解一致、垂距最短、reflect 对合保距(3 万组)");
     }
@@ -1206,7 +1206,7 @@ int main() {
             db resid = abs_db(dot(q - h, v - u)) / (dis(v - u) * (1 + dis(q - u)));
             if(resid > 1e-9L) pb.hit("1e9 量级 proj 垂线不垂直", resid, 0);
             if(!eqd(dd(h, q) + dd(h, u), dd(q, u), 1e-8L * (1 + dd(q, u)))) pb.hit("1e9 量级投影破坏勾股关系", 0, 0);
-            if(is_mid(u, h, v)) {  // 垂足落在线段内:它必须是最近点(ons 在这里会受 eps 影响,故改查「距离为 0」这一等价的容差式)
+            if(isMid(u, h, v)) {  // 垂足落在线段内:它必须是最近点(ons 在这里会受 eps 影响,故改查「距离为 0」这一等价的容差式)
                 if(!eqd(ref_nearest(u, v, h), 0, 1e-6L * (1 + dd(u, v)))) pb.hit("1e9 量级垂足不在线段上", ref_nearest(u, v, h), 0);
                 db d1 = dd(h, q), d2 = min(dd(u, q), dd(v, q));
                 if(d1 > d2 * (1 + 1e-9L) + 1e-6L) pb.hit("1e9 量级垂足不是最近点", d1, d2);
