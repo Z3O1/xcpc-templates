@@ -6,15 +6,20 @@
 // O(n+m log(m+2)+k) 空间；init 清图，solve 可换起终点重复调用。
 struct k_shortest_t {
     struct edge {
-        int from, to;
+        int from;
+        int to;
         ll w;
     };
     struct node {
         ll key;
-        int to, l, r, rank;
+        int to;
+        int l;
+        int r;
+        int rank;
     };
     vector<edge> edges;
-    vector<vector<int>> g, rg;
+    vector<vector<int>> g;
+    vector<vector<int>> rg;
     vector<node> heap;
     void init(int n) {
         edges.clear();
@@ -47,7 +52,9 @@ struct k_shortest_t {
         int n = g.size();
         const ll inf = LLONG_MAX;
         vector<ll> dist(n, inf);
-        vector<int> tree(n, -1), order, h(n);
+        vector<int> tree(n, -1);
+        vector<int> order;
+        vector<int> h(n);
         using state = pair<ll, int>;
         priority_queue<state, vector<state>, greater<state>> q;
         dist[t] = 0;
