@@ -28,9 +28,9 @@
 - 命名空间：既有的 `Geo`、`IGeo`、`DOM`、`Mul`、`LCT`、`DS`、`Probe`、`Delaunay`、`Voronoi` 保留；
   新命名空间用 lowercase snake_case。
 - 单字母与惯用短循环变量保留：`n`、`m`、`i`、`j`、`k`、`l`、`r`、`x`、`y` 等；
-  `多项式复合逆.cpp` 的 `pA`/`pB`/`pC`、`多项式复合.cpp` 的 `Gp`、`快速插值.cpp` 的 `dM`、`直线与线段.cpp` 的 `isMid` 保留。
+  `快速插值.cpp` 的 `dM`、`直线与线段.cpp` 的 `isMid` 保留。
 - 相互关联的自由函数收进小写命名空间（如 `mul`、`geo`、`ds`）；独立板子允许全局数组 + 自由函数，
-  这是纸质查阅的默认形态（全仓 87 个源码都是这样），不强制包 namespace。
+  这是纸质查阅的默认形态，不强制包 namespace。
 - 模板片段按单编译单元被包含：自由函数默认不写 `inline`；`_check_base.hpp` 的断言/随机工具与自测内的文件级辅助用 `static`。
 - **自测 `.check.cpp` 一律 lowercase snake_case**：辅助函数、局部结构体、变量都写 `ref_area`、`cut_area` 这种形式，
   参考实现的结构体也不加 PascalCase。
@@ -72,8 +72,8 @@
 | --- | --- | --- |
 | 裸 `long double` | `数论/Pollard-Rho.cpp`（`sqrtl` 参数）+ 三维/几何自测的 `(long double)` 转换 | 18 |
 | `typedef` | `图论/mcmf.check.cpp`、`计算几何/平面剖分/Delaunay.cpp` 及 `.check.cpp` | 4 |
-| `inline` 自由函数 | `多项式/多项式复合`、`多项式复合逆`、`数学/barrett`、`数据结构/lct`、`计算几何/基础/直线与线段` | 11 |
+| `inline` 显式标记 | `数学/barrett`、`数据结构/lct`、`计算几何/基础/直线与线段` | 9 |
 | `static` 自由函数/全局量 | `多项式/多点求值`、`多项式ln`、`快速插值`、`数论/Pollard-Rho`、`计算几何/三维/三维平面`、`圆/最小圆覆盖` | 8 |
 | `#define ls/rs` 局部宏 | `数据结构/lct`、`数据结构/全局平衡二叉树` | 4 |
 
-命名方面保留的既有写法见 §2（`NTT`/`SA`/`chkp`/PascalCase 命名空间/`pA` 等）。
+命名方面保留的既有写法见 §2（`NTT`/`SA`/`chkp`/PascalCase 命名空间/`dM` 等）。
