@@ -1,4 +1,4 @@
-// ntt.cpp 自测:任意模数 NTT(三模 CRT) vs O(n·m) 朴素卷积(i128 精确累加)大规模对拍
+// ntt.cpp 自测:三模 CRT/普通卷积独立参考、普通 NTT 直接 DFT、2^22/2^23 容量与变长缓存
 //
 // ===== 模板契约(读 ntt.cpp 的注释/代码 + 本 check 实测敲定,越界不保证) =====
 //   1. 系数 c:非负 int(0 <= c < 2^31)。c 不必 < P —— 三模 CRT 在整数上精确,最后才 % P,
@@ -320,6 +320,79 @@ int main() {
         CHECK(mul({M - 1}, {M - 1}) == poly({1}), "1×1 卷积及大系数乘法");
         CHECK(mul({}, {1}).empty() && mul({1}, {}).empty(), "普通 mul 的空输入");
         ok("400 组普通 mul 与独立 i128 参考一致");
+        For(k, 1, 12) {
+            for(int delta : {-1, 0, 1}) {
+                int len = (1 << k) + delta;
+                int n = len / 2 + 1;
+                int m = len - n + 1;
+                poly a = rpoly(n, M, k % 5), b = rpoly(m, M, (k + 2) % 5);
+                if(mul(a, b) != naive(a, b, M)) return bad("普通卷积 2 的幂边界", a, b, M, naive(a, b, M), mul(a, b));
+            }
+        }
+        // 直接 DFT 独立检查正/逆方向及归一，不只用互相抵消的往返测试。
+        for(int n : {1, 2, 4, 8, 16, 32, 64}) {
+            For(t, 1, 20) {
+                poly a = rpoly(n, M, t % 5);
+                for(int direction : {1, -1}) {
+                    int root = qpow(3, (M - 1) / n, M);
+                    if(direction == -1) root = qpow(root, M - 2, M);
+                    poly want(n);
+                    int step = 1;
+                    For(i, 0, n - 1) {
+                        int pw = 1;
+                        For(j, 0, n - 1) {
+                            want[i] = (want[i] + (ll) a[j] * pw) % M;
+                            pw = (ll) pw * step % M;
+                        }
+                        step = (ll) step * root % M;
+                        if(direction == -1) want[i] = (ll) want[i] * qpow(n, M - 2, M) % M;
+                    }
+                    poly got = a;
+                    NTT(got, direction);
+                    if(got != want) return bad("普通 NTT 与直接 DFT", a, {}, M, want, got);
+                }
+            }
+        }
+        // 旧复合板子的 2^22 容量不可回退到三模的 2^20；也验证单模完整的 2^23 容量。
+        for(int k : {22, 23}) {
+            int n = 1 << k;
+            poly a(n);
+            a[1] = M - 1;
+            NTT(a, 1);
+            int root = qpow(3, (M - 1) / n, M);
+            int pw = 1;
+            For(i, 0, n - 1) {
+                if(a[i] != M - pw) {
+                    printf("[FAIL] 2^%d 单项式频谱 i=%d want=%d got=%d\n", k, i, M - pw, a[i]);
+                    return 1;
+                }
+                pw = (ll) pw * root % M;
+            }
+            fill(all(a), M - 1);
+            NTT(a, 1);
+            For(i, 0, n - 1) {
+                int want = i == 0 ? M - n : 0;
+                if(a[i] != want) {
+                    printf("[FAIL] 2^%d 全 M-1 频谱 i=%d want=%d got=%d\n", k, i, want, a[i]);
+                    return 1;
+                }
+            }
+            NTT(a, -1);
+            For(i, 0, n - 1) if(a[i] != M - 1) {
+                printf("[FAIL] 2^%d 逆变换 i=%d want=%d got=%d\n", k, i, M - 1, a[i]);
+                return 1;
+            }
+        }
+        for(int k : {23, 22, 18, 3, 1, 0, 12}) {
+            int len = 1 << k;
+            poly a(len > 2 ? len - 2 : len);
+            For(i, 0, (int) a.size() - 1) a[i] = ((ll) i * i + 7) % M;
+            poly b = len > 2 ? poly{1, 2, 3} : poly{M - 1};
+            poly got = mul(a, b);
+            poly want = naive(a, b, M);
+            if(got != want) return bad("普通卷积容量/先大后小缓存", a, b, M, want, got);
+        }
+        ok("普通 NTT 直接 DFT、2^22/2^23 频谱与卷积、18 层延迟取模及变长缓存");
     }
 
     // ——— 9) 负数先归一的回归与易踩的点 ———
