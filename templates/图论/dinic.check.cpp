@@ -21,18 +21,18 @@ static void bug(const char *fmt, ...) {
 static ll brute_mincut(int n, int s, int t, const vector<array<int, 3>> &es) {
     ll best = LLONG_MAX;
     for(int mask = 0; mask < 1 << n; ++mask) {
-        bool inS[32] = {};
-        for(int i = 0; i < n; ++i) inS[i + 1] = (mask >> i & 1);
-        if(!inS[s] || inS[t]) continue;
+        bool in_s[32] = {};
+        for(int i = 0; i < n; ++i) in_s[i + 1] = (mask >> i & 1);
+        if(!in_s[s] || in_s[t]) continue;
         ll c = 0;
-        for(auto &e : es) if(inS[e[0]] && !inS[e[1]]) c += e[2];
+        for(auto &e : es) if(in_s[e[0]] && !in_s[e[1]]) c += e[2];
         cmin(best, c);
     }
     return best;
 }
 
 // ———— 独立暴力 2:矩阵 Edmonds–Karp ————
-struct EK {
+struct ek_t {
     int n;
     vector<vector<ll>> c;
     // 初始化矩阵容量图；要求点编号 1.._n；覆盖旧状态。
@@ -95,9 +95,9 @@ static void cut_checks(int n, int s, int t, ll flow, const vector<array<int, 3>>
                 return (void) printf("  [FAIL] %s 残余边 %d->%d 跨过割集\n", tag, u, f.e[i].v), exit(1);
     // 割容量(原图)与流值:正确实现必须相等;旧 bug(恒 0)下也必然 >=
     ll cap = 0;
-    bool inS[64] = {};
-    For(v, 1, n) inS[v] = (cut[v] == 0);
-    for(auto &e : es) if(inS[e[0]] && !inS[e[1]]) cap += e[2];
+    bool in_s[64] = {};
+    For(v, 1, n) in_s[v] = (cut[v] == 0);
+    for(auto &e : es) if(in_s[e[0]] && !in_s[e[1]]) cap += e[2];
     if(cap < flow)
         return (void) printf("  [FAIL] %s 割容量 %lld < 流值 %lld\n", tag, cap, flow), exit(1);
 }
@@ -132,7 +132,7 @@ int main() {
             vector<array<int, 3>> es;
             for(int i = 0; i < m; ++i) if(mask >> i & 1) es.push_back(all[i]);
             int s = 1, t = n;
-            EK ek;
+            ek_t ek;
             ek.init(n);
             f.clear();
             for(auto &e : es) f.add(e[0], e[1], e[2]), ek.add(e[0], e[1], e[2]);
@@ -156,14 +156,14 @@ int main() {
     }
     printf("  [ok] 穷举 %lld 组(含 s-t 不连通、零容量、平行边)\n", ncase);
 
-    // ———— 2) 中等规模随机压力:与独立 EK 对照 + clear() 反复复位 ————
+    // ———— 2) 中等规模随机压力:与独立 ek_t 对照 + clear() 反复复位 ————
     ll ncase2 = 0, nbad2 = 0, nbad2_other = 0;
     For(rep, 1, 400) {
         int n = (int) rnd(2, 30), m = (int) rnd(0, 60);
         int s = (int) rnd(1, n), t = (int) rnd(1, n);
         while(t == s) t = (int) rnd(1, n);
         vector<array<int, 3>> es;
-        EK ek;
+        ek_t ek;
         ek.init(n);
         f.clear();
         For(e, 1, m) {
@@ -182,9 +182,9 @@ int main() {
             if(!(zero_bug && got == 0)) ++nbad2_other;
         }
     }
-    if(nbad2_other) return printf("  [FAIL] 随机 n<=30 m<=60:有 %lld 组与 EK 不符(且不是已知的恒 0)\n", nbad2_other), 1;
-    if(nbad2) bug("随机 n<=30 m<=60: %lld/%lld 组与 EK 不符(全部是「返回 0」的旧 bug 复发)\n", nbad2, ncase2);
-    else ok("随机 n<=30 m<=60: 最大流 == EK,且割容量 == 最大流");
+    if(nbad2_other) return printf("  [FAIL] 随机 n<=30 m<=60:有 %lld 组与 ek_t 不符(且不是已知的恒 0)\n", nbad2_other), 1;
+    if(nbad2) bug("随机 n<=30 m<=60: %lld/%lld 组与 ek_t 不符(全部是「返回 0」的旧 bug 复发)\n", nbad2, ncase2);
+    else ok("随机 n<=30 m<=60: 最大流 == ek_t,且割容量 == 最大流");
     printf("  [ok] 随机 %lld 组(每组前都调 clear() 复用同一实例)\n", ncase2);
 
     // ———— 3) clear() 复位是否干净 ————
@@ -201,8 +201,8 @@ int main() {
         for(int i = 1; i < 50; ++i) if(res[i] != res[0])
             return printf("  [FAIL] clear() 复位不干净:第 %d 次 %lld != 第 1 次 %lld\n", i + 1, res[i], res[0]), 1;
         ll want = 0;
-        {   // 独立 EK 结果
-            EK ek;
+        {   // 独立 ek_t 结果
+            ek_t ek;
             ek.init(20);
             For(u, 1, 19) ek.add(u, u + 1, (u % 7) + 1);
             For(u, 1, 10) ek.add(u, 20 - u, 3);
@@ -210,10 +210,10 @@ int main() {
             want = ek.maxflow(1, 20);
         }
         if(res[0] != want) {
-            if(!(zero_bug && res[0] == 0)) return printf("  [FAIL] 复用实例结果 %lld != EK %lld\n", res[0], want), 1;
-            bug("复用实例 50 次结果恒为 %lld(EK 应为 %lld),仍是恒 0 的旧 bug\n", res[0], want);
+            if(!(zero_bug && res[0] == 0)) return printf("  [FAIL] 复用实例结果 %lld != ek_t %lld\n", res[0], want), 1;
+            bug("复用实例 50 次结果恒为 %lld(ek_t 应为 %lld),仍是恒 0 的旧 bug\n", res[0], want);
         } else {
-            ok("clear() 后同图连跑 50 次结果一致且等于 EK");
+            ok("clear() 后同图连跑 50 次结果一致且等于 ek_t");
         }
     }
 

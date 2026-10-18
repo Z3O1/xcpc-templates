@@ -4,7 +4,7 @@
 //   1) mcmf() 本体(固定流量最小费用最大流)与**独立实现**对拍:
 //      check 里自带一份 SPFA 版 successive-shortest-path 费用流(不用势、不用模板代码),
 //      穷举小图(n=3 全边集)+ 随机图(n<=8, m<=14, 含负费用边, 用 Bellman-Ford 剔掉负环)
-//      比对 (流量, 费用); 另与矩阵 EK 再核一次最大流值。
+//      比对 (流量, 费用); 另与矩阵 ek_t 再核一次最大流值。
 //   2) mcf = true 的"任意流中最小费用"语义(与独立实现的负费用增广前缀费用比对)。
 //   3) 边界: 无路可走 / 零容量 / 平行边 / 自环(非负费用) / 大容量 / 断连点 / 反复复用同一实例。
 //   4) mcmf2() 的历史 bug(A/B)做**静态**判定(见 scan_mcmf2())。
@@ -69,7 +69,7 @@ static void reset() {
 // ———— 独立参考实现 1: SPFA 版最小费用流(不用势函数, 与模板实现无关) ————
 // run(): 固定流量最小费用最大流(逐次最短路增广), 同时记录每次增广后的 (流量, 累计费用)。
 // 原图无负环时可保证第 k 次增广后就是"流量 k 的最小费用"。
-struct RefMCMF {
+struct ref_mcmf {
     struct E { int v, n, w; ll c; };
     vector<E> e;
     int hd[MAXV + 8]{}, tot = 1, n = 0;
@@ -117,7 +117,7 @@ struct RefMCMF {
 };
 
 // ———— 独立参考实现 2: 矩阵 Edmonds–Karp(只求最大流, 用来交叉验证参考实现 1) ————
-struct EK {
+struct ek_t {
     int n;
     vector<vector<ll>> c;
     // 初始化矩阵容量图；要求点编号 1.._n；覆盖旧状态。
@@ -283,9 +283,9 @@ static bool scan_mcmf2() {
 }
 
 // ———— clear() 的后果复现: 子进程 + 看门狗(不挂住 check) ————
-struct MfRes { int f; ll c; };
+struct mf_res { int f; ll c; };
 // 子进程运行 clear() 回归复现；要求 which 为 0..2、ms 为毫秒超时；成功时写出结果。
-static bool run_child_mcmf(int which, MfRes &out, int ms) {
+static bool run_child_mcmf(int which, mf_res &out, int ms) {
     int fd[2];
     if(pipe(fd)) return false;
     pid_t pid = fork();
@@ -299,7 +299,7 @@ static bool run_child_mcmf(int which, MfRes &out, int ms) {
         if(which == 0) mf.add(2, 3, 1, 0);                            // 2->3: 1 到 3 无路
         else if(which == 1) mf.add(2, 3, 1, 0), mf.add(1, 2, 1, 0);   // 1->2->3: 满流 1
         else mf.add(3, 2, 1, 0);                                      // 3->2: 1 到 3 无路
-        MfRes r{};
+        mf_res r{};
         auto g = mf.mcmf(1, 3, 0, 3);   // 正确答案见调用方的 want[]:(0,0) / (1,0) / (0,0)
         r.f = g.first, r.c = g.second;
         ssize_t w = write(fd[1], &r, sizeof r);
@@ -391,9 +391,9 @@ int main() {
                 continue;
             }
             reset();
-            RefMCMF R;
+            ref_mcmf R;
             R.init(3);
-            EK ek;
+            ek_t ek;
             ek.init(3);
             for(int i = 0; i < es.size(); ++i) {
                 mf.add(es[i][0], es[i][1], es[i][2], cs[i]);
@@ -404,7 +404,7 @@ int main() {
             R.run(1, 3, 0);
             ll f2 = ek.maxflow(1, 3);
             ++cnt;
-            if(f2 != R.flow) return printf("  [FAIL] 参考实现自检不一致: SPFA 流 %d, EK 流 %lld\n", R.flow, f2), 1;
+            if(f2 != R.flow) return printf("  [FAIL] 参考实现自检不一致: SPFA 流 %d, ek_t 流 %lld\n", R.flow, f2), 1;
             if(got.first != R.flow || got.second != R.cost) {
                 ++bad;
                 if(bad <= 5) {
@@ -443,7 +443,7 @@ int main() {
                 continue;
             }
             reset();
-            RefMCMF R;
+            ref_mcmf R;
             R.init(n);
             for(int i = 0; i < es.size(); ++i) {
                 mf.add(es[i][0], es[i][1], es[i][2], cs[i]);
@@ -486,7 +486,7 @@ int main() {
             }
             if(has_neg_cycle(n, es, cs)) continue;
             reset();
-            RefMCMF R;
+            ref_mcmf R;
             R.init(n);
             for(int i = 0; i < es.size(); ++i) {
                 mf.add(es[i][0], es[i][1], es[i][2], cs[i]);
@@ -575,7 +575,7 @@ int main() {
             return printf("  [FAIL] 复用实例结果不稳定: 第 %d 次 (%d, %lld) != 第 1 次 (%d, %lld)\n",
                           i + 1, res[i].first, res[i].second, res[0].first, res[0].second),
                    1;
-        RefMCMF R;
+        ref_mcmf R;
         R.init(13);
         For(u, 1, 12) R.add(u, u + 1, (u % 5) + 1, (u % 3) - 1);
         For(u, 1, 6) R.add(u, 13 - u, 4, 7);
@@ -612,10 +612,10 @@ int main() {
             ok("全新实例 add() 之后 clear(): 邻接表已清空(hd[1..3] = 0)");
         }
         // 后果: clear() 之后重建图再跑 mcmf(), 结果必须等于全新实例(子进程 + 250ms 看门狗)
-        static const MfRes want[3] = {{0, 0}, {1, 0}, {0, 0}};   // 三张图 B 各自的正确 (流, 费用)
+        static const mf_res want[3] = {{0, 0}, {1, 0}, {0, 0}};   // 三张图 B 各自的正确 (流, 费用)
         int hangs = 0, wrong = 0;
         for(int which = 0; which < 3; ++which) {
-            MfRes r{};
+            mf_res r{};
             bool done = run_child_mcmf(which, r, 250);
             if(!done) ++hangs;
             else if(r.f != want[which].f || r.c != want[which].c) ++wrong;
@@ -637,7 +637,7 @@ int main() {
     puts("— 中等规模随机图(性能/健壮性) —");
     {
         reset();
-        RefMCMF R;
+        ref_mcmf R;
         R.init(120);
         int s = 1, t = 120;
         // 先铺一条 1->2->...->120 的链, 保证满流不为 0(否则这条用例是空跑)
@@ -708,7 +708,7 @@ int main() {
                 continue;
             }
             reset();
-            RefMCMF R;
+            ref_mcmf R;
             R.init(3);
             for(int i = 0; i < es.size(); ++i) {
                 mf.add(es[i][0], es[i][1], es[i][2], cs[i]);
@@ -750,7 +750,7 @@ int main() {
                 continue;
             }
             reset();
-            RefMCMF R;
+            ref_mcmf R;
             R.init(n);
             for(int i = 0; i < es.size(); ++i) {
                 mf.add(es[i][0], es[i][1], es[i][2], cs[i]);

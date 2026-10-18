@@ -35,27 +35,27 @@ static_assert(is_same_v<decltype(Geo::p2{} * db(2)), Geo::p2> &&
 void verify(p2i a, p2i b, p2i c) {
     i128 d = i128(b.x) * c.x + i128(b.y) * c.y + i128(a.x) * a.x + i128(a.y) * a.y -
              i128(a.x) * b.x - i128(a.y) * b.y - i128(a.x) * c.x - i128(a.y) * c.y;
-    i128 want = IntCheck::turn(a, b, c), got = cross(a, b, c);
-    if(got != want) cerr << "cross got=" << IntCheck::text(got) << " want=" << IntCheck::text(want) << '\n';
-    IntCheck::need(got == want && crossop(a, b, c) == IntCheck::sign(want) &&
-                   dot(a, b, c) == d && dis2(a, b) == IntCheck::distance2(a, b) &&
+    i128 want = int_check::turn(a, b, c), got = cross(a, b, c);
+    if(got != want) cerr << "cross got=" << int_check::text(got) << " want=" << int_check::text(want) << '\n';
+    int_check::need(got == want && crossop(a, b, c) == int_check::sign(want) &&
+                   dot(a, b, c) == d && dis2(a, b) == int_check::distance2(a, b) &&
                    got == -cross(a, c, b), "基础精确参考", {a, b, c});
 }
 // 同一翻译单元显式限定整数/浮点命名空间，不引入 using namespace IGeo。
 void mixed() {
-    IntCheck::need(Geo::dot(Geo::p2{3, 4}, Geo::p2{-1, 2}) == 5 &&
+    int_check::need(Geo::dot(Geo::p2{3, 4}, Geo::p2{-1, 2}) == 5 &&
                    Geo::dot(Geo::p3{1, 2, 3}, Geo::p3{4, 5, 6}) == 32, "独立dot重载");
     vector<Geo::p2> a{{0, 0}, {2, 0}, {0, 2}};
     vector<IGeo::p2i> x{{0, 0}, {4, 0}, {0, 4}};
-    IntCheck::need(Geo::area(a) == 2 && IGeo::area2(x) == 16 &&
+    int_check::need(Geo::area(a) == 2 && IGeo::area2(x) == 16 &&
                    Geo::contain(a, Geo::p2{0.5L, 0.5L}) == 2 &&
                    IGeo::contain(x, IGeo::p2i{1, 1}) == 2, "多边形命名空间联编");
     auto b = Geo::convex_hull(a);
     auto y = IGeo::convex_hull(x);
-    IntCheck::need(b.size() == 3 && y.size() == 3 && Geo::convex_diameter(b) == 8 &&
+    int_check::need(b.size() == 3 && y.size() == 3 && Geo::convex_diameter(b) == 8 &&
                    IGeo::convex_diameter(y) == 32 && ::in_convex(b, Geo::p2{0, 0}) == 1 &&
                    IGeo::in_convex(y, IGeo::p2i{1, 1}) == 2, "凸包命名空间联编");
-    IntCheck::need(::dis_closest({Geo::p2{0, 0}, Geo::p2{2, 0}}) == 2 && IGeo::closest_pair2(x) == 16 &&
+    int_check::need(::dis_closest({Geo::p2{0, 0}, Geo::p2{2, 0}}) == 2 && IGeo::closest_pair2(x) == 16 &&
                    Geo::ons(Geo::seg{{0, 0}, {1, 0}}, Geo::p2{0, 0}) &&
                    IGeo::ons(IGeo::segi{{0, 0}, {1, 0}}, IGeo::p2i{0, 0}) &&
                    Geo::dis2(Geo::p2{3, 4}) == 25 && Geo::dis2(Geo::p3{1, 2, 3}) == 14,
@@ -68,28 +68,28 @@ int main() {
     vector<p2i> edge{{-B, -B}, {-B, B}, {B, -B}, {B, B}, {0, 0}, {1, -1}, {-1, 1}};
     for(auto a : edge) for(auto b : edge) for(auto c : edge) verify(a, b, c);
     for(int t = 0; t < 60000; ++t) {
-        p2i a = IntCheck::point(t % 3), b = IntCheck::point(t % 3), c = IntCheck::point(t % 3);
+        p2i a = int_check::point(t % 3), b = int_check::point(t % 3), c = int_check::point(t % 3);
         if(t % 7 == 0) c = b;
         verify(a, b, c);
     }
     for(ll n : {100000000LL, 10000000000LL, 1000000000000000000LL}) {
         p2i a{0, 0}, b{n, n - 1}, c{n + 1, n};
-        IntCheck::need(cross(a, b, c) == 1 && crossop(a, b, c) == 1,
+        int_check::need(cross(a, b, c) == 1 && crossop(a, b, c) == 1,
                        "真实叉积1不可消去", {a, b, c});
     }
     p2i lo{LLONG_MIN, 0}, hi{LLONG_MAX, 0};
-    IntCheck::need(cross(lo, hi, {0, 1}) == i128(LLONG_MAX) - LLONG_MIN &&
+    int_check::need(cross(lo, hi, {0, 1}) == i128(LLONG_MAX) - LLONG_MIN &&
                    dis2(lo, {0, 0}) == (i128(1) << 126), "先升位再减法", {lo, hi});
     vector<p2i> a = edge;
     a.push_back(lo); a.push_back(hi);
-    for(int i = 0; i < 2000; ++i) a.push_back(IntCheck::point(i % 3));
+    for(int i = 0; i < 2000; ++i) a.push_back(int_check::point(i % 3));
     auto b = a;
     sort(a.begin(), a.end());
     sort(b.begin(), b.end(), [](p2i u, p2i v) { return tie(u.x, u.y) < tie(v.x, v.y); });
-    IntCheck::need(a == b, "字典序独立参考");
+    int_check::need(a == b, "字典序独立参考");
     for(int t = 0; t < 5000; ++t) {
         auto x = a[rng() % a.size()], y = a[rng() % a.size()], z = a[rng() % a.size()];
-        IntCheck::need(!(x < x) && (!(x < y) || !(y < x)) &&
+        int_check::need(!(x < x) && (!(x < y) || !(y < x)) &&
                        (!(x < y && y < z) || x < z) && ((x == y) == !(x < y || y < x)),
                        "严格弱序与精确判等", {x, y, z});
     }

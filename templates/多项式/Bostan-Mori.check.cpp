@@ -117,9 +117,9 @@ int main() {
         if(t % 3 == 0 && q.size() > 1) q.back() = 0;
         int n = rnd(0, 120), want = series_ref(p, q, n)[n], got = bostan_mori(p, q, n);
         if(got != want) {
-            printf("  [FAIL] 一般 P/Q t=%d n=%d got=%d want=%d\nP:", t, n, got, want);
+            printf("  [FAIL] 一般 P/Q t=%d n=%d got=%d want=%d\n_p:", t, n, got, want);
             for(int x : p) printf(" %d", x);
-            printf("\nQ:");
+            printf("\n_q:");
             for(int x : q) printf(" %d", x);
             return printf("\n"), 1;
         }

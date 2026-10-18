@@ -43,26 +43,26 @@ string ps(line3 l) { return ps(l.o) + "+t" + ps(l.d); }
 bool eq(db x, db y, db tol) { return abs(x - y) <= tol; }
 
 // 点到平面距离:体积 / 底面积(完全不经过单位法向量)
-db refPlaneDis(p3 a, p3 b, p3 c, p3 x) { return abs(det(x - a, b - a, c - a)) / dis(cross(b - a, c - a)); }
+db ref_plane_dis(p3 a, p3 b, p3 c, p3 x) { return abs(det(x - a, b - a, c - a)) / dis(cross(b - a, c - a)); }
 // 平面的两个张成方向(用于在平面上撒点)
-void spanDir(plane p, p3 &u, p3 &v) {
+void span_dir(plane p, p3 &u, p3 &v) {
     u = perp(p.n), v = cross(p.n, u);
 }
 // 某个点是否在平面上(用未归一化的三点式直接验:det(x-a, b-a, c-a) == 0)
-db refPlaneSide(p3 a, p3 b, p3 c, p3 x) { return det(x - a, b - a, c - a) / dis(cross(b - a, c - a)); }
+db ref_plane_side(p3 a, p3 b, p3 c, p3 x) { return det(x - a, b - a, c - a) / dis(cross(b - a, c - a)); }
 // 两平面夹角的独立算法:交线方向 L,取 in-plane 方向 n1×L 与 n2×L,夹角的锐角部分
-db refPlaneAngle(plane a, plane b) {
+db ref_plane_angle(plane a, plane b) {
     p3 L = cross(a.n, b.n);
     p3 u = cross(a.n, L), v = cross(b.n, L);
     db t = angle(u, v);
     return min(t, acos((db) -1) - t);
 }
 // 构造 p3。
-p3 P3(db x, db y, db z) { return {x, y, z}; }
+p3 pt3(db x, db y, db z) { return {x, y, z}; }
 // 过三点构造 plane。
-plane PL(p3 a, p3 b, p3 c) { return plane(a, b, c); }
+plane plane_of(p3 a, p3 b, p3 c) { return plane(a, b, c); }
 // 由点和方向构造 line3。
-line3 LN(p3 o, p3 d) {
+line3 ln(p3 o, p3 d) {
     line3 l;
     l.o = o, l.d = d;
     return l;
@@ -74,20 +74,20 @@ int main() {
 
     // 三点退化必须比较高而非叉积面积；底边尺度不应改变高度 eps。
     for(db base : {1e-8L, 1e-6L, 1.0L, 1e6L, 1e8L}) {
-        plane flat(O, P3(base, 0, 0), P3(base / 2, eps / 2, 0));
-        plane valid(O, P3(base, 0, 0), P3(base / 2, eps * 2, 0));
+        plane flat(O, pt3(base, 0, 0), pt3(base / 2, eps / 2, 0));
+        plane valid(O, pt3(base, 0, 0), pt3(base / 2, eps * 2, 0));
         CHECK(dis(flat.n) == 0 && dis(valid.n - Z) < 1e-14L,
               "相同高度跨底边尺度：eps/2 退化，2eps 保留单位法向");
-        plane scaled(O, P3(base, 0, 0), P3(0, base, 0));
-        CHECK(dis(scaled.n - Z) < 1e-14L && abs(scaled.dis(P3(0, 0, base)) / base - 1) < 1e-14L,
+        plane scaled(O, pt3(base, 0, 0), pt3(0, base, 0));
+        CHECK(dis(scaled.n - Z) < 1e-14L && abs(scaled.dis(pt3(0, 0, base)) / base - 1) < 1e-14L,
               "小尺度非共线三点仍为有效平面，点面距按长度缩放");
     }
-    CHECK(dis(PL(O, O, X).n) == 0 && dis(PL(O, X, X * 2).n) == 0,
+    CHECK(dis(plane_of(O, O, X).n) == 0 && dis(plane_of(O, X, X * 2).n) == 0,
           "重复点和真正共线三点退化");
     for(int i = 0; i < 20000; ++i) {
         db s = pow((db) 10, grnd(-7, 5));
         db a = grnd(1, 10), b = grnd(1, 10), c = grnd(1, 10);
-        plane p(P3(a * s, 0, 0), P3(0, b * s, 0), P3(0, 0, c * s));
+        plane p(pt3(a * s, 0, 0), pt3(0, b * s, 0), pt3(0, 0, c * s));
         // 截距式 x/a+y/b+z/c=s，独立于叉积计算。
         db norm = sqrt(1 / (a * a) + 1 / (b * b) + 1 / (c * c));
         p3 want{1 / a / norm, 1 / b / norm, 1 / c / norm};
@@ -99,33 +99,33 @@ int main() {
 
     // ===== 1. 手算常数用例 =====
     {
-        plane z0 = PL(O, X, Y);
+        plane z0 = plane_of(O, X, Y);
         CHECK(eq(z0.n.x, 0, 1e-15) && eq(z0.n.y, 0, 1e-15) && eq(z0.n.z, 1, 1e-15) && eq(z0.d, 0, 1e-15),
               "三点 (0,0,0)(1,0,0)(0,1,0) 定出 z=0:法向 (0,0,1)、d = 0(右手法则)");
-        CHECK(eq(z0.side(P3(0, 0, 5)), 5, 1e-15) && eq(z0.side(P3(0, 0, -2)), -2, 1e-15) && eq(z0.dis(P3(1, 2, -7)), 7, 1e-15),
+        CHECK(eq(z0.side(pt3(0, 0, 5)), 5, 1e-15) && eq(z0.side(pt3(0, 0, -2)), -2, 1e-15) && eq(z0.dis(pt3(1, 2, -7)), 7, 1e-15),
               "z=0 的带号距离 +5 / -2(法向一侧为正)、点到面距离 7");
-        CHECK(z0.proj(P3(3, 4, 5)) == P3(3, 4, 0) && z0.reflect(P3(3, 4, 5)) == P3(3, 4, -5), "z=0 上的投影与对称点");
-        CHECK(z0.ons(P3(9, -9, 0)) && !z0.ons(P3(9, -9, 1e-9L)) && !z0.ons(P3(9, -9, 1e-7L)), "ons:平面上的点(容差 eps)");
-        plane z3 = PL(P3(0, 0, 3), P3(1, 0, 3), P3(0, 1, 3));
-        CHECK(eq(z3.n.z, 1, 1e-15) && eq(z3.d, 3, 1e-15) && eq(z3.dis(P3(0, 0, 5)), 2, 1e-15) && eq(z3.side(P3(0, 0, 5)), 2, 1e-15),
+        CHECK(z0.proj(pt3(3, 4, 5)) == pt3(3, 4, 0) && z0.reflect(pt3(3, 4, 5)) == pt3(3, 4, -5), "z=0 上的投影与对称点");
+        CHECK(z0.ons(pt3(9, -9, 0)) && !z0.ons(pt3(9, -9, 1e-9L)) && !z0.ons(pt3(9, -9, 1e-7L)), "ons:平面上的点(容差 eps)");
+        plane z3 = plane_of(pt3(0, 0, 3), pt3(1, 0, 3), pt3(0, 1, 3));
+        CHECK(eq(z3.n.z, 1, 1e-15) && eq(z3.d, 3, 1e-15) && eq(z3.dis(pt3(0, 0, 5)), 2, 1e-15) && eq(z3.side(pt3(0, 0, 5)), 2, 1e-15),
               "z=3 平面:d = 3、(0,0,5) 的带号距离 = 2");
-        plane s1 = PL(X, Y, Z);
+        plane s1 = plane_of(X, Y, Z);
         CHECK(eq(s1.n.x, s1.n.y, 1e-15) && eq(s1.n.y, s1.n.z, 1e-15) && eq(s1.dis(O), 1 / sqrtl(3.0L), 1e-15),
               "x+y+z=1 平面:法向 (1,1,1)/√3,原点到平面距离 1/√3");
-        CHECK(eq(s1.dis(X), 0, 1e-15) && eq(s1.dis(O + P3(1, 1, 1)), 2 * (1 / sqrtl(3.0L)), 1e-15), "x+y+z=1 上三点距离为 0、(1,1,1) 距离 2/√3");
-        plane f = plane::from(P3(1, 2, 3), P3(0, 0, -4));
-        CHECK(eq(f.n.z, -1, 1e-15) && eq(f.d, -3, 1e-15) && f.ons(P3(1, 2, 3)) && eq(f.dis(P3(1, 2, 4)), 1, 1e-15),
+        CHECK(eq(s1.dis(X), 0, 1e-15) && eq(s1.dis(O + pt3(1, 1, 1)), 2 * (1 / sqrtl(3.0L)), 1e-15), "x+y+z=1 上三点距离为 0、(1,1,1) 距离 2/√3");
+        plane f = plane::from(pt3(1, 2, 3), pt3(0, 0, -4));
+        CHECK(eq(f.n.z, -1, 1e-15) && eq(f.d, -3, 1e-15) && f.ons(pt3(1, 2, 3)) && eq(f.dis(pt3(1, 2, 4)), 1, 1e-15),
               "plane::from((1,2,3), (0,0,-4)):法向归一化 (0,0,-1)、d = -3");
         CHECK(ispara(z0, z3) && !ispara(z0, s1) && isperp(z0, plane::from(O, X)) && !isperp(z0, z3) && !isperp(z0, s1),
               "ispara/isperp:z=0 与 z=3 平行、与 x=0 垂直;与斜平面 x+y+z=1 既不平行也不垂直");
         CHECK(eq(angle(z0, z3), 0, 1e-9) && eq(angle(z0, s1), acos(1 / sqrtl(3.0L)), 1e-15) && eq(angle(z0, s1), angle(s1, z0), 1e-15),
               "夹角:平行面 0、z=0 与 x+y+z=1 的夹角 acos(1/√3)");
-        line3 ip = ispl(PL(O, X, Y), PL(O, Z, X));  // z=0 与 y=0 -> x 轴
-        CHECK(ons(ip, O) && ons(ip, P3(5, 0, 0)) && eq(abs(cosang(ip.d, X)), 1, 1e-15), "z=0 ∩ y=0 = x 轴");
-        p3 hit = islp(z0, LN(P3(1, 2, 9), P3(0, 0, -3)));
-        CHECK(hit == P3(1, 2, 0), "线面交点:过 (1,2,9) 方向 (0,0,-3) 的直线与 z=0 交于 (1,2,0)");
-        CHECK(ons(perpthrough(z0, P3(1, 2, 3)), P3(1, 2, 0)) && ons(perpthrough(z0, P3(1, 2, 3)), P3(1, 2, 9)), "过 (1,2,3) 的 z=0 垂线过 (1,2,0) 与 (1,2,9)");
-        CHECK(ons(z0, LN(P3(0, 0, 0), P3(3, 4, 0))) && !ons(z0, LN(P3(0, 0, 1), P3(3, 4, 1))) && !ons(z0, LN(P3(0, 0, 0), P3(0, 0, 1))),
+        line3 ip = ispl(plane_of(O, X, Y), plane_of(O, Z, X));  // z=0 与 y=0 -> x 轴
+        CHECK(ons(ip, O) && ons(ip, pt3(5, 0, 0)) && eq(abs(cosang(ip.d, X)), 1, 1e-15), "z=0 ∩ y=0 = x 轴");
+        p3 hit = islp(z0, ln(pt3(1, 2, 9), pt3(0, 0, -3)));
+        CHECK(hit == pt3(1, 2, 0), "线面交点:过 (1,2,9) 方向 (0,0,-3) 的直线与 z=0 交于 (1,2,0)");
+        CHECK(ons(perpthrough(z0, pt3(1, 2, 3)), pt3(1, 2, 0)) && ons(perpthrough(z0, pt3(1, 2, 3)), pt3(1, 2, 9)), "过 (1,2,3) 的 z=0 垂线过 (1,2,0) 与 (1,2,9)");
+        CHECK(ons(z0, ln(pt3(0, 0, 0), pt3(3, 4, 0))) && !ons(z0, ln(pt3(0, 0, 1), pt3(3, 4, 1))) && !ons(z0, ln(pt3(0, 0, 0), pt3(0, 0, 1))),
               "ons(平面, 直线):平面内直线为真、平行但不在面内为假、穿过平面为假");
     }
 
@@ -139,11 +139,11 @@ int main() {
             p3 c{db(grnd(-60, 60)) / 3, db(grnd(-60, 60)) / 3, db(grnd(-60, 60)) / 3};
             if(dis(cross(b - a, c - a)) < 0.5L) continue;  // 跳过近退化三角形
             p3 q{db(grnd(-100, 100)) / 3, db(grnd(-100, 100)) / 3, db(grnd(-100, 100)) / 3};
-            plane pl = PL(a, b, c);
+            plane pl = plane_of(a, b, c);
             db sc = 1 + dis(q - a);
-            db g = pl.dis(q), r = refPlaneDis(a, b, c, q);
+            db g = pl.dis(q), r = ref_plane_dis(a, b, c, q);
             if(!eq(g, r, 1e-10 * sc)) { if(!bad) msg = "点面距与体积/底面积公式不符 p=" + ps(pl) + " q=" + ps(q); ++bad; }
-            if(!eq(refPlaneSide(a, b, c, q), pl.side(q), 1e-10 * sc)) { if(!bad) msg = "side 与未归一化三点式不符"; ++bad; }
+            if(!eq(ref_plane_side(a, b, c, q), pl.side(q), 1e-10 * sc)) { if(!bad) msg = "side 与未归一化三点式不符"; ++bad; }
             p3 h = pl.proj(q);
             if(!pl.ons(h)) { if(!bad) msg = "proj 结果不在平面上 p=" + ps(pl) + " q=" + ps(q); ++bad; }
             if(!eq(dis(h - q), g, 1e-11 * sc)) { if(!bad) msg = "proj 到 q 的距离 != dis"; ++bad; }
@@ -152,7 +152,7 @@ int main() {
             if(!eq(pl.dis(pl.reflect(q)), g, 1e-10 * sc)) { if(!bad) msg = "reflect 后距离不等"; ++bad; }
             // 平面内任取两点:它们的连线必须在平面内(法向点积 ≈ 0)
             p3 u, v;
-            spanDir(pl, u, v);
+            span_dir(pl, u, v);
             p3 p1 = pl.proj(q), p2 = pl.proj(q + u * 3 + v * 7);
             if(!eq(dot(pl.n, p2 - p1), 0, 1e-10 * (1 + dis(p2 - p1)))) { if(!bad) msg = "平面内两点连线不在平面内"; ++bad; }
             if(bad) break;
@@ -168,9 +168,9 @@ int main() {
             p3 c{db(grnd(-20, 20)), db(grnd(-20, 20)), db(grnd(-20, 20))};
             if(dis(cross(b - a, c - a)) < 3) continue;
             p3 q{db(grnd(-20, 20)), db(grnd(-20, 20)), db(grnd(-20, 20))};
-            plane pl = PL(a, b, c);
+            plane pl = plane_of(a, b, c);
             p3 u, v;
-            spanDir(pl, u, v);
+            span_dir(pl, u, v);
             db g = pl.dis(q), best = 1e100L;
             for(int i = -20; i < 21; ++i) for(int j = -20; j < 21; ++j) best = min(best, dis(pl.proj(a) + u * (i * 0.5L) + v * (j * 0.5L) - q));
             if(g > best + 1e-9L) ++bad;              // 采样只能给上界
@@ -191,7 +191,7 @@ int main() {
             p3 b2{db(grnd(-60, 60)) / 3, db(grnd(-60, 60)) / 3, db(grnd(-60, 60)) / 3};
             p3 c2{db(grnd(-60, 60)) / 3, db(grnd(-60, 60)) / 3, db(grnd(-60, 60)) / 3};
             if(dis(cross(b1 - a1, c1 - a1)) < 0.5L || dis(cross(b2 - a2, c2 - a2)) < 0.5L) continue;
-            plane p1 = PL(a1, b1, c1), p2 = PL(a2, b2, c2);
+            plane p1 = plane_of(a1, b1, c1), p2 = plane_of(a2, b2, c2);
             db sn = sinang(p1.n, p2.n);
             if(sn < 1e-4L) continue;  // 太接近平行:交线病态,跳过
             line3 l = ispl(p1, p2);
@@ -215,15 +215,15 @@ int main() {
     }
     {
         // 构造用例:x = 2 与 y = 3 交于过 (2,3,0) 的 z 方向直线;x=0/y=0 交于 z 轴;斜平面与 z=0
-        plane px = plane::from(P3(2, 0, 0), X), py = plane::from(P3(0, 3, 0), Y);
+        plane px = plane::from(pt3(2, 0, 0), X), py = plane::from(pt3(0, 3, 0), Y);
         line3 l = ispl(px, py);
-        CHECK(ons(l, P3(2, 3, 0)) && ons(l, P3(2, 3, 9)) && eq(abs(cosang(l.d, Z)), 1, 1e-15), "x=2 ∩ y=3:过 (2,3,0) 的 z 方向直线");
+        CHECK(ons(l, pt3(2, 3, 0)) && ons(l, pt3(2, 3, 9)) && eq(abs(cosang(l.d, Z)), 1, 1e-15), "x=2 ∩ y=3:过 (2,3,0) 的 z 方向直线");
         line3 l2 = ispl(plane::from(O, X), plane::from(O, Y));
-        CHECK(ons(l2, O) && ons(l2, P3(0, 0, 7)) && eq(abs(cosang(l2.d, Z)), 1, 1e-15), "x=0 ∩ y=0:z 轴");
-        plane q1 = plane::from(P3(0, 0, 1), P3(1, 1, 1)), q2 = plane::from(P3(0, 0, 0), P3(1, -1, 1));
+        CHECK(ons(l2, O) && ons(l2, pt3(0, 0, 7)) && eq(abs(cosang(l2.d, Z)), 1, 1e-15), "x=0 ∩ y=0:z 轴");
+        plane q1 = plane::from(pt3(0, 0, 1), pt3(1, 1, 1)), q2 = plane::from(pt3(0, 0, 0), pt3(1, -1, 1));
         line3 l3 = ispl(q1, q2);
         CHECK(q1.ons(l3.o) && q2.ons(l3.o) && !ispara(q1, q2), "两个斜平面:交线起点同时满足两个平面方程");
-        plane par1 = plane::from(O, Z), par2 = plane::from(P3(0, 0, 5), Z);
+        plane par1 = plane::from(O, Z), par2 = plane::from(pt3(0, 0, 5), Z);
         line3 l4 = ispl(par1, par2);
         printf("  [note] 平行平面求交线是契约外用法:实测方向 = %s(零向量),调用方须先判 ispara\n", ps(l4.d).c_str());
         CHECK(eq(dis(l4.d), 0, 1e-15), "平行平面:交线方向退化成零向量(契约外,须先判 ispara)");
@@ -238,21 +238,21 @@ int main() {
             p3 b{db(grnd(-60, 60)) / 3, db(grnd(-60, 60)) / 3, db(grnd(-60, 60)) / 3};
             p3 c{db(grnd(-60, 60)) / 3, db(grnd(-60, 60)) / 3, db(grnd(-60, 60)) / 3};
             if(dis(cross(b - a, c - a)) < 0.5L) continue;
-            plane pl = PL(a, b, c);
+            plane pl = plane_of(a, b, c);
             p3 u, v;
-            spanDir(pl, u, v);
+            span_dir(pl, u, v);
             // 构造:先在平面上取一个已知点 P,再画一条过 P 的随机直线 —— 交点必须 ≈ P
-            p3 P = pl.proj(P3(0, 0, 0)) + u * (db(grnd(-30, 30)) / 3) + v * (db(grnd(-30, 30)) / 3);
+            p3 P = pl.proj(pt3(0, 0, 0)) + u * (db(grnd(-30, 30)) / 3) + v * (db(grnd(-30, 30)) / 3);
             p3 dd{db(grnd(-60, 60)) / 3, db(grnd(-60, 60)) / 3, db(grnd(-60, 60)) / 3};
             if(abs(dot(pl.n, dd)) < 0.2L) continue;  // 与平面近乎平行则跳过
-            line3 l = LN(P - dd, dd * 2);
+            line3 l = ln(P - dd, dd * 2);
             p3 x = islp(pl, l);
             db sc = 1 + dis(P) + dis(dd);
             if(!eq(dis(x - P), 0, 1e-9 * sc)) { if(!bad) msg = "构造交点反查失败 p=" + ps(pl) + " P=" + ps(P) + " 得到 " + ps(x); ++bad; }
             if(!pl.ons(x)) { if(!bad) msg = "交面点不在平面上"; ++bad; }
             if(!ons(l, x)) { if(!bad) msg = "交面点不在直线上"; ++bad; }
             // 垂线:过平面上一点作垂线,交点就是那个点
-            p3 o2 = pl.proj(P3(grnd(-20, 20), grnd(-20, 20), grnd(-20, 20)));
+            p3 o2 = pl.proj(pt3(grnd(-20, 20), grnd(-20, 20), grnd(-20, 20)));
             line3 perp = perpthrough(pl, o2);
             if(!eq(dis(islp(pl, perp) - o2), 0, 1e-9 * sc)) { if(!bad) msg = "垂线与平面交点 != 起点"; ++bad; }
             if(!eq(angle(perp.d, pl.n), 0, 1e-13)) { if(!bad) msg = "垂线方向与法向不平行"; ++bad; }
@@ -274,9 +274,9 @@ int main() {
             p3 b2{db(grnd(-60, 60)) / 3, db(grnd(-60, 60)) / 3, db(grnd(-60, 60)) / 3};
             p3 c2{db(grnd(-60, 60)) / 3, db(grnd(-60, 60)) / 3, db(grnd(-60, 60)) / 3};
             if(dis(cross(b1 - a1, c1 - a1)) < 0.5L || dis(cross(b2 - a2, c2 - a2)) < 0.5L) continue;
-            plane p1 = PL(a1, b1, c1), p2 = PL(a2, b2, c2);
+            plane p1 = plane_of(a1, b1, c1), p2 = plane_of(a2, b2, c2);
             if(sinang(p1.n, p2.n) < 1e-4L) continue;  // 近平行的夹角本身病态
-            db g = angle(p1, p2), r = refPlaneAngle(p1, p2);
+            db g = angle(p1, p2), r = ref_plane_angle(p1, p2);
             if(!eq(g, r, 1e-9L)) { if(!bad) msg = "两平面夹角与独立算法不符 p1=" + ps(p1) + " p2=" + ps(p2); ++bad; }
             if(g < -1e-12L || g > acos((db) -1) / 2 + 1e-12L) { if(!bad) msg = "夹角超出 [0, pi/2]"; ++bad; }
             if(!eq(g, angle(p2, p1), 1e-12L)) { if(!bad) msg = "夹角不对称"; ++bad; }
@@ -289,23 +289,23 @@ int main() {
     }
     {
         CHECK(eq(angle(plane::from(O, Z), plane::from(O, X)), acos((db) 0), 1e-15), "z=0 与 x=0 的夹角 = pi/2");
-        plane a = plane::from(O, P3(1, 0, 1)), b = plane::from(O, P3(1, 0, -1));
-        CHECK(eq(angle(a, b), acos((db) 0), 1e-15) && eq(angle(a, plane::from(O, P3(-1, 0, -1))), 0, 1e-9),
+        plane a = plane::from(O, pt3(1, 0, 1)), b = plane::from(O, pt3(1, 0, -1));
+        CHECK(eq(angle(a, b), acos((db) 0), 1e-15) && eq(angle(a, plane::from(O, pt3(-1, 0, -1))), 0, 1e-9),
               "法向 (1,0,1) 与 (1,0,-1) 的内积为 0 -> 夹角 pi/2;法向整体取反是同一个平面 -> 夹角 0");
-        CHECK(eq(angle(a, plane::from(O, P3(1, 0, 0))), acos(1 / sqrtl(2.0L)), 1e-15), "法向 (1,0,1) 与 (1,0,0):夹角 pi/4");
-        plane c = plane::from(P3(1, 1, 1), P3(1, 2, 3));
+        CHECK(eq(angle(a, plane::from(O, pt3(1, 0, 0))), acos(1 / sqrtl(2.0L)), 1e-15), "法向 (1,0,1) 与 (1,0,0):夹角 pi/4");
+        plane c = plane::from(pt3(1, 1, 1), pt3(1, 2, 3));
         CHECK(eq(angle(c, c), 0, 1e-9), "同一平面自夹角 = 0(acos 在 1 附近病态,容差放宽到 1e-9)");
     }
 
     // ===== 6. 退化与共面 =====
     {
-        plane deg = PL(O, X, P3(2, 0, 0));
+        plane deg = plane_of(O, X, pt3(2, 0, 0));
         printf("  [note] 三点共线(a=(0,0,0), b=(1,0,0), c=(2,0,0)):plane 退化成 n = %s、d = %Lg,side/dis 无意义(契约外)\n",
                ps(deg.n).c_str(), (long double) deg.d);
         CHECK(eq(dis(deg.n), 0, 1e-15) && eq(deg.d, 0, 1e-15), "三点共线:n = 0(退化,不产生 NaN)");
-        plane deg2 = PL(O, O, X);
+        plane deg2 = plane_of(O, O, X);
         CHECK(eq(dis(deg2.n), 0, 1e-15), "两点重合:n = 0(退化)");
-        plane z0 = PL(O, X, Y);
+        plane z0 = plane_of(O, X, Y);
         CHECK(eq(dis(z0.n), 1, 1e-15), "plane 的法向量已归一化(|n| = 1)");
         // 四点共面:平面上任取四点,混合积为 0,且都在同一平面
         int bad = 0;
@@ -314,9 +314,9 @@ int main() {
             p3 b{db(grnd(-30, 30)), db(grnd(-30, 30)), db(grnd(-30, 30))};
             p3 c{db(grnd(-30, 30)), db(grnd(-30, 30)), db(grnd(-30, 30))};
             if(dis(cross(b - a, c - a)) < 1) continue;
-            plane pl = PL(a, b, c);
+            plane pl = plane_of(a, b, c);
             p3 u, v;
-            spanDir(pl, u, v);
+            span_dir(pl, u, v);
             // 第四个点:在平面上显式构造(共面)
             p3 d = a + u * (db(grnd(-30, 30)) / 7) + v * (db(grnd(-30, 30)) / 7);
             if(!coplanar(a, b, c, d)) ++bad;
@@ -334,12 +334,12 @@ int main() {
             p3 b{db(grnd(-1000000, 1000000)), db(grnd(-1000000, 1000000)), db(grnd(-1000000, 1000000))};
             p3 c{db(grnd(-1000000, 1000000)), db(grnd(-1000000, 1000000)), db(grnd(-1000000, 1000000))};
             if(dis(cross(b - a, c - a)) < 1e6L) continue;
-            plane pl = PL(a, b, c);
+            plane pl = plane_of(a, b, c);
             p3 q{db(grnd(-1000000, 1000000)), db(grnd(-1000000, 1000000)), db(grnd(-1000000, 1000000))};
             db sc = 1 + dis(q - a);
             if(!eq(dis(pl.n), 1, 1e-15)) ++bad;
             if(pl.dis(q) < 0) ++bad;
-            if(!eq(pl.dis(q), refPlaneDis(a, b, c, q), 1e-9L * sc)) ++bad;
+            if(!eq(pl.dis(q), ref_plane_dis(a, b, c, q), 1e-9L * sc)) ++bad;
             if(!pl.ons(pl.proj(q))) ++bad;
             if(!eq(pl.side(pl.proj(q)), 0, 1e-6L * sc)) ++bad;
             if(!eq(dis(cross(pl.proj(q) - q, pl.n)), 0, 1e-6L * sc)) ++bad;

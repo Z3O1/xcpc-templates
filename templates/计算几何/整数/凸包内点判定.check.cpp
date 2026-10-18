@@ -10,12 +10,12 @@ using IGeo::p2i;
 // 逐边半平面与精确边界的线性参考，支持0/1/2个点。
 int reference(const vector<p2i> &a, p2i p) {
     if(a.empty()) return 0;
-    if(a.size() <= 2) return IntCheck::on(a.front(), a.back(), p);
+    if(a.size() <= 2) return int_check::on(a.front(), a.back(), p);
     int answer = 2;
     for(int i = 0; i < (int) a.size(); ++i) {
         auto u = a[i], v = a[(i + 1) % a.size()];
-        if(IntCheck::turn(u, v, p) < 0) return 0;
-        if(IntCheck::on(u, v, p)) answer = 1;
+        if(int_check::turn(u, v, p) < 0) return 0;
+        if(int_check::on(u, v, p)) answer = 1;
     }
     return answer;
 }
@@ -25,9 +25,9 @@ void verify(const vector<p2i> &a, const vector<p2i> &queries) {
     for(auto p : queries) if(in_convex(a, p) != reference(a, p)) {
         cerr << "query=(" << p.x << ',' << p.y << ") got=" << in_convex(a, p)
              << " want=" << reference(a, p) << '\n';
-        IntCheck::need(false, "逐边半平面参考", a);
+        int_check::need(false, "逐边半平面参考", a);
     }
-    IntCheck::need(a == before, "输入保持不变");
+    int_check::need(a == before, "输入保持不变");
 }
 // 随机、边界、近共线大整数和大规模查询检查。
 int main() {
@@ -37,9 +37,9 @@ int main() {
     verify({{-3, 0}, {3, 0}}, {{-4, 0}, {-3, 0}, {0, 0}, {3, 0}, {4, 0}, {0, 1}});
     for(int t = 0; t < 8000; ++t) {
         vector<p2i> a(rnd(0, 30)), q;
-        for(auto &p : a) p = IntCheck::point(t % 3);
-        auto h = IntCheck::hull(a);
-        for(int j = 0; j < 50; ++j) q.push_back(IntCheck::point(t % 3));
+        for(auto &p : a) p = int_check::point(t % 3);
+        auto h = int_check::hull(a);
+        for(int j = 0; j < 50; ++j) q.push_back(int_check::point(t % 3));
         q.insert(q.end(), h.begin(), h.end());
         for(int j = 0; j < (int) h.size(); ++j) {
             auto u = h[j], v = h[(j + 1) % h.size()];
@@ -56,10 +56,10 @@ int main() {
     for(ll x = -100000; x <= 100000; ++x) a.push_back({x, x * x});
     b = convex_hull(a);
     for(ll x = -100000; x <= 100000; ++x) {
-        IntCheck::need(in_convex(b, {x, x * x}) == 1, "长凸链顶点边界");
+        int_check::need(in_convex(b, {x, x * x}) == 1, "长凸链顶点边界");
         if(abs(x) < 100000) {
-            IntCheck::need(in_convex(b, {x, x * x + 1}) == 2, "长凸链内点");
-            IntCheck::need(in_convex(b, {x, x * x - 1}) == 0, "长凸链外点");
+            int_check::need(in_convex(b, {x, x * x + 1}) == 2, "长凸链内点");
+            int_check::need(in_convex(b, {x, x * x - 1}) == 0, "长凸链外点");
         }
     }
     PASSED("整数凸包内点判定");

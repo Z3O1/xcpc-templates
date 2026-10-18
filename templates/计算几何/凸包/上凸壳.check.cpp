@@ -1,9 +1,9 @@
 // 上凸壳 自测:小屋顶长度EPS、翻转y参考/凸包截链独立对拍及性质断言
 //
 // 参考实现(文件内自写,不用模板):
-//   refUpper(v):把每个点按 y 取反,套一遍标准 Andrew 下凸链(只留严格左转),再把 y 翻回来 ——
+//   ref_upper(v):把每个点按 y 取反,套一遍标准 Andrew 下凸链(只留严格左转),再把 y 翻回来 ——
 //     得到的正是上半凸链;它与「排序 + 单调栈求右转链」是两套等价但写法不同的实现。
-//   refHullUp(v):另一条独立路线 —— 先求完整逆时针凸包(Andrew),再从「最右上角的点」沿凸包
+//   ref_hull_up(v):另一条独立路线 —— 先求完整逆时针凸包(Andrew),再从「最右上角的点」沿凸包
 //     往「最左上角的点」走,取上半圈顶点;两条参考互相校验后再与模板比。
 //   性质级断言:① 链上相邻三点全右转(叉积 <= 0,严格时 < 0);② 所有输入点都在链上或链下方;
 //     ③ 首末点是最左上的点与最右上的点;④ 链上每个点都来自输入;⑤ x 严格递增;⑥ 顶点数 <= n。
@@ -23,7 +23,7 @@
 // 构造点。
 static p2 P(db x, db y) { return {x, y}; }
 // 绝对值。
-static db Abs(db x) { return x < 0 ? -x : x; }
+static db abs_db(db x) { return x < 0 ? -x : x; }
 // 打印点(诊断用)。
 static void pr(p2 a) { printf("(%g,%g)", (double) a.x, (double) a.y); }
 // 打印点集(诊断用,最多前 30 个)。
@@ -32,7 +32,7 @@ static void prv(const char *s, const vector<p2> &v) {
     for(int i = 0; i < (int) min<size_t>(v.size(), 30); ++i) printf(" "), pr(v[i]);
     printf("%s\n", v.size() > 30 ? " ..." : "");
 }
-static vector<p2> runUpper(const vector<p2> &v, bool nos, int &k) {  // 跑模板并取出结果
+static vector<p2> run_upper(const vector<p2> &v, bool nos, int &k) {  // 跑模板并取出结果
     auto a = v;
     auto b = upper_hull(a, nos);
     k = b.size();
@@ -40,14 +40,14 @@ static vector<p2> runUpper(const vector<p2> &v, bool nos, int &k) {  // 跑模�
 }
 
 // ---------- 独立参考实现 ----------
-static vector<p2> topPerX(const vector<p2> &v) {  // 「每个 x 只留最高的点」是上凸壳的定义的一部分,两条参考都先做这一步
+static vector<p2> top_per_x(const vector<p2> &v) {  // 「每个 x 只留最高的点」是上凸壳的定义的一部分,两条参考都先做这一步
     vector<p2> w = v;
     sort(w.begin(), w.end(), [](const p2 &u, const p2 &t) { return u.x != t.x ? u.x < t.x : u.y > t.y; });
     vector<p2> r;
     for(int i = 0; i < (int) w.size(); ++i) if(r.empty() || r.back().x != w[i].x) r.push_back(w[i]);
     return r;
 }
-static vector<p2> refLower(vector<p2> v) {  // 标准 Andrew 下凸链(只留严格左转)
+static vector<p2> ref_lower(vector<p2> v) {  // 标准 Andrew 下凸链(只留严格左转)
     sort(v.begin(), v.end(), [](const p2 &u, const p2 &w) { return u.x != w.x ? u.x < w.x : u.y < w.y; });
     vector<p2> h;
     for(int i = 0; i < (int) v.size(); ++i) {
@@ -56,14 +56,14 @@ static vector<p2> refLower(vector<p2> v) {  // 标准 Andrew 下凸链(只留严
     }
     return h;
 }
-static vector<p2> refUpper(const vector<p2> &v) {  // y 取反 -> 标准下凸链 -> 翻回来 = 上半凸链
+static vector<p2> ref_upper(const vector<p2> &v) {  // y 取反 -> 标准下凸链 -> 翻回来 = 上半凸链
     vector<p2> w;
-    for(p2 q : topPerX(v)) w.push_back(P(q.x, -q.y));
-    vector<p2> h = refLower(w);
+    for(p2 q : top_per_x(v)) w.push_back(P(q.x, -q.y));
+    vector<p2> h = ref_lower(w);
     for(int i = 0; i < (int) h.size(); ++i) h[i].y = -h[i].y;
     return h;
 }
-static vector<p2> refHull(vector<p2> v) {  // 完整逆时针凸包(严格去共线)
+static vector<p2> ref_hull(vector<p2> v) {  // 完整逆时针凸包(严格去共线)
     sort(v.begin(), v.end(), [](const p2 &u, const p2 &w) { return u.x != w.x ? u.x < w.x : u.y < w.y; });
     v.erase(unique(v.begin(), v.end(), [](p2 a, p2 b) { return a.x == b.x && a.y == b.y; }), v.end());
     int n = v.size();
@@ -81,8 +81,8 @@ static vector<p2> refHull(vector<p2> v) {  // 完整逆时针凸包(严格去共
     h.pop_back();
     return h;
 }
-static vector<p2> refHullUp(const vector<p2> &v) {  // 从完整凸包上截出上半圈:从最左上点逆着走到最右上点
-    vector<p2> h = refHull(topPerX(v));
+static vector<p2> ref_hull_up(const vector<p2> &v) {  // 从完整凸包上截出上半圈:从最左上点逆着走到最右上点
+    vector<p2> h = ref_hull(top_per_x(v));
     if(h.size() <= 1) return h;
     int k = h.size(), jl = 0, jr = 0;  // jl:最左上(min x 中 max y),jr:最右上(max x 中 max y)
     for(int i = 1; i < k; ++i) {
@@ -99,7 +99,7 @@ static vector<p2> refHullUp(const vector<p2> &v) {  // 从完整凸包上截出�
     return up;
 }
 // 一条链上的性质断言(不依赖参考)
-static int chainProps(const vector<p2> &v, const vector<p2> &h, bool nos, db scale) {
+static int chain_props(const vector<p2> &v, const vector<p2> &h, bool nos, db scale) {
     if(h.empty()) {
         printf("      链为空但输入非空\n");
         return 0;
@@ -148,24 +148,24 @@ static int chainProps(const vector<p2> &v, const vector<p2> &h, bool nos, db sca
     return 1;
 }
 // 两条链是否逐点相等。
-static bool sameChain(const vector<p2> &x, const vector<p2> &y) {
+static bool same_chain(const vector<p2> &x, const vector<p2> &y) {
     if(x.size() != y.size()) return false;
     for(int i = 0; i < (int) x.size(); ++i) if(!(x[i] == y[i])) return false;
     return true;
 }
 // 对单个用例跑模板并与两条参考对照;返回 0/1。
-static int oneCase(const vector<p2> &v, int verbose) {
+static int one_case(const vector<p2> &v, int verbose) {
     int k0 = 0, k1 = 0;
-    vector<p2> h0 = runUpper(v, 0, k0), h1 = runUpper(v, 1, k1);
-    vector<p2> r0 = refUpper(v), r1 = refHullUp(v);
+    vector<p2> h0 = run_upper(v, 0, k0), h1 = run_upper(v, 1, k1);
+    vector<p2> r0 = ref_upper(v), r1 = ref_hull_up(v);
     db mx = 1;
-    for(int i = 0; i < (int) v.size(); ++i) mx = max(mx, max(Abs(v[i].x), Abs(v[i].y)));
-    if(!sameChain(h0, r0) || !sameChain(r0, r1)) {
+    for(int i = 0; i < (int) v.size(); ++i) mx = max(mx, max(abs_db(v[i].x), abs_db(v[i].y)));
+    if(!same_chain(h0, r0) || !same_chain(r0, r1)) {
         printf("      nos=0 的链与参考不一致(模板 %zu 点,翻转法 %zu 点,凸包截取 %zu 点)\n", h0.size(), r0.size(), r1.size());
         prv("输入", v), prv("模板", h0), prv("翻转法", r0), prv("凸包截取", r1);
         return 0;
     }
-    if(!chainProps(v, h0, 0, mx) || !chainProps(v, h1, 1, mx)) {
+    if(!chain_props(v, h0, 0, mx) || !chain_props(v, h1, 1, mx)) {
         if(verbose) prv("输入", v);
         return 0;
     }
@@ -190,7 +190,7 @@ int main() {
     {
         int k;
         vector<p2> sq = {P(0, 0), P(4, 0), P(4, 4), P(0, 4)};
-        vector<p2> h = runUpper(sq, 0, k);
+        vector<p2> h = run_upper(sq, 0, k);
         CHECK(k == 2 && h[0] == P(0, 4) && h[1] == P(4, 4), "upper_hull 正方形 -> 上边界两个角(左到右)");
         vector<p2> empty;
         CHECK(upper_hull(empty).empty(), "upper_hull:空集");
@@ -198,20 +198,20 @@ int main() {
         auto b1 = upper_hull(one);
         CHECK(b1.size() == 1 && b1[0] == P(3, 7), "upper_hull:单点");
         vector<p2> two = {P(5, 5), P(1, 1)};
-        h = runUpper(two, 0, k);
+        h = run_upper(two, 0, k);
         CHECK(k == 2 && h[0] == P(1, 1) && h[1] == P(5, 5), "upper_hull:n=2 -> 按 x 排序输出两点");
         {
             vector<p2> samex = {P(2, 1), P(2, 9), P(0, 0), P(4, 0), P(2, 5)};  // 同一 x 上三点
-            h = runUpper(samex, 0, k);
+            h = run_upper(samex, 0, k);
             CHECK(k == 3 && h[0] == P(0, 0) && h[1] == P(2, 9) && h[2] == P(4, 0), "upper_hull:同一 x 多点只留最高的那个");
         }
         {
             vector<p2> top;  // 矩形顶边塞满共线点
             For(i, 0, 10) top.push_back(P(i, 10));
             top.push_back(P(0, 0)), top.push_back(P(10, 0)), top.push_back(P(5, 3));
-            h = runUpper(top, 0, k);
+            h = run_upper(top, 0, k);
             CHECK(k == 2 && h[0] == P(0, 10) && h[1] == P(10, 10), "upper_hull nos=0:顶边上 11 个共线点 -> 只剩两端");
-            h = runUpper(top, 1, k);
+            h = run_upper(top, 1, k);
             CHECK(k == 11, "upper_hull nos=1:顶边上 11 个共线点全部保留(k=11)");
             int bad = 0;
             for(int i = 1; i < 11; ++i) if(!(h[i] == P(i, 10))) ++bad;
@@ -220,19 +220,19 @@ int main() {
         {
             vector<p2> col;  // 全共线
             For(i, -5, 5) col.push_back(P(i, 2 * i + 1));
-            h = runUpper(col, 0, k);
+            h = run_upper(col, 0, k);
             CHECK(k == 2 && h[0] == P(-5, -9) && h[1] == P(5, 11), "upper_hull 全共线点 -> 只剩两端点");
             vector<p2> allsame(20, P(3, 3));
-            h = runUpper(allsame, 0, k);
+            h = run_upper(allsame, 0, k);
             CHECK(k == 1 && h[0] == P(3, 3), "upper_hull 全同点 -> 只剩一个点");
             vector<p2> ver = {P(1, 1), P(1, 5), P(1, 9)};  // 全在一条竖直线上
-            h = runUpper(ver, 0, k);
+            h = run_upper(ver, 0, k);
             CHECK(k == 1 && h[0] == P(1, 9), "upper_hull 全在一条竖直线上的点 -> 只剩最高的那个");
         }
         {
             vector<p2> cir;  // 圆上点:上凸壳 = 上半圆上的点(严格凸)
             for(int i = 0; i < 24; ++i) cir.push_back(P(1000 * cos(2 * pi * i / 24), 1000 * sin(2 * pi * i / 24)));
-            h = runUpper(cir, 0, k);
+            h = run_upper(cir, 0, k);
             int bad = 0;
             if(k != 13) bad = 1;  // 从 (1000,0) 逆时针到 (-1000,0) 共 13 个点(y >= 0)
             for(int i = 0; i < k; ++i) if(cmp(h[i].y, 0) < 0 && cmp(h[i].y, -1e-6L) < 0) bad = 1;
@@ -247,7 +247,7 @@ int main() {
             int n = (int) rnd(1, 40), R = (int) rnd(1, 12);
             vector<p2> v;
             for(int i = 0; i < n; ++i) v.push_back(P((db) rnd(-R, R), (db) rnd(-R, R)));
-            if(!oneCase(v, bad < 3) && ++bad >= 3) break;
+            if(!one_case(v, bad < 3) && ++bad >= 3) break;
         }
         CHECK(bad == 0, "upper_hull 与两条独立参考逐位一致 + 全部链性质(4000 组:n=1..40,坐标 ±12,大量重复与共线)");
     }
@@ -257,7 +257,7 @@ int main() {
             int n = (int) rnd(1, 60);
             vector<p2> v;
             for(int i = 0; i < n; ++i) v.push_back(P((db) rnd(-1000000, 1000000), (db) rnd(-1000000, 1000000)));
-            if(!oneCase(v, bad < 3) && ++bad >= 3) break;
+            if(!one_case(v, bad < 3) && ++bad >= 3) break;
         }
         CHECK(bad == 0, "upper_hull 与参考一致(3000 组:n=1..60,坐标 ±1e6 一般位置)");
     }
@@ -270,15 +270,15 @@ int main() {
             for(int i = 0; i < m; ++i) v.push_back(P((db) rnd(-100, 100), rnd(-100, 20)));  // 下方随机点
             for(int i = 0; i < 3; ++i) v.push_back(P((db) rnd(-100, 100), 50));           // 再补几个顶点
             int k0 = 0, k1 = 0;
-            vector<p2> h0 = runUpper(v, 0, k0), h1 = runUpper(v, 1, k1);
+            vector<p2> h0 = run_upper(v, 0, k0), h1 = run_upper(v, 1, k1);
             db mx = 100;
-            if(!chainProps(v, h0, 0, mx) || !chainProps(v, h1, 1, mx)) {
+            if(!chain_props(v, h0, 0, mx) || !chain_props(v, h1, 1, mx)) {
                 if(bad < 3) prv("输入", v), prv("nos=0", h0), prv("nos=1", h1);
                 ++bad;
                 continue;
             }
-            if(!sameChain(h0, refUpper(v))) {  // nos=0 与参考一致(nos=1 的共线保留语义单独判)
-                if(bad < 3) printf("      [反例] nos=0 与参考不同\n"), prv("输入", v), prv("nos=0", h0), prv("参考", refUpper(v));
+            if(!same_chain(h0, ref_upper(v))) {  // nos=0 与参考一致(nos=1 的共线保留语义单独判)
+                if(bad < 3) printf("      [反例] nos=0 与参考不同\n"), prv("输入", v), prv("nos=0", h0), prv("参考", ref_upper(v));
                 ++bad;
                 continue;
             }
@@ -289,9 +289,9 @@ int main() {
             for(int i = 0; i < (int) v.size(); ++i) if(!cmp(v[i].y, mxy)) tx.push_back(v[i].x);
             sort(tx.begin(), tx.end());
             tx.erase(unique(tx.begin(), tx.end()), tx.end());
-            int cntTop = tx.size();
-            if(k1 < cntTop) {
-                if(bad < 3) printf("      [反例] nos=1 的链(%d 点)少于最高一层的不同 x 个数(%d)\n", k1, cntTop);
+            int cnt_top = tx.size();
+            if(k1 < cnt_top) {
+                if(bad < 3) printf("      [反例] nos=1 的链(%d 点)少于最高一层的不同 x 个数(%d)\n", k1, cnt_top);
                 ++bad;
             }
         }
@@ -305,7 +305,7 @@ int main() {
             int n = (int) rnd(1, 50);
             vector<p2> v;
             for(int i = 0; i < n; ++i) v.push_back(P((db) rnd(-1000000000, 1000000000), (db) rnd(-1000000000, 1000000000)));
-            if(!oneCase(v, bad < 3) && ++bad >= 3) break;
+            if(!one_case(v, bad < 3) && ++bad >= 3) break;
         }
         CHECK(bad == 0, "upper_hull:±1e9 大整数坐标与参考逐位一致(1000 组;整数叉积精确)");
     }

@@ -71,7 +71,7 @@ static int booth(const vector<int> &s) {
     return k;
 }
 // 双基哈希:大 n 上比较两个循环移位的字典序(LCP 二分)
-struct RotCmp {
+struct rot_cmp {
     int n;
     vector<int> a;              // 原始串(比较两个起点的下一个元素时要用值,不是下标)
     u64 B[2];
@@ -301,9 +301,9 @@ int main() {
             printf("  [ok] Booth 预言机先经暴力验证:%lld 随机 + %lld 结构串一致\n", c1, c2);
         }
 
-        struct Case { const char *name; int kind; };
-        for(auto cs : {Case{"全同", 0}, Case{"交替", 1}, Case{"递增前缀 aaa..ab", 2}, Case{"随机 0/1", 3},
-                       Case{"周期 abcabc...", 4}}) {
+        struct case_t { const char *name; int kind; };
+        for(auto cs : {case_t{"全同", 0}, case_t{"交替", 1}, case_t{"递增前缀 aaa..ab", 2}, case_t{"随机 0/1", 3},
+                       case_t{"周期 abcabc...", 4}}) {
             int n = 1000000;
             vector<int> a(n, 0);
             For(i, 0, n - 1) {
@@ -320,7 +320,7 @@ int main() {
             if(a != a_copy) return printf("  [FAIL] minrep 改动了输入(%.*s)\n", 0, ""), 1;
             if(p < 0 || p >= n) return printf("  [FAIL] %s:n=1e6 起点 %d 越界\n", cs.name, p), 1;
             int bp = booth(a);
-            RotCmp rc;
+            rot_cmp rc;
             rc.build(a);
             if(rc.cmp_rot(p, bp) != 0)
                 return printf("  [FAIL] %s:n=1e6 模板起点 %d 与 Booth %d 的循环移位不同\n", cs.name, p, bp), 1;

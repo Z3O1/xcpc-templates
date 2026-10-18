@@ -41,7 +41,7 @@ static string pstr(const poly &a, int k = 10) {
 }
 // 打印失败现场（两组输入、期望、实际）并返回 1；用于对拍失败时给出可复现信息。
 static int bad(const char *what, const poly &a, const poly &b, int P, const poly &want, const poly &got, const char *extra = "") {
-    printf("  [FAIL] %s\n    %sP = %d, n = %d, m = %d\n    a    = %s\n    b    = %s\n    want = %s\n    got  = %s\n",
+    printf("  [FAIL] %s\n    %s_p = %d, n = %d, m = %d\n    a    = %s\n    b    = %s\n    want = %s\n    got  = %s\n",
            what, extra, P, (int) a.size(), (int) b.size(), pstr(a).c_str(), pstr(b).c_str(), pstr(want).c_str(), pstr(got).c_str());
     return 1;
 }

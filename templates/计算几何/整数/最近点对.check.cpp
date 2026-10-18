@@ -9,7 +9,7 @@ using IGeo::p2i;
 i128 brute(const vector<p2i> &a) {
     i128 best = -1;
     for(int i = 0; i < (int) a.size(); ++i) for(int j = 0; j < i; ++j) {
-        i128 d = IntCheck::distance2(a[i], a[j]);
+        i128 d = int_check::distance2(a[i], a[j]);
         if(best < 0 || d < best) best = d;
     }
     return best;
@@ -18,10 +18,10 @@ i128 brute(const vector<p2i> &a) {
 void verify(vector<p2i> a) {
     auto before = a;
     i128 want = brute(a), got = closest_pair2(a);
-    if(got != want) cerr << "closest got=" << IntCheck::text(got) << " want=" << IntCheck::text(want) << '\n';
-    IntCheck::need(got == want, "暴力最近点对参考", before);
+    if(got != want) cerr << "closest got=" << int_check::text(got) << " want=" << int_check::text(want) << '\n';
+    int_check::need(got == want, "暴力最近点对参考", before);
     sort(a.begin(), a.end()); sort(before.begin(), before.end());
-    IntCheck::need(a == before, "重排保持输入多重集");
+    int_check::need(a == before, "重排保持输入多重集");
 }
 // 随机与大规模解析用例；统一由 check.sh 外层限时。
 int main() {
@@ -42,12 +42,12 @@ int main() {
             auto moved = local;
             for(auto &p : moved) p.x += shift.x, p.y += shift.y;
             verify(moved);
-            IntCheck::need(closest_pair2(moved) == want, "小尺度极值平移不变", moved);
+            int_check::need(closest_pair2(moved) == want, "小尺度极值平移不变", moved);
         }
     }
     for(int t = 0; t < 30000; ++t) {
         vector<p2i> a(rnd(0, 35));
-        for(auto &p : a) p = IntCheck::point(t % 3);
+        for(auto &p : a) p = int_check::point(t % 3);
         if(t % 5 == 0 && !a.empty()) for(auto &p : a) p.x = a[0].x;
         if(t % 7 == 0 && a.size() >= 2) a.back() = a[0];
         if(t % 11 == 0 && !a.empty()) for(auto &p : a) p = a[0];
@@ -61,14 +61,14 @@ int main() {
     vector<p2i> a(N);
     for(int i = 0; i < N; ++i) a[i] = {3LL * i, 4LL * i};
     shuffle(a.begin(), a.end(), rng);
-    IntCheck::need(closest_pair2(a) == 25, "百万斜线点");
+    int_check::need(closest_pair2(a) == 25, "百万斜线点");
     for(int i = 0; i < N; ++i) a[i] = {1000000000000000000LL, 7LL * i};
     shuffle(a.begin(), a.end(), rng);
-    IntCheck::need(closest_pair2(a) == 49, "百万竖线点");
+    int_check::need(closest_pair2(a) == 49, "百万竖线点");
     for(int i = 0; i < N; ++i) a[i] = {i % 1000, i / 1000};
     shuffle(a.begin(), a.end(), rng);
-    IntCheck::need(closest_pair2(a) == 1, "百万网格点");
+    int_check::need(closest_pair2(a) == 1, "百万网格点");
     fill(a.begin(), a.end(), p2i{7, 9});
-    IntCheck::need(closest_pair2(a) == 0, "百万重合点");
+    int_check::need(closest_pair2(a) == 0, "百万重合点");
     PASSED("整数最近点对");
 }

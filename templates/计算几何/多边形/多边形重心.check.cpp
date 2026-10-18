@@ -1,10 +1,10 @@
 // 多边形重心 自测:L1快判/精确周长阈值2万组、大平移/反向/退化、独立积分及蒙特卡洛
 //
 // 参考实现(文件内自写,不用模板):
-//   refCentroidEdge:把多边形看成「每条边与 x 轴围成的竖直梯形」的有向叠加,用积分解析算
-//     ∫x dA = Σ s·∫₀¹(u.x+ts)(u.y+tdv)dt、∫y dA = Σ s·∫₀¹ h(t)²/2 dt,再除以带号面积 ——
+//   ref_centroid_edge:把多边形看成「每条边与 x 轴围成的竖直梯形」的有向叠加,用积分解析算
+//     ∫x d_a = Σ s·∫₀¹(u.x+ts)(u.y+tdv)dt、∫y d_a = Σ s·∫₀¹ h(t)²/2 dt,再除以带号面积 ——
 //     与模板的「(x_i+x_{i+1})·叉积」是两套不同的推导。
-//   refCentroidMC:在多边形的包围盒里撒点,用多边形基础的 contain 过滤内部点求平均 —— 纯数值方法,
+//   ref_centroid_mc:在多边形的包围盒里撒点,用多边形基础的 contain 过滤内部点求平均 —— 纯数值方法,
 //     与解析式完全独立(1e6 个样本,容差取包围盒尺度的 3%/√N 级别)。
 //   另外用已知形状的解析值对照:三角形 = 顶点平均、正方形/矩形 = 中心、正 n 边形 = 中心、
 //   对称 U 形 = 对称轴上的解析点、梳子形 = 手算值。
@@ -29,9 +29,9 @@
 // 构造点。
 static p2 P(db x, db y) { return {x, y}; }
 // 绝对值。
-static db Abs(db x) { return x < 0 ? -x : x; }
+static db abs_db(db x) { return x < 0 ? -x : x; }
 // 带容差的标量判等。
-static bool eqd(db a, db b, db tol = 1e-9) { return Abs(a - b) < tol; }
+static bool eqd(db a, db b, db tol = 1e-9) { return abs_db(a - b) < tol; }
 // 带容差的点判等。
 static bool eqp(p2 a, p2 b, db tol = 1e-9) { return eqd(a.x, b.x, tol) && eqd(a.y, b.y, tol); }
 // 打印点(诊断用)。
@@ -44,15 +44,15 @@ static void prv(const char *s, const vector<p2> &v) {
 }
 
 // ---------- 独立参考实现 ----------
-static array<db, 3> refCentroidEdge(const vector<p2> &a) {  // 返回 {x̄, ȳ, 带号面积}
+static array<db, 3> ref_centroid_edge(const vector<p2> &a) {  // 返回 {x̄, ȳ, 带号面积}
     int n = a.size();
     db ax = 0, ay = 0, ar = 0;
     for(int i = 0; i < n; ++i) {
         p2 u = a[i], v = a[(i + 1) % n];
         db s = v.x - u.x, dv = v.y - u.y;
         db A = s * (u.y + v.y) / 2;                            // 有向梯形面积
-        db Ix = s * (u.x * u.y + u.x * dv / 2 + s * u.y / 2 + s * dv / 3);      // ∫x dA(解析积分)
-        db Iy = s * (u.y * u.y / 2 + u.y * dv / 2 + dv * dv / 6) * 1;           // ∫y dA
+        db Ix = s * (u.x * u.y + u.x * dv / 2 + s * u.y / 2 + s * dv / 3);      // ∫x d_a(解析积分)
+        db Iy = s * (u.y * u.y / 2 + u.y * dv / 2 + dv * dv / 6) * 1;           // ∫y d_a
         ax += Ix, ay += Iy, ar += A;
     }
     if(ar == 0) {  // 退化:与模板同约定(顶点平均)
@@ -64,7 +64,7 @@ static array<db, 3> refCentroidEdge(const vector<p2> &a) {  // 返回 {x̄, ȳ, 
     return {ax / ar, ay / ar, ar};
 }
 // 蒙特卡洛重心参考(采样含在多边形内部的点取平均)。
-static p2 refCentroidMC(const vector<p2> &a, int N) {
+static p2 ref_centroid_mc(const vector<p2> &a, int N) {
     int n = a.size();
     db mnx = 1e30L, mxx = -1e30L, mny = 1e30L, mxy = -1e30L;
     for(int i = 0; i < n; ++i) mnx = min(mnx, a[i].x), mxx = max(mxx, a[i].x), mny = min(mny, a[i].y), mxy = max(mxy, a[i].y);
@@ -177,7 +177,7 @@ int main() {
             vector<p2> comb = {P(0, 0), P(6, 0), P(6, 1), P(5, 1), P(5, 5), P(4, 5), P(4, 1), P(3, 1), P(3, 5), P(2, 5), P(2, 1), P(1, 1), P(1, 5), P(0, 5)};
             p2 g = centroid(comb);
             CHECK(eqp(g, P(8.0L / 3, 13.0L / 6), 1e-12L), "centroid 梳子形(面积 18)-> 手算 (8/3, 13/6)");
-            CHECK(eqd(Abs(area(comb)), 18, 1e-12L), "area 确认梳子形面积 = 18(手算依据)");
+            CHECK(eqd(abs_db(area(comb)), 18, 1e-12L), "area 确认梳子形面积 = 18(手算依据)");
         }
         {  // U 形(重心在凹口里、不在多边形内 —— 不能对凹多边形断言「重心在内」)
             vector<p2> U = {P(0, 0), P(6, 0), P(6, 6), P(4, 6), P(4, 2), P(2, 2), P(2, 6), P(0, 6)};
@@ -221,9 +221,9 @@ int main() {
             }
             n = v.size();
             p2 got = centroid(v);
-            auto rf = refCentroidEdge(v);
+            auto rf = ref_centroid_edge(v);
             p2 want = P(rf[0], rf[1]);
-            db sc = 1 + Abs(want.x) + Abs(want.y);
+            db sc = 1 + abs_db(want.x) + abs_db(want.y);
             if(!eqp(got, want, 1e-9L * sc)) {
                 if(bad < 3) {
                     printf("      [反例] 第 %d 组:模板 ", t), pr(got), printf(",逐边积分 "), pr(want), printf("\n");
@@ -232,7 +232,7 @@ int main() {
                 ++bad;
                 continue;
             }
-            if(!eqd(Abs(area(v)), Abs(rf[2]), 1e-9L * (1 + Abs(rf[2])))) {
+            if(!eqd(abs_db(area(v)), abs_db(rf[2]), 1e-9L * (1 + abs_db(rf[2])))) {
                 if(bad < 3) printf("      [反例] 第 %d 组:带号面积不一致\n", t);
                 ++bad;
             }
@@ -255,7 +255,7 @@ int main() {
             n = v.size();
             p2 g = centroid(v);
             db s0 = area(v);
-            db tol = 1e-9L * (1 + Abs(g.x) + Abs(g.y) + R);
+            db tol = 1e-9L * (1 + abs_db(g.x) + abs_db(g.y) + R);
             p2 sh = P((db) rnd(-1000, 1000) / 7, (db) rnd(-1000, 1000) / 7);
             vector<p2> mv(n), rv(n), cy(n);
             for(int i = 0; i < n; ++i) mv[i] = v[i] + sh;
@@ -272,7 +272,7 @@ int main() {
                 }
                 ++bad;
             }
-            if(Abs(s0) > 1e-6L * R * R) {  // 凸多边形:重心必须在内部
+            if(abs_db(s0) > 1e-6L * R * R) {  // 凸多边形:重心必须在内部
                 auto arr = v;
                 auto h = convex_hull(arr);
                 int k = h.size();
@@ -301,7 +301,7 @@ int main() {
             }
             n = v.size();
             p2 g = centroid(v);
-            p2 mc = refCentroidMC(v, 250000);
+            p2 mc = ref_centroid_mc(v, 250000);
             db tol = 0.02L * R;  // 25 万样本下重心的标准误差约 0.1% 包围盒尺度,这里给 2% 的裕量
             if(!eqp(g, mc, tol)) {
                 if(bad < 3) {
@@ -328,8 +328,8 @@ int main() {
                 n = v.size();
             }
             p2 got = centroid(v);
-            auto rf = refCentroidEdge(v);
-            db tol = 1e-9L * (1 + Abs(rf[0]) + Abs(rf[1]));
+            auto rf = ref_centroid_edge(v);
+            db tol = 1e-9L * (1 + abs_db(rf[0]) + abs_db(rf[1]));
             if(!eqp(got, P(rf[0], rf[1]), tol)) {
                 if(bad < 3) {
                     printf("      [反例] 大坐标第 %d 组:模板 ", t), pr(got), printf(",参考 "), pr(P(rf[0], rf[1])), printf("\n");

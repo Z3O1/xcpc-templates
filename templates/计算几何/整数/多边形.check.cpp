@@ -11,8 +11,8 @@ int reference(const vector<p2i> &a, p2i p) {
     int winding = 0, n = a.size();
     for(int i = 0; i < n; ++i) {
         p2i u = a[i], v = a[(i + 1) % n];
-        if(IntCheck::on(u, v, p)) return 1;
-        i128 t = IntCheck::turn(u, v, p);
+        if(int_check::on(u, v, p)) return 1;
+        i128 t = int_check::turn(u, v, p);
         if(u.y <= p.y && v.y > p.y && t > 0) ++winding;
         if(u.y > p.y && v.y <= p.y && t < 0) --winding;
     }
@@ -21,17 +21,17 @@ int reference(const vector<p2i> &a, p2i p) {
 // 扇形三角剖分求代数面积；仅用于前缀在 i128 内的测试。
 i128 reference_area(const vector<p2i> &a) {
     i128 s = 0;
-    for(int i = 1; i + 1 < (int) a.size(); ++i) s += IntCheck::turn(a[0], a[i], a[i + 1]);
+    for(int i = 1; i + 1 < (int) a.size(); ++i) s += int_check::turn(a[0], a[i], a[i + 1]);
     return s;
 }
 // 对拍面积与查询；查询失败打印多边形及点。
 void verify(const vector<p2i> &a, const vector<p2i> &queries) {
     i128 expected = reference_area(a), got = area2(a);
-    if(got != expected) cerr << "area2 got=" << IntCheck::text(got) << " want=" << IntCheck::text(expected) << '\n';
-    IntCheck::need(got == expected, "扇形面积参考", a);
+    if(got != expected) cerr << "area2 got=" << int_check::text(got) << " want=" << int_check::text(expected) << '\n';
+    int_check::need(got == expected, "扇形面积参考", a);
     for(auto p : queries) if(contain(a, p) != reference(a, p)) {
         cerr << "query=(" << p.x << ',' << p.y << ")\n";
-        IntCheck::need(false, "缠绕奇偶参考", a);
+        int_check::need(false, "缠绕奇偶参考", a);
     }
 }
 // 退化、随机、平移与大坐标边界检查。
@@ -42,8 +42,8 @@ int main() {
     verify({{-3, 0}, {3, 0}}, {{-3, 0}, {0, 0}, {4, 0}, {0, 1}});
     for(int t = 0; t < 10000; ++t) {
         vector<p2i> a(rnd(0, 30)), q;
-        for(auto &p : a) p = IntCheck::point();
-        for(int i = 0; i < 25; ++i) q.push_back(IntCheck::point());
+        for(auto &p : a) p = int_check::point();
+        for(int i = 0; i < 25; ++i) q.push_back(int_check::point());
         q.insert(q.end(), a.begin(), a.end());
         if(t % 5 == 0 && !a.empty()) a.push_back(a.back());
         verify(a, q);
@@ -67,11 +67,11 @@ int main() {
     for(int i = 0; i < 100; ++i) walk.insert(walk.end(), loop.begin(), loop.end());
     reverse(loop.begin(), loop.end());
     for(int i = 0; i < 99; ++i) walk.insert(walk.end(), loop.begin(), loop.end());
-    IntCheck::need(area2(walk) == i128(8) * B * B, "前缀溢出后精确还原");
+    int_check::need(area2(walk) == i128(8) * B * B, "前缀溢出后精确还原");
     reverse(walk.begin(), walk.end());
-    IntCheck::need(area2(walk) == -i128(8) * B * B, "负面积环绕还原");
+    int_check::need(area2(walk) == -i128(8) * B * B, "负面积环绕还原");
     // 返回 i128 最小值时也不能在 signed 域取绝对值或溢出。
     vector<p2i> minimum{{LLONG_MIN, 0}, {0, 0}, {0, LLONG_MIN}, {LLONG_MIN, LLONG_MIN}};
-    IntCheck::need(area2(minimum) == numeric_limits<i128>::min(), "最小i128面积");
+    int_check::need(area2(minimum) == numeric_limits<i128>::min(), "最小i128面积");
     PASSED("整数多边形");
 }

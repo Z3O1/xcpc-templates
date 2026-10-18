@@ -4,13 +4,13 @@
 #include "凸包方向极值.cpp"
 
 static size_t reads;
-template<class T> struct CountVector : vector<T> {
+template<class T> struct count_vector : vector<T> {
     using vector<T>::vector;
     const T &operator[](size_t i) const { ++reads; return vector<T>::operator[](i); }
 };
 namespace Probe { using namespace Geo; }
 #define Geo Probe
-#define vector CountVector
+#define vector count_vector
 #include "凸包方向极值.cpp"
 #undef vector
 #undef Geo
@@ -87,7 +87,7 @@ int main() {
     size_t worst = 0;
     for(int e = 4; e <= 18; ++e) {
         int n = 1 << e;
-        CountVector<p2> a;
+        count_vector<p2> a;
         // 抛物线下链加闭合边：严格凸，无三角函数精度干扰。
         for(int i = 0; i < n; ++i) a.push_back({db(i), db(i) * i});
         for(int t = 0; t < 100; ++t) {

@@ -30,18 +30,18 @@ string ps(p3 a) {
 // 带容差的标量判等。
 bool eq(db x, db y, db tol) { return abs(x - y) <= tol; }
 // 构造 p3。
-p3 P3(db x, db y, db z) { return {x, y, z}; }
+p3 pt3(db x, db y, db z) { return {x, y, z}; }
 const db PI = acos((db) -1);
 
 // 四元数参考:v' = v + 2w(q×v) + 2q×(q×v),q 是单位四元数的向量部分
-p3 refQuatRot(p3 v, p3 axis, db ang) {
+p3 ref_quat_rot(p3 v, p3 axis, db ang) {
     p3 k = unit(axis);
     db w = cos(ang / 2), s = sin(ang / 2);
     p3 q = k * s;
     return v + cross(q, v) * (2 * w) + cross(q, cross(q, v)) * 2;
 }
 // 独立写的旋转矩阵(与模板里的 Rodrigues 矩阵分开敲一遍)
-mat3 refRotmat(p3 axis, db ang) {
+mat3 ref_rotmat(p3 axis, db ang) {
     p3 k = unit(axis);
     db c = cos(ang), s = sin(ang), t = 1 - c;
     db K[3][3] = {{0, -k.z, k.y}, {k.z, 0, -k.x}, {-k.y, k.x, 0}};
@@ -60,20 +60,20 @@ int main() {
     // ===== 1. 手算常数用例 =====
     CHECK(rot(X, Z, PI / 2) == Y && rot(Y, Z, PI / 2) == -X && rot(X, Z, PI) == -X, "绕 z 轴 90°:x -> y、y -> -x;180°:x -> -x");
     CHECK(rot(X, Y, PI / 2) == -Z && rot(Z, Y, PI / 2) == X && rot(Y, X, PI / 2) == Z, "绕 y/x 轴 90°:右手法则");
-    CHECK(rot(Z, Z, 0.7L) == Z && rot(X, X, 2.3L) == X && rot(P3(3, 4, 5), P3(6, 8, 10), 0.9L) - P3(3, 4, 5) == O,
+    CHECK(rot(Z, Z, 0.7L) == Z && rot(X, X, 2.3L) == X && rot(pt3(3, 4, 5), pt3(6, 8, 10), 0.9L) - pt3(3, 4, 5) == O,
           "轴上的向量(轴取任意正数倍)旋转后不变");
-    CHECK(rot(P3(1, 0, 5), Z, PI / 2) == P3(0, 1, 5) && rot(P3(1, 2, 3), Z, PI) == P3(-1, -2, 3), "绕 z 轴旋转只动 x/y 分量,z 不变");
+    CHECK(rot(pt3(1, 0, 5), Z, PI / 2) == pt3(0, 1, 5) && rot(pt3(1, 2, 3), Z, PI) == pt3(-1, -2, 3), "绕 z 轴旋转只动 x/y 分量,z 不变");
     {
-        p3 rr = rot(P3(3, 4, 5), Z, 0.7L);
+        p3 rr = rot(pt3(3, 4, 5), Z, 0.7L);
         // 手算:到 z 轴的距离恒为 5、高度不变;位移长度 = |v|·sqrt(2-2cos(ang))(弦长公式)
-        CHECK(eq(dis(P3(rr.x, rr.y, 0)), 5, 1e-14) && eq(rr.z, 5, 1e-14) &&
-                  eq(dis(rot(P3(3, 4, 0), Z, 0.7L) - P3(3, 4, 0)), 5 * sqrtl(2 - 2 * cosl(0.7L)), 1e-13),
+        CHECK(eq(dis(pt3(rr.x, rr.y, 0)), 5, 1e-14) && eq(rr.z, 5, 1e-14) &&
+                  eq(dis(rot(pt3(3, 4, 0), Z, 0.7L) - pt3(3, 4, 0)), 5 * sqrtl(2 - 2 * cosl(0.7L)), 1e-13),
               "绕 z 轴旋转:到 z 轴的距离 5 与高度 5 都不变,位移长度 = 5·√(2-2cos 0.7)");
     }
-    CHECK(eq(dis(rot(P3(1, 2, 3), Z, 2 * PI) - P3(1, 2, 3)), 0, 1e-14) && eq(dis(rot(P3(1, 2, 3), P3(1, 1, 1), -2 * PI) - P3(1, 2, 3)), 0, 1e-14),
+    CHECK(eq(dis(rot(pt3(1, 2, 3), Z, 2 * PI) - pt3(1, 2, 3)), 0, 1e-14) && eq(dis(rot(pt3(1, 2, 3), pt3(1, 1, 1), -2 * PI) - pt3(1, 2, 3)), 0, 1e-14),
           "转 2π 等于恒等(任意轴)");
-    CHECK(eq(dis(rot(P3(1, 1, 1), Z, 0.3L, P3(1, 1, 1)) - P3(1, 1, 1)), 0, 1e-14) &&
-              eq(dis(rot(P3(1, 2, 3), Z, 0.3L, P3(0, 0, 1)) - rot(P3(1, 2, 3 - 1), Z, 0.3L) - P3(0, 0, 1)), 0, 1e-14),
+    CHECK(eq(dis(rot(pt3(1, 1, 1), Z, 0.3L, pt3(1, 1, 1)) - pt3(1, 1, 1)), 0, 1e-14) &&
+              eq(dis(rot(pt3(1, 2, 3), Z, 0.3L, pt3(0, 0, 1)) - rot(pt3(1, 2, 3 - 1), Z, 0.3L) - pt3(0, 0, 1)), 0, 1e-14),
           "绕「过 o 的轴」旋转:o 不动,且等于先把坐标平移到 o 再转");
     {
         // 旋转矩阵的手算:绕 z 轴 90° 的矩阵
@@ -83,8 +83,8 @@ int main() {
               "rotmat(z, 90°) 手算:[[0,-1,0],[1,0,0],[0,0,1]]");
         mat3 mx = rotmat(X, PI / 2);
         CHECK(eq(dis(mx * Y - Z), 0, 1e-15) && eq(dis(mx * Z - (-Y)), 0, 1e-15), "rotmat(x, 90°):y -> z、z -> -y");
-        mat3 m0 = rotmat(P3(3, 4, 5), 0);
-        CHECK(eq(dis(m0 * P3(7, -2, 9) - P3(7, -2, 9)), 0, 1e-15), "角度 0:矩阵是单位阵(作用后不变)");
+        mat3 m0 = rotmat(pt3(3, 4, 5), 0);
+        CHECK(eq(dis(m0 * pt3(7, -2, 9) - pt3(7, -2, 9)), 0, 1e-15), "角度 0:矩阵是单位阵(作用后不变)");
     }
 
     // ===== 2. rot / rotmat / 四元数 三套实现互验 =====
@@ -97,8 +97,8 @@ int main() {
             if(dis(k) < 0.2L) continue;
             db ang = db(grnd(-31416, 31416)) / 10000;
             db sc = 1 + dis(v);
-            p3 a = rot(v, k, ang), b = rotmat(k, ang) * v, c = refQuatRot(v, k, ang);
-            p3 d = refRotmat(k, ang) * v;
+            p3 a = rot(v, k, ang), b = rotmat(k, ang) * v, c = ref_quat_rot(v, k, ang);
+            p3 d = ref_rotmat(k, ang) * v;
             if(!eq(dis(a - b), 0, 1e-10L * sc) || !eq(dis(a - c), 0, 1e-10L * sc) || !eq(dis(a - d), 0, 1e-10L * sc)) {
                 if(!bad) msg = "rot / rotmat / 四元数 / 独立矩阵 四套结果不一致 v=" + ps(v) + " k=" + ps(k) + " ang=" + to_string((double) ang);
                 ++bad;
@@ -120,7 +120,7 @@ int main() {
             mat3 m = rotmat(k, ang);
             mat3 mt = transpose(m), prod = m * mt;
             for(int i = 0; i < 3; ++i) for(int j = 0; j < 3; ++j) if(!eq(prod.a[i][j], i == j ? 1 : 0, 1e-10L)) { if(!bad) msg = "M·Mᵀ != I"; ++bad; }
-            if(!eq(det(P3(m.a[0][0], m.a[0][1], m.a[0][2]), P3(m.a[1][0], m.a[1][1], m.a[1][2]), P3(m.a[2][0], m.a[2][1], m.a[2][2])), 1, 1e-10L)) {
+            if(!eq(det(pt3(m.a[0][0], m.a[0][1], m.a[0][2]), pt3(m.a[1][0], m.a[1][1], m.a[1][2]), pt3(m.a[2][0], m.a[2][1], m.a[2][2])), 1, 1e-10L)) {
                 if(!bad) msg = "det(M) != 1"; ++bad;
             }
             if(!eq(dis(mt * v - rot(v, k, -ang)), 0, 1e-9L * sc)) { if(!bad) msg = "transpose != 反向旋转"; ++bad; }
@@ -173,9 +173,9 @@ int main() {
             if(!eq(dis(back - x), 0, 1e-10L * sc)) { if(!bad) msg = "tolocal/toworld 往返不还原 x=" + ps(x) + " o=" + ps(o) + " n=" + ps(n); ++bad; }
             // 局部坐标的几何意义:z 分量是到「过 o、法向 n 的平面」的带号距离,另外两个分量在平面内
             if(!eq(l.z, dot(x - o, unit(n)), 1e-10L * sc)) { if(!bad) msg = "局部 z != 到平面的带号距离"; ++bad; }
-            p3 onPlane = x - unit(n) * dot(x - o, unit(n));
-            p3 lp = tolocal(onPlane, o, u, v, w);
-            if(!eq(lp.z, 0, 1e-10L * sc) || !eq(lp.x * lp.x + lp.y * lp.y, dis2(onPlane - o), 1e-9L * sc * sc)) { if(!bad) msg = "平面内点的局部坐标不对"; ++bad; }
+            p3 on_plane = x - unit(n) * dot(x - o, unit(n));
+            p3 lp = tolocal(on_plane, o, u, v, w);
+            if(!eq(lp.z, 0, 1e-10L * sc) || !eq(lp.x * lp.x + lp.y * lp.y, dis2(on_plane - o), 1e-9L * sc * sc)) { if(!bad) msg = "平面内点的局部坐标不对"; ++bad; }
             // 距离保持:两个点的局部坐标差长度 = 世界坐标差长度
             p3 y{db(grnd(-100, 100)) / 7, db(grnd(-100, 100)) / 7, db(grnd(-100, 100)) / 7};
             if(!eq(dis(tolocal(x, o, u, v, w) - tolocal(y, o, u, v, w)), dis(x - y), 1e-9L * (1 + dis(x - y)))) {
@@ -191,13 +191,13 @@ int main() {
         p3 u, v, w;
         basis(Z, u, v, w);
         CHECK(eq(dis(w - Z), 0, 1e-15) && eq(dis(u - (-Y)), 0, 1e-15) && eq(dis(v - X), 0, 1e-15) && eq(det(u, v, w), 1, 1e-14) &&
-                  eq(dis(tolocal(P3(3, 4, 5), O, u, v, w) - P3(-4, 3, 5)), 0, 1e-14) && eq(dis(toworld(P3(-4, 3, 5), O, u, v, w) - P3(3, 4, 5)), 0, 1e-14),
+                  eq(dis(tolocal(pt3(3, 4, 5), O, u, v, w) - pt3(-4, 3, 5)), 0, 1e-14) && eq(dis(toworld(pt3(-4, 3, 5), O, u, v, w) - pt3(3, 4, 5)), 0, 1e-14),
               "basis(z) 手算:u = -y、v = x、w = z(右手),局部坐标 (3,4,5) -> (-4,3,5)");
         p3 u2, v2, w2;
         basis(Z, u2, v2, w2);
         CHECK(eq(dis(u2 - u), 0, 1e-15) && eq(dis(v2 - v), 0, 1e-15), "basis 对同一输入是确定的(可重复)");
         // 旋转后的点在同一个基底下的局部坐标:手算 (1,2,3) -> (-2,1,3) -> 局部 (-1,-2,3)
-        CHECK(eq(dis(tolocal(rot(P3(1, 2, 3), Z, PI / 2), O, u2, v2, w2) - P3(-1, -2, 3)), 0, 1e-14),
+        CHECK(eq(dis(tolocal(rot(pt3(1, 2, 3), Z, PI / 2), O, u2, v2, w2) - pt3(-1, -2, 3)), 0, 1e-14),
               "绕 z 转 90° 的点 (1,2,3) 变成 (-2,1,3),在 basis(z) 下的局部坐标手算 = (-1,-2,3)");
     }
 
@@ -218,10 +218,10 @@ int main() {
         }
         CHECK(bad == 0, "极限:0 角不动、±2π 回到原处、极小角与一阶近似一致、角度按 mod 2π(2 万组)");
         p3 u, v, w;
-        p3 kx = P3(1, 0, 0);
+        p3 kx = pt3(1, 0, 0);
         basis(kx, u, v, w);
         CHECK(eq(dis(w - kx), 0, 1e-15) && eq(det(u, v, w), 1, 1e-14), "basis 对坐标轴方向也给出右手基");
-        p3 zr = rot(P3(1, 2, 3), P3(0, 0, 0), 0.5L);
+        p3 zr = rot(pt3(1, 2, 3), pt3(0, 0, 0), 0.5L);
         printf("  [note] 轴为零向量是契约外用法:实测结果是 (NaN, NaN, NaN)(x 是 NaN = %d);调用方须保证轴非零\n",
                (int) (bool) isnan((double) zr.x));
     }

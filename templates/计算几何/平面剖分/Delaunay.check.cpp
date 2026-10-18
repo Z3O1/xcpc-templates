@@ -27,7 +27,7 @@ static mt19937_64 grng(20240915);
 // 生成 [l, r] 闭区间随机整数(固定种子,可复现)。
 static ll frnd(ll l, ll r) { return l + (ll) (grng() % (u64) (r - l + 1)); }
 // 整数坐标转 p2。
-static p2 IP(ll x, ll y) { return p2{(db) x, (db) y}; }
+static p2 ip(ll x, ll y) { return p2{(db) x, (db) y}; }
 // 三角形带号面积。
 static db ar3(p2 a, p2 b, p2 c) { return (b - a).det(c - a) / 2; }
 typedef pair<ll, ll> K;  // 点坐标(整数)当键
@@ -42,7 +42,7 @@ static i128 det3(p2 a, p2 b, p2 c) {
     return ((i128) b.x - (i128) a.x) * ((i128) c.y - (i128) a.y) - ((i128) b.y - (i128) a.y) * ((i128) c.x - (i128) a.x);
 }
 // Andrew 凸包(去重去共线,逆时针)。
-static vector<p2> refHull(vector<p2> v) {
+static vector<p2> ref_hull(vector<p2> v) {
     sort(v.begin(), v.end(), [](p2 a, p2 b) { return a.x != b.x ? a.x < b.x : a.y < b.y; });
     v.erase(unique(v.begin(), v.end(), [](p2 a, p2 b) { return a.x == b.x && a.y == b.y; }), v.end());
     int n = v.size();
@@ -61,7 +61,7 @@ static vector<p2> refHull(vector<p2> v) {
     return h;
 }
 // 凸包面积。
-static db hullArea(const vector<p2> &h) {
+static db hull_area(const vector<p2> &h) {
     db s = 0;
     for(int i = 0; i < (int) h.size(); ++i) s += h[i].det(h[(i + 1) % h.size()]);
     return abs(s / 2);
@@ -76,7 +76,7 @@ static void circum(p2 A, p2 B, p2 C, p2 &O, db &R2) {
 }
 // ---- 独立参考:精确外接圆行列式(i128,要求 |坐标| <= 1e4,否则会溢出) ----
 // p 相对 (a,b,c) 外接圆的精确行列式符号;>0 圆内,=0 圆上,<0 圆外。
-static i128 exactInC(p2 p, p2 a, p2 b, p2 c) {
+static i128 exact_in_c(p2 p, p2 a, p2 b, p2 c) {
     i128 ax = (i128) a.x - (i128) p.x, ay = (i128) a.y - (i128) p.y;
     i128 bx = (i128) b.x - (i128) p.x, by = (i128) b.y - (i128) p.y;
     i128 cx = (i128) c.x - (i128) p.x, cy = (i128) c.y - (i128) p.y;
@@ -86,12 +86,12 @@ static i128 exactInC(p2 p, p2 a, p2 b, p2 c) {
 
 // ================= 验证器 =================
 // 点是否落在线段 AB 上(精确整数判定)
-static bool onSeg(p2 A, p2 B, p2 P) {
+static bool on_seg(p2 A, p2 B, p2 P) {
     if(det3(A, B, P) != 0) return false;
     return min(A.x, B.x) <= P.x && P.x <= max(A.x, B.x) && min(A.y, B.y) <= P.y && P.y <= max(A.y, B.y);
 }
 // 返回空串 = 通过;否则返回第一处问题的描述。in 是原始输入(可含重复点),out 是模板返回的拼平三角形。
-static string verify(const vector<p2> &in, const vector<p2> &out, bool exactCircle, bool needAllVerts, bool verbose = false) {
+static string verify(const vector<p2> &in, const vector<p2> &out, bool exact_circle, bool need_all_verts, bool verbose = false) {
     char buf[512];
     if(out.size() % 3) return "输出点数不是 3 的倍数";
     vector<p2> u = in;
@@ -100,9 +100,9 @@ static string verify(const vector<p2> &in, const vector<p2> &out, bool exactCirc
     map<K, int> id;
     for(int i = 0; i < (int) u.size(); ++i) id[key(u[i])] = i;
     int n = u.size();
-    vector<p2> hu = refHull(u);
+    vector<p2> hu = ref_hull(u);
     int h = hu.size();
-    db ha = hullArea(hu);
+    db ha = hull_area(hu);
     int F = out.size() / 3;
     // --- 每个三角形:顶点来自输入、逆时针、空圆性质 ---
     vector<array<int, 3>> tri;
@@ -124,7 +124,7 @@ static string verify(const vector<p2> &in, const vector<p2> &out, bool exactCirc
         for(int j = 0; j < n; ++j) {
             p2 p = u[j];
             if(key(p) == key(A) || key(p) == key(B) || key(p) == key(C)) continue;
-            if(exactCircle && exactInC(p, A, B, C) > 0) {
+            if(exact_circle && exact_in_c(p, A, B, C) > 0) {
                 snprintf(buf, sizeof buf, "精确空圆被破坏:三角形 %d (%g,%g)(%g,%g)(%g,%g) 外接圆内含 (%g,%g)", i, (double) A.x, (double) A.y, (double) B.x, (double) B.y,
                          (double) C.x, (double) C.y, (double) p.x, (double) p.y);
                 return buf;
@@ -163,7 +163,7 @@ static string verify(const vector<p2> &in, const vector<p2> &out, bool exactCirc
     // --- 凸包边界上的点(含角点)个数 b:用于 Euler 计数 F = 2n - b - 2 ---
     int b = 0;
     for(int i = 0; i < n; ++i) {
-        for(int j = 0; j < h; ++j) if(onSeg(hu[j], hu[(j + 1) % h], u[i])) {
+        for(int j = 0; j < h; ++j) if(on_seg(hu[j], hu[(j + 1) % h], u[i])) {
             ++b;
             break;
         }
@@ -180,7 +180,7 @@ static string verify(const vector<p2> &in, const vector<p2> &out, bool exactCirc
     vector<pair<p2, p2>> bd;
     for(auto &e : ec)
         if(e.second == 1) {
-            p2 p1 = IP(e.first.first.first, e.first.first.second), p2r = IP(e.first.second.first, e.first.second.second);
+            p2 p1 = ip(e.first.first.first, e.first.first.second), p2r = ip(e.first.second.first, e.first.second.second);
             bd.push_back({p1, p2r});
         }
     for(int j = 0; j < h; ++j) {
@@ -188,7 +188,7 @@ static string verify(const vector<p2> &in, const vector<p2> &out, bool exactCirc
         i128 D = (i128) (B.x - A.x) * (i128) (B.x - A.x) + (i128) (B.y - A.y) * (i128) (B.y - A.y);  // > 0
         vector<pair<i128, i128>> seg;
         for(auto &e : bd) {
-            if(!onSeg(A, B, e.first) || !onSeg(A, B, e.second)) continue;  // 这条边界边不在该凸包边上
+            if(!on_seg(A, B, e.first) || !on_seg(A, B, e.second)) continue;  // 这条边界边不在该凸包边上
             i128 t1 = (i128) (e.first.x - A.x) * (i128) (B.x - A.x) + (i128) (e.first.y - A.y) * (i128) (B.y - A.y);
             i128 t2 = (i128) (e.second.x - A.x) * (i128) (B.x - A.x) + (i128) (e.second.y - A.y) * (i128) (B.y - A.y);
             if(t1 > t2) swap(t1, t2);
@@ -211,13 +211,13 @@ static string verify(const vector<p2> &in, const vector<p2> &out, bool exactCirc
     // --- 每条边界边必须整条落在某条凸包边上(防止出现弦当边界) ---
     for(auto &e : bd) {
         bool ok = false;
-        for(int j = 0; j < h; ++j) if(onSeg(hu[j], hu[(j + 1) % h], e.first) && onSeg(hu[j], hu[(j + 1) % h], e.second)) ok = true;
+        for(int j = 0; j < h; ++j) if(on_seg(hu[j], hu[(j + 1) % h], e.first) && on_seg(hu[j], hu[(j + 1) % h], e.second)) ok = true;
         if(!ok) {
             snprintf(buf, sizeof buf, "边界边 (%g,%g)-(%g,%g) 不在凸包边界上(剖分没有覆盖凸包)", (double) e.first.x, (double) e.first.y, (double) e.second.x, (double) e.second.y);
             return buf;
         }
     }
-    if(needAllVerts) {
+    if(need_all_verts) {
         vector<char> used(n, 0);
         for(int i = 0; i < F; ++i) for(int j = 0; j < 3; ++j) used[tri[i][j]] = 1;
         for(int i = 0; i < n; ++i) if(!used[i]) {
@@ -230,24 +230,24 @@ static string verify(const vector<p2> &in, const vector<p2> &out, bool exactCirc
 }
 
 // 生成互不相同的随机整数点
-static vector<p2> rndPts(int n, ll R) {
+static vector<p2> rnd_pts(int n, ll R) {
     set<K> s;
     vector<p2> v;
     int guard = 0;
     while((int) v.size() < n && guard++ < 200000) {
         ll x = frnd(-R, R), y = frnd(-R, R);
         if(s.count({x, y})) continue;
-        s.insert({x, y}), v.push_back(IP(x, y));
+        s.insert({x, y}), v.push_back(ip(x, y));
     }
     return v;
 }
 // 一般位置:没有三点共线、没有四点共圆(小坐标下用 i128 精确判断)
-static bool generalPosition(const vector<p2> &v) {
+static bool general_position(const vector<p2> &v) {
     int n = v.size();
     for(int i = 0; i < n; ++i) for(int j = i + 1; j < n; ++j) for(int k = j + 1; k < n; ++k) if(det3(v[i], v[j], v[k]) == 0) return false;
     for(int i = 0; i < n; ++i) for(int j = i + 1; j < n; ++j) for(int k = j + 1; k < n; ++k) for(int l = k + 1; l < n; ++l) {
         // 四点共圆 <=> 第四个点在外接圆上(精确)
-        if(exactInC(v[l], v[i], v[j], v[k]) == 0) return false;
+        if(exact_in_c(v[l], v[i], v[j], v[k]) == 0) return false;
     }
     return true;
 }
@@ -273,31 +273,31 @@ int main() {
     // ===== 1. 接口与退化输入(全同点 / 全共线 / n <= 3 / 重复点) =====
     {
         int bad = 0;
-        auto one = [&](vector<p2> a, int wantF, const char *what) {
+        auto one = [&](vector<p2> a, int want_f, const char *what) {
             vector<p2> r = delaunay(a);
-            if((int) r.size() / 3 != wantF) printf("      %s:三角形个数 %d != %d\n", what, (int) r.size() / 3, wantF), ++bad;
+            if((int) r.size() / 3 != want_f) printf("      %s:三角形个数 %d != %d\n", what, (int) r.size() / 3, want_f), ++bad;
         };
         one({}, 0, "空输入");
-        one({IP(3, 4)}, 0, "n=1");
-        one({IP(3, 4), IP(-1, 7)}, 0, "n=2");
-        one({IP(3, 4), IP(3, 4), IP(3, 4)}, 0, "3 个同点");
-        one({IP(1, 1), IP(1, 1), IP(1, 1), IP(2, 2), IP(2, 2), IP(3, 3)}, 0, "6 个点只有 3 个不同的且共线");
-        one({IP(0, 0), IP(1, 1), IP(2, 2), IP(3, 3), IP(-5, -5)}, 0, "全共线");
-        one({IP(0, 0), IP(1000000000LL, 1000000000LL), IP(-1000000000LL, -1000000000LL), IP(5, 5), IP(-7, -7)}, 0, "±1e9 量级上的 5 个共线点");
-        one({IP(0, 0), IP(1000000000LL, 1000000000LL), IP(-1000000000LL, -1000000000LL), IP(1, 0)}, 2, "±1e9 量级:共线上有内点的三角形(2 个三角形)");
-        one({IP(0, 0), IP(4, 0), IP(0, 3)}, 1, "n=3 非共线");
-        one({IP(0, 0), IP(0, 0), IP(4, 0), IP(4, 0), IP(0, 3), IP(0, 3)}, 1, "6 个点只有 3 个不同");
-        one({IP(0, 0), IP(4, 0), IP(0, 3), IP(1, 1), IP(1, 1)}, 3, "5 个点 4 个不同(1 个内部点)");
+        one({ip(3, 4)}, 0, "n=1");
+        one({ip(3, 4), ip(-1, 7)}, 0, "n=2");
+        one({ip(3, 4), ip(3, 4), ip(3, 4)}, 0, "3 个同点");
+        one({ip(1, 1), ip(1, 1), ip(1, 1), ip(2, 2), ip(2, 2), ip(3, 3)}, 0, "6 个点只有 3 个不同的且共线");
+        one({ip(0, 0), ip(1, 1), ip(2, 2), ip(3, 3), ip(-5, -5)}, 0, "全共线");
+        one({ip(0, 0), ip(1000000000LL, 1000000000LL), ip(-1000000000LL, -1000000000LL), ip(5, 5), ip(-7, -7)}, 0, "±1e9 量级上的 5 个共线点");
+        one({ip(0, 0), ip(1000000000LL, 1000000000LL), ip(-1000000000LL, -1000000000LL), ip(1, 0)}, 2, "±1e9 量级:共线上有内点的三角形(2 个三角形)");
+        one({ip(0, 0), ip(4, 0), ip(0, 3)}, 1, "n=3 非共线");
+        one({ip(0, 0), ip(0, 0), ip(4, 0), ip(4, 0), ip(0, 3), ip(0, 3)}, 1, "6 个点只有 3 个不同");
+        one({ip(0, 0), ip(4, 0), ip(0, 3), ip(1, 1), ip(1, 1)}, 3, "5 个点 4 个不同(1 个内部点)");
         CHECK(bad == 0, "退化输入:全同点/全共线/n<=2/重复点 都返回空或正确的三角形个数");
 
-        vector<p2> a = {IP(0, 0), IP(4, 0), IP(0, 3)};
+        vector<p2> a = {ip(0, 0), ip(4, 0), ip(0, 3)};
         vector<p2> r = delaunay(a);
         CHECK(r.size() == 3 && abs(ar3(r[0], r[1], r[2]) - 6) < 1e-9, "n=3 返回唯一的三角形,顶点逆时针,面积 = 6");
-        a = {IP(0, 0), IP(4, 0), IP(0, 3), IP(1, 1)};
+        a = {ip(0, 0), ip(4, 0), ip(0, 3), ip(1, 1)};
         r = delaunay(a);
         CHECK(r.size() == 9, "n=4 有一个内部点 -> 3 个三角形");
         CHECK((int) Delaunay::pts.size() == 4, "Delaunay::pts 是去重后的点集(4 个)");
-        a = {IP(5, 5), IP(5, 5), IP(0, 0), IP(0, 0)};
+        a = {ip(5, 5), ip(5, 5), ip(0, 0), ip(0, 0)};
         r = delaunay(a);
         CHECK(r.empty() && Delaunay::pts.size() == 2, "重复点被去掉后只剩 2 个点 -> 空输出");
     }
@@ -310,7 +310,7 @@ int main() {
         for(int R : {2, 3, 5, 17, 1000, 1000000000}) {
             for(int n : {3, 4, 5, 6, 9, 16, 30, 50}) {
                 for(int rep = 0; rep < 4; ++rep) {
-                    vector<p2> in = rndPts(n, R);
+                    vector<p2> in = rnd_pts(n, R);
                     if((int) in.size() < 3) continue;
                     ++cases;
                     string e = verify(in, delaunay(in), R <= 10000, true);
@@ -334,8 +334,8 @@ int main() {
         int bad = 0, cases = 0;
         for(int rep = 0; rep < 700; ++rep) {
             int n = (int) frnd(4, 11);
-            vector<p2> in = rndPts(n, 14);
-            if((int) in.size() != n || !generalPosition(in)) continue;
+            vector<p2> in = rnd_pts(n, 14);
+            if((int) in.size() != n || !general_position(in)) continue;
             ++cases;
             // 暴力:所有三点组合,空圆(精确)即为 Delaunay 三角形
             set<array<int, 3>> want, got;
@@ -345,7 +345,7 @@ int main() {
                 p2 A = in[i], B = in[j], C = in[k];
                 if(det3(A, B, C) < 0) swap(B, C);
                 bool ok = true;
-                for(int l = 0; l < n; ++l) if(l != i && l != j && l != k && exactInC(in[l], A, B, C) > 0) ok = false;
+                for(int l = 0; l < n; ++l) if(l != i && l != j && l != k && exact_in_c(in[l], A, B, C) > 0) ok = false;
                 if(ok) want.insert({i, j, k});
             }
             map<K, int> id;
@@ -382,54 +382,54 @@ int main() {
             }
         };
         // 正方形/矩形/正多边形(四点共圆、多点共圆)
-        one({IP(0, 0), IP(4, 0), IP(4, 4), IP(0, 4)}, "正方形(四点共圆)");
-        one({IP(0, 0), IP(6, 0), IP(6, 2), IP(0, 2)}, "矩形(四点共圆)");
-        one({IP(0, 0), IP(4, 0), IP(1, 3), IP(3, 3)}, "等腰梯形(四点共圆:有两条等长的腰)");
-        one({IP(0, 0), IP(5, 0), IP(5, 5), IP(0, 5), IP(2, 2), IP(3, 1), IP(1, 3)}, "正方形 + 3 个内部点");
+        one({ip(0, 0), ip(4, 0), ip(4, 4), ip(0, 4)}, "正方形(四点共圆)");
+        one({ip(0, 0), ip(6, 0), ip(6, 2), ip(0, 2)}, "矩形(四点共圆)");
+        one({ip(0, 0), ip(4, 0), ip(1, 3), ip(3, 3)}, "等腰梯形(四点共圆:有两条等长的腰)");
+        one({ip(0, 0), ip(5, 0), ip(5, 5), ip(0, 5), ip(2, 2), ip(3, 1), ip(1, 3)}, "正方形 + 3 个内部点");
         For(k, 4, 12) {
             vector<p2> v;
             set<K> s;
             for(int i = 0; i < k; ++i) {
                 ll x = (ll) roundl(10000 * cosl(2 * pi * i / k)), y = (ll) roundl(10000 * sinl(2 * pi * i / k));
-                if(!s.count({x, y})) s.insert({x, y}), v.push_back(IP(x, y));
+                if(!s.count({x, y})) s.insert({x, y}), v.push_back(ip(x, y));
             }
             one(v, "圆上 k 个点(k 点共圆)");
         }
         // 网格 k x k:大量共线 + 大量共圆
         For(k, 2, 6) {
             vector<p2> v;
-            for(int i = 0; i < k; ++i) for(int j = 0; j < k; ++j) v.push_back(IP(i, j));
+            for(int i = 0; i < k; ++i) for(int j = 0; j < k; ++j) v.push_back(ip(i, j));
             one(v, "k x k 网格点");
         }
         // 点落在凸包边上(与两凸包顶点共线)和内边上
-        one({IP(0, 0), IP(10, 0), IP(0, 10), IP(5, 0), IP(2, 0), IP(10, 10)}, "点落在凸包边上");
-        one({IP(0, 0), IP(10, 0), IP(10, 10), IP(0, 10), IP(5, 0), IP(10, 5), IP(5, 5), IP(5, 10), IP(0, 5)}, "四条边上各有一个中点");
-        one({IP(0, 0), IP(8, 0), IP(8, 8), IP(0, 8), IP(2, 2), IP(4, 4), IP(6, 6)}, "内边上有一串共线点");
-        one({IP(0, 0), IP(12, 0), IP(12, 12), IP(0, 12), IP(2, 2), IP(3, 3), IP(4, 4), IP(9, 9), IP(10, 10)}, "两条内部对角线上的共线点");
+        one({ip(0, 0), ip(10, 0), ip(0, 10), ip(5, 0), ip(2, 0), ip(10, 10)}, "点落在凸包边上");
+        one({ip(0, 0), ip(10, 0), ip(10, 10), ip(0, 10), ip(5, 0), ip(10, 5), ip(5, 5), ip(5, 10), ip(0, 5)}, "四条边上各有一个中点");
+        one({ip(0, 0), ip(8, 0), ip(8, 8), ip(0, 8), ip(2, 2), ip(4, 4), ip(6, 6)}, "内边上有一串共线点");
+        one({ip(0, 0), ip(12, 0), ip(12, 12), ip(0, 12), ip(2, 2), ip(3, 3), ip(4, 4), ip(9, 9), ip(10, 10)}, "两条内部对角线上的共线点");
         // 凸包上大量共线点(共线点应只在边上,不产生退化三角形)
         {
             vector<p2> v;
-            For(i, 0, 20) v.push_back(IP(i, 0));
-            For(i, 1, 19) v.push_back(IP(i, 20));
-            v.push_back(IP(0, 20)), v.push_back(IP(20, 20));
-            For(i, 1, 19) if(i % 3 == 0) v.push_back(IP(i, 10));
+            For(i, 0, 20) v.push_back(ip(i, 0));
+            For(i, 1, 19) v.push_back(ip(i, 20));
+            v.push_back(ip(0, 20)), v.push_back(ip(20, 20));
+            For(i, 1, 19) if(i % 3 == 0) v.push_back(ip(i, 10));
             one(v, "上边 21 个点、下边 19 个点共线 + 内部几个点");
         }
         // 两条平行的共线链 + 内部点
         {
             vector<p2> v;
-            For(i, 0, 9) v.push_back(IP(i, 0));
-            For(i, 0, 9) v.push_back(IP(i, 9));
-            v.push_back(IP(3, 3)), v.push_back(IP(6, 6)), v.push_back(IP(5, 4));
+            For(i, 0, 9) v.push_back(ip(i, 0));
+            For(i, 0, 9) v.push_back(ip(i, 9));
+            v.push_back(ip(3, 3)), v.push_back(ip(6, 6)), v.push_back(ip(5, 4));
             one(v, "两排共线点 + 内部点");
         }
         // 重复点混在一般位置点集里(去重后必须仍然正确)
         {
-            vector<p2> v = {IP(0, 0), IP(0, 0), IP(7, 1), IP(7, 1), IP(2, 5), IP(2, 5), IP(6, 6), IP(1, 2), IP(1, 2)};
+            vector<p2> v = {ip(0, 0), ip(0, 0), ip(7, 1), ip(7, 1), ip(2, 5), ip(2, 5), ip(6, 6), ip(1, 2), ip(1, 2)};
             one(v, "(含重复点)去重后一般位置");
         }
         // 极端瘦长三角形(近乎共线但不共线)
-        one({IP(0, 0), IP(1000000, 1), IP(2000000, 0), IP(1000000, 0)}, "极瘦的三角形 + 内部点", false);
+        one({ip(0, 0), ip(1000000, 1), ip(2000000, 0), ip(1000000, 0)}, "极瘦的三角形 + 内部点", false);
         CHECK(bad == 0, "退化输入:四点共圆、正多边形共圆、k x k 网格、点落在凸包边/内部边上、"
                         "凸包上大量共线点、重复点 —— 全部满足空圆性质与剖分合法性");
     }
@@ -439,7 +439,7 @@ int main() {
         int bad = 0;
         for(int rep = 0; rep < 40; ++rep) {
             int n = (int) frnd(3, 30);
-            vector<p2> in = rndPts(n, 1000000000LL);
+            vector<p2> in = rnd_pts(n, 1000000000LL);
             if((int) in.size() < 3) continue;
             string e = verify(in, delaunay(in), false, true);
             if(!e.empty()) {
@@ -452,8 +452,8 @@ int main() {
             }
         }
         {
-            vector<p2> v = {IP(-1000000000LL, -1000000000LL), IP(1000000000LL, -1000000000LL), IP(1000000000LL, 1000000000LL), IP(-1000000000LL, 1000000000LL),
-                            IP(0, 0), IP(1, 0), IP(0, 1), IP(-1, -1), IP(999999999LL, 0), IP(0, 999999999LL), IP(-999999999LL, -1)};
+            vector<p2> v = {ip(-1000000000LL, -1000000000LL), ip(1000000000LL, -1000000000LL), ip(1000000000LL, 1000000000LL), ip(-1000000000LL, 1000000000LL),
+                            ip(0, 0), ip(1, 0), ip(0, 1), ip(-1, -1), ip(999999999LL, 0), ip(0, 999999999LL), ip(-999999999LL, -1)};
             string e = verify(v, delaunay(v), false, true);
             CHECK(e.empty(), "±1e9 的正方形 + 内部点/边上的点:通过全部性质检查(相对容差 1e-9)");
             if(!e.empty()) printf("      %s\n", e.c_str());
@@ -465,7 +465,7 @@ int main() {
     {
         int bad = 0, cases = 0;
         for(int rep = 0; rep < 40; ++rep) {
-            vector<p2> in = rep ? rndPts(12, 30) : vector<p2>{{0,0},{8,0},{8,8},{0,8},{4,0},{4,4},{4,8},{2,2},{6,6}};
+            vector<p2> in = rep ? rnd_pts(12, 30) : vector<p2>{{0,0},{8,0},{8,8},{0,8},{4,0},{4,4},{4,8},{2,2},{6,6}};
             for(int e : {-20, 0, 20, 1000, 4000}) for(int shift : {0, 1}) {
                 db s = ldexp(db(1), e);
                 p2 o = p2{ldexp(db(1), 20), -ldexp(db(1), 19)} * (s * shift);
@@ -505,7 +505,7 @@ int main() {
 
     // ===== 6. 反向自检:验证器能抓到错的东西(证明本 check 不是恒绿) =====
     {
-        vector<p2> in = {IP(0, 0), IP(10, 0), IP(10, 10), IP(0, 10), IP(4, 5), IP(6, 4)};
+        vector<p2> in = {ip(0, 0), ip(10, 0), ip(10, 10), ip(0, 10), ip(4, 5), ip(6, 4)};
         vector<p2> good = delaunay(in);
         CHECK(verify(in, good, true, true).empty(), "基准:模板输出能通过验证器");
         // 6.1 丢掉一个三角形 -> 面积不足
@@ -514,15 +514,15 @@ int main() {
         // 6.2 把一条边换成非法的对角线(用同一个四边形换另一种剖分,必然有一个不 Delaunay)
         {
             // 四点共圆的正方形:两种剖分都合法,所以这里用非共圆的四点
-            vector<p2> q = {IP(0, 0), IP(10, 0), IP(9, 9), IP(1, 3)};
-            vector<p2> r1 = {IP(0, 0), IP(10, 0), IP(9, 9), IP(0, 0), IP(9, 9), IP(1, 3)};
-            vector<p2> r2 = {IP(0, 0), IP(10, 0), IP(1, 3), IP(10, 0), IP(9, 9), IP(1, 3)};
+            vector<p2> q = {ip(0, 0), ip(10, 0), ip(9, 9), ip(1, 3)};
+            vector<p2> r1 = {ip(0, 0), ip(10, 0), ip(9, 9), ip(0, 0), ip(9, 9), ip(1, 3)};
+            vector<p2> r2 = {ip(0, 0), ip(10, 0), ip(1, 3), ip(10, 0), ip(9, 9), ip(1, 3)};
             bool ok1 = verify(q, r1, true, true).empty(), ok2 = verify(q, r2, true, true).empty();
             CHECK(ok1 != ok2, "变异:凸四边形的两条对角线只有一条是 Delaunay -> 验证器只放行合法的那一条");
         }
         // 6.3 丢顶点
         {
-            vector<p2> r = {IP(0, 0), IP(10, 0), IP(10, 10), IP(0, 0), IP(10, 10), IP(0, 10)};
+            vector<p2> r = {ip(0, 0), ip(10, 0), ip(10, 10), ip(0, 0), ip(10, 10), ip(0, 10)};
             string e = verify(in, r, true, true);
             CHECK(!e.empty(), "变异:只做凸包(内部点全丢了)-> 验证器报「输入点不是顶点」或覆盖不全");
         }
@@ -545,7 +545,7 @@ int main() {
         int bad = 0;
         for(int rep = 0; rep < 6; ++rep) {
             int n = (int) frnd(150, 400);
-            vector<p2> in = rndPts(n, 100000);
+            vector<p2> in = rnd_pts(n, 100000);
             string e = verify(in, delaunay(in), true, true);
             if(!e.empty()) {
                 if(!bad) printf("      反例(n=%d):%s\n", n, e.c_str());
@@ -558,7 +558,7 @@ int main() {
             set<K> s;
             for(int i = 0; i < 300; ++i) {
                 ll x = (ll) roundl(1000000 * cosl(2 * pi * i / 300)), y = (ll) roundl(1000000 * sinl(2 * pi * i / 300));
-                if(!s.count({x, y})) s.insert({x, y}), v.push_back(IP(x, y));
+                if(!s.count({x, y})) s.insert({x, y}), v.push_back(ip(x, y));
             }
             string e = verify(v, delaunay(v), false, true);
             if(!e.empty()) printf("      反例(凸位置 300 点):%s\n", e.c_str()), ++bad;

@@ -74,14 +74,14 @@ static void dump_edges(int n, const vector<array<int, 2>> &es) {
 }
 
 // ———— 子进程回传的记录 ————
-struct Rec {
+struct rec {
     int tag;    // 0 = getmat(step) 已返回(带 m0/msz), 1 = 即将调用 getmat(step), 2 = 最终结果
     int step;
     int m0;     // mat[0] 的当前值(已知 bug 会把它写成搜索根 → 这就是指纹)
     int msz;
     int mm[CHK_MAXN + 2];
 };
-struct MatchOut {
+struct match_out {
     bool done = false;
     int hung_at = 0;              // 挂死时的搜索根(0 = 没挂, -1 = 子进程异常)
     int msz = 0;
@@ -92,8 +92,8 @@ struct MatchOut {
 
 // 在子进程里跑标准驱动; done = false 表示挂死/异常
 // 隔离运行模板标准驱动；要求 n<=CHK_MAXN；返回匹配、轨迹和是否超时。
-static MatchOut run_match(int n, const vector<array<int, 2>> &es) {
-    MatchOut out;
+static match_out run_match(int n, const vector<array<int, 2>> &es) {
+    match_out out;
     int fd[2];
     if(pipe(fd)) return out;
     pid_t pid = fork();
@@ -103,18 +103,18 @@ static MatchOut run_match(int n, const vector<array<int, 2>> &es) {
         For(i, 1, n) t[i].clear();
         for(int i = 0; i < n + 2; ++i) MAT[i] = 0;
         for(auto &e : es) t[e[0]].push_back(e[1]), t[e[1]].push_back(e[0]);
-        Rec r{};
+        rec r{};
         For(i, 1, n) if(!MAT[i]) {
-            r = Rec{}, r.tag = 1, r.step = i, r.m0 = MAT[0];
+            r = rec{}, r.tag = 1, r.step = i, r.m0 = MAT[0];
             ssize_t w = write(fd[1], &r, sizeof r);
             (void) w;
             getmat(i);
-            r = Rec{}, r.tag = 0, r.step = i, r.m0 = MAT[0];
+            r = rec{}, r.tag = 0, r.step = i, r.m0 = MAT[0];
             For(j, 1, n) if(MAT[j] > j) ++r.msz;
             w = write(fd[1], &r, sizeof r);
             (void) w;
         }
-        r = Rec{}, r.tag = 2, r.msz = 0;
+        r = rec{}, r.tag = 2, r.msz = 0;
         For(i, 1, n) {
             r.mm[i] = MAT[i];
             if(MAT[i] > i && MAT[i] <= n) ++r.msz;
@@ -151,8 +151,8 @@ static MatchOut run_match(int n, const vector<array<int, 2>> &es) {
     close(fd[0]);
     out.mm.assign(n + 2, 0);
     int pending = 0;
-    for(size_t off = 0; off + sizeof(Rec) <= buf.size(); off += sizeof(Rec)) {
-        Rec r;
+    for(size_t off = 0; off + sizeof(rec) <= buf.size(); off += sizeof(rec)) {
+        rec r;
         memcpy(&r, buf.data() + off, sizeof r);
         if(r.tag == 1) pending = r.step;
         else if(r.tag == 0) {
@@ -217,9 +217,9 @@ static int brute_dp(int n, const vector<array<int, 2>> &es) {
 }
 
 // ———— 单用例结果 ————
-enum Kind { K_OK, K_HANG, K_SUBOPT, K_INVALID, K_OVERSIZE };
-// 转换判定枚举为中文说明；要求 k 为 Kind 之一；返回静态字符串。
-static const char *kind_name(Kind k) {
+enum kind_t { K_OK, K_HANG, K_SUBOPT, K_INVALID, K_OVERSIZE };
+// 转换判定枚举为中文说明；要求 k 为 kind_t 之一；返回静态字符串。
+static const char *kind_name(kind_t k) {
     switch(k) {
         case K_HANG: return "死循环";
         case K_SUBOPT: return "匹配偏小(漏增广路)";
@@ -228,16 +228,16 @@ static const char *kind_name(Kind k) {
         default: return "正常";
     }
 }
-struct Verdict {
-    Kind kind = K_OK;
+struct verdict {
+    kind_t kind = K_OK;
     int got = 0, want = 0;
     int bad_i = 0, bad_j = 0, bad_jj = 0;
     bool polluted = false;
 };
 // 对单图运行模板并与暴力比较；要求 n<=CHK_MAXN；返回分类结论和反例信息。
-static Verdict check_case(int n, const vector<array<int, 2>> &es) {
-    Verdict v;
-    MatchOut o = run_match(n, es);
+static verdict check_case(int n, const vector<array<int, 2>> &es) {
+    verdict v;
+    match_out o = run_match(n, es);
     v.polluted = o.polluted;
     v.want = brute_dp(n, es);
     int be = brute_edges(n, es);
@@ -283,7 +283,7 @@ int main() {
     rng.seed(20240514);   // 固定种子: 每次跑同一批随机用例, 出问题可复现
     puts("— 观测窗口自检(getmat 内 static mat[] 的符号别名) —");
     {
-        MatchOut o = run_match(2, {{1, 2}});
+        match_out o = run_match(2, {{1, 2}});
         if(o.done && o.mm.size() > 2 && o.mm[1] == 2 && o.mm[2] == 1) {
             ok("能读到模板内部的 mat[](别名有效: 单边图得到 mat[1]=2, mat[2]=1)");
         } else {
@@ -313,7 +313,7 @@ int main() {
         cs.push_back({"K3,3", 6, {{1, 4}, {1, 5}, {1, 6}, {2, 4}, {2, 5}, {2, 6}, {3, 4}, {3, 5}, {3, 6}}, 3, true});
         cs.push_back({"星 K1,5", 6, {{1, 2}, {1, 3}, {1, 4}, {1, 5}, {1, 6}}, 1, true});
         cs.push_back({"三条不相交边", 6, {{1, 2}, {3, 4}, {5, 6}}, 3, true});
-        cs.push_back({"P3 + P3", 6, {{1, 2}, {2, 3}, {4, 5}, {5, 6}}, 2, true});
+        cs.push_back({"pt3 + pt3", 6, {{1, 2}, {2, 3}, {4, 5}, {5, 6}}, 2, true});
         cs.push_back({"三角形 + 一条边", 5, {{1, 2}, {2, 3}, {3, 1}, {4, 5}}, 2, true});
         cs.push_back({"C4 + 一条边", 6, {{1, 2}, {2, 3}, {3, 4}, {4, 1}, {5, 6}}, 3, true});
         cs.push_back({"蝴蝶(共点两三角)", 5, {{1, 2}, {2, 3}, {3, 1}, {3, 4}, {4, 5}, {5, 3}}, 2, true});
@@ -336,7 +336,7 @@ int main() {
         for(auto &c : cs) {
             puts("");
             printf("  · %s\n", c.name);
-            Verdict v = check_case(c.n, c.es);
+            verdict v = check_case(c.n, c.es);
             ++n_case;
             if(v.kind == K_OK) {
                 ++n_ok;
@@ -363,7 +363,7 @@ int main() {
                 else
                     bug("%s (匹配 %d, 手算最优 %d)\n", kind_name(v.kind), v.got, c.opt);
                 if(v.kind == K_HANG) {
-                    MatchOut o = run_match(c.n, c.es);
+                    match_out o = run_match(c.n, c.es);
                     bug("  卡在 getmat(%d), 挂死前痕迹(根→该次返回后的 mat[0]):", o.hung_at);
                     for(auto &pr : o.trace) printf(" %d→%d;", pr.first, pr.second);
                     printf("\n");
@@ -383,7 +383,7 @@ int main() {
             for(int mask = 0; mask < 1 << m; ++mask) {
                 vector<array<int, 2>> es;
                 for(int i = 0; i < m; ++i) if(mask >> i & 1) es.push_back(all[i]);
-                Verdict v = check_case(n, es);
+                verdict v = check_case(n, es);
                 ++cnt, ++n_case;
                 if(v.kind != K_OK) {
                     if(v.kind == K_HANG) ++hang, ++n_hang;
@@ -432,7 +432,7 @@ int main() {
             }
             sort(all(es));
             es.erase(unique(all(es)), es.end());   // 去重(多重边不影响匹配, 只会拖慢暴力)
-            Verdict v = check_case(n, es);
+            verdict v = check_case(n, es);
             ++cnt, ++n_case;
             if(v.kind == K_OK) {
                 ++okn, ++n_ok;

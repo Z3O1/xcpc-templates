@@ -5,14 +5,14 @@
 #include "凸包直线求交.cpp"
 
 static size_t reads;
-template<class T> struct CountVector : vector<T> {
+template<class T> struct count_vector : vector<T> {
     using vector<T>::vector;
     T &operator[](size_t i) { ++reads; return vector<T>::operator[](i); }
     const T &operator[](size_t i) const { ++reads; return vector<T>::operator[](i); }
 };
 namespace Probe { using namespace Geo; }
 #define Geo Probe
-#define vector CountVector
+#define vector count_vector
 #include "凸包方向极值.cpp"
 #include "凸包直线求交.cpp"
 #undef vector
@@ -148,7 +148,7 @@ int main() {
     size_t worst = 0;
     for(int e = 4; e <= 18; ++e) {
         int n = 1 << e;
-        CountVector<p2> a;
+        count_vector<p2> a;
         for(int i = 0; i < n; ++i) a.push_back({db(i), db(i)*i});
         for(int t = 0; t < 100; ++t) {
             p2 o = {db(rnd(-n,2*n)), db(rnd(0,ll(n)*n))};

@@ -1,7 +1,7 @@
 // 最小圆覆盖 自测:小锐角三角形EPS及排列、枚举两点/三点圆独立暴力对拍
 //
 // 参考实现(文件内自写,不依赖模板):
-//   bruteMCC(v):枚举所有点对的直径圆与所有非共线三点组的外接圆,取「能覆盖全部点」的最小半径。
+//   brute_mcc(v):枚举所有点对的直径圆与所有非共线三点组的外接圆,取「能覆盖全部点」的最小半径。
 //     这是最小覆盖圆定义的直接暴力(最小圆必由 2 个或 3 个点决定)。几何都用**与模板不同**的
 //     解析式:直径圆 = 中点 + 半距;外接圆用 d = 2*(...) 的经典行列式公式。
 //   另一个独立性质:最小覆盖圆只由凸包顶点决定 —— 所以「对所有点暴力」与「只对凸包顶点暴力」
@@ -23,9 +23,9 @@
 // 构造点。
 static p2 P(db x, db y) { return {x, y}; }
 // 绝对值。
-static db Abs(db x) { return x < 0 ? -x : x; }
+static db abs_db(db x) { return x < 0 ? -x : x; }
 // 带容差的标量判等。
-static bool eqd(db a, db b, db tol = 1e-9) { return Abs(a - b) < tol; }
+static bool eqd(db a, db b, db tol = 1e-9) { return abs_db(a - b) < tol; }
 // 打印点(诊断用)。
 static void pr(p2 a) { printf("(%g,%g)", (double) a.x, (double) a.y); }
 // 打印圆(诊断用)。
@@ -36,56 +36,56 @@ static void prv(const char *s, const vector<p2> &v) {
     for(p2 x : v) printf(" "), pr(x);
     printf("\n");
 }
-static db coverTol(c2 c, p2 p) {  // 覆盖判定的相对容差
-    return 1e-9L * (1 + Abs(c.o.x) + Abs(c.o.y) + c.r + Abs(p.x) + Abs(p.y));
+static db cover_tol(c2 c, p2 p) {  // 覆盖判定的相对容差
+    return 1e-9L * (1 + abs_db(c.o.x) + abs_db(c.o.y) + c.r + abs_db(p.x) + abs_db(p.y));
 }
 // 圆是否覆盖所有点(带相对容差)。
 static bool covers(c2 c, const vector<p2> &v) {
     for(p2 x : v)
-        if(dis(c.o - x) > c.r + coverTol(c, x)) return false;
+        if(dis(c.o - x) > c.r + cover_tol(c, x)) return false;
     return true;
 }
 
 // ---------- 独立参考实现 ----------
-static p2 refCircum(p2 A, p2 B, p2 C) {  // 外接圆圆心参考，与圆基础中的写法不同
+static p2 ref_circum(p2 A, p2 B, p2 C) {  // 外接圆圆心参考，与圆基础中的写法不同
     db d = 2 * (A.x * (B.y - C.y) + B.x * (C.y - A.y) + C.x * (A.y - B.y));
     db ux = ((A.x * A.x + A.y * A.y) * (B.y - C.y) + (B.x * B.x + B.y * B.y) * (C.y - A.y) + (C.x * C.x + C.y * C.y) * (A.y - B.y)) / d;
     db uy = ((A.x * A.x + A.y * A.y) * (C.x - B.x) + (B.x * B.x + B.y * B.y) * (A.x - C.x) + (C.x * C.x + C.y * C.y) * (B.x - A.x)) / d;
     return {ux, uy};
 }
 // 两点叉积(精确)。
-static db refDet(p2 a, p2 b) { return a.x * b.y - a.y * b.x; }
-static c2 bruteMCC(const vector<p2> &v) {  // O(n^4):枚举点对/点三组
+static db ref_det(p2 a, p2 b) { return a.x * b.y - a.y * b.x; }
+static c2 brute_mcc(const vector<p2> &v) {  // O(n^4):枚举点对/点三组
     int n = v.size();
     if(n == 0) return {{0, 0}, -1};
     db best = 1e300L;
     p2 bo = v[0];
-    auto tryC = [&](p2 o) {
+    auto try_c = [&](p2 o) {
         db r = 0;
         for(p2 x : v) r = max(r, dis(o - x));
         if(r < best) best = r, bo = o;
     };
-    tryC(v[0]);
-    for(int i = 0; i < n; ++i) for(int j = i + 1; j < n; ++j) tryC((v[i] + v[j]) / 2);
+    try_c(v[0]);
+    for(int i = 0; i < n; ++i) for(int j = i + 1; j < n; ++j) try_c((v[i] + v[j]) / 2);
     for(int i = 0; i < n; ++i) for(int j = i + 1; j < n; ++j) for(int k = j + 1; k < n; ++k) {
-        if(sign(refDet(v[j] - v[i], v[k] - v[i])) == 0) continue;
-        tryC(refCircum(v[i], v[j], v[k]));
+        if(sign(ref_det(v[j] - v[i], v[k] - v[i])) == 0) continue;
+        try_c(ref_circum(v[i], v[j], v[k]));
     }
     return {bo, best};
 }
-static vector<p2> refHullV(vector<p2> v) {  // Andrew 单调链(只留顶点,逆时针)
+static vector<p2> ref_hull_v(vector<p2> v) {  // Andrew 单调链(只留顶点,逆时针)
     sort(v.begin(), v.end(), [](p2 a, p2 b) { return a.x != b.x ? a.x < b.x : a.y < b.y; });
     v.erase(unique(v.begin(), v.end(), [](p2 a, p2 b) { return a.x == b.x && a.y == b.y; }), v.end());
     int n = v.size();
     if(n <= 2) return v;
     vector<p2> h;
     for(int i = 0; i < n; ++i) {
-        while(h.size() > 1 && sign(refDet(h[h.size() - 1] - h[h.size() - 2], v[i] - h[h.size() - 2])) <= 0) h.pop_back();
+        while(h.size() > 1 && sign(ref_det(h[h.size() - 1] - h[h.size() - 2], v[i] - h[h.size() - 2])) <= 0) h.pop_back();
         h.push_back(v[i]);
     }
     int t = h.size();
     rFor(i, n - 2, 0) {
-        while((int) h.size() > t && sign(refDet(h[h.size() - 1] - h[h.size() - 2], v[i] - h[h.size() - 2])) <= 0) h.pop_back();
+        while((int) h.size() > t && sign(ref_det(h[h.size() - 1] - h[h.size() - 2], v[i] - h[h.size() - 2])) <= 0) h.pop_back();
         h.push_back(v[i]);
     }
     h.pop_back();
@@ -97,13 +97,13 @@ static vector<p2> refHullV(vector<p2> v) {  // Andrew 单调链(只留顶点,逆
 //           「全点暴力 == 凸包暴力」(最小覆盖圆只由凸包顶点决定这条性质);
 //   full=0:只做**凸包**上的暴力(O(h^4),h 很小),它由「最优圆的边界点必是凸包顶点」保证
 //           等于全点暴力的答案,n 可以放到 100。
-static int oneCase(const vector<p2> &v, int full) {
+static int one_case(const vector<p2> &v, int full) {
     c2 got = mcc(v);
-    vector<p2> hv = refHullV(v);
-    c2 wh = bruteMCC(hv);
+    vector<p2> hv = ref_hull_v(v);
+    c2 wh = brute_mcc(hv);
     c2 want = wh;
     if(full) {
-        want = bruteMCC(v);
+        want = brute_mcc(v);
         if(!eqd(want.r, wh.r, 1e-9 * (1 + wh.r))) {
             printf("      [check 自身] 全点暴力 r=%.17Lg 与凸包暴力 r=%.17Lg 不一致\n", want.r, wh.r);
             return 0;
@@ -193,7 +193,7 @@ int main() {
             int n = (int) rnd(1, 12), R = (int) rnd(1, 10);
             vector<p2> v;
             for(int i = 0; i < n; ++i) v.push_back(P((db) rnd(-R, R), (db) rnd(-R, R)));
-            if(!oneCase(v, 1) && ++bad >= 3) break;
+            if(!one_case(v, 1) && ++bad >= 3) break;
         }
         CHECK(bad == 0, "mcc 与全点暴力一致(4000 组:n=1..12,坐标 ±10,大量重复点,半径相对 1e-9 + 覆盖性 + 最小性 + 全点暴力==凸包暴力)");
     }
@@ -205,7 +205,7 @@ int main() {
             int n = (int) rnd(3, 100);
             vector<p2> v;
             for(int i = 0; i < n; ++i) v.push_back(P((db) rnd(-1000000, 1000000), (db) rnd(-1000000, 1000000)));
-            if(!oneCase(v, 0) && ++bad >= 3) break;
+            if(!one_case(v, 0) && ++bad >= 3) break;
         }
         CHECK(bad == 0, "mcc 与凸包暴力一致(2000 组:n=3..100,坐标 ±1e6;凸包上的点对/点三组暴力 + 覆盖性 + 最小性)");
     }
@@ -218,7 +218,7 @@ int main() {
             db R = (db) rnd(1, 1000);
             vector<p2> v;
             for(int i = 0; i < n; ++i) v.push_back(P(R * cos(2 * pi * i / n), R * sin(2 * pi * i / n)));
-            if(!oneCase(v, 0) && ++bad >= 3) break;
+            if(!one_case(v, 0) && ++bad >= 3) break;
         }
         CHECK(bad == 0, "mcc 与凸包暴力一致(300 组:n=3..30 个半径随机的圆上点,凸包 ≈ n 的最坏情况)");
     }

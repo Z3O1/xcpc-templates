@@ -38,7 +38,7 @@ static void build_ref() {
 }
 // 单个 F(n):n <= 1e10 时试除到 1e5 就够(剩下的因子必为素数)
 // 试除计算单点乘性函数 F；要求 1 <= n <= 1e10 且 ref_primes 已构建；返回模 M 值。
-static ll F_of(ll n) {
+static ll f_of(ll n) {
     ll res = 1;
     for(int p : ref_primes) {
         if((ll) p * p > n) break;
@@ -61,9 +61,9 @@ static ll via(ll n) {
 int main() {
     build_ref();
     CHECK(ref_pre[10] == 263, "参考侧自检:F 前缀和在 n=10 等于 263(乘性延拓,非 Σi(i−1)=331)");
-    CHECK(F_of(1681) == (ll) 41 * 41 % M * (41 * 41 - 1) % M, "F_of(41²) = 41²(41²−1)(素数幂)");
-    CHECK(F_of(1LL << 40) == ((1LL << 40) % M) * (((1LL << 40) - 1) % M) % M, "F_of(2^40) = 2^40(2^40−1)");
-    CHECK(F_of(6) == 2 * 6 % M, "F_of(6) = F(2)F(3) = 12(乘性,≠ func(6)=30)");
+    CHECK(f_of(1681) == (ll) 41 * 41 % M * (41 * 41 - 1) % M, "f_of(41²) = 41²(41²−1)(素数幂)");
+    CHECK(f_of(1LL << 40) == ((1LL << 40) % M) * (((1LL << 40) - 1) % M) % M, "f_of(2^40) = 2^40(2^40−1)");
+    CHECK(f_of(6) == 2 * 6 % M, "f_of(6) = F(2)F(3) = 12(乘性,≠ func(6)=30)");
 
     init(); // 模板的筛表只初始化这一次
 
@@ -110,8 +110,8 @@ int main() {
             if(n < 2 || n > 10000000000LL) continue;
             ++big;
             ll diff = (via(n) - via(n - 1) + M) % M;
-            if(diff != F_of(n)) {
-                printf("  [FAIL] 大 n 差分 n=%lld want=%lld got=%lld\n", n, F_of(n), diff);
+            if(diff != f_of(n)) {
+                printf("  [FAIL] 大 n 差分 n=%lld want=%lld got=%lld\n", n, f_of(n), diff);
                 return 1;
             }
         }
@@ -131,7 +131,7 @@ int main() {
                                1;
             } else {
                 ll diff = (via(n) - via(n - 1) + M) % M;
-                if(diff != F_of(n)) return printf("  [FAIL] 完全平方 n=%lld 差分 want=%lld got=%lld\n", n, F_of(n), diff), 1;
+                if(diff != f_of(n)) return printf("  [FAIL] 完全平方 n=%lld 差分 want=%lld got=%lld\n", n, f_of(n), diff), 1;
             }
         }
         // 316²=99856、31622²=999950884 在 REFN 之内,1e10 走差分

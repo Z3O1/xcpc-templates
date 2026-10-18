@@ -106,13 +106,13 @@ int main() {
 
     // 2) 结构化图:树/SP 图的核应为空,K4 的核应全是 4 个点
     {
-        struct Case {
+        struct case_t {
             const char *name;
             int n;
             vector<pii> e;
             bool expect_k4;
         };
-        vector<Case> cs;
+        vector<case_t> cs;
         cs.push_back({"path 1-2-3-4-5", 5, {{1, 2}, {2, 3}, {3, 4}, {4, 5}}, false});
         cs.push_back({"star 1-(2..6)", 6, {{1, 2}, {1, 3}, {1, 4}, {1, 5}, {1, 6}}, false});
         cs.push_back({"triangle", 3, {{1, 2}, {2, 3}, {3, 1}}, false});

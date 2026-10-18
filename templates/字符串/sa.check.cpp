@@ -57,7 +57,7 @@ static void check_small(const vector<int> &a) {
 }
 
 // 独立双基哈希,只在大串上验证相邻后缀的公共前缀和有序性。
-struct RH {
+struct rh_t {
     static constexpr int K = 2;
     const u64 B[K]{0x9E3779B97F4A7C15ull, 0xC2B2AE3D27D4EB4Full};
     vector<u64> f[K], pw[K];
@@ -162,7 +162,7 @@ int main() {
                 if(height[i] != i - 1) fail("全同串 height 闭式", a, i, i - 1, height[i]);
             }
         } else {
-            RH rh;
+            rh_t rh;
             rh.build(a);
             For(i, 2, n) {
                 int x = sa[i - 1], y = sa[i], k = rh.prefix(n, x, y);

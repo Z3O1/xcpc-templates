@@ -29,22 +29,22 @@
 // 构造点。
 static p2 P(db x, db y) { return {x, y}; }
 // 绝对值。
-static db Absd(db x) { return x < 0 ? -x : x; }
+static db abs_d(db x) { return x < 0 ? -x : x; }
 // 平方。
 static db sq(db x) { return x * x; }
 // 返回 pi。
-static db PI2() { return acosl(-1.0L); }
+static db pi2() { return acosl(-1.0L); }
 // 生成 [l, r] 闭区间随机整数。
 static int rndi(int l, int r) { return (int) rnd(l, r); }
 // 生成 [l, r] 区间随机 db。
 static db rndd(db l, db r) { return l + (r - l) * (db) (rng() % 10000001) / 10000000; }
 
 // 相对偏差。
-static db dev_of(db got, db want) { return Absd(got - want) / (1 + Absd(want)); }
+static db dev_of(db got, db want) { return abs_d(got - want) / (1 + abs_d(want)); }
 // 相对偏差判等。
 static bool near(db got, db want, db tol) { return dev_of(got, want) <= tol; }
 // 点相对偏差判等。
-static bool nearp(p2 a, p2 b, db tol) { return Absd(a.x - b.x) <= tol * (1 + Absd(b.x)) && Absd(a.y - b.y) <= tol * (1 + Absd(b.y)); }
+static bool nearp(p2 a, p2 b, db tol) { return abs_d(a.x - b.x) <= tol * (1 + abs_d(b.x)) && abs_d(a.y - b.y) <= tol * (1 + abs_d(b.y)); }
 
 // db 转字符串(环形缓冲,诊断用)。
 static const char *f2s(db v) {
@@ -55,19 +55,19 @@ static const char *f2s(db v) {
     return buf[k];
 }
 // 打印圆(诊断用)。
-static void prC(const c2 &c, const char *tag) { printf("    %s: o = (%s, %s), r = %s\n", tag, f2s(c.o.x), f2s(c.o.y), f2s(c.r)); }
+static void pr_c(const c2 &c, const char *tag) { printf("    %s: o = (%s, %s), r = %s\n", tag, f2s(c.o.x), f2s(c.o.y), f2s(c.r)); }
 // 打印线段(诊断用)。
-static void prS(const seg &s, const char *tag) {
+static void pr_s(const seg &s, const char *tag) {
     printf("    %s: (%s, %s)-(%s, %s)\n", tag, f2s(s.x.x), f2s(s.x.y), f2s(s.y.x), f2s(s.y.y));
 }
 // 打印多边形(诊断用)。
-static void prPoly(int n, p2 *a, const char *tag) {
+static void pr_poly(int n, p2 *a, const char *tag) {
     printf("    %s (%d 点):", tag, n);
     for(int i = 0; i < n; ++i) printf(" (%s,%s)", f2s(a[i].x), f2s(a[i].y));
     printf("\n");
 }
 // 打印点集(诊断用)。
-static void prPs(const vector<p2> &v) {
+static void pr_ps(const vector<p2> &v) {
     printf("    got %d:", (int) v.size());
     for(p2 p : v) printf(" (%s,%s)", f2s(p.x), f2s(p.y));
     printf("\n");
@@ -117,13 +117,13 @@ static int ref_line_pts(const c2 &c, const seg &l, p2 *o) {
     db sd = sqrtl(D), t0 = (-B - sd) / (2 * A), t1 = (-B + sd) / (2 * A);
     if(t0 > t1) swap(t0, t1);
     o[0] = l.x + l.dir() * t0;
-    if(Absd(t0 - t1) <= 1e-12L * (1 + Absd(t1))) return 1;
+    if(abs_d(t0 - t1) <= 1e-12L * (1 + abs_d(t1))) return 1;
     o[1] = l.x + l.dir() * t1;
     return 2;
 }
 // 点是否在圆边界上(相对容差)。
 static bool ref_on_circle_boundary(const c2 &c, const p2 &p, db tol = 2e-9L) {
-    return Absd(dis2(p - c.o) - c.r * c.r) <= tol * (1 + c.r * c.r);
+    return abs_d(dis2(p - c.o) - c.r * c.r) <= tol * (1 + c.r * c.r);
 }
 // 点是否严格在圆内(相对容差)。
 static bool ref_strict_inside(const c2 &c, const p2 &p) { return dis2(p - c.o) < c.r * c.r - 1e-12L * (1 + c.r * c.r); }
@@ -249,7 +249,7 @@ static db ref_poly_mc(const vector<p2> &a, const c2 &c, int M, db &se) {
 static vector<p2> ref_disk_poly(const c2 &c, int N) {
     vector<p2> v;
     for(int i = 0; i < N; ++i) {
-        db t = 2 * PI2() * i / N;
+        db t = 2 * pi2() * i / N;
         v.push_back(P(c.o.x + c.r * cosl(t), c.o.y + c.r * sinl(t)));
     }
     return v;
@@ -323,14 +323,14 @@ static vector<p2> rnd_star(int maxn, db lim) {
     if(!ccw(r.size(), r.data())) reverse(r.begin(), r.end());
     return r;
 }
-// 用竖直直线 x = X 切多边形,保留左半(keepLeft=1)或右半:标准的 Sutherland-Hodgman 裁剪,
+// 用竖直直线 x = X 切多边形,保留左半(keep_left=1)或右半:标准的 Sutherland-Hodgman 裁剪,
 // 保序保向 —— 直接往顶点表后面「拼接」一个矩形来当半平面是不可靠的(多边形跨过切线时那会自交)。
-static vector<p2> clip_x(const vector<p2> &p, db X, int keepLeft) {
+static vector<p2> clip_x(const vector<p2> &p, db X, int keep_left) {
     vector<p2> r;
     int n = p.size();
     for(int i = 0; i < n; ++i) {
         p2 u = p[i], v = p[(i + 1) % n];
-        db du = keepLeft ? (X - u.x) : (u.x - X), dv = keepLeft ? (X - v.x) : (v.x - X);
+        db du = keep_left ? (X - u.x) : (u.x - X), dv = keep_left ? (X - v.x) : (v.x - X);
         if(du >= 0) r.push_back(u);
         if((du > 0 && dv < 0) || (du < 0 && dv > 0)) r.push_back(u + (v - u) * (du / (du - dv)));
     }
@@ -402,7 +402,7 @@ int main() {
         bool good = points.size() == 2;
         for(int i = 0; i < (int) points.size(); ++i)
             good &= dis((points[i] - a.o) / s - p2{3, i ? db(4) : db(-4)}) < 1e-14L;
-        if(!good) { prC(a, "a"); prC(b, "b"); prPs(points); die("解析圆圆弦", __LINE__); }
+        if(!good) { pr_c(a, "a"); pr_c(b, "b"); pr_ps(points); die("解析圆圆弦", __LINE__); }
         for(auto ends : {array<int, 2>{-6, 6}, {-6, 0}, {0, 6}, {-2, 2}}) {
             seg l{{shift + ends[0] * s, -shift + 3 * s}, {shift + ends[1] * s, -shift + 3 * s}};
             for(bool reverse_direction : {false, true}) {
@@ -414,7 +414,7 @@ int main() {
                 good = got.size() == want.size();
                 for(int i = 0; i < (int) min(got.size(), want.size()); ++i)
                     good &= dis((got[i] - a.o) / s - want[i]) < 1e-14L;
-                if(!good) { prC(a, "a"); prS(l, "l"); prPs(got); die("原地筛点保序", __LINE__); }
+                if(!good) { pr_c(a, "a"); pr_s(l, "l"); pr_ps(got); die("原地筛点保序", __LINE__); }
             }
         }
     }
@@ -459,7 +459,7 @@ int main() {
             }
             if(!good) {
                 printf("scaled cir_line case=%d dir=(%Lg,%Lg) R=%Lg k=%Lg scale=%Lg count=%zu want=%d\n",t,d.x,d.y,R,k,scale,got.size(),count);
-                prPs(got); return 1;
+                pr_ps(got); return 1;
             }
         }
     }
@@ -499,13 +499,13 @@ int main() {
         c2 c = {P(0, 0), 1};
         vector<p2> v = cir_line(c, seg{P(-2, 0), P(2, 0)});
         if(v.size() != 2) {
-            prC(c, "c");
-            prS(seg{P(-2, 0), P(2, 0)}, "l");
-            prPs(v);
+            pr_c(c, "c");
+            pr_s(seg{P(-2, 0), P(2, 0)}, "l");
+            pr_ps(v);
             die("圆心在直线上应得 2 个对称交点", __LINE__);
         }
         // 直线方向是 (+4,0) 即从 (-2,0) 指向 (2,0),按 t 递增应先 (-1,0) 再 (1,0)
-        T(Absd(v[0].x + 1) < 1e-9 && Absd(v[1].x - 1) < 1e-9 && Absd(v[0].y) < 1e-9 && Absd(v[1].y) < 1e-9,
+        T(abs_d(v[0].x + 1) < 1e-9 && abs_d(v[1].x - 1) < 1e-9 && abs_d(v[0].y) < 1e-9 && abs_d(v[1].y) < 1e-9,
           "cir_line:x^2+y^2=1 与 y=0 交于 (-1,0)、(1,0),按方向 t 递增(从 l.x 数起)");
         TD(v[0].x + v[1].x, (db) 0, 1e-12, "圆心在直线上时两交点关于垂足(x=0)对称");
     }
@@ -513,9 +513,9 @@ int main() {
         c2 c = {P(1, 1), 2};
         vector<p2> v = cir_line(c, seg{P(-5, 3), P(5, 3)});   // y = 3 与圆相切(圆心到直线距离 2 = r)
         if(!(v.size() == 1 && nearp(v[0], P(1, 3), 1e-9))) {
-            prC(c, "c");
-            prS(seg{P(-5, 3), P(5, 3)}, "l");
-            prPs(v);
+            pr_c(c, "c");
+            pr_s(seg{P(-5, 3), P(5, 3)}, "l");
+            pr_ps(v);
             die("相切应返回 1 个点 (1,3)", __LINE__);
         }
         T(true, "cir_line:相切(y=3,r=2)返回唯一一点 (1,3)");
@@ -524,9 +524,9 @@ int main() {
         c2 c = {P(0, 0), 1};
         vector<p2> v = cir_line(c, seg{P(-5, 2), P(5, 2)});
         if(!v.empty()) {
-            prC(c, "c");
-            prS(seg{P(-5, 2), P(5, 2)}, "l");
-            prPs(v);
+            pr_c(c, "c");
+            pr_s(seg{P(-5, 2), P(5, 2)}, "l");
+            pr_ps(v);
             die("相离应返回空", __LINE__);
         }
         T(cir_line(c, seg{P(-5, 1.0000001L), P(5, 1.0000001L)}).empty(), "cir_line:相离返回空(距离 1.0000001)");
@@ -542,8 +542,8 @@ int main() {
         T(cir_seg(c, seg{P(-2, 0), P(2, 0)}).size() == 2, "cir_seg:恰从圆内穿过 -> 2 个");
         vector<p2> v = cir_seg(c, seg{P(-0.5L, 0), P(1, 0)});
         if(!(v.size() == 1 && nearp(v[0], P(1, 0), 1e-9))) {
-            prS(seg{P(-0.5L, 0), P(1, 0)}, "s");
-            prPs(v);
+            pr_s(seg{P(-0.5L, 0), P(1, 0)}, "s");
+            pr_ps(v);
             die("一端在圆内、一端恰在圆上 -> 1 个", __LINE__);
         }
         T(true, "cir_seg:一端在圆内、一端恰在圆上 (1,0) -> 1 个");
@@ -558,7 +558,7 @@ int main() {
           "cir_cir:外离 -> 空(圆心距 10 > 3+1),同一段线段 (3.5,0)-(8.5,0) 与两圆都不交");
         vector<p2> v = cir_cir(c2{P(0, 0), 1}, c2{P(2, 0), 1});   // 外切 (1,0)
         if(!(v.size() == 1 && nearp(v[0], P(1, 0), 1e-9))) {
-            prPs(v);
+            pr_ps(v);
             die("外切应返回 1 个点 (1,0)", __LINE__);
         }
         T(true, "cir_cir:外切返回 1 个点 (1,0)");
@@ -567,7 +567,7 @@ int main() {
           "cir_cir:相交两点 (1/2,∓√3/2) 且按极角递增排序");
         v = cir_cir(c2{P(0, 0), 3}, c2{P(2, 0), 1});              // 内切 (3,0)
         if(!(v.size() == 1 && nearp(v[0], P(3, 0), 1e-9))) {
-            prPs(v);
+            pr_ps(v);
             die("内切应返回 1 个点 (3,0)", __LINE__);
         }
         T(true, "cir_cir:内切返回 1 个点 (3,0)");
@@ -586,22 +586,22 @@ int main() {
         v = cir_cir(big, tiny);
         T(v.size() == 2 && v.size() == ref_cir_cir(big, tiny).size(), "cir_cir:半径比 1e6 的相交构型仍是 2 个交点");
         for(p2 q : v)
-            T(Absd(dis(q - big.o) - big.r) <= 1e-6L && Absd(dis(q - tiny.o) - tiny.r) <= 1e-6L,
+            T(abs_d(dis(q - big.o) - big.r) <= 1e-6L && abs_d(dis(q - tiny.o) - tiny.r) <= 1e-6L,
               "cir_cir:极端半径比下每个交点都真的落在两圆上");
     }
 
     // ---------- 1. cir_cir_area 手算 + 三种独立方法 ----------
     {
         c2 a = {P(0, 0), 1}, b = {P(0, 0), 1};
-        TD(cir_cir_area(a, b), PI2(), 1e-12, "cir_cir_area:两圆重合 == pi r^2");
+        TD(cir_cir_area(a, b), pi2(), 1e-12, "cir_cir_area:两圆重合 == pi r^2");
         TD(cir_cir_area(c2{P(0, 0), 0}, c2{P(0, 0), 0}), (db) 0, 1e-12, "cir_cir_area:两个点圆 == 0");
-        TD(cir_cir_area(c2{P(0, 0), 5}, c2{P(0, 0), 2}), 4 * PI2(), 1e-12, "cir_cir_area:同心内含(5 与 2)== pi * 2^2");
-        TD(cir_cir_area(c2{P(0, 0), 2}, c2{P(0, 0), 5}), 4 * PI2(), 1e-12, "cir_cir_area:同心内含(参数换序)== pi * 2^2");
-        TD(cir_cir_area(c2{P(0, 0), 2}, c2{P(1, 0), 3}), 4 * PI2(), 1e-12, "cir_cir_area:严格内含 == pi * 小圆^2");
+        TD(cir_cir_area(c2{P(0, 0), 5}, c2{P(0, 0), 2}), 4 * pi2(), 1e-12, "cir_cir_area:同心内含(5 与 2)== pi * 2^2");
+        TD(cir_cir_area(c2{P(0, 0), 2}, c2{P(0, 0), 5}), 4 * pi2(), 1e-12, "cir_cir_area:同心内含(参数换序)== pi * 2^2");
+        TD(cir_cir_area(c2{P(0, 0), 2}, c2{P(1, 0), 3}), 4 * pi2(), 1e-12, "cir_cir_area:严格内含 == pi * 小圆^2");
         TD(cir_cir_area(c2{P(0, 0), 1}, c2{P(3, 0), 1}), (db) 0, 1e-12, "cir_cir_area:外离 == 0");
         TD(cir_cir_area(c2{P(0, 0), 1}, c2{P(2, 0), 1}), (db) 0, 1e-12, "cir_cir_area:外切 == 0");
-        TD(cir_cir_area(c2{P(0, 0), 3}, c2{P(2, 0), 1}), PI2(), 1e-12, "cir_cir_area:内切(小圆完全在大圆内)== pi r_小^2");
-        TD(cir_cir_area(c2{P(2, 0), 1}, c2{P(0, 0), 3}), PI2(), 1e-12, "cir_cir_area:内切(参数换序)== pi r_小^2");
+        TD(cir_cir_area(c2{P(0, 0), 3}, c2{P(2, 0), 1}), pi2(), 1e-12, "cir_cir_area:内切(小圆完全在大圆内)== pi r_小^2");
+        TD(cir_cir_area(c2{P(2, 0), 1}, c2{P(0, 0), 3}), pi2(), 1e-12, "cir_cir_area:内切(参数换序)== pi r_小^2");
         TD(cir_cir_area(c2{P(0, 0), 0}, c2{P(0, 0), 4}), (db) 0, 1e-12, "cir_cir_area:点圆与圆 == 0");
         // 半径 r 的圆过另一半径 r 的圆心:d = r,每侧圆心角 = 2 * acos(d / (2r)) = 2pi/3
         db r = 4;
@@ -610,31 +610,31 @@ int main() {
         TD(cir_cir_area(c2{P(0, 0), r}, c2{P(r, 0), r}), want, 1e-12, "cir_cir_area:圆心互在对方圆上(每侧 120°)解析值");
         TD(cir_cir_area(c2{P(0, 0), r}, c2{P(r, 0), r}), ref_area_num(c2{P(0, 0), r}, c2{P(r, 0), r}), 1e-5,
            "cir_cir_area:同一构型与数值积分一致");
-        TD(cir_cir_area(c2{P(0, 0), 1}, c2{P(1e-9L, 0), 1}), PI2(), 0.01, "cir_cir_area:近同心的大交面积趋近 pi r^2");
+        TD(cir_cir_area(c2{P(0, 0), 1}, c2{P(1e-9L, 0), 1}), pi2(), 0.01, "cir_cir_area:近同心的大交面积趋近 pi r^2");
     }
 
     // ---------- 2. cir_poly_area 手算(圆在正方形内 / 正方形在圆内 / 半圆) ----------
     {
         vector<p2> sq1 = {P(-2, -2), P(2, -2), P(2, 2), P(-2, 2)};
-        TD(cir_poly_area(sq1, c2{P(0, 0), 1}), PI2(), 1e-12, "cir_poly_area:半径 1 的圆完全在正方形内 == pi");
+        TD(cir_poly_area(sq1, c2{P(0, 0), 1}), pi2(), 1e-12, "cir_poly_area:半径 1 的圆完全在正方形内 == pi");
         vector<p2> sq2 = {P(-0.5L, -0.5L), P(0.5L, -0.5L), P(0.5L, 0.5L), P(-0.5L, 0.5L)};
         TD(cir_poly_area(sq2, c2{P(0, 0), 5}), (db) 1, 1e-12, "cir_poly_area:正方形完全在圆内 == 多边形面积 1");
         // 正方形 [0,2]×[-1,1] 与单位圆:圆的 x 只到 1,右边界 x=2 根本切不到圆,
         // 所以交就是右半圆 pi/2(不是 pi/2 + 2 —— 那会把 x∈[1,2] 那块没被圆覆盖的面积也加进去)
         vector<p2> sq3 = {P(0, -1), P(2, -1), P(2, 1), P(0, 1)};
-        TD(cir_poly_area(sq3, c2{P(0, 0), 1}), PI2() / 2, CPA_EPS, "cir_poly_area:圆心在正方形边中点 == 右半圆 pi/2");
+        TD(cir_poly_area(sq3, c2{P(0, 0), 1}), pi2() / 2, CPA_EPS, "cir_poly_area:圆心在正方形边中点 == 右半圆 pi/2");
         // 半径 0:交集面积恒 0
         TD(cir_poly_area(sq1, c2{P(0, 0), 0}), (db) 0, 1e-12, "cir_poly_area:半径 0 == 0");
         TD(cir_poly_area(sq1, c2{P(3, 3), 0}), (db) 0, 1e-12, "cir_poly_area:半径 0(圆心在外)== 0");
         // 圆与每条边都相交 / 与每条边都相切
-        TD(cir_poly_area(sq1, c2{P(0, 0), 1}), PI2(), 1e-12, "cir_poly_area:圆与正方形四条边都相切(正方形 [±2]^2, 半径 1)== pi");
+        TD(cir_poly_area(sq1, c2{P(0, 0), 1}), pi2(), 1e-12, "cir_poly_area:圆与正方形四条边都相切(正方形 [±2]^2, 半径 1)== pi");
         // [±2]^2 的内切圆半径是 2;r = 1+1e-7 完全在里面,交集就是 pi r^2
-        TD(cir_poly_area(sq1, c2{P(0, 0), 1.0000001L}), PI2() * 1.0000001L * 1.0000001L, CPA_EPS, "cir_poly_area:圆(r=1+1e-7)完全在正方形内 == pi r^2");
+        TD(cir_poly_area(sq1, c2{P(0, 0), 1.0000001L}), pi2() * 1.0000001L * 1.0000001L, CPA_EPS, "cir_poly_area:圆(r=1+1e-7)完全在正方形内 == pi r^2");
         // 内切圆半径正好 1 的正方形 [±1]^2:r = 1+1e-7 的圆已经穿过四条边,交集变小
         {
             vector<p2> sq1u = {P(-1, -1), P(1, -1), P(1, 1), P(-1, 1)};
             db rr = 1.0000001L;
-            db exact = PI2() * rr * rr - 4 * (rr * rr * acosl(1 / rr) - sqrtl(rr * rr - 1));
+            db exact = pi2() * rr * rr - 4 * (rr * rr * acosl(1 / rr) - sqrtl(rr * rr - 1));
             TD(cir_poly_area(sq1u, c2{P(0, 0), rr}), exact, 1e-6, "cir_poly_area:圆略大于内切圆(r=1+1e-7, 正方形 [±1]^2)== pi r^2 减四条弓形");
         }
         TD(cir_poly_area(sq1, c2{P(0, 0), 4}), (db) 16, 1e-12, "cir_poly_area:圆远大于正方形 == 多边形面积");
@@ -645,7 +645,7 @@ int main() {
         // 再被两条直角边切掉两个切点(切点只有测度 0,不减面积),所以真值 = 半圆 = 2pi ≈ 6.2832,
         // **不是**三角形面积 8:三个顶点到 (2,2) 的距离都是 2√2 > 2,圆盖不住任何一个顶点。
         // (独立核对:4e6 样本蒙特卡洛给 6.28;模板给 6.28318530718 = 2pi。)
-        TD(cir_poly_area(tri, c2{P(2, 2), 2}), 2 * PI2(), 1e-9, "cir_poly_area:圆心在斜边中点、半径 2 与三角形交 == 半圆 2pi");
+        TD(cir_poly_area(tri, c2{P(2, 2), 2}), 2 * pi2(), 1e-9, "cir_poly_area:圆心在斜边中点、半径 2 与三角形交 == 半圆 2pi");
     }
 
     // ---------- 3. 随机 cir_line / cir_seg 对拍 ----------
@@ -670,20 +670,20 @@ int main() {
                 if(!okc) {
                     if(cntbad < 5) {
                         printf("  [随机 cir_line 失败] 参考 %d 个 / 模板 %d 个\n", rn, (int) got.size());
-                        prC(c, "c");
-                        prS(l, "l");
-                        prPs(want);
-                        prPs(got);
+                        pr_c(c, "c");
+                        pr_s(l, "l");
+                        pr_ps(want);
+                        pr_ps(got);
                     }
                     ++cntbad;
                 }
             } else if(!pts_eq(got, want, 1e-9)) {
                 if(bad < 5) {
                     printf("  [随机 cir_line 点不一致]\n");
-                    prC(c, "c");
-                    prS(l, "l");
-                    prPs(want);
-                    prPs(got);
+                    pr_c(c, "c");
+                    pr_s(l, "l");
+                    pr_ps(want);
+                    pr_ps(got);
                 }
                 ++bad;
             }
@@ -696,10 +696,10 @@ int main() {
             if(!pts_eq(gs, ws, 1e-9)) {
                 if(bad < 8) {
                     printf("  [随机 cir_seg 失败]\n");
-                    prC(c, "c");
-                    prS(l, "s");
-                    prPs(ws);
-                    prPs(gs);
+                    pr_c(c, "c");
+                    pr_s(l, "s");
+                    pr_ps(ws);
+                    pr_ps(gs);
                 }
                 ++bad;
             }
@@ -728,10 +728,10 @@ int main() {
             if(!okc || !pts_eq(got, want, 1e-8)) {
                 if(bad < 5) {
                     printf("  [随机 cir_cir 失败] 参考 %d 个 / 模板 %d 个\n", (int) want.size(), (int) got.size());
-                    prC(c1, "c1");
-                    prC(other, "c2");
-                    prPs(want);
-                    prPs(got);
+                    pr_c(c1, "c1");
+                    pr_c(other, "c2");
+                    pr_ps(want);
+                    pr_ps(got);
                 }
                 ++bad;
             }
@@ -755,21 +755,21 @@ int main() {
         for(int it = 0; it < N; ++it) {
             c2 c1 = rnd_circle(1000, 300), other;
             // 让两圆有交的比例高一些:以 c1 为基准在半径和附近挪
-            db ang = rndd(0, 2 * PI2()), dd = rndd(0, c1.r + 300);
+            db ang = rndd(0, 2 * pi2()), dd = rndd(0, c1.r + 300);
             other = {P(c1.o.x + dd * cosl(ang), c1.o.y + dd * sinl(ang)), rndd(0, 300)};
             db got = cir_cir_area(c1, other), nu = ref_area_num(c1, other);
             // 容差按「参考方法自己的误差量级」给:分层中点法在相切附近有平方根奇点,误差是
             // 大圆面积的 1e-6 量级(实测最坏 1.3e-7),所以用绝对量 1e-6 * 大圆面积;
             // 原来写成 2e-5*(r1+r2)/(r1^2) 再配 dev_of 的相对偏差,量纲对不上,会在
             // 「一大一小两圆」这种构型上偶发误报(实测:r1=228.6、r2=28.5,偏差 1.3e-7 被判超限)。
-            db tol = 1e-6L * (1 + PI2() * max(c1.r * c1.r, other.r * other.r));
-            db dv = Absd(got - nu) / (1 + max(nu, (db) 1));
+            db tol = 1e-6L * (1 + pi2() * max(c1.r * c1.r, other.r * other.r));
+            db dv = abs_d(got - nu) / (1 + max(nu, (db) 1));
             worst = max(worst, dv / max(tol / (1 + nu), (db) 1e-30));
-            if(Absd(got - nu) > tol) {
+            if(abs_d(got - nu) > tol) {
                 if(bad < 5) {
                     printf("  [随机 cir_cir_area vs 数值积分失败] 模板 %s / 积分 %s(相对偏差 %s)\n", f2s(got), f2s(nu), f2s(dv));
-                    prC(c1, "c1");
-                    prC(other, "c2");
+                    pr_c(c1, "c1");
+                    pr_c(other, "c2");
                 }
                 ++bad;
             }
@@ -787,13 +787,13 @@ int main() {
             c2 c1 = rnd_circle(600, 250), other = rnd_circle(600, 250);
             db se = 0;
             db got = cir_cir_area(c1, other), mc = ref_area_mc(c1, other, M, se);
-            db dv = Absd(got - mc) / (1 + max(mc, (db) 1));
+            db dv = abs_d(got - mc) / (1 + max(mc, (db) 1));
             worstmc = max(worstmc, dv);
-            if(Absd(got - mc) > 4 * se + 1e-9L * (1 + got)) {
-                printf("  [蒙特卡洛 cir_cir_area 失败] 模板 %s / MC %s(偏差 %s,4σ = %s)\n", f2s(got), f2s(mc), f2s(Absd(got - mc)),
+            if(abs_d(got - mc) > 4 * se + 1e-9L * (1 + got)) {
+                printf("  [蒙特卡洛 cir_cir_area 失败] 模板 %s / MC %s(偏差 %s,4σ = %s)\n", f2s(got), f2s(mc), f2s(abs_d(got - mc)),
                        f2s(4 * se));
-                prC(c1, "c1");
-                prC(other, "c2");
+                pr_c(c1, "c1");
+                pr_c(other, "c2");
                 ++badmc;
             }
         }
@@ -816,11 +816,11 @@ int main() {
             for(p2 &q : hp) q = q - c.o;
             c2 c0 = {P(0, 0), c.r};
             db got = cir_cir_area(c, c), big = cir_poly_area(hp, c0);
-            db dv = Absd(big - got) / (1 + got);
+            db dv = abs_d(big - got) / (1 + got);
             worst = max(worst, dv);
             if(!near(big, got, 5e-6L)) {
                 printf("  [cir_poly_area vs 强凸近似失败] 模板 %s / 百万边形 %s(相对偏差 %s)\n", f2s(got), f2s(big), f2s(dv));
-                prC(c, "c");
+                pr_c(c, "c");
                 ++bad;
             }
         }
@@ -830,7 +830,7 @@ int main() {
         // 多边形 ∩ 圆:先用一个已知解析的构型(圆心在边中点的正方形)钉死公式缩放
         {
             vector<p2> sq = {P(0, -1), P(2, -1), P(2, 1), P(0, 1)};
-            db want = PI2() / 2, got = cir_poly_area(sq, c2{P(0, 0), 1});
+            db want = pi2() / 2, got = cir_poly_area(sq, c2{P(0, 0), 1});
             TD(got, want, CPA_EPS, "cir_poly_area:半圆构型解析值(再次确认缩放因子为 1/2 而不是 2)");
         }
         // 圆盘 ∩ 多边形:与 cir_cir_area 用「多边形 = 百万边正多边形」互校
@@ -844,12 +844,12 @@ int main() {
             for(p2 &q : hp) q = q - c.o;                  // 同上:平移消除大数抵消
             c2 c0 = {P(0, 0), c.r};
             db got = cir_poly_area(hp, c0);
-            db want = PI2() * c.r * c.r;
-            db dv = Absd(got - want) / (1 + want);
+            db want = pi2() * c.r * c.r;
+            db dv = abs_d(got - want) / (1 + want);
             worst2 = max(worst2, dv);
             if(!near(got, want, 5e-5L)) {  // 20 万边内接折线的面积亏损相对量级 ~1/N = 5e-6,容差留 10 倍
                 printf("  [圆盘 ∩ 圆失败] 模板 %s / pi r^2 %s(相对偏差 %s)\n", f2s(got), f2s(want), f2s(dv));
-                prC(c, "c");
+                pr_c(c, "c");
                 ++bad2;
             }
         }
@@ -865,13 +865,13 @@ int main() {
             c2 c = rnd_circle(300, 250);
             db se = 0;
             db got = cir_poly_area(poly, c), mc = ref_poly_mc(poly, c, M, se);
-            db dv = Absd(got - mc) / (1 + max(mc, (db) 1));
+            db dv = abs_d(got - mc) / (1 + max(mc, (db) 1));
             worstmc = max(worstmc, dv);
-            if(Absd(got - mc) > 4 * se + 1e-9L * (1 + got)) {
-                printf("  [蒙特卡洛 cir_poly_area 失败] 模板 %s / MC %s(偏差 %s,4σ = %s)\n", f2s(got), f2s(mc), f2s(Absd(got - mc)),
+            if(abs_d(got - mc) > 4 * se + 1e-9L * (1 + got)) {
+                printf("  [蒙特卡洛 cir_poly_area 失败] 模板 %s / MC %s(偏差 %s,4σ = %s)\n", f2s(got), f2s(mc), f2s(abs_d(got - mc)),
                        f2s(4 * se));
-                prC(c, "c");
-                prPoly(poly.size(), poly.data(), "poly");
+                pr_c(c, "c");
+                pr_poly(poly.size(), poly.data(), "poly");
                 ++badmc;
             }
         }
@@ -893,7 +893,7 @@ int main() {
             if(!near(big, A, 1e-9L)) {
                 if(bad < 3) {
                     printf("  [大圆盖住多边形失败] 模板 %s / area %s\n", f2s(big), f2s(A));
-                    prPoly(n, poly.data(), "poly");
+                    pr_poly(n, poly.data(), "poly");
                 }
                 ++bad;
             }
@@ -910,10 +910,10 @@ int main() {
             for(int i = 0; i < n; ++i) mind = min(mind, nearest({poly[i], poly[(i + 1) % n]}, g));
             if(!(mind > 4 * rr * rr)) continue;
             db sm = cir_poly_area(poly, c2{g, rr});
-            if(!near(sm, PI2() * rr * rr, 1e-9L)) {
+            if(!near(sm, pi2() * rr * rr, 1e-9L)) {
                 if(bad < 6) {
-                    printf("  [小圆在多边形内失败] 模板 %s / pi r^2 %s(圆心 %s,%s)\n", f2s(sm), f2s(PI2() * rr * rr), f2s(g.x), f2s(g.y));
-                    prPoly(n, poly.data(), "poly");
+                    printf("  [小圆在多边形内失败] 模板 %s / pi r^2 %s(圆心 %s,%s)\n", f2s(sm), f2s(pi2() * rr * rr), f2s(g.x), f2s(g.y));
+                    pr_poly(n, poly.data(), "poly");
                 }
                 ++bad;
             }
@@ -943,12 +943,12 @@ int main() {
                 db w1 = cir_poly_area(cb, c2{P(2 + 20 * (i - 1) + 12.5L, 12), 1.5L});
                 if(!near(w1, (db) 0, 1e-12L)) {
                     printf("  [梳子:凹槽内的圆不该有交面积] 第 %d 个凹槽,T=%d,模板 %s\n", i, T, f2s(w1));
-                    prPoly(n, cb.data(), "comb");
+                    pr_poly(n, cb.data(), "comb");
                     die("梳子形凹槽内的小圆", __LINE__);
                 }
             }
             db w2 = cir_poly_area(cb, c2{P(1, 1), 0.4L});                 // 底部实心区
-            TD(w2, PI2() * 0.16L, 1e-12, "梳子形:底部实心区内的小圆 == pi r^2");
+            TD(w2, pi2() * 0.16L, 1e-12, "梳子形:底部实心区内的小圆 == pi r^2");
             // 大圆盖住整把梳子:圆心得足够远/半径足够大 —— 梳子最高到 y = D+hu = 40、最右到 x ≈ 22+20T,
             // 原来给的 (11,-40) r=60 盖不住(到 (7,40) 的距离就是 80),这一版踩过的坑
             db w3 = cir_poly_area(cb, c2{P(2.0L + 10 * T, 20), 1e4L});
@@ -958,9 +958,9 @@ int main() {
             db w4 = cir_poly_area(cb, c2{cc, 8});
             db se4 = 0;
             db mc = ref_poly_mc(cb, c2{cc, 8}, 200000, se4);
-            if(Absd(w4 - mc) > 4 * se4 + 1e-9L * (1 + w4)) {
+            if(abs_d(w4 - mc) > 4 * se4 + 1e-9L * (1 + w4)) {
                 printf("  [梳子:蒙特卡洛失败] 模板 %s / MC %s(4σ = %s)\n", f2s(w4), f2s(mc), f2s(4 * se4));
-                prPoly(n, cb.data(), "comb");
+                pr_poly(n, cb.data(), "comb");
                 die("梳子形:与蒙特卡洛对拍", __LINE__);
             }
         }
@@ -972,21 +972,21 @@ int main() {
         // 圆心在原点,半径 1;多边形是一个覆盖了下半平面的大方块,于是交集的边界弧从 -170° 绕到 +170°
         // (跨越 atan2 的 ±pi 分支),面积 = 上半平面的单位半圆 + 下方 1×1 矩形
         vector<p2> sw = {P(-1, -1), P(1, -1), P(1, 1), P(-1, 1)};
-        TD(cir_poly_area(sw, c2{P(0, 0.0L), 1}), PI2(), CPA_EPS, "跨越 ±pi:正方形 [±1]^2 与单位圆的交 == pi(整圆都在正方形内)");
+        TD(cir_poly_area(sw, c2{P(0, 0.0L), 1}), pi2(), CPA_EPS, "跨越 ±pi:正方形 [±1]^2 与单位圆的交 == pi(整圆都在正方形内)");
         // 圆心正好落在下边界 y = -1 上:圆只有上半(y >= -1)在正方形里,真值 = 半圆 pi/2
         // (原来写期望 pi 是错的:圆的下半部分 y < -1 在正方形外;独立核对:模板给 1.5707963268)
-        TD(cir_poly_area(sw, c2{P(0, -1), 1}), PI2() / 2, 1e-12, "跨越 ±pi:圆心在 (0,-1) 的单位圆与正方形交 == 半圆 pi/2");
+        TD(cir_poly_area(sw, c2{P(0, -1), 1}), pi2() / 2, 1e-12, "跨越 ±pi:圆心在 (0,-1) 的单位圆与正方形交 == 半圆 pi/2");
         // 窄长薄片:圆与两个远端点相交,扇形角接近 2pi(绕远路那条弧)
         vector<p2> bar = {P(-100, -0.1L), P(100, -0.1L), P(100, 0.1L), P(-100, 0.1L)};
         // 长条 y∈[-0.1,0.1]、x∈[-100,100],圆 r=60:x∈[±sqrt(60²-0.1²)] 那段整块在长条里,
         // 两端还剩一点弓形,所以真值略大于 24;内接折线近似恒略偏小,给 1e-3 相对容差
         TD(cir_poly_area(bar, c2{P(0, 0), 60}), 23.9999889L, 1e-4, "跨越 ±pi:长条 ∩ 圆 r=60 ≈ 24(两端各留一点弓形)");
         // 薄长条 + 小圆:圆完全在长条里
-        TD(cir_poly_area(bar, c2{P(50, 0), 1e-3L}), PI2() * 1e-6L, 1e-12, "跨越 ±pi:长条内的小圆 == pi r^2");
+        TD(cir_poly_area(bar, c2{P(50, 0), 1e-3L}), pi2() * 1e-6L, 1e-12, "跨越 ±pi:长条内的小圆 == pi r^2");
         // 扇形角恰好 pi:圆心在一条竖直边上 -> 交 = 右半圆 = pi/2
         // (右边 x=2 那条边根本切不到圆,x ∈ [1,2] 的 1×2 矩形不在圆里,不能加进去)
         vector<p2> rw = {P(0, -1), P(2, -1), P(2, 1), P(0, 1)};
-        TD(cir_poly_area(rw, c2{P(0, 0), 1}), PI2() / 2, 1e-12, "扇形角 == pi:圆心在竖直边中点上,交 == 右半圆 pi/2");
+        TD(cir_poly_area(rw, c2{P(0, 0), 1}), pi2() / 2, 1e-12, "扇形角 == pi:圆心在竖直边中点上,交 == 右半圆 pi/2");
 
         // 随机:把圆从多边形中心沿随机方向推到边界附近,考察圆部分覆盖的过渡区
         const int N = 6000;
@@ -1002,16 +1002,16 @@ int main() {
             p2 g = {0, 0};
             for(int i = 0; i < n; ++i) g = g + poly[i];
             g = g / (db) n;
-            db ang = rndd(0, 2 * PI2()), off = rndd(0, 60);
+            db ang = rndd(0, 2 * pi2()), off = rndd(0, 60);
             c2 c = {P(g.x + off * cosl(ang), g.y + off * sinl(ang)), rr};
             db got = cir_poly_area(poly, c);
             // 上下界:交面积 <= min(圆面积, 多边形面积);>= 0;且圆心在多边形内时必须 >= pi r^2 的一部分
             db A = abs(area(poly));
-            if(!(got >= -1e-12L && got <= min(PI2() * rr * rr, A) * (1 + 1e-9L) + 1e-9L)) {
+            if(!(got >= -1e-12L && got <= min(pi2() * rr * rr, A) * (1 + 1e-9L) + 1e-9L)) {
                 if(bad < 3) {
-                    printf("  [界检查失败] got %s,圆面积 %s,多边形面积 %s\n", f2s(got), f2s(PI2() * rr * rr), f2s(A));
-                    prC(c, "c");
-                    prPoly(n, poly.data(), "poly");
+                    printf("  [界检查失败] got %s,圆面积 %s,多边形面积 %s\n", f2s(got), f2s(pi2() * rr * rr), f2s(A));
+                    pr_c(c, "c");
+                    pr_poly(n, poly.data(), "poly");
                 }
                 ++bad;
             }
@@ -1024,8 +1024,8 @@ int main() {
             if(!near(got2, got, 1e-9L)) {
                 if(bad < 6) {
                     printf("  [平移不变性失败] %s vs %s(平移 %s,%s)\n", f2s(got), f2s(got2), f2s(dx), f2s(dy));
-                    prC(c, "c");
-                    prPoly(n, poly.data(), "poly");
+                    pr_c(c, "c");
+                    pr_poly(n, poly.data(), "poly");
                 }
                 ++bad;
             }
@@ -1058,8 +1058,8 @@ int main() {
             if(!near(half, all, 1e-7L)) {
                 if(bad < 3) {
                     printf("  [加性失败] 两块和 %s vs 整体 %s\n", f2s(half), f2s(all));
-                    prC(c, "c");
-                    prPoly(n, poly.data(), "poly");
+                    pr_c(c, "c");
+                    pr_poly(n, poly.data(), "poly");
                 }
                 ++bad;
             }
@@ -1081,14 +1081,14 @@ int main() {
             if(!sign(dis2(l.dir()))) continue;
             for(p2 p : cir_line(c, l)) {
                 if(!near(dis(p - c.o), c.r, 1e-8L)) {
-                    printf("  [大半径:交点不在圆上] 偏差相对 %s\n", f2s(Absd(dis(p - c.o) - c.r) / c.r));
-                    prC(c, "c");
-                    prS(l, "l");
+                    printf("  [大半径:交点不在圆上] 偏差相对 %s\n", f2s(abs_d(dis(p - c.o) - c.r) / c.r));
+                    pr_c(c, "c");
+                    pr_s(l, "l");
                     die("1e6 量级半径的交点必须落在圆上", __LINE__);
                 }
                 // 共线判据必须按规模缩放:坐标/半径到 1e6 时,叉积量级 ~1e12,而 crossop 用的是
                 // 绝对 eps=1e-10：交点叉积的舍入误差若到 1e-7 量级，会被判成非零
-                if(Absd(cross({l.x, l.y}, p)) > 1e-9L * dis(l.dir()) * (1 + dis(p - l.x))) die("大半径交点必须共线", __LINE__);
+                if(abs_d(cross({l.x, l.y}, p)) > 1e-9L * dis(l.dir()) * (1 + dis(p - l.x))) die("大半径交点必须共线", __LINE__);
             }
         }
         ok("1e6 量级坐标与半径:cir_line 每个交点都在圆上且与直线共线(2000 组)");
@@ -1096,9 +1096,9 @@ int main() {
             c2 c = {P(0, 0), 1e-6L};
             vector<p2> v = cir_line(c, seg{P(-1, 0), P(1, 0)});
             T(v.size() == 2 && near(v[0].x, -1e-6L, 1e-9) && near(v[1].x, 1e-6L, 1e-9), "极小半径 1e-6 的两交点位置正确");
-            TD(cir_cir_area(c, c), PI2() * 1e-12L, 1e-9, "极小半径:两圆重合面积 == pi r^2");
+            TD(cir_cir_area(c, c), pi2() * 1e-12L, 1e-9, "极小半径:两圆重合面积 == pi r^2");
             vector<p2> sq = {P(-1, -1), P(1, -1), P(1, 1), P(-1, 1)};
-            TD(cir_poly_area(sq, c), PI2() * 1e-12L, 1e-9, "极小半径:圆在多边形内的交面积 == pi r^2");
+            TD(cir_poly_area(sq, c), pi2() * 1e-12L, 1e-9, "极小半径:圆在多边形内的交面积 == pi r^2");
             // 半径 1e-6 的圆心在原点、多边形整个在 1e-5 之外(距离是 r 的 10 倍):交面积必须是 0。
             // 这一条专门守「用平方距离 vs r^2 判圆内」:1e-10 与 r^2 = 1e-12 之差在绝对 eps = 1e-10
             // 内会被判成「在圆内」,于是把整块多边形面积算成交面积(实测:4e-10 而不是 0)。
@@ -1108,14 +1108,14 @@ int main() {
         {
             // 极端半径比:1e-6 与 1e6,内切(小圆在大圆内部贴边)
             c2 big = {P(0, 0), 1e6L}, small = {P(1e6L - 1e-6L, 0), 1e-6L};
-            TD(cir_cir_area(big, small), PI2() * 1e-12L, 1e-6, "极端半径比:小圆内切于大圆 == pi r_small^2");
-            TD(cir_cir_area(big, c2{P(0, 0), 1e-6L}), PI2() * 1e-12L, 1e-6, "极端半径比:同心内含 == pi r_small^2");
+            TD(cir_cir_area(big, small), pi2() * 1e-12L, 1e-6, "极端半径比:小圆内切于大圆 == pi r_small^2");
+            TD(cir_cir_area(big, c2{P(0, 0), 1e-6L}), pi2() * 1e-12L, 1e-6, "极端半径比:同心内含 == pi r_small^2");
         }
         {
             // 圆与多边形都很大:正方形 [0,1e6]^2 与半径 1e6 的圆
             vector<p2> sq = {P(0, 0), P(1e6L, 0), P(1e6L, 1e6L), P(0, 1e6L)};
             db got = cir_poly_area(sq, c2{P(0, 0), 1e6L});
-            TD(got, PI2() * 1e12L / 4, 1e-9, "大尺度:四分之一圆 == pi r^2 / 4");
+            TD(got, pi2() * 1e12L / 4, 1e-9, "大尺度:四分之一圆 == pi r^2 / 4");
         }
     }
 

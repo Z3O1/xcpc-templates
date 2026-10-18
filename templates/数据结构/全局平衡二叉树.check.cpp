@@ -19,7 +19,7 @@
 //   进程」是模板的隐含契约 —— 每个用例都在 fork 出的子进程里跑(父进程不碰模板的全局数组,
 //   子在 fork 后才初始化,天然干净),子进程带 alarm 看门狗:真死循环会被 SIGALRM 打死,
 //   父进程据此打印 [BUG] 并跳过剩余用例,而不是让整轮 check 卡到超时。
-//   随机种子固定(见 FRng),失败时打印可直接复现的输入。
+//   随机种子固定(见 f_rng),失败时打印可直接复现的输入。
 //
 // 未覆盖(文件末的 [note] 里也写了):
 //   * 负数点权(模板用 -1e9 当「不选 u 却选子」的哨兵,负数下空集语义未验证);
@@ -33,11 +33,11 @@
 static int a[N];
 
 // ———————— 固定种子的随机数(_check_base 的 rnd 用 steady_clock 播种,不可复现)————————
-static mt19937_64 FRng(0x20240911ULL);
+static mt19937_64 f_rng(0x20240911ULL);
 // 生成闭区间 [l,r] 内的可复现随机数；要求 l <= r。
-static ll frnd(ll l, ll r) { return l + (ll) (FRng() % (u64) (r - l + 1)); }
+static ll frnd(ll l, ll r) { return l + (ll) (f_rng() % (u64) (r - l + 1)); }
 
-struct Case {
+struct case_t {
     int n = 1;
     vector<int> w;              // w[1..n]:初始点权
     vector<pair<int, int>> es;  // n-1 条边,保证是以 1 为根的连通树
@@ -45,12 +45,12 @@ struct Case {
 };
 
 // ———————— 朴素暴力:树上带权最大独立集,迭代后序 O(n) ————————
-struct Naive {
+struct naive {
     int n;
     vector<vector<int>> g;
     vector<int> par, ord; // ord 是 1 为根的 DFS 前序,倒过来就是「孩子先算」的顺序
     // 构造以 1 为根的参考树；要求 es 为 n-1 条连通无向边；填充父亲与遍历序。
-    Naive(int n, const vector<pair<int, int>> &es) : n(n), g(n + 1), par(n + 1), ord() {
+    naive(int n, const vector<pair<int, int>> &es) : n(n), g(n + 1), par(n + 1), ord() {
         for(auto &[u, v] : es) g[u].push_back(v), g[v].push_back(u);
         vector<char> vis(n + 1, 0);
         vector<int> st{1};
@@ -75,7 +75,7 @@ struct Naive {
 
 // ———————— 驱动:照抄模板 main 的调度(模板 main 不能调用,原因见文件头)————————
 // 按模板头注释初始化全局树；要求在干净子进程中只调用一次。
-static void setup_tree(const Case &c) {
+static void setup_tree(const case_t &c) {
     n = c.n;
     For(i, 1, n) t[i].clear();
     For(i, 1, n) a[i] = c.w[i], f[i][1] = a[i];
@@ -85,7 +85,7 @@ static void setup_tree(const Case &c) {
     For(i, 1, n) apply(i);
 }
 // 执行一组改权操作并收集模板答案；out 只追加，不会先清空。
-static void tmpl_answers(const Case &c, vector<int> &out) {
+static void tmpl_answers(const case_t &c, vector<int> &out) {
     setup_tree(c);
     int ans = 0;
     for(auto &[praw, y] : c.ops) {
@@ -100,14 +100,14 @@ static void tmpl_answers(const Case &c, vector<int> &out) {
 // 模板的 que(p) 是「p 到所在重链链尾」的矩阵积,应当等于 p 的子树 DP(p 不选/选)。
 // 若把查询区间起点写成链头 dfn[tp[p]],非链头 p 会被放大成整条重链的答案,而 getans()(只查根)
 // 与 upd()(只查链头)都看不出来 —— 所以这里对每个点单独对照朴素子树 DP。
-static void compare_que(const Case &c) {
+static void compare_que(const case_t &c) {
     setup_tree(c);
-    Naive Nv(c.n, c.es);
+    naive nv(c.n, c.es);
     vector<ll> g0(c.n + 1, 0), g1(c.n + 1, 0);
-    for(int k = (int) Nv.ord.size() - 1; k >= 0; --k) { // 逆前序 = 孩子先算
-        int u = Nv.ord[k];
+    for(int k = (int) nv.ord.size() - 1; k >= 0; --k) { // 逆前序 = 孩子先算
+        int u = nv.ord[k];
         g1[u] = c.w[u];
-        for(int v : Nv.g[u]) if(v != Nv.par[u]) g0[u] += max(g0[v], g1[v]), g1[u] += g0[v];
+        for(int v : nv.g[u]) if(v != nv.par[u]) g0[u] += max(g0[v], g1[v]), g1[u] += g0[v];
     }
     For(p, 1, c.n) {
         auto [x0, x1] = que(p);
@@ -121,7 +121,7 @@ static void compare_que(const Case &c) {
 
 // n=2 最小反例:权 5/1、边 1-2;旧实现 que(2) 会返回整条重链的 (1,5) 而不是子树 {2} 的 (0,1)
 static void case_que_n2() {
-    Case c;
+    case_t c;
     c.n = 2, c.w = {0, 5, 1}, c.es = {{1, 2}}, c.ops = {};
     setup_tree(c);
     auto [x0, x1] = que(2);
@@ -141,7 +141,7 @@ static void case_que_n2() {
 }
 
 // ———————— 失败时打印可直接复现的输入 ————————
-static void dump_case(const Case &c, int fail_idx, int want, int got) {
+static void dump_case(const case_t &c, int fail_idx, int want, int got) {
     printf("        复现输入(直接把下面这段喂给「单独编译成程序的模板」即可):\n");
     printf("        %d %d\n", c.n, (int) c.ops.size());
     printf("       ");
@@ -155,16 +155,16 @@ static void dump_case(const Case &c, int fail_idx, int want, int got) {
 }
 
 // ———————— 一个用例:模板与暴力逐操作对照 ————————
-static void compare_case(const Case &c) {
+static void compare_case(const case_t &c) {
     vector<int> got;
     tmpl_answers(c, got);
-    Naive Nv(c.n, c.es);
+    naive nv(c.n, c.es);
     vector<int> w = c.w;
     int prev = 0;
     for(int i = 0; i < (int) c.ops.size(); ++i) {
         int p = c.ops[i].first ^ prev; // 用真值解码输入里的点号
         w[p] = c.ops[i].second;
-        int want = (int) Nv.solve(w);
+        int want = (int) nv.solve(w);
         if(i >= (int) got.size() || got[i] != want) {
             printf("  [FAIL] 第 %d 次操作后答案不符(n=%d,m=%d)\n", i + 1, c.n, (int) c.ops.size());
             dump_case(c, i, want, i < (int) got.size() ? got[i] : -1);
@@ -178,10 +178,10 @@ static void compare_case(const Case &c) {
     }
 }
 
-// ———————— 用例生成(全部用 FRng,固定种子 -> 可复现)————————
+// ———————— 用例生成(全部用 f_rng,固定种子 -> 可复现)————————
 // shape: 0 随机树 1 链 2 星 3 完全二叉 4 毛毛虫
-static Case gen_case(int n, int m, int shape, int maxw) {
-    Case c;
+static case_t gen_case(int n, int m, int shape, int maxw) {
+    case_t c;
     c.n = n;
     c.w.assign(n + 1, 0);
     For(i, 1, n) c.w[i] = (int) frnd(0, maxw);
@@ -196,21 +196,21 @@ static Case gen_case(int n, int m, int shape, int maxw) {
         }
         c.es.push_back({u, i});
     }
-    Naive Nv(n, c.es);
+    naive nv(n, c.es);
     vector<int> w = c.w; // 只用来编码(输入里的 p 要 ^ 上一次答案)
     int prev = 0;
     For(t, 1, m) {
         int p = (int) frnd(1, n), y = (int) frnd(0, maxw);
         c.ops.push_back({p ^ prev, y});
         w[p] = y;
-        prev = (int) Nv.solve(w);
+        prev = (int) nv.solve(w);
     }
     return c;
 }
 
 // n=1:没有边,只有单点改权(点权在 0 与 1e6 之间来回)
-static Case case_n1() {
-    Case c;
+static case_t case_n1() {
+    case_t c;
     c.n = 1;
     c.w = {0, 0};
     int prev = 0;
@@ -219,38 +219,38 @@ static Case case_n1() {
 }
 
 // 点权全 0(答案恒 0,输入里 p 不被异或扰动),末尾再给一批正权
-static Case case_all_zero() {
-    Case c = gen_case(20, 0, 2, 0);
-    Case d;
+static case_t case_all_zero() {
+    case_t c = gen_case(20, 0, 2, 0);
+    case_t d;
     d.n = c.n, d.es = c.es, d.w = c.w;
     int prev = 0;
     For(t, 1, 150) {
         int p = (int) frnd(1, c.n);
         d.ops.push_back({p ^ prev, 0}); // 全 0:答案恒 0,编码就是 p 本身
     }
-    Naive Nv(d.n, d.es);
+    naive nv(d.n, d.es);
     vector<int> w = d.w;
     For(t, 1, 50) {
         int p = (int) frnd(1, d.n), y = (int) frnd(1, 1000000);
         d.ops.push_back({p ^ prev, y});
         w[p] = y;
-        prev = (int) Nv.solve(w);
+        prev = (int) nv.solve(w);
     }
     return d;
 }
 
 // 操作后重复查询一致性:跑完一批操作后反复 getans() + 同值更新,答案必须不变
 static void case_stable() {
-    Case c = gen_case(100, 300, 0, 1000);
+    case_t c = gen_case(100, 300, 0, 1000);
     vector<int> got;
     tmpl_answers(c, got);
-    Naive Nv(c.n, c.es);
+    naive nv(c.n, c.es);
     vector<int> w = c.w;
     int prev = 0;
     for(auto &[praw, y] : c.ops) {
         int p = praw ^ prev;
         w[p] = y;
-        prev = (int) Nv.solve(w);
+        prev = (int) nv.solve(w);
     }
     if(got.empty() || got.back() != prev) {
         printf("  [FAIL] 300 次操作后 getans()=%d,朴素 DP=%d\n", got.empty() ? -1 : got.back(), prev);
@@ -274,8 +274,8 @@ static void case_stable() {
 static const int WATCHDOG = 10; // 秒;单用例正常 <= 0.2s,真死循环就让它在这一行炸出来
 static int g_killed = 0;        // 有子进程被信号杀死 -> 立刻收工,别让整轮 check 逼近 60s 上限
 
-// 在带看门狗的子进程运行一个 Case；失败时打印 name 并返回非 0。
-static int run_case(const char *name, const Case &c, void (*fn)(const Case &) = compare_case) {
+// 在带看门狗的子进程运行一个 case_t；失败时打印 name 并返回非 0。
+static int run_case(const char *name, const case_t &c, void (*fn)(const case_t &) = compare_case) {
     fflush(stdout);
     pid_t pid = fork();
     if(pid == 0) {
@@ -355,7 +355,7 @@ int main() {
 
     // 跑一个用例;若子进程被信号杀死(看门狗超时/崩溃),后面不再跑(免得每个用例都再等一次看门狗、
     // 把整轮 check 拖到 60s 上限)。
-    auto go_case = [&](const char *nm, const Case &c) {
+    auto go_case = [&](const char *nm, const case_t &c) {
         if(!g_killed) bad += run_case(nm, c);
     };
     auto go_fn = [&](const char *nm, void (*fn)()) {
@@ -373,7 +373,7 @@ int main() {
     {
         int nq = 0;
         For(r, 1, 60) {
-            Case c = gen_case((int) frnd(1, 20), 0, (int) frnd(0, 4), r % 3 == 0 ? 0 : 20);
+            case_t c = gen_case((int) frnd(1, 20), 0, (int) frnd(0, 4), r % 3 == 0 ? 0 : 20);
             snprintf(name, sizeof name, "que(p) 全点对照 #%d (n=%d)", r, c.n);
             int before = bad;
             bad += run_case(name, c, compare_que); // 每个点都比朴素子树 DP,链头之外的 p 才算数
@@ -386,7 +386,7 @@ int main() {
     // 2) 200 轮小规模随机(n=1..12,m=1..15,五种树形,每步都比暴力)
     {
         static const char *sh[5] = {"随机树", "链", "星", "完全二叉", "毛毛虫"};
-        vector<Case> cases;
+        vector<case_t> cases;
         vector<int> shapes;
         For(r, 1, 200) {
             int n = (int) frnd(1, 12), m = (int) frnd(1, 15), shape = (int) frnd(0, 4);
@@ -418,7 +418,7 @@ int main() {
             {"随机树 200 点 × 300 次改权", 200, 300, 0},
         };
         for(auto &e : ls) {
-            Case c = gen_case(e.n, e.m, e.shape, 1000000);
+            case_t c = gen_case(e.n, e.m, e.shape, 1000000);
             int before = bad;
             go_case(e.t, c);
             if(bad != before) break;

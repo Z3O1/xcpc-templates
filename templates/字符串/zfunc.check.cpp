@@ -5,7 +5,7 @@
 #include "zfunc.cpp"
 
 const int MAXN = 1000000 + 5;
-static int S[MAXN + 8];        // s[1..n] 串,s[0]/s[n+1] 哨兵(字符集取 1..) 
+static int S[MAXN + 8];        // s[1..n] 串,s[0]/s[n+1] 哨兵(字符集取 1..)
 static int Z[MAXN + 8];        // 零初始化 z
 static int SAVE[MAXN + 8];     // 用于核对 s 没被改
 
@@ -29,7 +29,7 @@ static void setup(int n, const char *t, int sentinel = 0) {   // t 1-indexed 的
 }
 
 // 双基哈希:给 1e6 规模做"前缀是否匹配"的 O(1) 校验
-struct RH {
+struct rh_t {
     static const int K = 2;
     u64 B[K];
     vector<u64> f[K], pw[K];
@@ -246,7 +246,7 @@ int main() {
                 }
                 printf("  [ok] n=1e6 交替串闭式吻合(%.0f ms)\n", ms);
             } else {   // 随机:双基哈希 O(n) 全校验(前缀匹配 + 边界失配)
-                RH rh;
+                rh_t rh;
                 rh.build(S, n);
                 bool good = true;
                 For(i, 2, n) {

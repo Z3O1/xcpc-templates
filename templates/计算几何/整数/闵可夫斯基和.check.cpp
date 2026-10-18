@@ -14,15 +14,15 @@ int counted_direction_cmp(i128 ax, i128 ay, i128 bx, i128 by) {
 #include "闵可夫斯基和.cpp"
 #undef direction_cmp
 using IGeo::p2i;
-using Points = vector<p2i>;
+using points = vector<p2i>;
 
-void dump(const char *name, const Points &a) {
+void dump(const char *name, const points &a) {
     cerr << name << ':';
     for(auto p : a) cerr << " (" << p.x << ',' << p.y << ')';
     cerr << '\n';
 }
-void need(bool good, const char *what, const Points &a = {}, const Points &b = {},
-          const Points &got = {}, const Points &want = {}) {
+void need(bool good, const char *what, const points &a = {}, const points &b = {},
+          const points &got = {}, const points &want = {}) {
     if(good) return;
     cerr << "FAIL " << what << '\n';
     dump("A", a); dump("B", b); dump("got", got); dump("want", want);
@@ -40,7 +40,7 @@ int turn(p2i a, p2i b, p2i c) {
     int cmp = (p > q) - (p < q);
     return pn ? -cmp : cmp;
 }
-void canonical(Points &a) {
+void canonical(points &a) {
     if(a.empty()) return;
     auto it = min_element(a.begin(), a.end(), [](p2i p, p2i q) {
         return p.y != q.y ? p.y < q.y : p.x < q.x;
@@ -48,13 +48,13 @@ void canonical(Points &a) {
     rotate(a.begin(), it, a.end());
 }
 // 测试专用 Andrew，精确删除重复点及共线中间点。
-Points hull(Points a) {
+points hull(points a) {
     sort(a.begin(), a.end(), [](p2i p, p2i q) {
         return p.x != q.x ? p.x < q.x : p.y < q.y;
     });
     a.erase(unique(a.begin(), a.end()), a.end());
     if(a.size() <= 1) return a;
-    Points lower, upper;
+    points lower, upper;
     for(auto p : a) {
         while(lower.size() >= 2 && turn(lower[lower.size() - 2], lower.back(), p) <= 0)
             lower.pop_back();
@@ -76,36 +76,36 @@ p2i sum(p2i a, p2i b) {
          "测试数据坐标和在ll内", {a}, {b});
     return {ll(x), ll(y)};
 }
-Points oracle(const Points &a, const Points &b) {
-    Points pairs;
+points oracle(const points &a, const points &b) {
+    points pairs;
     for(auto p : a) for(auto q : b) pairs.push_back(sum(p, q));
     return hull(pairs);
 }
-Points verify(const Points &a, const Points &b) {
-    auto saveA = a, saveB = b;
+points verify(const points &a, const points &b) {
+    auto save_a = a, save_b = b;
     IGeo::comparisons = 0;
     auto got = IGeo::minkowski_sum(a, b), want = oracle(a, b);
     need(got == want, "点对和独立凸包", a, b, got, want);
-    need(a == saveA && b == saveB, "不修改输入", a, b);
+    need(a == save_a && b == save_b, "不修改输入", a, b);
     need(got.size() <= a.size() + b.size() && IGeo::comparisons <= a.size() + b.size(),
          "顶点/方向比较数线性上界", a, b);
     need(IGeo::minkowski_sum(b, a) == want, "交换律", a, b);
     return got;
 }
-Points translated(Points a, p2i shift) {
+points translated(points a, p2i shift) {
     for(auto &p : a) p = sum(p, shift);
     return a;
 }
 ll coord(ll lim) { return ll(rng() % (u64(lim) * 2 + 1)) - lim; }
-Points random_hull(int n, ll lim) {
-    Points a;
+points random_hull(int n, ll lim) {
+    points a;
     for(int i = 0; i < n; ++i) a.push_back({coord(lim), coord(lim)});
     a = hull(a);
     if(!a.empty()) rotate(a.begin(), a.begin() + rng() % a.size(), a.end());
     return a;
 }
 void large(int k) {
-    Points a, b;
+    points a, b;
     for(ll x = -k; x <= k; ++x) {
         a.push_back({x, x * x});
         b.push_back({x, 2 * x * x + 1});
@@ -122,7 +122,7 @@ void large(int k) {
     for(size_t i = 0; i < got.size(); ++i)
         need(turn(got[i], got[(i + 1) % got.size()], got[(i + 2) % got.size()]) > 0,
              "大规模严格逆时针");
-    auto support = [](const Points &p, ll x, ll y) {
+    auto support = [](const points &p, ll x, ll y) {
         i128 best = -((i128(1) << 126));
         for(auto q : p) best = max(best, i128(q.x) * x + i128(q.y) * y);
         return best;
@@ -134,7 +134,7 @@ void large(int k) {
 }
 int main() {
     rng.seed(2026101606);
-    vector<Points> cases{{}, {{0, 0}}, {{3, -2}}, {{0, 0}, {5, 0}}, {{0, 5}, {0, -3}},
+    vector<points> cases{{}, {{0, 0}}, {{3, -2}}, {{0, 0}, {5, 0}}, {{0, 5}, {0, -3}},
         {{5, 5}, {-5, -5}}, {{5, -5}, {-5, 5}},
         {{0, 0}, {5, 0}, {5, 5}, {0, 5}}, {{1, 0}, {0, 1}, {-1, 0}, {0, -1}}};
     for(auto a : cases) for(auto b : cases) {
@@ -152,10 +152,10 @@ int main() {
          turn({LLONG_MIN, LLONG_MIN}, {LLONG_MIN, LLONG_MAX}, {LLONG_MAX, LLONG_MIN}) == -1,
          "独立参考完整ll跨度");
     ll B = (1LL << 62) - 1;
-    Points box = hull({{-B, -B}, {B, -B}, {B, B}, {-B, B}});
+    points box = hull({{-B, -B}, {B, -B}, {B, B}, {-B, B}});
     verify(box, box);  // 输出跨度可大于2^63，oracle不能沿用模板的i128三点叉积。
-    Points t = hull({{-B, -B}, {B, B}, {-B, B}});
-    Points u = hull({{-B, B}, {B, -B}, {B, B}});
+    points t = hull({{-B, -B}, {B, B}, {-B, B}});
+    points u = hull({{-B, B}, {B, -B}, {B, B}});
     verify(t, u);
     verify(t, hull({{-B, -B}, {B, -B}, {-B, B}}));  // 两个上半面对角方向，叉积逼近i128上界。
     verify(hull({{-B, -B}, {B, B - 1}, {B - 1, B - 2}}),

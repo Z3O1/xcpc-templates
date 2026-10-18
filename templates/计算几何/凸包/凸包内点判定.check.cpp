@@ -1,7 +1,7 @@
 // 凸包内点判定 自测:in_convex(O(log n))与 O(n) 半平面参考实现 + contain 三方对照
 //
 // 对拍方式(参考实现自写,不用模板):
-//   refIn(a, p):O(n) 逐边判 crossop(edge, p):有一条 < 0 就在外;全 >= 0 且有一条 == 0 就在边界;
+//   ref_in(a, p):O(n) 逐边判 crossop(edge, p):有一条 < 0 就在外;全 >= 0 且有一条 == 0 就在边界;
 //     全 > 0 就是严格内部 —— 这正是 0/1/2 三种语义的定义式。
 //   多边形基础.cpp 的 contain(n, a, p) 也用射线法给出 0/1/2,作为第三方对照(整数坐标下它是精确的)。
 //   为了专门盯住「p 落在 a[0] 出发的对角线上」这个最容易写错的分支,除随机点外还专门构造:
@@ -24,7 +24,7 @@
 // 构造点。
 static p2 P(db x, db y) { return {x, y}; }
 // 绝对值。
-static db Abs(db x) { return x < 0 ? -x : x; }
+static db abs_db(db x) { return x < 0 ? -x : x; }
 // 打印点(诊断用)。
 static void pr(p2 a) { printf("(%g,%g)", (double) a.x, (double) a.y); }
 // 打印点集(诊断用,最多前 30 个)。
@@ -35,7 +35,7 @@ static void prv(const char *s, const vector<p2> &v) {
 }
 
 // ---------- 独立参考实现 ----------
-static int refIn(const vector<p2> &a, p2 p) {  // O(n) 半平面版:0 外 / 1 边界 / 2 内
+static int ref_in(const vector<p2> &a, p2 p) {  // O(n) 半平面版:0 外 / 1 边界 / 2 内
     int n = a.size();
     int zeros = 0;
     for(int i = 0; i < n; ++i) {
@@ -45,7 +45,7 @@ static int refIn(const vector<p2> &a, p2 p) {  // O(n) 半平面版:0 外 / 1 �
     }
     return zeros ? 1 : 2;
 }
-static vector<p2> refHull(vector<p2> v) {  // Andrew 单调链:严格凸(去掉共线点),逆时针
+static vector<p2> ref_hull(vector<p2> v) {  // Andrew 单调链:严格凸(去掉共线点),逆时针
     sort(v.begin(), v.end(), [](p2 a, p2 b) { return a.x != b.x ? a.x < b.x : a.y < b.y; });
     v.erase(unique(v.begin(), v.end(), [](p2 a, p2 b) { return a.x == b.x && a.y == b.y; }), v.end());
     int n = v.size();
@@ -64,7 +64,7 @@ static vector<p2> refHull(vector<p2> v) {  // Andrew 单调链:严格凸(去掉�
     return h;
 }
 // 一组「构造查询点」:顶点/边上点/外部点/对角线内部点/包围盒角
-static vector<p2> makeQueries(const vector<p2> &a, int iters) {
+static vector<p2> make_queries(const vector<p2> &a, int iters) {
     int n = a.size();
     vector<p2> q;
     for(int i = 0; i < n; ++i) q.push_back(a[i]);  // 顶点
@@ -83,11 +83,11 @@ static vector<p2> makeQueries(const vector<p2> &a, int iters) {
     return q;
 }
 // 模板与参考逐查询对照;返回 0/1。
-static int cmpOne(const vector<p2> &a, const vector<p2> &q, int verbose) {
+static int cmp_one(const vector<p2> &a, const vector<p2> &q, int verbose) {
     int n = a.size();
     if(n < 3) return 1;
     for(int i = 0; i < q.size(); ++i) {
-        int got = in_convex(a, q[i]), want = refIn(a, q[i]);
+        int got = in_convex(a, q[i]), want = ref_in(a, q[i]);
         if(got != want) {
             printf("      不一致:点 "), pr(q[i]), printf(" 模板 %d,参考 %d\n", got, want);
             if(verbose) {
@@ -133,9 +133,9 @@ int main() {
             int n = (int) rnd(3, 40);
             vector<p2> v;
             for(int i = 0; i < n; ++i) v.push_back(P((db) rnd(-60, 60), (db) rnd(-60, 60)));
-            vector<p2> H = refHull(v);
+            vector<p2> H = ref_hull(v);
             if(H.size() < 3) continue;
-            if(!cmpOne(H, makeQueries(H, 60), bad < 3)) {
+            if(!cmp_one(H, make_queries(H, 60), bad < 3)) {
                 if(bad < 3) printf("      [反例] 第 %d 组(凸包 %zu 顶点)\n", t, H.size());
                 ++bad;
             }
@@ -155,15 +155,15 @@ int main() {
                 db r = R * (db) rnd(50, 100) / 100;
                 v.push_back(P(r * cos(ang), r * sin(ang)));
             }
-            vector<p2> a = refHull(v);
+            vector<p2> a = ref_hull(v);
             if(a.size() < 3) continue;
             n = a.size();
             db mnx = 1e30L, mxx = -1e30L, mny = 1e30L, mxy = -1e30L;
             for(int i = 0; i < n; ++i) mnx = min(mnx, a[i].x), mxx = max(mxx, a[i].x), mny = min(mny, a[i].y), mxy = max(mxy, a[i].y);
             For(gx, 0, 12) For(gy, 0, 12) {
                 p2 q = P(mnx - 2 + (mxx - mnx + 4) * gx / 12, mny - 2 + (mxy - mny + 4) * gy / 12);
-                if(in_convex(a, q) != refIn(a, q)) {
-                    if(bad < 3) printf("      [反例] 第 %d 组:点 ", t), pr(q), printf(" 模板 %d 参考 %d\n", in_convex(a, q), refIn(a, q)), prv("多边形", a);
+                if(in_convex(a, q) != ref_in(a, q)) {
+                    if(bad < 3) printf("      [反例] 第 %d 组:点 ", t), pr(q), printf(" 模板 %d 参考 %d\n", in_convex(a, q), ref_in(a, q)), prv("多边形", a);
                     ++bad;
                 }
             }
@@ -178,9 +178,9 @@ int main() {
             int n = (int) rnd(3, 30);
             vector<p2> v;
             for(int i = 0; i < n; ++i) v.push_back(P((db) rnd(-100, 100), (db) rnd(-100, 100)));
-            vector<p2> H = refHull(v);
+            vector<p2> H = ref_hull(v);
             if(H.size() < 3) continue;
-            vector<p2> q = makeQueries(H, 40);
+            vector<p2> q = make_queries(H, 40);
             for(int i = 0; i < q.size(); ++i) {
                 int got = in_convex(H, q[i]);
                 int c2 = contain(H, q[i]);
@@ -202,13 +202,13 @@ int main() {
             int n = (int) rnd(3, 25);
             vector<p2> v;
             for(int i = 0; i < n; ++i) v.push_back(P((db) rnd(-50, 50), (db) rnd(-50, 50)));
-            vector<p2> H = refHull(v);
+            vector<p2> H = ref_hull(v);
             if(H.size() < 3) continue;
             p2 sh = P((db) rnd(-1000, 1000) / 7, (db) rnd(-1000, 1000) / 7);
             db sc = (db) rnd(1, 100) / 10;
             vector<p2> H2;
             for(int i = 0; i < H.size(); ++i) H2.push_back(H[i] * sc + sh);
-            vector<p2> q = makeQueries(H, 30);
+            vector<p2> q = make_queries(H, 30);
             for(int i = 0; i < q.size(); ++i) {
                 int a1 = in_convex(H, q[i]);
                 int a2 = in_convex(H2, q[i] * sc + sh);
@@ -237,10 +237,10 @@ int main() {
             int n = (int) rnd(3, 30);
             vector<p2> v;
             for(int i = 0; i < n; ++i) v.push_back(P((db) rnd(-1000000000, 1000000000), (db) rnd(-1000000000, 1000000000)));
-            vector<p2> H = refHull(v);
+            vector<p2> H = ref_hull(v);
             if(H.size() < 3) continue;
-            vector<p2> q = makeQueries(H, 40);
-            if(!cmpOne(H, q, bad < 3)) {
+            vector<p2> q = make_queries(H, 40);
+            if(!cmp_one(H, q, bad < 3)) {
                 if(bad < 3) printf("      [反例] 大坐标第 %d 组\n", t);
                 ++bad;
             }

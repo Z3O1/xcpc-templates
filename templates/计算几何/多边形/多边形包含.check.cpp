@@ -1,9 +1,9 @@
 // 多边形包含 自测:wn_contain(缠绕数非零规则)与「精确整数缠绕数」「有向角积分」「射线法奇偶」四方对照
 //
 // 参考实现(全部自己写,不用模板):
-//   exactWN:整数坐标下用 i128 精确算缠绕数与边界(叉积 == 0 且落在包围盒内 -> 边界),
+//   exact_wn:整数坐标下用 i128 精确算缠绕数与边界(叉积 == 0 且落在包围盒内 -> 边界),
 //     给出 0/1/2 的**真值**(对自交多边形同样成立,缠绕数定义与实现无关)。
-//   angWN:把每条边相对 p 的有向角(atan2 差,归一到 (-π,π])累加 = 2πk,k 就是缠绕数 ——
+//   ang_wn:把每条边相对 p 的有向角(atan2 差,归一到 (-π,π])累加 = 2πk,k 就是缠绕数 ——
 //     与「跨 y 符号 + 叉积符号」的实现完全不同的算法,用来做第二意见。
 //   多边形基础.cpp 的 contain(射线法,奇偶规则):简单多边形上必须与本模板一致;自交多边形上
 //     两者**故意不同**(非零规则 vs 奇偶规则),这一段只打印观察不改判定。
@@ -11,9 +11,9 @@
 // 用例规模:
 //   1 解析用例:正方形网格扫描、凹多边形(梳子形)、蝴蝶结的两个翅膀、顶点/边上点、
 //     相邻重复点(退化边)、全共线退化多边形、n<3
-//   2 3000 组随机简单多边形(星形,逆/顺时针各半)+ 每组 80 个随机整数查询点,与 exactWN/angWN/contain 四方对照
-//   3 3000 组随机**可能自交**的多边形(随机点随机顺序)+ 每组 80 个随机整数查询点,与 exactWN/angWN 对照
-//   4 3000 组 ±1e9 大整数坐标(简单的与自交的都有),与 exactWN 对照(整数叉积精确,不受 eps 影响)
+//   2 3000 组随机简单多边形(星形,逆/顺时针各半)+ 每组 80 个随机整数查询点,与 exact_wn/ang_wn/contain 四方对照
+//   3 3000 组随机**可能自交**的多边形(随机点随机顺序)+ 每组 80 个随机整数查询点,与 exact_wn/ang_wn 对照
+//   4 3000 组 ±1e9 大整数坐标(简单的与自交的都有),与 exact_wn 对照(整数叉积精确,不受 eps 影响)
 //   5 性质级:平移不变性、逆序(反向遍历)不改答案、顶点顺序循环移位不改答案
 #include "../../_check_base.hpp"
 #include "../基础/二维向量.cpp"
@@ -24,7 +24,7 @@
 // 构造点。
 static p2 P(db x, db y) { return {x, y}; }
 // 绝对值。
-static db Abs(db x) { return x < 0 ? -x : x; }
+static db abs_db(db x) { return x < 0 ? -x : x; }
 // 打印点(诊断用)。
 static void pr(p2 a) { printf("(%g,%g)", (double) a.x, (double) a.y); }
 // 打印点集(诊断用,最多前 30 个)。
@@ -35,7 +35,7 @@ static void prv(const char *s, const vector<p2> &v) {
 }
 
 // ---------- 独立参考实现 ----------
-static int exactWN(const vector<p2> &a, ll px, ll py) {  // 整数坐标下的精确缠绕数 + 边界:0/1/2
+static int exact_wn(const vector<p2> &a, ll px, ll py) {  // 整数坐标下的精确缠绕数 + 边界:0/1/2
     int n = a.size(), wn = 0;
     for(int i = 0; i < n; ++i) {
         ll ux = (ll) a[i].x, uy = (ll) a[i].y, vx = (ll) a[(i + 1) % n].x, vy = (ll) a[(i + 1) % n].y;
@@ -49,22 +49,22 @@ static int exactWN(const vector<p2> &a, ll px, ll py) {  // 整数坐标下的�
     }
     return wn ? 2 : 0;
 }
-static bool angWNOk(const vector<p2> &a, p2 p, int &sign_out) {  // 有向角和法;false 表示退化(p 在边上/顶点上)
+static bool ang_wn_ok(const vector<p2> &a, p2 p, int &sign_out) {  // 有向角和法;false 表示退化(p 在边上/顶点上)
     int n = a.size();
     db s = 0;
     for(int i = 0; i < n; ++i) {
         p2 u = a[i] - p, v = a[(i + 1) % n] - p;
         if(dis2(u) < 1e-18L || dis2(v) < 1e-18L) return false;
         db d = remainderl(v.alpha() - u.alpha(), 2 * pi);
-        if(Abs(Abs(d) - pi) < 1e-6L) return false;  // 边穿过 p 所在直线:可能贴着边界,排除
+        if(abs_db(abs_db(d) - pi) < 1e-6L) return false;  // 边穿过 p 所在直线:可能贴着边界,排除
         s += d;
     }
     db k = s / (2 * pi), kr = roundl(k);  // k 是缠绕数;s 会有 1e-20 量级的舍入残差,必须先 round 再定符号
-    if(Abs(k - kr) > 1e-6L) return false;
+    if(abs_db(k - kr) > 1e-6L) return false;
     sign_out = kr > 0 ? 1 : kr < 0 ? -1 : 0;
     return true;
 }
-static bool onAnyEdge(const vector<p2> &a, p2 p) {  // 与被测缠绕数模板同约定：跳过零长边
+static bool on_any_edge(const vector<p2> &a, p2 p) {  // 与被测缠绕数模板同约定：跳过零长边
     int n = a.size();
     for(int i = 0; i < n; ++i) if(!(a[i] == a[(i + 1) % n]) && ons({a[i], a[(i + 1) % n]}, p)) return true;
     return false;
@@ -98,7 +98,7 @@ int main() {
         bad = 0;
         For(x, -1, 7) For(y, -1, 6) {
             p2 p = P(x, y);
-            int got = wn_contain(comb, p), want = exactWN(comb, x, y);
+            int got = wn_contain(comb, p), want = exact_wn(comb, x, y);
             if(got != want) {
                 if(!bad) printf("      [反例] 梳子形 "), pr(p), printf(":模板 %d,精确 %d\n", got, want);
                 ++bad;
@@ -114,7 +114,7 @@ int main() {
         {
             // 「同一个三角形绕两圈」:缠绕数 2(非零规则判内部),奇偶规则判外部 —— 两种规则的分水岭
             vector<p2> dbl = {P(0, 0), P(4, 0), P(0, 4), P(0, 0), P(4, 0), P(0, 4)};
-            CHECK(wn_contain(dbl, P(1, 1)) == 2 && exactWN(dbl, 1, 1) == 2,
+            CHECK(wn_contain(dbl, P(1, 1)) == 2 && exact_wn(dbl, 1, 1) == 2,
                   "wn_contain 绕两圈的三角形:缠绕数 2 -> 判内部(与精确缠绕数一致)");
             CHECK(contain(dbl, P(1, 1)) == 0, "同一个点:contain(奇偶规则)判外部 —— 两种规则确实不同");
         }
@@ -124,7 +124,7 @@ int main() {
             for(int i = 0; i < 5; ++i) st.push_back(P(100 * cos(pi / 2 + 2 * pi * i / 5), 100 * sin(pi / 2 + 2 * pi * i / 5)));
             vector<p2> pent = {st[0], st[2], st[4], st[1], st[3]};
             int sg = 0;
-            CHECK(wn_contain(pent, P(0, 0)) == 2 && contain(pent, P(0, 0)) == 0 && angWNOk(pent, P(0, 0), sg) && sg != 0,
+            CHECK(wn_contain(pent, P(0, 0)) == 2 && contain(pent, P(0, 0)) == 0 && ang_wn_ok(pent, P(0, 0), sg) && sg != 0,
                   "wn_contain 五角星中心:缠绕数 2 判内部,奇偶规则判外部,有向角和法也确认非零");
         }
         // 退化输入
@@ -154,7 +154,7 @@ int main() {
             for(int it = 0; it < 80; ++it) {
                 ll qx = rnd(-50, 50), qy = rnd(-50, 50);
                 p2 q = P((db) qx, (db) qy);
-                int got = wn_contain(a, q), exact = exactWN(a, qx, qy);
+                int got = wn_contain(a, q), exact = exact_wn(a, qx, qy);
                 ++cnt;
                 if(got != exact) {
                     if(bad < 3) printf("      [反例] "), pr(q), printf(":模板 %d,精确 %d\n", got, exact), prv("多边形", a);
@@ -162,7 +162,7 @@ int main() {
                     continue;
                 }
                 int sg = 0;
-                if(exact != 1 && angWNOk(a, q, sg)) {  // 第二意见:有向角和法(只对非边界点)
+                if(exact != 1 && ang_wn_ok(a, q, sg)) {  // 第二意见:有向角和法(只对非边界点)
                     int want = sg ? 2 : 0;
                     if(got != want) {
                         if(bad < 3) printf("      [反例] "), pr(q), printf(":模板 %d,有向角和 %d\n", got, want), prv("多边形", a);
@@ -189,7 +189,7 @@ int main() {
             for(int it = 0; it < 80; ++it) {
                 ll qx = rnd(-20, 20), qy = rnd(-20, 20);
                 p2 q = P((db) qx, (db) qy);
-                int got = wn_contain(a, q), exact = exactWN(a, qx, qy);
+                int got = wn_contain(a, q), exact = exact_wn(a, qx, qy);
                 ++cnt, inside += exact == 2;
                 if(got != exact) {
                     if(bad < 3) printf("      [反例] "), pr(q), printf(":模板 %d,精确 %d\n", got, exact), prv("多边形", a);
@@ -197,7 +197,7 @@ int main() {
                     continue;
                 }
                 int sg = 0;
-                if(exact != 1 && angWNOk(a, q, sg) && got != (sg ? 2 : 0)) {
+                if(exact != 1 && ang_wn_ok(a, q, sg) && got != (sg ? 2 : 0)) {
                     if(bad < 3) printf("      [反例] "), pr(q), printf(":模板 %d,有向角和 %d\n", got, sg ? 2 : 0), prv("多边形", a);
                     ++bad;
                 }
@@ -216,7 +216,7 @@ int main() {
             for(int i = 0; i < n; ++i) a.push_back(P((db) rnd(-1000000000, 1000000000), (db) rnd(-1000000000, 1000000000)));
             for(int it = 0; it < 20; ++it) {
                 ll qx = rnd(-1000000000, 1000000000), qy = rnd(-1000000000, 1000000000);
-                int got = wn_contain(a, P((db) qx, (db) qy)), exact = exactWN(a, qx, qy);
+                int got = wn_contain(a, P((db) qx, (db) qy)), exact = exact_wn(a, qx, qy);
                 if(got != exact) {
                     if(bad < 3) printf("      [反例] 大坐标 "), pr(P((db) qx, (db) qy)), printf(":模板 %d,精确 %d\n", got, exact), prv("多边形", a);
                     ++bad;
@@ -244,7 +244,7 @@ int main() {
                 if(wn_contain(mv, q + sh) != base) ++bad;
                 if(wn_contain(rv, q) != base) ++bad;
                 if(wn_contain(cy, q) != base) ++bad;
-                bool bd = onAnyEdge(a, q);
+                bool bd = on_any_edge(a, q);
                 if(bd != (base == 1)) ++bad;  // 边界判定与「确实在某条边上」等价
             }
         }

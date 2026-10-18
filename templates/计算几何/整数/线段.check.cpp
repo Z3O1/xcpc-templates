@@ -21,16 +21,16 @@ array<bool, 2> reference(segi a, segi b) {
     i128 vx = i128(b.y.x) - b.x.x, vy = i128(b.y.y) - b.x.y;
     i128 wx = i128(b.x.x) - a.x.x, wy = i128(b.x.y) - a.x.y;
     i128 den = ux * vy - uy * vx, t = wx * vy - wy * vx, u = wx * uy - wy * ux;
-    if(den == 0) return {IntCheck::on(a.x, a.y, b.x) || IntCheck::on(a.x, a.y, b.y) ||
-                         IntCheck::on(b.x, b.y, a.x) || IntCheck::on(b.x, b.y, a.y), false};
+    if(den == 0) return {int_check::on(a.x, a.y, b.x) || int_check::on(a.x, a.y, b.y) ||
+                         int_check::on(b.x, b.y, a.x) || int_check::on(b.x, b.y, a.y), false};
     if(den < 0) den = -den, t = -t, u = -u;
     return {0 <= t && t <= den && 0 <= u && u <= den, 0 < t && t < den && 0 < u && u < den};
 }
 // 对拍全部接口及交换线段、反转端点的不变性。
 void verify(segi a, segi b, p2i p) {
     auto r = reference(a, b);
-    bool on = IntCheck::on(a.x, a.y, p), inside = on && !(p == a.x) && !(p == a.y);
-    IntCheck::need(chkss(a, b) == r[0] && chkss_s(a, b) == r[1] &&
+    bool on = int_check::on(a.x, a.y, p), inside = on && !(p == a.x) && !(p == a.y);
+    int_check::need(chkss(a, b) == r[0] && chkss_s(a, b) == r[1] &&
                    chkss(b, a) == r[0] && chkss({a.y, a.x}, b) == r[0] &&
                    ons(a, p) == on && ons_s(a, p) == inside,
                    "有理参数/包围盒参考", {a.x, a.y, b.x, b.y, p});
@@ -42,9 +42,9 @@ int main() {
     for(int x = -1; x <= 1; ++x) for(int y = -1; y <= 1; ++y) grid.push_back({x, y});
     for(auto a : grid) for(auto b : grid) for(auto c : grid) for(auto d : grid) verify({a, b}, {c, d}, c);
     for(int t = 0; t < 60000; ++t) {
-        segi a{IntCheck::point(t % 3), IntCheck::point(t % 3)};
-        segi b{IntCheck::point(t % 3), IntCheck::point(t % 3)};
-        p2i p = IntCheck::point(t % 3);
+        segi a{int_check::point(t % 3), int_check::point(t % 3)};
+        segi b{int_check::point(t % 3), int_check::point(t % 3)};
+        p2i p = int_check::point(t % 3);
         if(t % 5 == 0) a.y = a.x;
         if(t % 7 == 0) b.x = a.y;
         if(t % 11 == 0) b = a;
@@ -60,10 +60,10 @@ int main() {
     for(segi s : vector<segi>{{{-10, -5}, {8, 9}}, {{8, 9}, {-10, -5}}, {{0, 0}, {0, 0}}}) {
         for(p2i p : vector<p2i>{{-B, 0}, {B, 0}, {0, -B}, {0, B}}) {
             IGeo::cross_calls = 0;
-            IntCheck::need(!ons(s, p) && IGeo::cross_calls == 0, "包围盒外无需叉积", {s.x, s.y, p});
+            int_check::need(!ons(s, p) && IGeo::cross_calls == 0, "包围盒外无需叉积", {s.x, s.y, p});
         }
         IGeo::cross_calls = 0;
-        IntCheck::need(ons(s, s.x) && IGeo::cross_calls == 1, "包围盒内仍须精确叉积", {s.x, s.y});
+        int_check::need(ons(s, s.x) && IGeo::cross_calls == 1, "包围盒内仍须精确叉积", {s.x, s.y});
     }
     PASSED("整数线段");
 }

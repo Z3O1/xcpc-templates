@@ -2,22 +2,22 @@
 #include "../../_check_base.hpp"
 
 const int N = 4005;
-int n, MODE;
+int n, mode;
 static ll a[N];
 static ll pre[N];
 
-// 窗口 (l, r]:MODE 0 维护元素和的平方,MODE 1 维护窗口内相等点对个数
+// 窗口 (l, r]:mode 0 维护元素和的平方,mode 1 维护窗口内相等点对个数
 struct W {
     ll w = 0, sm = 0;
     int c[130] = {};
-    // 把下标 x 加入窗口右/左侧；要求 MODE 与 a[x] 值域已设置；更新 w。
+    // 把下标 x 加入窗口右/左侧；要求 mode 与 a[x] 值域已设置；更新 w。
     void add(int x) {
-        if(MODE == 0) sm += a[x], w = sm * sm;
+        if(mode == 0) sm += a[x], w = sm * sm;
         else w += c[a[x]]++;
     }
     // 从窗口移除下标 x；要求 x 当前在窗口内；更新 w。
     void del(int x) {
-        if(MODE == 0) sm -= a[x], w = sm * sm;
+        if(mode == 0) sm -= a[x], w = sm * sm;
         else w -= --c[a[x]];
     }
     // 清空窗口状态；可重复调用；重置 w、sm 与计数桶。
@@ -30,7 +30,7 @@ struct W {
 
 // 直接算 w(k, i),与窗口无关；要求 0 <= k <= i <= n。
 static ll w_of(int k, int i) {
-    if(MODE == 0) {
+    if(mode == 0) {
         ll s = pre[i] - pre[k];
         return s * s;
     }
@@ -46,11 +46,11 @@ static bool same() {
     g[0] = 0;
     For(i, 1, n) For(j, 0, i - 1) g[i] = min(g[i], g[j] + w_of(j, i));
     For(i, 0, n) if(f[i] != g[i]) {
-        printf("  [FAIL] MODE=%d n=%d i=%d got %lld want %lld\n", MODE, n, i, (ll) f[i], (ll) g[i]);
+        printf("  [FAIL] mode=%d n=%d i=%d got %lld want %lld\n", mode, n, i, (ll) f[i], (ll) g[i]);
         return false;
     }
     For(i, 1, n) if(p[i] < 0 || p[i] >= i || f[p[i]] + w_of(p[i], i) != f[i]) {
-        printf("  [FAIL] MODE=%d n=%d p[%d]=%d 不是最优决策点\n", MODE, n, i, p[i]);
+        printf("  [FAIL] mode=%d n=%d p[%d]=%d 不是最优决策点\n", mode, n, i, p[i]);
         return false;
     }
     return true;
@@ -78,7 +78,7 @@ int main() {
     legacy_globals_probe();
 
     // 0) 平方和代价,滑动窗口用 sum 维护
-    MODE = 0;
+    mode = 0;
     For(t, 1, 40000) {
         n = (int) rnd(1, 60);
         For(i, 1, n) a[i] = (int) rnd(0, 50);
@@ -89,7 +89,7 @@ int main() {
     ok("40000 组平方和代价(n <= 60,窗口 sum 维护)值/决策点一致");
 
     // 1) 相等点对个数(CF868F 代价),滑动窗口用 cnt 维护
-    MODE = 1;
+    mode = 1;
     For(t, 1, 40000) {
         n = (int) rnd(1, 60);
         For(i, 1, n) a[i] = (int) rnd(0, 20);
@@ -99,7 +99,7 @@ int main() {
     ok("40000 组相等点对代价(n <= 60,窗口 cnt 维护)值/决策点一致");
 
     // 2) 中等规模 + 反复调用(验证 work 每次清空两个窗口)
-    MODE = 0;
+    mode = 0;
     For(t, 1, 800) {
         n = (int) rnd(100, 500);
         For(i, 1, n) a[i] = (int) rnd(0, 50);
@@ -107,7 +107,7 @@ int main() {
         work(n);
         if(!same()) return 1;
     }
-    MODE = 1;
+    mode = 1;
     For(t, 1, 300) {
         n = (int) rnd(100, 400);
         For(i, 1, n) a[i] = (int) rnd(0, 60);
@@ -117,7 +117,7 @@ int main() {
     ok("1100 组中等规模(n = 100..500)反复调用一致");
 
     // 3) 退化/极端
-    MODE = 0;
+    mode = 0;
     {
         for(int v : {0, 1, 2, 3}) {
             n = v;
@@ -139,7 +139,7 @@ int main() {
         work(n);
         if(!same()) return 1;
     }
-    MODE = 1;
+    mode = 1;
     For(t, 1, 3000) { // 值域极小,大量相等点对
         n = (int) rnd(1, 60);
         For(i, 1, n) a[i] = (int) rnd(0, 1);

@@ -7,16 +7,16 @@ const int N = 3005;
 int n;
 static ll pre[N];
 static int arr[N];
-static int MODE = 0;
+static int mode = 0;
 
-// MODE 0: (pre[i]-pre[k])^2;MODE 1: (i-k)^2;MODE 2: 区间中位数距离和(位置已排序)
-// 计算区间代价；要求 0 <= k < i <= n，相关全局数组已按 MODE 初始化。
+// mode 0: (pre[i]-pre[k])^2;mode 1: (i-k)^2;mode 2: 区间中位数距离和(位置已排序)
+// 计算区间代价；要求 0 <= k < i <= n，相关全局数组已按 mode 初始化。
 static ll que(int k, int i) {
-    if(MODE == 0) {
+    if(mode == 0) {
         ll d = pre[i] - pre[k];
         return d * d;
     }
-    if(MODE == 1) {
+    if(mode == 1) {
         ll len = i - k;
         return len * len;
     }
@@ -46,12 +46,12 @@ template <class R> static bool same(R &&res) {
     auto &f = res.first, &fp = res.second;
     vector<ll> g = naive();
     For(i, 0, n) if(f[i] != g[i]) {
-        printf("  [FAIL] MODE=%d n=%d i=%d got %lld want %lld\n", MODE, n, i, (ll) f[i], (ll) g[i]);
+        printf("  [FAIL] mode=%d n=%d i=%d got %lld want %lld\n", mode, n, i, (ll) f[i], (ll) g[i]);
         return false;
     }
     For(i, 1, n) {
         if(fp[i] < 0 || fp[i] >= i || f[fp[i]] + que(fp[i], i) != f[i]) {
-            printf("  [FAIL] MODE=%d n=%d fp[%d]=%d 不是最优决策点\n", MODE, n, i, fp[i]);
+            printf("  [FAIL] mode=%d n=%d fp[%d]=%d 不是最优决策点\n", mode, n, i, fp[i]);
             return false;
         }
     }
@@ -64,7 +64,7 @@ int main() {
     const ll Z = LLONG_MAX / 4;
 
     // 0) 小规模随机:主要走 B = 16 的朴素小区间分支
-    MODE = 0;
+    mode = 0;
     For(t, 1, 20000) {
         n = (int) rnd(1, 40);
         For(i, 1, n) arr[i] = (int) rnd(0, 50);
@@ -74,7 +74,7 @@ int main() {
     ok("20000 组随机前缀和平方(n <= 40)值/决策点与朴素 DP 一致");
 
     // 1) 中等规模:同时覆盖 SMAWK 分支
-    MODE = 0;
+    mode = 0;
     For(t, 1, 1500) {
         n = (int) rnd(100, 400);
         For(i, 1, n) arr[i] = (int) rnd(0, 50);
@@ -84,7 +84,7 @@ int main() {
     ok("1500 组 n = 100..400(覆盖 SMAWK 分支)一致");
 
     // 2) 长度凸代价,拉到 n = 1000
-    MODE = 1;
+    mode = 1;
     For(t, 1, 150) {
         n = (int) rnd(500, 1000);
         if(!same(Wilber<ll>(n, que, Z))) return 1;
@@ -92,7 +92,7 @@ int main() {
     ok("150 组长度凸代价(n = 500..1000)一致");
 
     // 3) 中位数距离和(邮局代价,位置排序)
-    MODE = 2;
+    mode = 2;
     For(t, 1, 1500) {
         n = (int) rnd(1, 40);
         For(i, 0, n - 1) arr[i] = (int) rnd(0, 1000);
@@ -102,7 +102,7 @@ int main() {
     ok("1500 组中位数距离和(位置排序,n <= 40)一致");
 
     // 4) B 参数两分支:强制只走 SMAWK / 只走朴素
-    MODE = 0;
+    mode = 0;
     For(t, 1, 600) {
         n = (int) rnd(1, 300);
         For(i, 1, n) arr[i] = (int) rnd(0, 50);
@@ -113,7 +113,7 @@ int main() {
     ok("B = 1(只走 SMAWK)与 B = 2^20(只走朴素)各 600 组一致");
 
     // 5) 退化 + 满 N 边界
-    MODE = 0;
+    mode = 0;
     {
         for(int v : {0, 1, 2, 3}) {
             n = v;

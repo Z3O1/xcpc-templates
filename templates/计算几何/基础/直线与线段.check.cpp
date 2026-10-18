@@ -26,51 +26,51 @@ db point_dist(seg s, p2 p) {
     return x * x + y * y;
 }
 // 参考仅用 GCC 内置 113 位算术；按二进制指数缩放，不依赖外部库。
-using Wide = __float128;
-Wide scale2(Wide x, int e) {
+using wide = __float128;
+wide scale2(wide x, int e) {
     int a = e / 3, b = (e - a) / 2;
-    return ((x * Wide(ldexp(db(1), a))) * Wide(ldexp(db(1), b))) * Wide(ldexp(db(1), e - a - b));
+    return ((x * wide(ldexp(db(1), a))) * wide(ldexp(db(1), b))) * wide(ldexp(db(1), e - a - b));
 }
-Wide wide_abs(Wide x) { return x < 0 ? -x : x; }
-struct Oracle { p2 foot, mirror; db dist, error; };
-Oracle projection_oracle(seg s, p2 q) {
+wide wide_abs(wide x) { return x < 0 ? -x : x; }
+struct oracle_t { p2 foot, mirror; db dist, error; };
+oracle_t projection_oracle(seg s, p2 q) {
     // 选择较近端点；防止参考本身在指数差超过113位时吞掉查询点局部量。
-    Wide a = max(wide_abs(Wide(q.x) - s.x.x), wide_abs(Wide(q.y) - s.x.y));
-    Wide b = max(wide_abs(Wide(q.x) - s.y.x), wide_abs(Wide(q.y) - s.y.y));
+    wide a = max(wide_abs(wide(q.x) - s.x.x), wide_abs(wide(q.y) - s.x.y));
+    wide b = max(wide_abs(wide(q.x) - s.y.x), wide_abs(wide(q.y) - s.y.y));
     if(b < a) swap(s.x, s.y);
-    Wide dx = Wide(s.y.x) - s.x.x, dy = Wide(s.y.y) - s.x.y;
-    Wide wx = Wide(q.x) - s.x.x, wy = Wide(q.y) - s.x.y;
+    wide dx = wide(s.y.x) - s.x.x, dy = wide(s.y.y) - s.x.y;
+    wide wx = wide(q.x) - s.x.x, wy = wide(q.y) - s.x.y;
     int de = 0, we = 0;
     frexp(db(max(wide_abs(dx), wide_abs(dy))), &de);
     frexp(db(max(wide_abs(wx), wide_abs(wy))), &we);
-    Wide ux = scale2(dx, -de), uy = scale2(dy, -de);
-    Wide vx = scale2(wx, -we), vy = scale2(wy, -we);
-    Wide den = ux * ux + uy * uy;
-    Wide t = den ? (ux * vx + uy * vy) / den : 0;
-    Wide hx = scale2(ux * t, we), hy = scale2(uy * t, we);
-    Wide fx = Wide(s.x.x) + hx, fy = Wide(s.x.y) + hy;
-    Wide rx = vx - ux * t, ry = vy - uy * t;
-    Wide error = 0;
+    wide ux = scale2(dx, -de), uy = scale2(dy, -de);
+    wide vx = scale2(wx, -we), vy = scale2(wy, -we);
+    wide den = ux * ux + uy * uy;
+    wide t = den ? (ux * vx + uy * vy) / den : 0;
+    wide hx = scale2(ux * t, we), hy = scale2(uy * t, we);
+    wide fx = wide(s.x.x) + hx, fy = wide(s.x.y) + hy;
+    wide rx = vx - ux * t, ry = vy - uy * t;
+    wide error = 0;
     // 独立按投影的两个坐标检查原包围盒 eps，不采用模板的一维端点判定。
-    bool inside = den && hx >= min(Wide(0), dx) - Wide(eps) && hx <= max(Wide(0), dx) + Wide(eps) &&
-                                hy >= min(Wide(0), dy) - Wide(eps) && hy <= max(Wide(0), dy) + Wide(eps);
+    bool inside = den && hx >= min(wide(0), dx) - wide(eps) && hx <= max(wide(0), dx) + wide(eps) &&
+                                hy >= min(wide(0), dy) - wide(eps) && hy <= max(wide(0), dy) + wide(eps);
     if(!inside) {
-        Wide ax = scale2(wx, -we), ay = scale2(wy, -we);
-        Wide bx = scale2(Wide(q.x) - s.y.x, -we), by = scale2(Wide(q.y) - s.y.y, -we);
+        wide ax = scale2(wx, -we), ay = scale2(wy, -we);
+        wide bx = scale2(wide(q.x) - s.y.x, -we), by = scale2(wide(q.y) - s.y.y, -we);
         if(ax * ax + ay * ay <= bx * bx + by * by) rx = ax, ry = ay;
         else rx = bx, ry = by;
         error = (rx * rx + ry * ry) * 64 * numeric_limits<db>::epsilon();
     } else {
-        Wide h = ux * vy - uy * vx;
-        Wide condition = wide_abs(ux * vy) + wide_abs(uy * vx);
-        Wide round = 64 * numeric_limits<db>::epsilon() * condition;
+        wide h = ux * vy - uy * vx;
+        wide condition = wide_abs(ux * vy) + wide_abs(uy * vx);
+        wide round = 64 * numeric_limits<db>::epsilon() * condition;
         error = (2 * wide_abs(h) * round + round * round) / den;
     }
-    return {{db(fx), db(fy)}, {db(Wide(q.x) - 2 * (wx - hx)), db(Wide(q.y) - 2 * (wy - hy))},
+    return {{db(fx), db(fy)}, {db(wide(q.x) - 2 * (wx - hx)), db(wide(q.y) - 2 * (wy - hy))},
             db(scale2(rx * rx + ry * ry, 2 * we)), db(scale2(error, 2 * we))};
 }
 bool check_projection(seg s, p2 q) {
-    Oracle want = projection_oracle(s, q);
+    oracle_t want = projection_oracle(s, q);
     db got = nearest(s, q);
     db round = 64 * numeric_limits<db>::epsilon();
     db tiny = 4 * numeric_limits<db>::denorm_min();
@@ -154,7 +154,7 @@ bool projection_extremes() {
 // 覆盖普通点积/巨大偏移分摊权重两条分支；不要求超范围的距离平方有限。
 bool projection_offset_range() {
     auto verify = [](seg s, p2 q) {
-        Oracle want = projection_oracle(s, q);
+        oracle_t want = projection_oracle(s, q);
         feclearexcept(FE_ALL_EXCEPT);
         p2 h = proj(s, q);
         bool clean = !fetestexcept(FE_OVERFLOW | FE_INVALID | FE_DIVBYZERO);
@@ -194,13 +194,13 @@ bool projection_offset_range() {
 }
 
 // 113位参考使用二进制缩放，不共享模板的最大分量缩放或unit。
-Wide eps_root(Wide x) {
-    Wide y = 1;
+wide eps_root(wide x) {
+    wide y = 1;
     for(int i = 0; i < 12; ++i) y = (y + x / y) / 2;
     return y;
 }
-array<Wide, 2> eps_direction(seg l) {
-    Wide x = Wide(l.y.x)-l.x.x, y = Wide(l.y.y)-l.x.y;
+array<wide, 2> eps_direction(seg l) {
+    wide x = wide(l.y.x)-l.x.x, y = wide(l.y.y)-l.x.y;
     int e = 0;
     frexp(db(max(wide_abs(x),wide_abs(y))), &e);
     return {scale2(x,-e),scale2(y,-e)};
@@ -208,24 +208,24 @@ array<Wide, 2> eps_direction(seg l) {
 int distance_side(seg l, p2 p) {
     auto d = eps_direction(l);
     if(d[0] == 0 && d[1] == 0) return 0;
-    Wide h = d[0]*(Wide(p.y)-l.x.y)-d[1]*(Wide(p.x)-l.x.x);
-    Wide t = Wide(eps)*eps_root(d[0]*d[0]+d[1]*d[1]);
+    wide h = d[0]*(wide(p.y)-l.x.y)-d[1]*(wide(p.x)-l.x.x);
+    wide t = wide(eps)*eps_root(d[0]*d[0]+d[1]*d[1]);
     return (h > t)-(h < -t);
 }
 bool angle_reference(seg a, seg b) {
     auto u=eps_direction(a),v=eps_direction(b);
-    Wide n=(u[0]*u[0]+u[1]*u[1])*(v[0]*v[0]+v[1]*v[1]);
+    wide n=(u[0]*u[0]+u[1]*u[1])*(v[0]*v[0]+v[1]*v[1]);
     if(n == 0) return false;
-    return wide_abs(u[0]*v[1]-u[1]*v[0]) > Wide(angle_eps)*eps_root(n);
+    return wide_abs(u[0]*v[1]-u[1]*v[0]) > wide(angle_eps)*eps_root(n);
 }
 int triangle_reference(p2 a,p2 b,p2 c) {
-    Wide ux=Wide(b.x)-a.x,uy=Wide(b.y)-a.y,vx=Wide(c.x)-a.x,vy=Wide(c.y)-a.y;
+    wide ux=wide(b.x)-a.x,uy=wide(b.y)-a.y,vx=wide(c.x)-a.x,vy=wide(c.y)-a.y;
     int e=0;
     frexp(db(max({wide_abs(ux),wide_abs(uy),wide_abs(vx),wide_abs(vy)})),&e);
     ux=scale2(ux,-e),uy=scale2(uy,-e),vx=scale2(vx,-e),vy=scale2(vy,-e);
-    Wide n=max({ux*ux+uy*uy,vx*vx+vy*vy,(vx-ux)*(vx-ux)+(vy-uy)*(vy-uy)});
+    wide n=max({ux*ux+uy*uy,vx*vx+vy*vy,(vx-ux)*(vx-ux)+(vy-uy)*(vy-uy)});
     if(n == 0) return 0;
-    Wide h=ux*vy-uy*vx,t=scale2(Wide(eps),-e)*eps_root(n);
+    wide h=ux*vy-uy*vx,t=scale2(wide(eps),-e)*eps_root(n);
     return (h > t)-(h < -t);
 }
 bool eps_contracts() {
@@ -275,7 +275,7 @@ bool eps_contracts() {
         db ka=ldexp(db(1),int(gen()%41)-20),kb=ldexp(db(1),int(gen()%41)-20);
         a={{0,0},d*ka}; b={{1,-1},p2{1,-1}+r90(d)*kb};
         auto u=eps_direction(a),v=eps_direction(b);
-        Wide t=(Wide(b.x.x)*v[1]-Wide(b.x.y)*v[0])/(u[0]*v[1]-u[1]*v[0]);
+        wide t=(wide(b.x.x)*v[1]-wide(b.x.y)*v[0])/(u[0]*v[1]-u[1]*v[0]);
         p2 q=isll(a,b),ref{db(u[0]*t),db(u[1]*t)};
         db error=128*numeric_limits<db>::epsilon()*max({db(1),abs(ref.x),abs(ref.y)});
         if(abs(q.x-ref.x)>error || abs(q.y-ref.y)>error) {

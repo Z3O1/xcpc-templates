@@ -1,7 +1,7 @@
 // 最近点对 自测:独立hypot全点对参考、全指数/平方下溢/大平移3000组、随机/退化/20万点
 //
 // 对拍方式(文件内自写,不用模板):
-//   bruteClosest(v):O(n²) 双重循环，用标准 hypot 独立计算距离，不调用模板 dis。
+//   brute_closest(v):O(n²) 双重循环，用标准 hypot 独立计算距离，不调用模板 dis。
 //   另外两条性质级断言:① 答案必须 <= 任意一对具体点的距离;② 答案 == 0 当且仅当存在重复点。
 //
 // 用例规模:
@@ -21,9 +21,9 @@
 // 构造点。
 static p2 P(db x, db y) { return {x, y}; }
 // 绝对值。
-static db Abs(db x) { return x < 0 ? -x : x; }
+static db abs_db(db x) { return x < 0 ? -x : x; }
 // 带容差的标量判等。
-static bool eqd(db a, db b, db tol) { return Abs(a - b) < tol; }
+static bool eqd(db a, db b, db tol) { return abs_db(a - b) < tol; }
 // 打印点(诊断用)。
 static void pr(p2 a) { printf("(%g,%g)", (double) a.x, (double) a.y); }
 // 打印点集(诊断用,最多前 20 个)。
@@ -35,7 +35,7 @@ static void prv(const char *s, const vector<p2> &v) {
 
 // ---------- 独立参考实现:O(n²) 暴力 ----------
 // O(n^2) 暴力最近距离;n < 2 返回 -1。
-static db bruteClosest(const vector<p2> &v) {
+static db brute_closest(const vector<p2> &v) {
     int n = v.size();
     if(n < 2) return -1;
     db ans = 1e100L;
@@ -63,7 +63,7 @@ static bool exponent_ranges() {
         if(t % 7 == 0) v.push_back(v[0]);
         // 极小点对与相距极远的点混用，不能因远处点的平方溢出而丢掉局部解。
         if(t % 5 == 0) v.push_back({1e90L, -1e90L});
-        db got = dis_closest(v), want = bruteClosest(v);
+        db got = dis_closest(v), want = brute_closest(v);
         db tolerance = 16 * numeric_limits<db>::epsilon() * want + 4 * numeric_limits<db>::denorm_min();
         if(abs(got - want) > tolerance || (got == 0) != (want == 0)) {
             printf("closest exponent case=%d e=%d got=%La want=%La\n", t, e, got, want);
@@ -109,7 +109,7 @@ int main() {
             } else {
                 for(int i = 0; i < n; ++i) v.push_back(P((db) rnd(-R, R), (db) rnd(-R, R)));
             }
-            db got = dis_closest(v), want = bruteClosest(v);
+            db got = dis_closest(v), want = brute_closest(v);
             if(!eqd(got, want, 1e-9 * (1 + want))) {
                 if(bad < 3) printf("      [反例] 第 %d 组:模板 %.17Lg,暴力 %.17Lg\n", t, got, want), prv("输入", v);
                 ++bad;
@@ -133,7 +133,7 @@ int main() {
             } else {  // 细长分布:横坐标差很小、纵坐标差很大
                 for(int i = 0; i < n; ++i) v.push_back(P((db) rnd(-5, 5), (db) rnd(-1000000, 1000000)));
             }
-            db got = dis_closest(v), want = bruteClosest(v);
+            db got = dis_closest(v), want = brute_closest(v);
             if(!eqd(got, want, 1e-9 * (1 + want))) {
                 if(bad < 3) printf("      [反例] 第 %d 组(kind=%d,n=%d):模板 %.17Lg,暴力 %.17Lg\n", t, kind, n, got, want), prv("输入", v);
                 ++bad;
@@ -192,7 +192,7 @@ int main() {
             vector<p2> v;
             for(int i = 0; i < n; ++i) v.push_back(P((db) rnd(-1000000000, 1000000000), (db) rnd(-1000000000, 1000000000)));
             if(t % 5 == 0) v.push_back(v[0]);  // 掺重复点
-            db got = dis_closest(v), want = bruteClosest(v);
+            db got = dis_closest(v), want = brute_closest(v);
             if(!eqd(got, want, 1e-9 * (1 + want))) {
                 if(bad < 3) printf("      [反例] 大坐标第 %d 组:模板 %.17Lg,暴力 %.17Lg\n", t, got, want), prv("输入", v);
                 ++bad;

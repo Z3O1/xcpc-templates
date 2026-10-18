@@ -15,12 +15,12 @@ int a[N];
 #include "lct.cpp"
 
 // ---- 暴力:邻接表 + BFS ----
-struct Brute {
+struct brute {
     int n;
     vector<set<int>> g;
     vector<int> val;
     // 构造 n 点空森林；点号 1-based；点权初始为 0。
-    Brute(int n) : n(n), g(n + 1), val(n + 1, 0) {}
+    brute(int n) : n(n), g(n + 1), val(n + 1, 0) {}
     // 加入无向边；要求调用方不重复插入同一条边。
     void add(int u, int v) { g[u].insert(v), g[v].insert(u); }
     // 删除无向边；边不存在时按 set::erase 静默处理。
@@ -55,7 +55,7 @@ struct Brute {
 // 一轮随机:随机森林 + 随机操作序列 + 收尾全点对校验
 static void one_round(int round) {
     n = (int) rnd(2, 25);
-    Brute B(n);
+    brute B(n);
     For(i, 1, n) a[i] = (int) rnd(0, 1000), B.val[i] = a[i];
     LCT::init();
     For(i, 2, n) if(rnd(0, 1)) {

@@ -9,7 +9,7 @@
 
 // 本地包装器仍要求 F.size()>=n（n=1 时至少 2 项），不足直接退出。
 // 仅为旧随机用例的规范检查；comp_inv 本体会补零，不要求输入满 n 项。
-static poly CIV(const poly &F, int n) {
+static poly civ_ref(const poly &F, int n) {
     if((int) F.size() < n || (n == 1 && (int) F.size() < 2)) {
         printf("  [INTERNAL] 原随机用例长度未规范:F.size() = %d, n = %d\n", (int) F.size(), n);
         exit(1);
@@ -61,7 +61,7 @@ static poly naive_comp2(const poly &f, const poly &g, int n) {
     return res;
 }
 // 幂级数 x；要求 n >= 0；返回长度 n、首两项为 {0,1} 的向量。
-static poly serX(int n) {
+static poly ser_x(int n) {
     poly v(n, 0);
     if(n > 1) v[1] = 1;
     return v;
@@ -79,13 +79,13 @@ static poly rnd_F(int n, int mode) {  // mode: 0 稠密 1 稀疏 2 小系数 3 �
 }
 // 主对拍；校验 G 长度、G[0]=0、f(g)≡x（可选反向）；一致返回 0，否则打印失败现场返回 1。
 static int cmp_fg(const char *what, const poly &F, int n, bool check_other_way) {
-    poly g = CIV(F, n);
+    poly g = civ_ref(F, n);
     if((int) g.size() != n) {
         printf("  [FAIL] %s:返回长度 %d,应为 n = %d\n", what, (int) g.size(), n);
         return 1;
     }
     if(n && g[0] != 0) return bad("G[0] 应为 0", F, g, n, poly{0}, poly{g[0]});
-    poly w = serX(n);
+    poly w = ser_x(n);
     poly got = naive_comp(F, g, n);
     if(!same(w, got)) return bad("f(g(x)) != x", F, g, n, w, got);
     if(n > 1) {
@@ -125,7 +125,7 @@ int main() {
         }
         For(t, 1, 2000) {
             int n = (int) rnd(2, 14);
-            poly F = rnd_F(n, t % 4), G = serX(n);
+            poly F = rnd_F(n, t % 4), G = ser_x(n);
             For(i, 2, n - 1) G[i] = (int) rnd(0, M - 1);
             if(!same(naive_comp(F, G, n), naive_comp2(F, G, n))) {
                 printf("  [FAIL] 两个参考实现不一致 n=%d F=%s G=%s\n", n, str(F).c_str(), str(G).c_str());
@@ -178,14 +178,14 @@ int main() {
 
     // ——— 5) 结构用例(手算闭式) ———
     {
-        CHECK(same(CIV({0, 1}, 2), poly{0, 1}), "F = x → 逆还是 x");
-        CHECK(same(CIV({0, 5}, 2), poly{0, (int) qpow(5, M - 2, M)}), "F = 5x → 逆 = (1/5)x");
-        CHECK(same(CIV({0, M - 1}, 2), poly{0, M - 1}), "F = -x → 逆 = -x");
-        CHECK(same(CIV({0, 1, 0, 0, 0, 0}, 6), serX(6)), "F = x(补零到长度 6)→ 逆 = x");
-        CHECK(same(CIV({0, 1, 1, 0}, 4), poly{0, 1, M - 1, 2}), "F = x + x² → 逆 = x - x² + 2x³(手算)");
-        CHECK(same(CIV({0, 1, 0, 0, 0, 0}, 6), serX(6)), "F = x + 0·x²… → 逆 = x");
+        CHECK(same(civ_ref({0, 1}, 2), poly{0, 1}), "F = x → 逆还是 x");
+        CHECK(same(civ_ref({0, 5}, 2), poly{0, (int) qpow(5, M - 2, M)}), "F = 5x → 逆 = (1/5)x");
+        CHECK(same(civ_ref({0, M - 1}, 2), poly{0, M - 1}), "F = -x → 逆 = -x");
+        CHECK(same(civ_ref({0, 1, 0, 0, 0, 0}, 6), ser_x(6)), "F = x(补零到长度 6)→ 逆 = x");
+        CHECK(same(civ_ref({0, 1, 1, 0}, 4), poly{0, 1, M - 1, 2}), "F = x + x² → 逆 = x - x² + 2x³(手算)");
+        CHECK(same(civ_ref({0, 1, 0, 0, 0, 0}, 6), ser_x(6)), "F = x + 0·x²… → 逆 = x");
         // F = -(x+x²+x³+x⁴):F(G) = -(G+G²+G³+G⁴) = x ⟺ G = F 自身
-        CHECK(same(CIV({0, M - 1, M - 1, M - 1, M - 1}, 5), poly{0, M - 1, M - 1, M - 1, M - 1}),
+        CHECK(same(civ_ref({0, M - 1, M - 1, M - 1, M - 1}, 5), poly{0, M - 1, M - 1, M - 1, M - 1}),
               "F = -(x+x²+x³+x⁴) 的复合逆等于自身(手算)");
         // F = x/(1-x) = x + x² + x³ + … → 逆 = x/(1+x) = x - x² + x³ - …
         {
@@ -193,13 +193,13 @@ int main() {
             poly F(n, 0), want(n, 0);
             For(i, 1, n - 1) F[i] = 1;
             For(i, 1, n - 1) want[i] = (i & 1) ? 1 : M - 1;
-            poly g = CIV(F, n);
+            poly g = civ_ref(F, n);
             if(!same(want, g)) return bad("F = x/(1-x) → 逆 = x/(1+x)", F, g, n, want, g);
         }
         // n = 1 退化:仍须提供非零一次项以定义复合逆,只返回常数项0。
-        CHECK(same(CIV({0, 7}, 1), poly{0}), "n = 1 → {0}(仍需非零一次项)");
+        CHECK(same(civ_ref({0, 7}, 1), poly{0}), "n = 1 → {0}(仍需非零一次项)");
         // n = 2:g = x/F[1]
-        CHECK(same(CIV({0, 3, 5}, 2), poly{0, (int) qpow(3, M - 2, M)}), "n = 2 只用到 F[1]");
+        CHECK(same(civ_ref({0, 3, 5}, 2), poly{0, (int) qpow(3, M - 2, M)}), "n = 2 只用到 F[1]");
         ok("结构/退化用例(F = x / c·x / -x / x+x² / -(x+x²+x³+x⁴) / x(1-x)^{-1} / n = 1,2)全部一致");
     }
 
@@ -209,7 +209,7 @@ int main() {
             poly F(n, 0);
             For(i, 2, n - 1) F[i] = (int) rnd(0, M - 1);
             auto t0 = chrono::steady_clock::now();
-            poly g = CIV(F, n);
+            poly g = civ_ref(F, n);
             double ms = chrono::duration<double, milli>(chrono::steady_clock::now() - t0).count();
             bool zero = same(g, poly(n, 0));
             if((int) g.size() != n || !zero) {
@@ -219,7 +219,7 @@ int main() {
             printf("  [ok] F[1] = 0(无复合逆)n = %d:不崩不挂(%.1f ms),返回全 0 —— 契约外行为,别依赖\n", n, ms);
         }
         poly F0(6, 0);
-        CHECK(same(CIV(F0, 6), poly(6, 0)), "F ≡ 0 时返回全 0(契约外,记录事实)");
+        CHECK(same(civ_ref(F0, 6), poly(6, 0)), "F ≡ 0 时返回全 0(契约外,记录事实)");
     }
 
     // ——— 7) 大 n 的独立验证 ———
@@ -228,7 +228,7 @@ int main() {
         for(int n : {500, 1000, 2000}) {
             poly F(n, 0);
             F[1] = 1, F[std::min(n - 1, 3)] = (int) rnd(1, M - 1), F[std::min(n - 1, 7)] = (int) rnd(1, M - 1);
-            poly g = CIV(F, n), want = serX(n), got = naive_comp(F, g, n);
+            poly g = civ_ref(F, n), want = ser_x(n), got = naive_comp(F, g, n);
             if(!same(want, got)) return bad("大 n 稀疏 F:f(g) != x", F, g, n, want, got);
             printf("  [ok] n = %d:F = x + a·x³ + b·x⁷ 时 f(g) = x(Σ F[i]G^i 朴素参考)\n", n);
         }
@@ -237,7 +237,7 @@ int main() {
             int n = 2000;
             poly F(n, 0);
             F[1] = 1, F[2] = 1;
-            poly g = CIV(F, n), want(n, 0);
+            poly g = civ_ref(F, n), want(n, 0);
             want[1] = 1;
             For(k, 2, n - 1) {
                 ll s = 0;
@@ -257,7 +257,7 @@ int main() {
                 F2[i] = (int) ((ll) F[i] * pw % M);
                 pw = pw * ic % M;
             }
-            poly g = CIV(F, n), g2 = CIV(F2, n), want(n, 0);
+            poly g = civ_ref(F, n), g2 = civ_ref(F2, n), want(n, 0);
             pw = c;  // c^{1-i},i 从 0 开始(g[0] = 0,这一项不影响结果)
             For(i, 0, n - 1) {
                 want[i] = (int) ((ll) g[i] * pw % M);
@@ -274,7 +274,7 @@ int main() {
         For(t, 1, 200) {
             int n = (int) rnd(2, 40);
             poly F = rnd_F(n, t % 4);
-            poly a = CIV(F, n), b = CIV(F, n);
+            poly a = civ_ref(F, n), b = civ_ref(F, n);
             if(!same(a, b)) return bad("同一输入两次调用结果不同(static 状态污染?)", F, a, n, a, b);
         }
         ok("200 组 |F| == n:重复调用结果稳定,static 的 rev/omg/X/tmp 无状态污染");
@@ -295,7 +295,7 @@ int main() {
                 if(!same(got2, want2)) return bad("长输入二次项回归", poly{0, 1, 1, 0, 0}, poly{}, 4, want2, got2);
                 return bad("高次项不能倒入低次", poly{0, 1, 0, 0, 7}, poly{}, 4, want3, got3);
             }
-            poly short_g = ci({0, 1}, 12), padded_g = ci(serX(12), 12);
+            poly short_g = ci({0, 1}, 12), padded_g = ci(ser_x(12), 12);
             if(!same(short_g, padded_g)) return bad("短输入补零", poly{0, 1}, poly{}, 12, padded_g, short_g);
             ok("三组长输入与短输入补零回归均为硬断言");
         }

@@ -11,12 +11,12 @@ static int ref_inv(int v) {
     }
     return (x % M + M) % M;
 }
-struct LS {
+struct ls {
     bool cons, uniq;
     poly sol;
 };
 // 解固定阶数递推的线性方程组；要求 0 <= k <= |a|；返回是否相容、是否唯一及一组解。
-static LS brute_order(const poly &a, int k) {
+static ls brute_order(const poly &a, int k) {
     vector<poly> A;
     poly b;
     For(i, k, (int)a.size() - 1) {
@@ -73,7 +73,7 @@ static void verify(const poly &a) {
     poly got = BM(a);
     fits(a, got);
     For(k, 0, (int)a.size()) {
-        LS ref = brute_order(a, k);
+        ls ref = brute_order(a, k);
         if(!ref.cons) continue;
         if((int)got.size() != k) fail("不是最短阶数", a, got, ref.sol);
         if(ref.uniq && got != ref.sol) fail("唯一解不同", a, got, ref.sol);

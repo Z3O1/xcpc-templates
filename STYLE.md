@@ -28,7 +28,7 @@
 - 命名空间：既有的 `Geo`、`IGeo`、`DOM`、`Mul`、`LCT`、`DS`、`Probe`、`Delaunay`、`Voronoi` 保留；
   新命名空间用 lowercase snake_case。
 - 单字母与惯用短循环变量保留：`n`、`m`、`i`、`j`、`k`、`l`、`r`、`x`、`y` 等；
-  `多项式复合逆.cpp` 的局部 `pA`/`pB`/`pC`/`dM` 保留。
+  `多项式复合逆.cpp` 的 `pA`/`pB`/`pC`、`多项式复合.cpp` 的 `Gp`、`快速插值.cpp` 的 `dM`、`直线与线段.cpp` 的 `isMid` 保留。
 - 相互关联的自由函数收进小写命名空间（如 `mul`、`geo`、`ds`）；独立板子允许全局数组 + 自由函数，
   这是纸质查阅的默认形态（全仓 87 个源码都是这样），不强制包 namespace。
 - 模板片段按单编译单元被包含：自由函数默认不写 `inline`；`_check_base.hpp` 的断言/随机工具与自测内的文件级辅助用 `static`。

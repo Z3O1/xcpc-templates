@@ -3,7 +3,7 @@
 // 对拍方式:
 //   ① 手算常数用例(基向量叉积、单位四面体体积 6 倍、直角三角形面积 2 倍…)
 //   ② 与 check 自写的独立参考对照:
-//        - refDet3 / refDet3b:3x3 行列式用两种不同的 Laplace 展开路径(参考自身互验)
+//        - ref_det3 / ref_det3b:3x3 行列式用两种不同的 Laplace 展开路径(参考自身互验)
 //        - 叉积 c 的判据 c·v == det(a,b,v) 对任意 v 成立(不依赖叉积的分量公式)
 //        - 双重叉积恒等式 (a×b)×c = b(a·c) - a(b·c)
 //        - Lagrange 恒等式 |a×b|² = |a|²|b|² - (a·b)²
@@ -24,7 +24,7 @@ static mt19937_64 g_rng(20240906);
 static ll grnd(ll l, ll r) { return l + (ll) (g_rng() % (u64) (r - l + 1)); }
 
 // 构造 p3;用工厂函数是因为 CHECK 宏参数里不能出现花括号。
-p3 P3(db x, db y, db z) { return {x, y, z}; }
+p3 pt3(db x, db y, db z) { return {x, y, z}; }
 // p3 转字符串(诊断打印用)。
 string ps(p3 a) {
     char buf[128];
@@ -32,57 +32,57 @@ string ps(p3 a) {
     return buf;
 }
 // 3x3 行列式:沿第一行展开
-db refDet3(db m[3][3]) {
+db ref_det3(db m[3][3]) {
     return m[0][0] * (m[1][1] * m[2][2] - m[1][2] * m[2][1]) - m[0][1] * (m[1][0] * m[2][2] - m[1][2] * m[2][0]) +
            m[0][2] * (m[1][0] * m[2][1] - m[1][1] * m[2][0]);
 }
-// 3x3 行列式:沿第三列展开(与 refDet3 走不同路径,用来互验参考自身)
-db refDet3b(db m[3][3]) {
+// 3x3 行列式:沿第三列展开(与 ref_det3 走不同路径,用来互验参考自身)
+db ref_det3b(db m[3][3]) {
     return m[0][2] * (m[1][0] * m[2][1] - m[1][1] * m[2][0]) - m[1][2] * (m[0][0] * m[2][1] - m[0][1] * m[2][0]) +
            m[2][2] * (m[0][0] * m[1][1] - m[0][1] * m[1][0]);
 }
 // 9 个参数的入口(CHECK 宏参数里不能带花括号)
-db refDet9(db a, db b, db c, db d, db e, db f, db g, db h, db i) { db m[3][3] = {{a, b, c}, {d, e, f}, {g, h, i}}; return refDet3(m); }
-// 9 参数入口,走 refDet3b(另一条展开路径)。
-db refDet9b(db a, db b, db c, db d, db e, db f, db g, db h, db i) { db m[3][3] = {{a, b, c}, {d, e, f}, {g, h, i}}; return refDet3b(m); }
+db ref_det9(db a, db b, db c, db d, db e, db f, db g, db h, db i) { db m[3][3] = {{a, b, c}, {d, e, f}, {g, h, i}}; return ref_det3(m); }
+// 9 参数入口,走 ref_det3b(另一条展开路径)。
+db ref_det9b(db a, db b, db c, db d, db e, db f, db g, db h, db i) { db m[3][3] = {{a, b, c}, {d, e, f}, {g, h, i}}; return ref_det3b(m); }
 // 以三个 p3 为行的 3x3 行列式。
-db refDetRows(p3 a, p3 b, p3 c) {
+db ref_det_rows(p3 a, p3 b, p3 c) {
     db m[3][3] = {{a.x, a.y, a.z}, {b.x, b.y, b.z}, {c.x, c.y, c.z}};
-    return refDet3(m);
+    return ref_det3(m);
 }
 // 叉积的分量公式(独立手写一遍,与模板对照)
-p3 refCross(p3 a, p3 b) {
+p3 ref_cross(p3 a, p3 b) {
     return {a.y * b.z - a.z * b.y, a.z * b.x - a.x * b.z, a.x * b.y - a.y * b.x};
 }
 // Heron 公式:只用三条边长算三角形面积的 2 倍(完全不碰叉积)
-db refArea2Heron(p3 a, p3 b, p3 c) {
+db ref_area2_heron(p3 a, p3 b, p3 c) {
     db u = dis(b - c), v = dis(c - a), w = dis(a - b), s = (u + v + w) / 2;
     db t = s * (s - u) * (s - v) * (s - w);
     return t > 0 ? 2 * sqrt(t) : 0;
 }
 // 底 × 高 / 2:高用「投影夹取」算(与 cross 无关)
-db refArea2BaseHeight(p3 a, p3 b, p3 c) {
+db ref_area2_base_height(p3 a, p3 b, p3 c) {
     p3 d = b - a;
     db t = dot(d, c - a) / dis2(d);
     db h2 = dis2(c - (a + d * t));
     return dis(d) * sqrt(h2 > 0 ? h2 : 0);
 }
 // Gram 行列式开根 = 平行六面体体积(x,y,z 三棱),独立于混合积
-db refVolume6Gram(p3 x, p3 y, p3 z) {
+db ref_volume6_gram(p3 x, p3 y, p3 z) {
     db g[3][3] = {{dot(x, x), dot(x, y), dot(x, z)}, {dot(y, x), dot(y, y), dot(y, z)}, {dot(z, x), dot(z, y), dot(z, z)}};
-    db v = refDet3b(g);
+    db v = ref_det3b(g);
     return v > 0 ? sqrt(v) : 0;
 }
 // 底面积 × 高 / 3(高 = 四面体第四个顶点到另三点所在平面的距离,用 Gram 体积反推前先独立算底面积)
-db refVolume6BaseHeight(p3 a, p3 b, p3 c, p3 d) {
-    p3 n = refCross(b - a, c - a);
+db ref_volume6_base_height(p3 a, p3 b, p3 c, p3 d) {
+    p3 n = ref_cross(b - a, c - a);
     db area2v = dis(n);
     if(cmp(area2v, 0) == 0) return 0;
     db h = abs(dot(n, d - a)) / area2v;  // |高| = |(d-a)·n̂|
     return area2v / 2 * h * 2;        // 体积*6 = 底面积 * 高 * 2
 }
 // 独立半角公式；参考输入分量有界，不调用模板的角度或单位化。
-db refAngle(p3 a, p3 b) {
+db ref_angle(p3 a, p3 b) {
     db na = sqrt(a.x * a.x + a.y * a.y + a.z * a.z);
     db nb = sqrt(b.x * b.x + b.y * b.y + b.z * b.z);
     return 2 * atan2(hypot(nb * a.x - na * b.x, nb * a.y - na * b.y, nb * a.z - na * b.z),
@@ -101,7 +101,7 @@ int main() {
             p3 a{3 * s, 4 * s, 0}, b{-4 * s, 3 * s, 0};
             CHECK(isfinite(dis(a)) && abs(dis(a) / s - 5) < 1e-14L,
                   "极大/极小向量模长为 5s，不先平方");
-            CHECK(dis(unit(a) - P3(.6L, .8L, 0)) < 1e-14L &&
+            CHECK(dis(unit(a) - pt3(.6L, .8L, 0)) < 1e-14L &&
                   abs(cosang(a, b)) < 1e-14L && abs(sinang(a, b) - 1) < 1e-14L &&
                   abs(angle(a, b) - acos((db) 0)) < 1e-14L,
                   "极大/极小向量单位化与直角稳定");
@@ -127,7 +127,7 @@ int main() {
             p3 a{db(grnd(1, 100)), db(grnd(-100, 100)), db(grnd(-100, 100))};
             p3 b{db(grnd(-100, 100)), db(grnd(1, 100)), db(grnd(-100, 100))};
             db sa = ldexp((db) 1, int(grnd(-e, e))), sb = ldexp((db) 1, int(grnd(-e, e)));
-            db got = angle(a * sa, b * sb), want = refAngle(a, b);
+            db got = angle(a * sa, b * sb), want = ref_angle(a, b);
             if(!isfinite(got) || abs(got - want) > 2e-15L) {
                 fprintf(stderr, "angle a=%s b=%s exponents=%d,%d got=%Lg want=%Lg\n",
                         ps(a).c_str(), ps(b).c_str(), ilogb(sa), ilogb(sb), got, want);
@@ -143,30 +143,30 @@ int main() {
         }
         p3 o{ldexp((db) 1, 40), -ldexp((db) 1, 40), ldexp((db) 1, 40)};
         p3 a{3, 4, 2}, b{-2, 1, 5};
-        CHECK(abs(angle((o + a) - o, (o + b) - o) - refAngle(a, b)) < 1e-15L,
+        CHECK(abs(angle((o + a) - o, (o + b) - o) - ref_angle(a, b)) < 1e-15L,
               "大平移后可精确分辨的局部向量夹角保持不变");
     }
     // ===== 1. 手算常数用例 =====
     p3 X{1, 0, 0}, Y{0, 1, 0}, Z{0, 0, 1}, O{0, 0, 0};
-    CHECK(refDet9(1, 2, 3, 4, 5, 6, 7, 8, 10) == refDet9b(1, 2, 3, 4, 5, 6, 7, 8, 10), "参考自验:两种 Laplace 展开一致(手算 -3)");
-    CHECK(eq(refDet9(1, 2, 3, 4, 5, 6, 7, 8, 10), -3, 1e-15), "参考自验:行列式手算值 = -3");
+    CHECK(ref_det9(1, 2, 3, 4, 5, 6, 7, 8, 10) == ref_det9b(1, 2, 3, 4, 5, 6, 7, 8, 10), "参考自验:两种 Laplace 展开一致(手算 -3)");
+    CHECK(eq(ref_det9(1, 2, 3, 4, 5, 6, 7, 8, 10), -3, 1e-15), "参考自验:行列式手算值 = -3");
     CHECK(cross(X, Y) == Z && cross(Y, Z) == X && cross(Z, X) == Y, "基向量叉积:右手法则(x×y=z, y×z=x, z×x=y)");
     CHECK(cross(Y, X) == -Z && dot(X, Y) == 0, "反序叉积取负、正交基向量点积为 0");
     CHECK(eq(det(X, Y, Z), 1, 1e-15) && eq(det(Z, Y, X), -1, 1e-15) && eq(det(X, X, Y), 0, 1e-15), "混合积:单位正方体 +1、换序 -1、重复向量 0");
     CHECK(eq(area2(O, X, Y), 1, 1e-15) && eq(area2(X, X, Y), 0, 1e-15), "直角三角形面积 2 倍 = 1;退化三角形 = 0");
     CHECK(eq(volume6(O, X, Y, Z), 1, 1e-15) && eq(volume6(X, X, Y, Z), 0, 1e-15) && eq(volume6(O, X, Y, O), 0, 1e-15), "单位四面体体积 6 倍 = 1;重复顶点 = 0");
-    CHECK(eq(dis2(P3(3, 4, 12)), 169, 1e-15) && eq(dis(P3(3, 4, 12)), 13, 1e-15), "模长:dis2(3,4,12) = 169、dis = 13");
-    CHECK(unit(P3(0, 0, 5)) == Z && unit(P3(3, 0, 4)) == P3(0.6L, 0, 0.8L), "单位化:手算 (0,0,1) 与 (3,0,4)/5");
-    CHECK(perp(Z) == P3(0, -1, 0) && eq(dot(perp(P3(1, 2, 3)), P3(1, 2, 3)), 0, 1e-15) && dis(perp(P3(1, 2, 3))) > 0, "perp:与输入垂直且非零");
-    CHECK(P3(1, 2, 3) + P3(4, 5, 6) == P3(5, 7, 9) && P3(1, 2, 3) - P3(4, 5, 6) == P3(-3, -3, -3) &&
-              P3(1, 2, 3) * 2 == P3(2, 4, 6) && 2 * P3(1, 2, 3) == P3(2, 4, 6) && P3(2, 4, 6) / 2 == P3(1, 2, 3) &&
-              -P3(1, -2, 3) == P3(-1, 2, -3),
+    CHECK(eq(dis2(pt3(3, 4, 12)), 169, 1e-15) && eq(dis(pt3(3, 4, 12)), 13, 1e-15), "模长:dis2(3,4,12) = 169、dis = 13");
+    CHECK(unit(pt3(0, 0, 5)) == Z && unit(pt3(3, 0, 4)) == pt3(0.6L, 0, 0.8L), "单位化:手算 (0,0,1) 与 (3,0,4)/5");
+    CHECK(perp(Z) == pt3(0, -1, 0) && eq(dot(perp(pt3(1, 2, 3)), pt3(1, 2, 3)), 0, 1e-15) && dis(perp(pt3(1, 2, 3))) > 0, "perp:与输入垂直且非零");
+    CHECK(pt3(1, 2, 3) + pt3(4, 5, 6) == pt3(5, 7, 9) && pt3(1, 2, 3) - pt3(4, 5, 6) == pt3(-3, -3, -3) &&
+              pt3(1, 2, 3) * 2 == pt3(2, 4, 6) && 2 * pt3(1, 2, 3) == pt3(2, 4, 6) && pt3(2, 4, 6) / 2 == pt3(1, 2, 3) &&
+              -pt3(1, -2, 3) == pt3(-1, 2, -3),
           "加减/数乘/数除/取负 手算");
     {
         p3 a{3, 4, 5};
-        a += P3(1, 1, 1), a -= P3(1, 1, 1), a *= 2, a /= 2;
-        CHECK(a == P3(3, 4, 5), "复合赋值 += -= *= /= 语义:a 走一圈回到原值");
-        CHECK(P3(1, 2, 3) < P3(1, 2, 4) && P3(1, 2, 3) < P3(1, 3, 0) && P3(1, 2, 3) < P3(2, 0, 0) && !(P3(1, 2, 3) < P3(1, 2, 3)), "字典序 operator<");
+        a += pt3(1, 1, 1), a -= pt3(1, 1, 1), a *= 2, a /= 2;
+        CHECK(a == pt3(3, 4, 5), "复合赋值 += -= *= /= 语义:a 走一圈回到原值");
+        CHECK(pt3(1, 2, 3) < pt3(1, 2, 4) && pt3(1, 2, 3) < pt3(1, 3, 0) && pt3(1, 2, 3) < pt3(2, 0, 0) && !(pt3(1, 2, 3) < pt3(1, 2, 3)), "字典序 operator<");
     }
 
     {
@@ -193,7 +193,7 @@ int main() {
             p3 v{db(grnd(-100, 100)) / 7, db(grnd(-100, 100)) / 7, db(grnd(-100, 100)) / 7};
             db sc = 1 + dis2(a) + dis2(b) + dis2(c);
             {  // 分量公式
-                p3 g = cross(a, b), r = refCross(a, b);
+                p3 g = cross(a, b), r = ref_cross(a, b);
                 if(!eq(g.x, r.x, 1e-12 * sc) || !eq(g.y, r.y, 1e-12 * sc) || !eq(g.z, r.z, 1e-12 * sc)) {
                     if(!bad) msg = "cross 分量与独立参考不符 a=" + ps(a) + " b=" + ps(b) + " got=" + ps(g) + " want=" + ps(r);
                     ++bad;
@@ -212,11 +212,11 @@ int main() {
                 if(!eq(dis(g - r), 0, 1e-11 * sc * dis(c))) { if(!bad) msg = "双重叉积恒等式失败 a=" + ps(a) + " b=" + ps(b) + " c=" + ps(c); ++bad; }
             }
             {  // 叉积的等价刻画:cross(a,b)·v == det(a,b,v)
-                db g = dot(cross(a, b), v), r = refDetRows(a, b, v);
+                db g = dot(cross(a, b), v), r = ref_det_rows(a, b, v);
                 if(!eq(g, r, 1e-11 * sc * dis(v))) { if(!bad) msg = "cross(a,b)·v != det(a,b,v) a=" + ps(a) + " b=" + ps(b) + " v=" + ps(v); ++bad; }
             }
             {  // 混合积:与独立行列式一致 + 轮换/换序性质
-                db g = det(a, b, c), r = refDetRows(a, b, c);
+                db g = det(a, b, c), r = ref_det_rows(a, b, c);
                 if(!eq(g, r, 1e-11 * sc * dis(c))) { if(!bad) msg = "det 与独立行列式不符 a=" + ps(a) + " b=" + ps(b) + " c=" + ps(c); ++bad; }
                 if(!eq(det(b, c, a), g, 1e-11 * sc * dis(c)) || !eq(det(c, a, b), g, 1e-11 * sc * dis(c))) {
                     if(!bad) msg = "混合积轮换不变性失败 a=" + ps(a) + " b=" + ps(b) + " c=" + ps(c); ++bad;
@@ -245,7 +245,7 @@ int main() {
             db mx = max(dis(b - a), max(dis(c - b), dis(a - c))), mn = min(dis(b - a), min(dis(c - b), dis(a - c)));
             if(mn < 1 || mn * 10 < mx) continue;  // 过滤细长三角形(Heron 病态)
             ++cnt;
-            db g = area2(a, b, c), h1 = refArea2Heron(a, b, c), h2 = refArea2BaseHeight(a, b, c);
+            db g = area2(a, b, c), h1 = ref_area2_heron(a, b, c), h2 = ref_area2_base_height(a, b, c);
             if(!eq(g, h1, 1e-10 * (1 + g)) || !eq(g, h2, 1e-10 * (1 + g))) {
                 if(!bad) {
                     char b1[160];
@@ -273,7 +273,7 @@ int main() {
             db base = dis(cross(b - a, c - a));  // 底面平行四边形面积
             if(mn < 0.2 * mx || base < 0.1 * mx * mx) continue;  // 底面/棱太退化就跳过(参考实现病态)
             ++cnt;
-            db g = volume6(a, b, c, d), g1 = refVolume6Gram(b - a, c - a, d - a), g2 = refVolume6BaseHeight(a, b, c, d);
+            db g = volume6(a, b, c, d), g1 = ref_volume6_gram(b - a, c - a, d - a), g2 = ref_volume6_base_height(a, b, c, d);
             if(!eq(abs(g), g1, 1e-9 * (1 + g1)) || !eq(abs(g), abs(g2), 1e-9 * (1 + abs(g2)))) {
                 if(!bad) {
                     char b1[160];
@@ -328,18 +328,18 @@ int main() {
                 d = a + u * db(grnd(-5, 5)) + v * db(grnd(-5, 5));
             }
             // 精确参考:整数坐标下叉积/混合积各分量是整数,long double 精确,判零即 == 0
-            p3 cr = refCross(b - a, c - a);
-            bool collinearExact = (cr.x == 0 && cr.y == 0 && cr.z == 0);
-            bool coplanarExact = (refDetRows(b - a, c - a, d - a) == 0);
-            if(colinear(a, b, c) != collinearExact) {
+            p3 cr = ref_cross(b - a, c - a);
+            bool collinear_exact = (cr.x == 0 && cr.y == 0 && cr.z == 0);
+            bool coplanar_exact = (ref_det_rows(b - a, c - a, d - a) == 0);
+            if(colinear(a, b, c) != collinear_exact) {
                 if(!bad) msg = "colinear 与精确参考不符 a=" + ps(a) + " b=" + ps(b) + " c=" + ps(c);
                 ++bad;
             }
-            if(coplanar(a, b, c, d) != coplanarExact) {
+            if(coplanar(a, b, c, d) != coplanar_exact) {
                 if(!bad) msg = "coplanar 与精确参考不符 a=" + ps(a) + " b=" + ps(b) + " c=" + ps(c) + " d=" + ps(d);
                 ++bad;
             }
-            coll += collinearExact, copl += coplanarExact;
+            coll += collinear_exact, copl += coplanar_exact;
         }
         printf("  [note] 3 万组整数坐标里精确共线 %d 组、精确共面 %d 组(生成时有意注入共线/共面)\n", coll, copl);
         if(bad) printf("  [FAIL] 首个反例:%s\n", msg.c_str());
@@ -390,7 +390,7 @@ int main() {
             p3 c{db(grnd(-1000000000, 1000000000)), db(grnd(-1000000000, 1000000000)), db(grnd(-1000000000, 1000000000))};
             db sc = dis2(a) + dis2(b) + dis2(c);
             if(!eq(dis2(cross(a, b)), dis2(a) * dis2(b) - dot(a, b) * dot(a, b), 1e-16 * sc * sc)) { if(!bad) msg = "1e9 量级 Lagrange 失败"; ++bad; }
-            if(!eq(det(a, b, c), refDetRows(a, b, c), 1e-16 * sc * dis(c))) { if(!bad) msg = "1e9 量级 det 与参考不符"; ++bad; }
+            if(!eq(det(a, b, c), ref_det_rows(a, b, c), 1e-16 * sc * dis(c))) { if(!bad) msg = "1e9 量级 det 与参考不符"; ++bad; }
             if(!eq(dis(unit(a)), 1, 1e-15)) { if(!bad) msg = "1e9 量级 unit 模长 != 1"; ++bad; }
             if(!eq(dis2(a), dot(a, a), 1e-15 * sc)) { if(!bad) msg = "1e9 量级 dis2 != a·a"; ++bad; }
         }

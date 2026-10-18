@@ -6,7 +6,7 @@
 
 const int MAXN = 1000000 + 5;
 static char SBUF[MAXN + 8];         // 奇数回文:s[1..n] 放串,s[0]/s[n+1] 放不同哨兵
-static int DBUF[MAXN + 8];          // d[i],半径 = d[i] - 1
+static int dbuf[MAXN + 8];          // d[i],半径 = d[i] - 1
 static char S2BUF[2 * MAXN + 8];    // 偶回文:s' = |c1|c2|...|cn| ,长度 2n+1
 static int D2BUF[2 * MAXN + 8];
 
@@ -76,10 +76,10 @@ int main() {
                 while(true) {
                     For(i, 1, n) t[i] = (char) ('a' + cur[i]);
                     vector<int> want = brute_odd(n, t);
-                    run_odd(n, t, DBUF);
-                    For(i, 1, n) if(DBUF[i] - 1 != want[i]) {
+                    run_odd(n, t, dbuf);
+                    For(i, 1, n) if(dbuf[i] - 1 != want[i]) {
                         printf("  [FAIL] 穷举 n=%d s=%s 中心 %d:模板 %d 暴力 %d\n", n, t.c_str() + 1, i,
-                               DBUF[i] - 1, want[i]);
+                               dbuf[i] - 1, want[i]);
                         return 1;
                     }
                     ++cnt, centers += n;
@@ -101,9 +101,9 @@ int main() {
             string s(n + 1, ' ');
             For(i, 1, n) s[i] = (char) ('a' + rnd(0, sig - 1));
             vector<int> want = brute_odd(n, s);
-            run_odd(n, s, DBUF);
-            For(i, 1, n) if(DBUF[i] - 1 != want[i]) {
-                printf("  [FAIL] 随机 n=%d s=%s 中心 %d:模板 %d 暴力 %d\n", n, s.c_str() + 1, i, DBUF[i] - 1,
+            run_odd(n, s, dbuf);
+            For(i, 1, n) if(dbuf[i] - 1 != want[i]) {
+                printf("  [FAIL] 随机 n=%d s=%s 中心 %d:模板 %d 暴力 %d\n", n, s.c_str() + 1, i, dbuf[i] - 1,
                        want[i]);
                 return 1;
             }
@@ -114,9 +114,9 @@ int main() {
             string s(n + 1, ' ');
             For(i, 1, n) s[i] = (char) ('a' + rnd(0, sig - 1));
             vector<int> want = brute_odd(n, s);
-            run_odd(n, s, DBUF);
-            For(i, 1, n) if(DBUF[i] - 1 != want[i]) {
-                printf("  [FAIL] 中等 n=%d 中心 %d:模板 %d 暴力 %d\n", n, i, DBUF[i] - 1, want[i]);
+            run_odd(n, s, dbuf);
+            For(i, 1, n) if(dbuf[i] - 1 != want[i]) {
+                printf("  [FAIL] 中等 n=%d 中心 %d:模板 %d 暴力 %d\n", n, i, dbuf[i] - 1, want[i]);
                 return 1;
             }
             ++mid, centers += n;
@@ -131,10 +131,10 @@ int main() {
             For(i, 1, n) s[i] = (char) ('a' + (i % p));
             For(k, 1, (int) rnd(0, 3)) s[rnd(1, n)] = (char) ('a' + rnd(0, 2));
             vector<int> want = brute_odd(n, s);
-            run_odd(n, s, DBUF);
-            For(i, 1, n) if(DBUF[i] - 1 != want[i]) {
+            run_odd(n, s, dbuf);
+            For(i, 1, n) if(dbuf[i] - 1 != want[i]) {
                 printf("  [FAIL] 周期串 n=%d p=%d s=%s 中心 %d:模板 %d 暴力 %d\n", n, p, s.c_str() + 1, i,
-                       DBUF[i] - 1, want[i]);
+                       dbuf[i] - 1, want[i]);
                 return 1;
             }
             ++per, pc += n;
@@ -152,9 +152,9 @@ int main() {
             int n = (int) rnd(1, 60);
             s.resize(n + 1);
             vector<int> want = brute_odd(n, s);
-            run_odd(n, s, DBUF);
-            For(i, 1, n) if(DBUF[i] - 1 != want[i]) {
-                printf("  [FAIL] 回文块 n=%d s=%s 中心 %d:模板 %d 暴力 %d\n", n, s.c_str() + 1, i, DBUF[i] - 1,
+            run_odd(n, s, dbuf);
+            For(i, 1, n) if(dbuf[i] - 1 != want[i]) {
+                printf("  [FAIL] 回文块 n=%d s=%s 中心 %d:模板 %d 暴力 %d\n", n, s.c_str() + 1, i, dbuf[i] - 1,
                        want[i]);
                 return 1;
             }
@@ -169,10 +169,10 @@ int main() {
         auto cmp = [&](const string &s) {
             int n = (int) s.size() - 1;
             vector<int> want = brute_odd(n, s);
-            run_odd(n, s, DBUF);
-            For(i, 1, n) if(DBUF[i] - 1 != want[i]) {
+            run_odd(n, s, dbuf);
+            For(i, 1, n) if(dbuf[i] - 1 != want[i]) {
                 printf("  [FAIL] 特殊结构 n=%d s=%s 中心 %d:模板 %d 暴力 %d\n", n, s.c_str() + 1, i,
-                       DBUF[i] - 1, want[i]);
+                       dbuf[i] - 1, want[i]);
                 return false;
             }
             ++cnt;
@@ -190,22 +190,22 @@ int main() {
         }
         {
             string one = " a";
-            run_odd(1, one, DBUF);
-            CHECK(DBUF[1] == 1, "单字符:唯一中心半径 0");
+            run_odd(1, one, dbuf);
+            CHECK(dbuf[1] == 1, "单字符:唯一中心半径 0");
             string two = " aa";
-            run_odd(2, two, DBUF);
-            CHECK(DBUF[1] == 1 && DBUF[2] == 1, "两字符:两个中心半径各 0");
+            run_odd(2, two, dbuf);
+            CHECK(dbuf[1] == 1 && dbuf[2] == 1, "两字符:两个中心半径各 0");
             string two2 = " ab";
-            run_odd(2, two2, DBUF);
-            CHECK(DBUF[1] == 1 && DBUF[2] == 1, "两字符不相同");
+            run_odd(2, two2, dbuf);
+            CHECK(dbuf[1] == 1 && dbuf[2] == 1, "两字符不相同");
         }
         {
             int n = 999;   // 奇数长度全同串:中心正好同时触到两端哨兵,哨兵必须不同才不会越界
             string s(n + 1, ' ');
             For(i, 1, n) s[i] = 'a';
-            run_odd(n, s, DBUF);
-            For(i, 1, n) if(DBUF[i] - 1 != min(i - 1, n - i)) {
-                printf("  [FAIL] n=999 全同串 i=%d 半径 %d != %d\n", i, DBUF[i] - 1, min(i - 1, n - i));
+            run_odd(n, s, dbuf);
+            For(i, 1, n) if(dbuf[i] - 1 != min(i - 1, n - i)) {
+                printf("  [FAIL] n=999 全同串 i=%d 半径 %d != %d\n", i, dbuf[i] - 1, min(i - 1, n - i));
                 return 1;
             }
             ok("n=999 全同串(中心同时触两端哨兵)");
@@ -276,24 +276,24 @@ int main() {
         string s(n + 1, ' ');
         For(i, 1, n) s[i] = 'a';
         auto t0 = chrono::steady_clock::now();
-        run_odd(n, s, DBUF);
+        run_odd(n, s, dbuf);
         double ms = chrono::duration<double, milli>(chrono::steady_clock::now() - t0).count();
-        For(i, 1, n) if(DBUF[i] - 1 != min(i - 1, n - i)) return printf("  [FAIL] 1e6 全同串 i=%d\n", i), 1;
-        CHECK(DBUF[1] == 1 && DBUF[n] == 1, "1e6 全同串两端半径 0");
+        For(i, 1, n) if(dbuf[i] - 1 != min(i - 1, n - i)) return printf("  [FAIL] 1e6 全同串 i=%d\n", i), 1;
+        CHECK(dbuf[1] == 1 && dbuf[n] == 1, "1e6 全同串两端半径 0");
         printf("  [ok] n=1e6 全同串闭式吻合(%.0f ms)\n", ms);
 
         For(i, 1, n) s[i] = (char) ('a' + rnd(0, 1));
         t0 = chrono::steady_clock::now();
-        run_odd(n, s, DBUF);
+        run_odd(n, s, dbuf);
         ms = chrono::duration<double, milli>(chrono::steady_clock::now() - t0).count();
-        CHECK(verify_radii(n, SBUF, DBUF, true), "1e6 随机串:每个中心回文且半径极大");
+        CHECK(verify_radii(n, SBUF, dbuf, true), "1e6 随机串:每个中心回文且半径极大");
         ll mx = 0;
-        For(i, 1, n) mx = max(mx, (ll) DBUF[i] - 1);
+        For(i, 1, n) mx = max(mx, (ll) dbuf[i] - 1);
         printf("  [ok] n=1e6 随机串 O(n) 全校验通过(最长臂 %lld,%.0f ms)\n", mx, ms);
 
         For(i, 1, n) s[i] = (char) ('a' + (i & 1));
-        run_odd(n, s, DBUF);
-        For(i, 1, n) if(DBUF[i] - 1 != min(i - 1, n - i)) return printf("  [FAIL] 1e6 交替串 i=%d\n", i), 1;
+        run_odd(n, s, dbuf);
+        For(i, 1, n) if(dbuf[i] - 1 != min(i - 1, n - i)) return printf("  [FAIL] 1e6 交替串 i=%d\n", i), 1;
         ok("n=1e6 交替串 abab... 闭式吻合");
 
         // 1e6 偶回文构造:s' 长度 2e6+1,全同串上 s' 也是周期 2 的重复串,可闭式核对

@@ -18,9 +18,9 @@
 // 构造点。
 static p2 P(db x, db y) { return {x, y}; }
 // 绝对值。
-static db Abs(db x) { return x < 0 ? -x : x; }
+static db abs_db(db x) { return x < 0 ? -x : x; }
 // 带容差的标量判等。
-static bool eqd(db a, db b, db tol = 1e-9) { return Abs(a - b) < tol; }
+static bool eqd(db a, db b, db tol = 1e-9) { return abs_db(a - b) < tol; }
 // 带容差的点判等。
 static bool eqp(p2 a, p2 b, db tol = 1e-9) { return eqd(a.x, b.x, tol) && eqd(a.y, b.y, tol); }
 // 两点距离平方。
@@ -80,53 +80,53 @@ template <class T = p2, class Y = p2> bool run_diveq_p2(T a, Y y, T &out) {  // 
 // ================= 独立参考实现(自写,不依赖模板的凸包/包含/裁剪) =================
 // Andrew 单调链参考：独立按两个坐标精确排序去重。
 // 点字典序比较(精确,不用 eps):a < b 为 -1,a == b 为 0,a > b 为 1。
-static int refCmpP(p2 a, p2 b) {
+static int ref_cmp_p(p2 a, p2 b) {
     if(a.x != b.x) return a.x < b.x ? -1 : 1;
     if(a.y != b.y) return a.y < b.y ? -1 : 1;
     return 0;
 }
 // 两点叉积(精确,不用 eps)。
-static db refDet(p2 a, p2 b) { return a.x * b.y - a.y * b.x; }
-static vector<p2> refHull(vector<p2> v) {  // 去重 + 去共线,逆时针,首位为最小点
-    sort(v.begin(), v.end(), [](p2 a, p2 b) { return refCmpP(a, b) < 0; });
-    v.erase(unique(v.begin(), v.end(), [](p2 a, p2 b) { return refCmpP(a, b) == 0; }), v.end());
+static db ref_det(p2 a, p2 b) { return a.x * b.y - a.y * b.x; }
+static vector<p2> ref_hull(vector<p2> v) {  // 去重 + 去共线,逆时针,首位为最小点
+    sort(v.begin(), v.end(), [](p2 a, p2 b) { return ref_cmp_p(a, b) < 0; });
+    v.erase(unique(v.begin(), v.end(), [](p2 a, p2 b) { return ref_cmp_p(a, b) == 0; }), v.end());
     int n = v.size();
     if(n <= 2) return v;
     vector<p2> h;
     for(int i = 0; i < n; ++i) {
-        while(h.size() > 1 && sign(refDet(h[h.size() - 1] - h[h.size() - 2], v[i] - h[h.size() - 2])) <= 0) h.pop_back();
+        while(h.size() > 1 && sign(ref_det(h[h.size() - 1] - h[h.size() - 2], v[i] - h[h.size() - 2])) <= 0) h.pop_back();
         h.push_back(v[i]);
     }
     int t = h.size();
     rFor(i, n - 2, 0) {
-        while((int) h.size() > t && sign(refDet(h[h.size() - 1] - h[h.size() - 2], v[i] - h[h.size() - 2])) <= 0) h.pop_back();
+        while((int) h.size() > t && sign(ref_det(h[h.size() - 1] - h[h.size() - 2], v[i] - h[h.size() - 2])) <= 0) h.pop_back();
         h.push_back(v[i]);
     }
     h.pop_back();
     return h;
 }
-static int refOnSeg(p2 a, p2 b, p2 q) {  // q 在线段 ab 上(整数坐标,det 精确)
-    return sign(refDet(b - a, q - a)) == 0 && min(a.x, b.x) <= q.x && q.x <= max(a.x, b.x) && min(a.y, b.y) <= q.y && q.y <= max(a.y, b.y);
+static int ref_on_seg(p2 a, p2 b, p2 q) {  // q 在线段 ab 上(整数坐标,det 精确)
+    return sign(ref_det(b - a, q - a)) == 0 && min(a.x, b.x) <= q.x && q.x <= max(a.x, b.x) && min(a.y, b.y) <= q.y && q.y <= max(a.y, b.y);
 }
-static int refContain(const vector<p2> &h, p2 q) {  // 单位正方形射线法上取整:0 外 / 1 边界 / 2 内
+static int ref_contain(const vector<p2> &h, p2 q) {  // 单位正方形射线法上取整:0 外 / 1 边界 / 2 内
     int n = h.size();
-    for(int i = 0; i < n; ++i) if(refOnSeg(h[i], h[(i + 1) % n], q)) return 1;
+    for(int i = 0; i < n; ++i) if(ref_on_seg(h[i], h[(i + 1) % n], q)) return 1;
     int c = 0;
     for(int i = 0; i < n; ++i) {
         p2 u = h[i], v = h[(i + 1) % n];
         if(u.y > v.y) swap(u, v);  // 半开区间 (u.y, v.y]:水平边被排除、顶点只数一次
         if(!(u.y < q.y && q.y <= v.y)) continue;
-        if(refDet(v - u, q - u) > 0) ++c;
+        if(ref_det(v - u, q - u) > 0) ++c;
     }
     return c % 2 ? 2 : 0;
 }
-static db refArea(const vector<p2> &h) {  // 带号面积(shoelace)
+static db ref_area(const vector<p2> &h) {  // 带号面积(shoelace)
     db s = 0;
     int n = h.size();
-    for(int i = 0; i < n; ++i) s += refDet(h[i], h[(i + 1) % n]);
+    for(int i = 0; i < n; ++i) s += ref_det(h[i], h[(i + 1) % n]);
     return s / 2;
 }
-static vector<p2> refCut(const vector<p2> &h, seg q) {  // 保留 cross(q, .) >= 0 一侧
+static vector<p2> ref_cut(const vector<p2> &h, seg q) {  // 保留 cross(q, .) >= 0 一侧
     vector<p2> r;
     int n = h.size();
     for(int i = 0; i < n; ++i) {
@@ -137,20 +137,20 @@ static vector<p2> refCut(const vector<p2> &h, seg q) {  // 保留 cross(q, .) >=
     }
     return r;
 }
-static db refNearest(p2 a, p2 b, p2 q) {  // 点到线段距离平方
+static db ref_nearest(p2 a, p2 b, p2 q) {  // 点到线段距离平方
     if(a.x == b.x && a.y == b.y) return dd(a, q);
     p2 dir = b - a;
     db t = dot(dir, q - a) / dis2(dir);
     return dd(q, a + dir * max((db) 0, min((db) 1, t)));
 }
-static bool refChkss(p2 a, p2 b, p2 c, p2 e) {  // 闭线段相交(参数法 + 共线投影精确)
+static bool ref_chkss(p2 a, p2 b, p2 c, p2 e) {  // 闭线段相交(参数法 + 共线投影精确)
     p2 d = b - a, f = e - c, g = c - a;
-    db den = refDet(d, f);
-    if(Abs(den) > 1e-12) {
-        db t = refDet(g, f) / den, u = refDet(g, d) / den;
+    db den = ref_det(d, f);
+    if(abs_db(den) > 1e-12) {
+        db t = ref_det(g, f) / den, u = ref_det(g, d) / den;
         return t >= -1e-12 && t <= 1 + 1e-12 && u >= -1e-12 && u <= 1 + 1e-12;
     }
-    if(Abs(refDet(g, d)) > 1e-12) return false;  // 平行不共线
+    if(abs_db(ref_det(g, d)) > 1e-12) return false;  // 平行不共线
     auto proj = [](p2 p, p2 q, p2 v) { return dot(p - q, v); };  // 一维投影坐标
     db p1 = proj(a, c, d), p2v = proj(b, c, d);                // a,b 在方向 d 上的投影
     db q1 = proj(c, c, d), q2 = proj(e, c, d);
@@ -159,49 +159,49 @@ static bool refChkss(p2 a, p2 b, p2 c, p2 e) {  // 闭线段相交(参数法 + �
     return !(p2v < q1 - 1e-12 || q2 < p1 - 1e-12);
 }
 // 两线段间最近距离平方(参考实现);相交返回 0。
-static db refDisss(p2 a, p2 b, p2 c, p2 e) {
-    if(refChkss(a, b, c, e)) return 0;
-    return min({refNearest(a, b, c), refNearest(a, b, e), refNearest(c, e, a), refNearest(c, e, b)});
+static db ref_disss(p2 a, p2 b, p2 c, p2 e) {
+    if(ref_chkss(a, b, c, e)) return 0;
+    return min({ref_nearest(a, b, c), ref_nearest(a, b, e), ref_nearest(c, e, a), ref_nearest(c, e, b)});
 }
-static p2 refProjAnalytic(p2 a, p2 b, p2 q) {  // 参数方程解析解
+static p2 ref_proj_analytic(p2 a, p2 b, p2 q) {  // 参数方程解析解
     db t = dot(q - a, b - a) / dis2(b - a);
     return a + (b - a) * t;
 }
 // 外心解析式(与模板独立的一套写法)
-static p2 refCircumcenter(p2 A, p2 B, p2 C) {
+static p2 ref_circumcenter(p2 A, p2 B, p2 C) {
     db d = 2 * (A.x * (B.y - C.y) + B.x * (C.y - A.y) + C.x * (A.y - B.y));
     db ux = ((A.x * A.x + A.y * A.y) * (B.y - C.y) + (B.x * B.x + B.y * B.y) * (C.y - A.y) + (C.x * C.x + C.y * C.y) * (A.y - B.y)) / d;
     db uy = ((A.x * A.x + A.y * A.y) * (C.x - B.x) + (B.x * B.x + B.y * B.y) * (A.x - C.x) + (C.x * C.x + C.y * C.y) * (B.x - A.x)) / d;
     return {ux, uy};
 }
 // 最小圆覆盖暴力:圆心只能是两点直径中点或三点外心(O(n^3) 枚举,O(n) 验证)—— 用于验证外接圆
-static p2 bruteMEC(const vector<p2> &v) {
+static p2 brute_mec(const vector<p2> &v) {
     int n = v.size();
     if(n == 1) return v[0];
     db best = 1e300L;
     p2 bc = v[0];
-    auto tryC = [&](p2 c) {
+    auto try_c = [&](p2 c) {
         db r = 0;
         for(int i = 0; i < n; ++i) r = max(r, dd(c, v[i]));
         if(r < best) best = r, bc = c;
     };
-    for(int i = 0; i < n; ++i) for(int j = i + 1; j < n; ++j) tryC((v[i] + v[j]) / 2);
+    for(int i = 0; i < n; ++i) for(int j = i + 1; j < n; ++j) try_c((v[i] + v[j]) / 2);
     for(int i = 0; i < n; ++i) for(int j = i + 1; j < n; ++j) for(int k = j + 1; k < n; ++k) {
-        if(sign(refDet(v[j] - v[i], v[k] - v[i])) == 0) continue;
-        tryC(refCircumcenter(v[i], v[j], v[k]));
+        if(sign(ref_det(v[j] - v[i], v[k] - v[i])) == 0) continue;
+        try_c(ref_circumcenter(v[i], v[j], v[k]));
     }
     return bc;
 }
 // 只用模板的 -= 求「相邻点差向量」的单调链下凸壳:用来展示 -= 出 bug 时的实际后果
 // (注意:这里刻意不做完整凸包,只取字典序意义下的下凸壳,好让「结果对不对」一目了然)
-static int lowerChainWithTemplateMinusEq(int n, p2 *a, p2 *b) {
-    sort(a, a + n, [](p2 u, p2 v) { return refCmpP(u, v) < 0; });
+static int lower_chain_with_template_minus_eq(int n, p2 *a, p2 *b) {
+    sort(a, a + n, [](p2 u, p2 v) { return ref_cmp_p(u, v) < 0; });
     int k = 0;
     for(int i = 0; i < n; ++i) {
         while(k > 1) {
             p2 rel = b[k - 1];
             rel -= b[k - 2];  // 模板 operator-=:修好后 rel = b[k-1]-b[k-2];出 bug 时 rel = b[k-1]+b[k-2]
-            db want = refDet(b[k - 1] - b[k - 2], a[i] - b[k - 2]);
+            db want = ref_det(b[k - 1] - b[k - 2], a[i] - b[k - 2]);
             db got = rel.det(a[i] - b[k - 2]);
             if(got != want) return -1;  // 用模板算出的叉积与真实叉积不同 -> 直接报告错误
             if(want > 0) break;
@@ -215,20 +215,20 @@ static int lowerChainWithTemplateMinusEq(int n, p2 *a, p2 *b) {
 // ---- 通用断言器 ----
 // 随机点集 -> 模板 convex_hull,并按几何性质自检(k <= n、逆时针、凸、首点为最小点、
 // 与独立 Andrew 顶序等价、包含所有输入点);返回 false 表示至少一条性质被违反
-static bool hullCheckOne(const vector<p2> &v, bool verbose = false) {
+static bool hull_check_one(const vector<p2> &v, bool verbose = false) {
     int n = v.size();
     auto a = v;
     auto h = convex_hull(a);
     int k = h.size();
     const auto &H = h;
-    auto R = refHull(v);
+    auto R = ref_hull(v);
     if(k > n || k < 0) {
         if(verbose) printf("      k=%d > n=%d\n", k, n);
         return false;
     }
     if(H.empty()) return v.empty();
     p2 mn = v[0];
-    for(int i = 0; i < n; ++i) if(refCmpP(v[i], mn) < 0) mn = v[i];
+    for(int i = 0; i < n; ++i) if(ref_cmp_p(v[i], mn) < 0) mn = v[i];
     if(!eqp(H[0], mn, 1e-9)) {
         if(verbose) printf("      H[0] 不是最小点\n");
         return false;
@@ -239,29 +239,29 @@ static bool hullCheckOne(const vector<p2> &v, bool verbose = false) {
     }
     if(k >= 3) {  // 逆时针:以 h[0] 为原点看,所有三角形 (h[0],h[i],h[i+1]) 的带号面积都非负
         db sgn2 = 0;
-        for(int i = 0; i < k; ++i) sgn2 += refDet(h[i] - h[0], h[(i + 1) % k] - h[0]);
-        db tol = 1e-9L * (1 + Abs(h[0].x) + Abs(h[0].y)) * (1 + Abs(h[1].x - h[0].x) + Abs(h[1].y - h[0].y)) * k;
+        for(int i = 0; i < k; ++i) sgn2 += ref_det(h[i] - h[0], h[(i + 1) % k] - h[0]);
+        db tol = 1e-9L * (1 + abs_db(h[0].x) + abs_db(h[0].y)) * (1 + abs_db(h[1].x - h[0].x) + abs_db(h[1].y - h[0].y)) * k;
         if(sgn2 < -tol) {
             if(verbose) printf("      凸包带号面积(以 h[0] 为原点)= %.17Lg < 0,旋向为顺时针\n", sgn2 / 2);
             return false;
         }
     } else if(k == 2) {  // 两个输出顶点必须不同
-        if(refCmpP(h[0], h[1]) == 0) {
+        if(ref_cmp_p(h[0], h[1]) == 0) {
             if(verbose) printf("      两个输出顶点相同,但输入点并非全同点\n");
             return false;
         }
     }
     for(int i = 0; i < k; ++i) {
         p2 u = h[i], w = h[(i + 1) % k], t = h[(i + 2) % k];
-        if(refDet(w - u, t - u) < -1e-9L * (1 + Abs(u.x) + Abs(u.y) + Abs(w.x) + Abs(w.y) + Abs(t.x) + Abs(t.y))) {
+        if(ref_det(w - u, t - u) < -1e-9L * (1 + abs_db(u.x) + abs_db(u.y) + abs_db(w.x) + abs_db(w.y) + abs_db(t.x) + abs_db(t.y))) {
             if(verbose) printf("      h[%d] 处非凸\n", (i + 1) % k);
             return false;
         }
     }
     for(int i = 0; i < n; ++i) for(int j = 0; j < k; ++j) {
         p2 u = h[j], w = h[(j + 1) % k];
-        db c = refDet(w - u, v[i] - u);
-        if(c < -1e-9L * (1 + Abs(u.x) + Abs(u.y) + Abs(w.x) + Abs(w.y) + Abs(v[i].x) + Abs(v[i].y))) {
+        db c = ref_det(w - u, v[i] - u);
+        if(c < -1e-9L * (1 + abs_db(u.x) + abs_db(u.y) + abs_db(w.x) + abs_db(w.y) + abs_db(v[i].x) + abs_db(v[i].y))) {
             if(verbose) printf("      输入点 "), pr(v[i]), printf(" 在边 h[%d]-h[%d] 外侧\n", j, (j + 1) % k);
             return false;
         }
@@ -272,7 +272,7 @@ static bool hullCheckOne(const vector<p2> &v, bool verbose = false) {
         return false;
     }
     for(int i = 0; i < k; ++i) {
-        if(refCmpP(h[i], R[i]) != 0) {
+        if(ref_cmp_p(h[i], R[i]) != 0) {
             if(verbose) printf("      第 %d 个顶点不同:", i), pr(h[i]), printf(" vs "), pr(R[i]), printf("\n");
             return false;
         }
@@ -280,7 +280,7 @@ static bool hullCheckOne(const vector<p2> &v, bool verbose = false) {
     return true;
 }
 // convex_cut 后的多边形面积(用带号面积 -> 绝对值)
-static db cutArea(const vector<p2> &v) { return Abs(refArea(v)); }
+static db cut_area(const vector<p2> &v) { return abs_db(ref_area(v)); }
 
 // GCC 113 位参考：按二进制指数缩放后用 Newton 开方，不依赖 hypot/sqrt 或外部库。
 static bool norm_extremes() {
@@ -365,7 +365,7 @@ int main() {
             near.push_back(P(x * eps / 2, y * eps / 2));
         bool exact = true, transitive = true, equiv = true;
         for(p2 u : near) for(p2 v : near) {
-            exact &= (u < v) == (refCmpP(u, v) < 0);
+            exact &= (u < v) == (ref_cmp_p(u, v) < 0);
             for(p2 w : near) {
                 transitive &= !(u < v && v < w) || u < w;
                 bool uv = !(u < v) && !(v < u), vw = !(v < w) && !(w < v);
@@ -392,9 +392,9 @@ int main() {
             if(!eqp(x + y, y + x)) pb.hit("x+y != y+x", 0, 0);
             if(!eqp((x + y) + z, x + (y + z))) pb.hit("加法不结合", 0, 0);
             if(!eqp(x - y, x + y * -1.0L)) pb.hit("x-y != x+(-y)", 0, 0);
-            if(!eqd(dot(x, y), dot(y, x), 1e-9 * (1 + Abs(dot(x, y))))) pb.hit("点积不对称", dot(x, y), dot(y, x));
-            if(!eqd(x.det(y), -y.det(x), 1e-9 * (1 + Abs(x.det(y))))) pb.hit("det 不反对称", x.det(y), -y.det(x));
-            if(!eqd((x + y).det(z), x.det(z) + y.det(z), 1e-9 * (1 + Abs(x.det(z)) + Abs(y.det(z))))) pb.hit("det 不线性", 0, 0);
+            if(!eqd(dot(x, y), dot(y, x), 1e-9 * (1 + abs_db(dot(x, y))))) pb.hit("点积不对称", dot(x, y), dot(y, x));
+            if(!eqd(x.det(y), -y.det(x), 1e-9 * (1 + abs_db(x.det(y))))) pb.hit("det 不反对称", x.det(y), -y.det(x));
+            if(!eqd((x + y).det(z), x.det(z) + y.det(z), 1e-9 * (1 + abs_db(x.det(z)) + abs_db(y.det(z))))) pb.hit("det 不线性", 0, 0);
             if(!eqp(x * (db) 3 - x * (db) 2, x)) pb.hit("数乘分配", 0, 0);
             if(!eqp((x + y) / 2.0L, x / 2.0L + y / 2.0L)) pb.hit("除以 2 不分配", 0, 0);
             if(!eqd(dis(x), dis(P(0, 0) - x), 1e-9 * (1 + dis(x)))) pb.hit("dis 奇对称", dis(x), dis(P(0, 0) - x));
@@ -416,8 +416,8 @@ int main() {
             p2 v = P((db) rnd(-1000, 1000), (db) rnd(-1000, 1000));
             db ang = (db) rnd(-1000000, 1000000) / 100000;
             p2 r = rot(v, ang);
-            if(!eqd(r.x, v.x * cos(ang) - v.y * sin(ang), 1e-9 * (1 + Abs(v.x)))) ++bad;
-            if(!eqd(r.y, v.x * sin(ang) + v.y * cos(ang), 1e-9 * (1 + Abs(v.y)))) ++bad;
+            if(!eqd(r.x, v.x * cos(ang) - v.y * sin(ang), 1e-9 * (1 + abs_db(v.x)))) ++bad;
+            if(!eqd(r.y, v.x * sin(ang) + v.y * cos(ang), 1e-9 * (1 + abs_db(v.y)))) ++bad;
             if(!eqd(dis(r), dis(v), 1e-9 * (1 + dis(v)))) ++bad;
             if(!eqd(remainderl(r.alpha() - v.alpha() - ang, 2 * pi), 0, 1e-9)) ++bad;
         }
@@ -452,7 +452,7 @@ int main() {
         For(t, 1, 20000) {
             p2 u = P((db) rnd(-1000, 1000), (db) rnd(-1000, 1000)), v = P((db) rnd(-1000, 1000), (db) rnd(-1000, 1000)), q = P((db) rnd(-1000, 1000), (db) rnd(-1000, 1000));
             db length = hypot(v.x-u.x, v.y-u.y);
-            int side = length ? sign(refDet(v-u, q-u) / length) : 0;
+            int side = length ? sign(ref_det(v-u, q-u) / length) : 0;
             if(crossop({u, v}, q) != side) pb.hit("crossop != 垂距参考", crossop({u, v}, q), side);
             if(crossop({u, v}, q) != -crossop({v, u}, q)) pb.hit("crossop 不反对称", crossop({u, v}, q), -crossop({v, u}, q));
             if(cross({u, v}, q) != -cross({v, u}, q)) pb.hit("cross 不反对称", cross({u, v}, q), -cross({v, u}, q));
@@ -472,13 +472,13 @@ int main() {
         CHECK(pb.bad == 0, "cross/crossop 反对称、端点归零、直线两侧反号(2 万组,含线上参数点)");
     }
 
-    // ===== 5. isMid / ons / ons_s =====
-    CHECK(isMid(0.0L, 0.5L, 1.0L) && isMid(1.0L, 0.5L, 0.0L), "isMid 区间内(两端顺序无关)");
-    CHECK(isMid(0.0L, 0.0L, 1.0L) && isMid(0.0L, 1.0L, 1.0L) && isMid(2.0L, 2.0L, 2.0L), "isMid 端点算在区间内");
-    CHECK(!isMid(0.0L, 1.5L, 1.0L) && !isMid(0.0L, -0.5L, 1.0L), "isMid 区间外为假");
-    CHECK(!isMid(0.0L, 5.0L, 0.0L), "isMid 零长区间只包含端点");
-    CHECK(isMid(P(0, 0), P(1, 1), P(2, 2)) && isMid(P(0, 0), P(1, 2), P(2, 2)), "isMid 点版:逐坐标落在区间内(即落在包围盒里)");
-    CHECK(!isMid(P(0, 0), P(3, 2), P(2, 2)) && !isMid(P(0, 0), P(-1, 1), P(2, 2)), "isMid 点版:任一坐标出界即为假");
+    // ===== 5. is_mid / ons / ons_s =====
+    CHECK(is_mid(0.0L, 0.5L, 1.0L) && is_mid(1.0L, 0.5L, 0.0L), "is_mid 区间内(两端顺序无关)");
+    CHECK(is_mid(0.0L, 0.0L, 1.0L) && is_mid(0.0L, 1.0L, 1.0L) && is_mid(2.0L, 2.0L, 2.0L), "is_mid 端点算在区间内");
+    CHECK(!is_mid(0.0L, 1.5L, 1.0L) && !is_mid(0.0L, -0.5L, 1.0L), "is_mid 区间外为假");
+    CHECK(!is_mid(0.0L, 5.0L, 0.0L), "is_mid 零长区间只包含端点");
+    CHECK(is_mid(P(0, 0), P(1, 1), P(2, 2)) && is_mid(P(0, 0), P(1, 2), P(2, 2)), "is_mid 点版:逐坐标落在区间内(即落在包围盒里)");
+    CHECK(!is_mid(P(0, 0), P(3, 2), P(2, 2)) && !is_mid(P(0, 0), P(-1, 1), P(2, 2)), "is_mid 点版:任一坐标出界即为假");
     CHECK(ons(L, P(1, 0)) && ons(L, P(0, 0)) && ons(L, P(2, 0)), "ons 线段内部与端点");
     CHECK(!ons(L, P(3, 0)) && !ons(L, P(-1, 0)) && !ons(L, P(1, eps * 100)), "ons 延长线与线外为假");
     CHECK(ons_s(L, P(1, 0)) && !ons_s(L, P(0, 0)) && !ons_s(L, P(2, 0)) && !ons_s(L, P(1, eps * 100)), "ons_s 严格在线段内部");
@@ -492,7 +492,7 @@ int main() {
             int got = ons({u, v}, q);
             int want = (sign(cross({u, v}, q)) == 0) && min(u.x, v.x) <= q.x && q.x <= max(u.x, v.x) && min(u.y, v.y) <= q.y && q.y <= max(u.y, v.y);
             if(got != want) pb.hit("ons 与整数参考不一致", got, want);
-            if(ons_s({u, v}, q) != (want && refCmpP(u, q) != 0 && refCmpP(v, q) != 0)) pb.hit("ons_s 与整数参考不一致", ons_s({u, v}, q), 1);
+            if(ons_s({u, v}, q) != (want && ref_cmp_p(u, q) != 0 && ref_cmp_p(v, q) != 0)) pb.hit("ons_s 与整数参考不一致", ons_s({u, v}, q), 1);
         }
         CHECK(pb.bad == 0, "ons/ons_s 与独立参考一致(3 万组整数坐标,含端点是否计入的严格语义)");
         CHECK(ons({P(3, 4), P(3, 4)}, P(3, 4)) && !ons({P(3, 4), P(3, 4)}, P(100, 100)),
@@ -513,7 +513,7 @@ int main() {
             if(dd(p1, p2r) < 4) continue;
             p2 q = P((db) rnd(-2000, 2000), (db) rnd(-2000, 2000));
             seg s = {p1, p2r};
-            db ref = refNearest(p1, p2r, q);
+            db ref = ref_nearest(p1, p2r, q);
             if(!eqd(nearest(s, q), ref, 1e-9 * (1 + ref))) ++bad;
             p2 h = proj(s, q);
             if(!eqd(dd(h, p1 + s.dir() * (dot(s.dir(), q - p1) / dis2(s.dir()))), 0, 1e-9 * (1 + dd(h, p1)))) ++bad;
@@ -530,26 +530,26 @@ int main() {
             if(dd(u, v) < 1e-6L) continue;
             seg s = {u, v};
             p2 h = proj(s, q);                                // 垂足(可在线段外)
-            p2 ha = refProjAnalytic(u, v, q);                 // 参数方程解析解
+            p2 ha = ref_proj_analytic(u, v, q);                 // 参数方程解析解
             db sc = 1 + dd(h, u);
             if(!eqd(dd(h, ha), 0, 1e-12L * sc)) pb.hit("proj != 解析解", dd(h, ha), 0);
             if(!eqd(dot(q - h, v - u), 0, 1e-9L * dis(v - u) * (1 + dis(q - u)))) pb.hit("垂线不垂直于方向", dot(q - h, v - u), 0);
             // 垂足若落在线段内,则它到 q 的距离 <= 端点到 q 的距离(垂距最短)
-            if(isMid(u, h, v)) {
+            if(is_mid(u, h, v)) {
                 db d1 = dd(h, q), d2 = min(dd(u, q), dd(v, q));
                 if(d1 > d2 + 1e-6L * (1 + d2)) pb.hit("垂足不是最近点", d1, d2);
             }
             if(!eqd(dd(reflect(s, q), q), 4 * dd(h, q), 1e-9L * (1 + 4 * dd(h, q)))) pb.hit("reflect 到 q 的距离不是 2*hq", dd(reflect(s, q), q), 4 * dd(h, q));
             if(!eqp(reflect(s, reflect(s, q)), q, 1e-9L * (1 + dis(q - u)))) pb.hitp("reflect 不是对合", reflect(s, reflect(s, q)), q);
             if(!eqd(dis(reflect(s, q) - u), dis(q - u), 1e-9L * (1 + dis(q - u)))) pb.hit("reflect 不保端点距离", dis(reflect(s, q) - u), dis(q - u));
-            if(!eqd(nearest(s, q), min(dd(h, q), min(dd(u, q), dd(v, q))) == dd(h, q) && isMid(u, h, v) ? dd(h, q) : min(dd(u, q), dd(v, q)), 1e-9L * (1 + dd(q, u)))) pb.hit("nearest 与垂足/端点公式不一致", nearest(s, q), dd(h, q));
+            if(!eqd(nearest(s, q), min(dd(h, q), min(dd(u, q), dd(v, q))) == dd(h, q) && is_mid(u, h, v) ? dd(h, q) : min(dd(u, q), dd(v, q)), 1e-9L * (1 + dd(q, u)))) pb.hit("nearest 与垂足/端点公式不一致", nearest(s, q), dd(h, q));
         }
         CHECK(pb.bad == 0, "proj/reflect:解析解一致、垂距最短、reflect 对合保距(3 万组)");
     }
     {  // 退化线段按点处理;参考值用独立解析实现,不口算
         seg point{P(3, 4), P(3, 4)}, line{P(0, 0), P(5, 12)};
         CHECK(eqd(nearest(point, P(0, 0)), dd(P(3, 4), P(0, 0))), "零长线段点线距有限且正确");
-        CHECK(eqd(disss(point, line), refNearest(line.x, line.y, point.x)), "退化点与线段的距离");
+        CHECK(eqd(disss(point, line), ref_nearest(line.x, line.y, point.x)), "退化点与线段的距离");
         CHECK(eqd(disss(line, point), disss(point, line)), "退化点线距离对称");
         CHECK(eqd(disss(point, {P(0, 0), P(0, 0)}), dd(P(3, 4), P(0, 0))), "两条零长线段的距离");
     }
@@ -574,18 +574,18 @@ int main() {
             p2 a1 = P((db) rnd(-10, 10), (db) rnd(-10, 10)), a2 = P((db) rnd(-10, 10), (db) rnd(-10, 10));
             p2 b1 = P((db) rnd(-10, 10), (db) rnd(-10, 10)), b2 = P((db) rnd(-10, 10), (db) rnd(-10, 10));
             if(dd(a1, a2) < 1 || dd(b1, b2) < 1) continue;
-            if(chkss(seg{a1, a2}, seg{b1, b2}) != refChkss(a1, a2, b1, b2)) ++bad;
+            if(chkss(seg{a1, a2}, seg{b1, b2}) != ref_chkss(a1, a2, b1, b2)) ++bad;
             int d1 = sign((a2 - a1).det(b1 - a1)), d2 = sign((a2 - a1).det(b2 - a1));
             int d3 = sign((b2 - b1).det(a1 - b1)), d4 = sign((b2 - b1).det(a2 - b1));
             if(chkss_s(seg{a1, a2}, seg{b1, b2}) != (d1 * d2 < 0 && d3 * d4 < 0)) ++bad;
             db den = (a2 - a1).det(b2 - b1);
-            bool nonparallel = Abs(den) / (hypot(a2.x-a1.x,a2.y-a1.y) * hypot(b2.x-b1.x,b2.y-b1.y)) > angle_eps;
+            bool nonparallel = abs_db(den) / (hypot(a2.x-a1.x,a2.y-a1.y) * hypot(b2.x-b1.x,b2.y-b1.y)) > angle_eps;
             if(chkll(seg{a1, a2}, seg{b1, b2}) != nonparallel) ++bad;
             if(nonparallel) {
                 p2 p = isll(seg{a1, a2}, seg{b1, b2});
                 if(!eqd((a2 - a1).det(p - a1), 0, 1e-6 * (1 + dis(a2 - a1)))) ++bad;
                 if(!eqd((b2 - b1).det(p - b1), 0, 1e-6 * (1 + dis(b2 - b1)))) ++bad;
-            } else if(eqll(seg{a1, a2}, seg{b1, b2}) != (Abs((b1 - a1).det(a2 - a1)) < 1e-9)) ++bad;
+            } else if(eqll(seg{a1, a2}, seg{b1, b2}) != (abs_db((b1 - a1).det(a2 - a1)) < 1e-9)) ++bad;
         }
         CHECK(bad == 0, "chkss/chkss_s/chkll/isll/eqll 与独立参考一致(3 万组随机)");
     }
@@ -647,7 +647,7 @@ int main() {
             p2 a1 = P((db) rnd(-20, 20), (db) rnd(-20, 20)), a2 = P((db) rnd(-20, 20), (db) rnd(-20, 20));
             p2 b1 = P((db) rnd(-20, 20), (db) rnd(-20, 20)), b2 = P((db) rnd(-20, 20), (db) rnd(-20, 20));
             if(dd(a1, a2) < 1 || dd(b1, b2) < 1) continue;
-            db ref = refDisss(a1, a2, b1, b2);
+            db ref = ref_disss(a1, a2, b1, b2);
             if(!eqd(disss(seg{a1, a2}, seg{b1, b2}), ref, 1e-9 * (1 + ref))) ++bad;
         }
         CHECK(bad == 0, "disss 与独立参考一致(3 万组随机)");
@@ -664,7 +664,7 @@ int main() {
             db ub = min(min(dd(u, w), dd(u, z)), min(dd(v, w), dd(v, z)));
             if(d > ub + 1e-6L * (1 + ub)) pb.hit("disss 大于端点最小距离", d, ub);
             if(chkss(seg{u, v}, seg{w, z}) && d != 0) pb.hit("相交却距离非 0", d, 0);
-            if(refChkss(u, v, w, z) && d > 1e-6L * (1 + ub)) pb.hit("规范相交却距离非 0", d, 0);
+            if(ref_chkss(u, v, w, z) && d > 1e-6L * (1 + ub)) pb.hit("规范相交却距离非 0", d, 0);
         }
         CHECK(pb.bad == 0, "disss 对称/非负/不超过端点距离/相交为 0(2 万组)");
     }
@@ -690,7 +690,7 @@ int main() {
         vector<p2> repeated{P(0, 0), P(0, 0), P(4, 0), P(4, 4), P(0, 4), P(0, 0)};
         For(x, -2, 10) For(y, -2, 10) {
             p2 q = P(db(x) / 2, db(y) / 2);
-            if(contain(repeated, q) != refContain(repeated, q))
+            if(contain(repeated, q) != ref_contain(repeated, q))
                 return printf("  [FAIL] contain 重复顶点 q=(%d/2,%d/2)\n", x, y), 1;
         }
         ok("contain 相邻重复顶点与独立参考一致");
@@ -701,14 +701,14 @@ int main() {
         Probe pb;
         For(x, -1, 7) For(y, -1, 6) {
             p2 q = P(x, y);
-            int got = contain(comb, q), want = refContain(comb, q);
+            int got = contain(comb, q), want = ref_contain(comb, q);
             if(got != want) {
                 pb.hitp("凹多边形 contain 与独立射线法不一致", P(got, 0), P(want, 0));
                 if(pb.bad) break;
             }
         }
         CHECK(pb.bad == 0, "contain 凹多边形(梳子形)逐点与独立射线法一致(含凹口、边界、角点,8×7 网格)");
-        CHECK(eqd(Abs(area(comb)), 18), "area 凹多边形手算面积 = 18(梳子形:底 6×1 + 4 个 1×3 的齿)");
+        CHECK(eqd(abs_db(area(comb)), 18), "area 凹多边形手算面积 = 18(梳子形:底 6×1 + 4 个 1×3 的齿)");
     }
     {
         // 随机星形(关于原点可见)多边形:与独立射线法大量对拍
@@ -723,9 +723,9 @@ int main() {
             for(int i = 0; i < n; ++i) poly[i] = P(rr[i] * cos(ang[i]), rr[i] * sin(ang[i]));
             for(int it = 0; it < 60; ++it) {
                 p2 q = P((db) rnd(-1200, 1200) / 10, (db) rnd(-1200, 1200) / 10);
-                if(contain(poly, q) != refContain(poly, q)) { ++pb.bad; ++nt; }
+                if(contain(poly, q) != ref_contain(poly, q)) { ++pb.bad; ++nt; }
             }
-            if(!eqd(Abs(area(poly)), Abs(refArea(poly)), 1e-6L * (1 + Abs(refArea(poly))))) ++pb.bad;
+            if(!eqd(abs_db(area(poly)), abs_db(ref_area(poly)), 1e-6L * (1 + abs_db(ref_area(poly))))) ++pb.bad;
         }
         CHECK(pb.bad == 0, "contain/area 与独立射线法/shoelace 一致(300 个随机星形多边形 × 60 点 = 1.8 万次)");
     }
@@ -735,7 +735,7 @@ int main() {
             int n = (int) rnd(3, 10);
             vector<p2> poly(n);
             for(int i = 0; i < n; ++i) poly[i] = P((db) rnd(-50, 50), (db) rnd(-50, 50));
-            if(Abs(area(poly)) < 1) continue;
+            if(abs_db(area(poly)) < 1) continue;
             db dx = (db) rnd(-100, 100) / 7, dy = (db) rnd(-100, 100) / 7;
             vector<p2> mv(n);
             for(int i = 0; i < n; ++i) mv[i] = poly[i] + P(dx, dy);
@@ -768,9 +768,9 @@ int main() {
                 for(int i = 0; i < n; ++i) v.push_back(P((db) rnd(-R, R), (db) rnd(-R, R)));
             } else {  // 后半保证互不相同,覆盖一般位置
                 for(int i = 0; i < n; ++i) v.push_back(P((db) rnd(-60, 60), (db) rnd(-60, 60)));
-                for(int i = 0; i < n; ++i) for(int j = 0; j < (int) v.size(); ++j) if(i != j && refCmpP(v[i], v[j]) == 0) { v[i].x += 1000; }
+                for(int i = 0; i < n; ++i) for(int j = 0; j < (int) v.size(); ++j) if(i != j && ref_cmp_p(v[i], v[j]) == 0) { v[i].x += 1000; }
             }
-            if(!hullCheckOne(v, true)) {
+            if(!hull_check_one(v, true)) {
                 if(!pb.bad) {  // 第一条反例:把输入点集打出来
                     printf("      反例输入(%d 个点):", n);
                     for(int i = 0; i < n; ++i) pr(v[i]);
@@ -795,11 +795,11 @@ int main() {
             if(k > n) { pb.hit("顶点数超过输入点数", k, n); continue; }
             for(int i = 0; i < k; ++i) {
                 bool found = false;
-                for(int j = 0; j < n; ++j) if(refCmpP(h[i], v[j]) == 0) found = true;
+                for(int j = 0; j < n; ++j) if(ref_cmp_p(h[i], v[j]) == 0) found = true;
                 if(!found) pb.hit("凸包顶点不是输入点", 0, 0);
             }
             // 凸包面积 <= 任何内接多边形面积不可能更大:用 shoelace 面积非负(逆时针)
-            if(k >= 3 && refArea(h) < -1e-6L * (1 + Abs(refArea(h)))) pb.hit("凸包面积(带号)为负", 0, 0);
+            if(k >= 3 && ref_area(h) < -1e-6L * (1 + abs_db(ref_area(h)))) pb.hit("凸包面积(带号)为负", 0, 0);
         }
         CHECK(pb.bad == 0, "convex_hull 性质:k <= n、顶点全都来自输入点、带号面积非负(3000 组,坐标 ±1e6)");
     }
@@ -807,7 +807,7 @@ int main() {
         // 10.3 全部共线 / 全部同点 / n = 0,1,2,3 / 圆上点 / 大量共线点
         vector<p2> line;
         For(i, -50, 50) line.push_back(P(i, 2 * i + 3));
-        CHECK(hullCheckOne(line), "凸包:101 个共线点 -> 只有两个端点");
+        CHECK(hull_check_one(line), "凸包:101 个共线点 -> 只有两个端点");
         {
             vector<p2> allsame(37, P(-8, 11));
             auto h = convex_hull(allsame);
@@ -822,15 +822,15 @@ int main() {
         }
         {
             vector<p2> two = {P(3, 4), P(0, 0)};
-            CHECK(hullCheckOne(two), "凸包:n=2 返回两个端点(顺序为字典序)");
+            CHECK(hull_check_one(two), "凸包:n=2 返回两个端点(顺序为字典序)");
             vector<p2> tri = {P(0, 0), P(4, 0), P(2, 3)};
-            CHECK(hullCheckOne(tri), "凸包:n=3 非共线 -> 三个顶点,逆时针");
+            CHECK(hull_check_one(tri), "凸包:n=3 非共线 -> 三个顶点,逆时针");
             vector<p2> tri2 = {P(0, 0), P(1, 1), P(2, 2)};
-            CHECK(hullCheckOne(tri2), "凸包:n=3 共线 -> 两个端点");
+            CHECK(hull_check_one(tri2), "凸包:n=3 共线 -> 两个端点");
             vector<p2> rep = {P(1, 1), P(1, 1), P(1, 1), P(1, 1), P(1, 1)};
-            CHECK(hullCheckOne(rep), "凸包:5 个同点 -> 一个顶点");
+            CHECK(hull_check_one(rep), "凸包:5 个同点 -> 一个顶点");
             vector<p2> mixed = {P(0, 0), P(0, 0), P(3, 4), P(3, 4), P(1, 2)};
-            CHECK(hullCheckOne(mixed), "凸包:带重复点的共线点集 -> 两个端点");
+            CHECK(hull_check_one(mixed), "凸包:带重复点的共线点集 -> 两个端点");
         }
         {
             // 圆上 40 个点(精度受 cos/sin 支配,只做性质级断言)
@@ -846,9 +846,9 @@ int main() {
             if(k != 40) pb.hit("圆上 40 点凸包顶点数应为 40", k, 40);
             for(int i = 0; i < k; ++i) {
                 p2 u = h[i], w = h[(i + 1) % k];
-                if(refDet(w - u, cir[(2 * i) % 40] - u) < -1e-6L) pb.hit("圆上点凸包非凸/漏点", 0, 0);
+                if(ref_det(w - u, cir[(2 * i) % 40] - u) < -1e-6L) pb.hit("圆上点凸包非凸/漏点", 0, 0);
             }
-            db ar = Abs(refArea(h));
+            db ar = abs_db(ref_area(h));
             if(!eqd(ar, pi * 1e6L * sin(2 * pi / 40) * 40 / (2 * pi), 1e-6 * (1 + ar))) pb.hit("圆内接正 40 边形面积不对", ar, pi * 1e6L * sin(2 * pi / 40) * 40 / (2 * pi));
             CHECK(pb.bad == 0, "凸包:半径 1000 圆上 40 点 -> 全部 40 个顶点,逆时针凸,面积 = (1/2)·40·R²·sin(2π/40)");
         }
@@ -862,7 +862,7 @@ int main() {
                 for(int i = 0; i < kk; ++i) v.push_back(P(100, i));  // 右边上的共线点
                 for(int i = 0; i < kk; ++i) v.push_back(P(i, 0));
                 v.push_back(P(0, 0)), v.push_back(P(100, 0)), v.push_back(P(100, 100)), v.push_back(P(0, 100));
-                if(!hullCheckOne(v)) ++pb.bad;
+                if(!hull_check_one(v)) ++pb.bad;
                 auto a2 = v;
                 int got = convex_hull(a2).size();
                 if(got != 4) pb.hit("共线点应被去掉,只剩 4 个角点", got, 4);
@@ -890,8 +890,8 @@ int main() {
                 for(int i = 0; i < n; ++i) {  // 每个输入点都必须仍然「在凸包内」(容差级);nos=1 只是不去掉共线点
                     bool in = k < 3;
                     for(int j = 0; j < k; ++j) {
-                        db c = refDet(h[(j + 1) % k] - h[j], v[i] - h[j]);
-                        if(c >= -1e-9L * (1 + Abs(v[i].x) + Abs(v[i].y))) in = true;
+                        db c = ref_det(h[(j + 1) % k] - h[j], v[i] - h[j]);
+                        if(c >= -1e-9L * (1 + abs_db(v[i].x) + abs_db(v[i].y))) in = true;
                     }
                     if(!in) {
                         if(!pb.bad) {
@@ -917,21 +917,21 @@ int main() {
             int n = (int) rnd(3, 12);
             vector<p2> v;
             for(int i = 0; i < n; i++) v.push_back(P((db) rnd(-100, 100), (db) rnd(-100, 100)));
-            vector<p2> R = refHull(v);
+            vector<p2> R = ref_hull(v);
             auto a2 = v;
             auto h = convex_hull(a2);
             int k = h.size();
             if(k != (int) R.size()) { pb.hit("原始点数与参考不符", k, R.size()); continue; }
-            db s0 = Abs(refArea(R));
+            db s0 = abs_db(ref_area(R));
             // 旋转
             db ang = (db) rnd(-3000, 3000) / 1000;
-            vector<p2> rv(n), rH;
+            vector<p2> rv(n), r_h;
             for(int i = 0; i < n; ++i) rv[i] = rot(v[i], ang);
             a2 = rv;
             h = convex_hull(a2);
             int k2 = h.size();
             if(k2 != (int) R.size()) pb.hit("旋转后顶点数变了", k2, R.size());
-            db s1 = Abs(refArea(h));
+            db s1 = abs_db(ref_area(h));
             if(!eqd(s1, s0, 1e-6 * (1 + s0))) pb.hit("旋转后面积变了", s1, s0);
             // 平移
             a2.resize(n);
@@ -939,14 +939,14 @@ int main() {
             h = convex_hull(a2);
             int k3 = h.size();
             if(k3 != (int) R.size()) pb.hit("平移后顶点数变了", k3, R.size());
-            if(!eqd(Abs(refArea(h)), s0, 1e-6 * (1 + s0))) pb.hit("平移后面积变了", 0, 0);
+            if(!eqd(abs_db(ref_area(h)), s0, 1e-6 * (1 + s0))) pb.hit("平移后面积变了", 0, 0);
             // 正数缩放
             a2.resize(n);
             for(int i = 0; i < n; ++i) a2[i] = v[i] * 7.0L;
             h = convex_hull(a2);
             int k4 = h.size();
             if(k4 != (int) R.size()) pb.hit("缩放后顶点数变了", k4, R.size());
-            if(!eqd(Abs(refArea(h)), s0 * 49, 1e-5 * (1 + s0 * 49))) pb.hit("缩放后面积不是 49 倍", Abs(refArea(h)), s0 * 49);
+            if(!eqd(abs_db(ref_area(h)), s0 * 49, 1e-5 * (1 + s0 * 49))) pb.hit("缩放后面积不是 49 倍", abs_db(ref_area(h)), s0 * 49);
         }
         CHECK(pb.bad == 0, "convex_hull 不变量:旋转/平移保面积与顶点数,7 倍缩放面积 ×49(500 组)");
     }
@@ -995,10 +995,10 @@ int main() {
             if(k < 3) continue;
             seg q = {P((db) rnd(-60, 60), (db) rnd(-60, 60)), P((db) rnd(-60, 60), (db) rnd(-60, 60))};
             if(dd(q.x, q.y) < 1) continue;
-            vector<p2> got = convex_cut(H, q), want = refCut(H, q);
+            vector<p2> got = convex_cut(H, q), want = ref_cut(H, q);
             if(got.size() != want.size()) { pb.hit("裁剪后顶点数与参考不同", got.size(), want.size()); continue; }
             for(int i = 0; i < want.size(); ++i) if(!eqp(got[i], want[i], 1e-6)) pb.hitp("裁剪顶点与参考不同", got[i], want[i]);
-            if(!eqd(cutArea(got), cutArea(want), 1e-6 * (1 + cutArea(want)))) pb.hit("裁剪后面积与参考不同", cutArea(got), cutArea(want));
+            if(!eqd(cut_area(got), cut_area(want), 1e-6 * (1 + cut_area(want)))) pb.hit("裁剪后面积与参考不同", cut_area(got), cut_area(want));
         }
         CHECK(pb.bad == 0, "convex_cut 与独立参考半平面裁剪逐顶点一致(3000 组随机凸包)");
     }
@@ -1030,19 +1030,19 @@ int main() {
                 }
                 pb.hit("裁剪后顶点数异常", got.size(), k + 1);
             }
-            db a0 = Abs(refArea(H)), a1 = cutArea(got);
+            db a0 = abs_db(ref_area(H)), a1 = cut_area(got);
             if(a1 > a0 + 1e-6 * (1 + a0)) pb.hit("裁剪后面积变大", a1, a0);
             for(int i = 0; i < got.size(); ++i) {
                 if(cross(q, got[i]) < -1e-9L * (1 + dis(got[i] - q.x)) * dis(q.dir())) pb.hit("裁剪后顶点跑到半平面外侧", cross(q, got[i]), 0);
-                bool fromIn = false;
-                for(int j = 0; j < k; ++j) if(eqp(got[i], H[j], 1e-7)) fromIn = true;
-                if(!fromIn && Abs(cross(q, got[i])) > 1e-6L * (1 + dis(got[i] - q.x)) * dis(q.dir())) pb.hit("裁剪顶点既不是输入顶点也不在切割线上", 0, 0);
+                bool from_in = false;
+                for(int j = 0; j < k; ++j) if(eqp(got[i], H[j], 1e-7)) from_in = true;
+                if(!from_in && abs_db(cross(q, got[i])) > 1e-6L * (1 + dis(got[i] - q.x)) * dis(q.dir())) pb.hit("裁剪顶点既不是输入顶点也不在切割线上", 0, 0);
             }
             for(int i = 0; i < got.size(); ++i) {
                 p2 u = got[i], w = got[(i + 1) % got.size()], z = got[(i + 2) % got.size()];
-                if(got.size() >= 3 && refDet(w - u, z - u) < -1e-6L) pb.hit("裁剪后非凸", 0, 0);
+                if(got.size() >= 3 && ref_det(w - u, z - u) < -1e-6L) pb.hit("裁剪后非凸", 0, 0);
             }
-            if(got.size() >= 3 && refArea(got) < -1e-7L * (1 + a0)) pb.hit("裁剪后旋向反转", refArea(got), 0);
+            if(got.size() >= 3 && ref_area(got) < -1e-7L * (1 + a0)) pb.hit("裁剪后旋向反转", ref_area(got), 0);
         }
         CHECK(pb.bad == 0, "convex_cut 性质:顶点数 <= n+2、面积不增、顶点只能来自输入顶点或切割线、保持凸性与逆时针(3000 组)");
         printf("  [note] convex_cut 的输出点数可能达到 n+1(不计入失败):k 边形与直线相交时 inside 顶点数 i 与跨越边数 c 满足\n"
@@ -1055,7 +1055,7 @@ int main() {
         // 11.3 解析用例
         p2 sq4[4] = {P(0, 0), P(4, 0), P(4, 4), P(0, 4)};
         Probe pb;
-        auto S = [&](vector<p2> r) { return cutArea(r); };
+        auto S = [&](vector<p2> r) { return cut_area(r); };
         vector<p2> half = convex_cut(vector<p2>(sq4, sq4 + (4)), seg{P(2, -1), P(2, 5)});
         if(!eqd(S(half), 8)) pb.hit("正方形切一半面积应为 8", S(half), 8);
         vector<p2> tri = convex_cut(vector<p2>(sq4, sq4 + (4)), seg{P(0, 0), P(4, 4)});
@@ -1085,11 +1085,11 @@ int main() {
             seg q1 = {P((db) rnd(-80, 80), (db) rnd(-80, 80)), P((db) rnd(-80, 80), (db) rnd(-80, 80))};
             seg q2 = {P((db) rnd(-80, 80), (db) rnd(-80, 80)), P((db) rnd(-80, 80), (db) rnd(-80, 80))};
             if(dd(q1.x, q1.y) < 1 || dd(q2.x, q2.y) < 1) continue;
-            vector<p2> r1 = refCut(H, q1);           // 参考裁剪保证凸性,才能再喂给 convex_cut
+            vector<p2> r1 = ref_cut(H, q1);           // 参考裁剪保证凸性,才能再喂给 convex_cut
             if(r1.size() < 3) continue;
-            vector<p2> a = refCut(r1, q2);
+            vector<p2> a = ref_cut(r1, q2);
             vector<p2> b2 = convex_cut(r1, q2);
-            if(!eqd(cutArea(a), cutArea(b2), 1e-5 * (1 + cutArea(a)))) pb.hit("连续裁剪面积不一致", cutArea(b2), cutArea(a));
+            if(!eqd(cut_area(a), cut_area(b2), 1e-5 * (1 + cut_area(a)))) pb.hit("连续裁剪面积不一致", cut_area(b2), cut_area(a));
         }
         CHECK(pb.bad == 0, "convex_cut 连续两次切割的面积与参考一致(800 组,切割线随机)");
     }
@@ -1111,7 +1111,7 @@ int main() {
         int bad = 0;
         For(t, 1, 30000) {
             p2 A = P((db) rnd(-50, 50), (db) rnd(-50, 50)), B = P((db) rnd(-50, 50), (db) rnd(-50, 50)), C = P((db) rnd(-50, 50), (db) rnd(-50, 50));
-            db ar2 = Abs((B - A).det(C - A));
+            db ar2 = abs_db((B - A).det(C - A));
             if(ar2 < 1) continue;
             db R = dis(A - B) * dis(B - C) * dis(C - A) / (2 * ar2);  // abc/(4Δ),4Δ = 2|det|
             if(!eqd(circumcircle_diameter(A, B, C), 2 * R, 1e-9 * (1 + R))) ++bad;
@@ -1125,10 +1125,10 @@ int main() {
         Probe pb;  // 外心与自写解析式一致;圆心必须在三角形所在平面内(到三边距离 = 半弦长约束)
         For(t, 1, 20000) {
             p2 A = P((db) rnd(-80, 80), (db) rnd(-80, 80)), B = P((db) rnd(-80, 80), (db) rnd(-80, 80)), C = P((db) rnd(-80, 80), (db) rnd(-80, 80));
-            db ar2 = Abs((B - A).det(C - A));
+            db ar2 = abs_db((B - A).det(C - A));
             if(ar2 < 1) continue;
             auto cc = circumcenter(A, B, C);
-            p2 O = P(cc[0], cc[1]), O2 = refCircumcenter(A, B, C);
+            p2 O = P(cc[0], cc[1]), O2 = ref_circumcenter(A, B, C);
             db R = dis(A - B) * dis(B - C) * dis(C - A) / (2 * ar2);
             if(!eqp(O, O2, 1e-7L * (1 + R))) pb.hitp("circumcenter 与独立解析式不一致", O, O2);
             // 三角形顶点都在以 O 为心 R 为半径的圆上 -> 原点到圆心的距离满足幂等式
@@ -1148,16 +1148,16 @@ int main() {
             int n = (int) rnd(3, 7);
             vector<p2> v;
             for(int i = 0; i < n; ++i) v.push_back(P((db) rnd(-30, 30), (db) rnd(-30, 30)));
-            p2 O = bruteMEC(v);
+            p2 O = brute_mec(v);
             db r2 = 0;
             for(int i = 0; i < n; ++i) r2 = max(r2, dd(O, v[i]));
-            for(int i = 0; i < n; ++i) if(dd(O, v[i]) > r2 + 1e-9L) pb.hit("bruteMEC 未覆盖点", 0, 0);
+            for(int i = 0; i < n; ++i) if(dd(O, v[i]) > r2 + 1e-9L) pb.hit("brute_mec 未覆盖点", 0, 0);
             // 对三角形:O 必须是某两点中点或三点外心;验证模板外心确实给出这个圆的圆心
             for(int i = 0; i < n; ++i) for(int j = i + 1; j < n; ++j) for(int k = j + 1; k < n; ++k) {
-                if(sign(refDet(v[j] - v[i], v[k] - v[i])) == 0) continue;
+                if(sign(ref_det(v[j] - v[i], v[k] - v[i])) == 0) continue;
                 auto cc = circumcenter(v[i], v[j], v[k]);
                 p2 O2 = P(cc[0], cc[1]);
-                db R2 = dis(v[i] - v[j]) * dis(v[j] - v[k]) * dis(v[k] - v[i]) / (2 * Abs(refDet(v[j] - v[i], v[k] - v[i])));
+                db R2 = dis(v[i] - v[j]) * dis(v[j] - v[k]) * dis(v[k] - v[i]) / (2 * abs_db(ref_det(v[j] - v[i], v[k] - v[i])));
                 if(!eqd(dis(O2 - v[i]), R2, 1e-7L * (1 + R2))) pb.hit("三点外接圆半径不对", dis(O2 - v[i]), R2);
             }
         }
@@ -1177,11 +1177,11 @@ int main() {
             if(k > n || k < 1) { pb.hit("hull 顶点数越界", k, n); continue; }
             for(int i = 0; i < n; ++i) for(int j = 0; j < k; ++j) {  // 凸包必须包含所有输入点(容差 1e-9 相对量级)
                 p2 u = h[j], w = h[(j + 1) % k];
-                db c = refDet(w - u, v[i] - u);
-                if(c < -1e-9L * (1 + Abs(u.x) + Abs(u.y) + Abs(w.x) + Abs(w.y))) pb.hit("1e9 量级凸包漏掉输入点", c, 0);
+                db c = ref_det(w - u, v[i] - u);
+                if(c < -1e-9L * (1 + abs_db(u.x) + abs_db(u.y) + abs_db(w.x) + abs_db(w.y))) pb.hit("1e9 量级凸包漏掉输入点", c, 0);
             }
-            db ar = refArea(h);
-            if(ar < -1e-6L * (1 + Abs(ar))) pb.hit("1e9 量级凸包带号面积为负(旋向错)", ar, 0);
+            db ar = ref_area(h);
+            if(ar < -1e-6L * (1 + abs_db(ar))) pb.hit("1e9 量级凸包带号面积为负(旋向错)", ar, 0);
             db bf = 0;
             for(int i = 0; i < k; ++i) for(int j = 0; j < k; ++j) bf = max(bf, dd(h[i], h[j]));
             db gd = convex_diameter(h);
@@ -1199,15 +1199,15 @@ int main() {
             } while(dd(u, v) < 1);
             p2 q = P((db) rnd(-1000000000, 1000000000), (db) rnd(-1000000000, 1000000000));
             seg s = {u, v};
-            db ref = refNearest(u, v, q), got = nearest(s, q);
+            db ref = ref_nearest(u, v, q), got = nearest(s, q);
             if(!eqd(got, ref, 1e-10L * (1 + ref))) pb.hit("1e9 量级 nearest 与参考不符", got, ref);
             if(got < -1e-8L * (1 + ref)) pb.hit("nearest 为负", got, 0);
             p2 h = proj(s, q);
-            db resid = Abs(dot(q - h, v - u)) / (dis(v - u) * (1 + dis(q - u)));
+            db resid = abs_db(dot(q - h, v - u)) / (dis(v - u) * (1 + dis(q - u)));
             if(resid > 1e-9L) pb.hit("1e9 量级 proj 垂线不垂直", resid, 0);
             if(!eqd(dd(h, q) + dd(h, u), dd(q, u), 1e-8L * (1 + dd(q, u)))) pb.hit("1e9 量级投影破坏勾股关系", 0, 0);
-            if(isMid(u, h, v)) {  // 垂足落在线段内:它必须是最近点(ons 在这里会受 eps 影响,故改查「距离为 0」这一等价的容差式)
-                if(!eqd(refNearest(u, v, h), 0, 1e-6L * (1 + dd(u, v)))) pb.hit("1e9 量级垂足不在线段上", refNearest(u, v, h), 0);
+            if(is_mid(u, h, v)) {  // 垂足落在线段内:它必须是最近点(ons 在这里会受 eps 影响,故改查「距离为 0」这一等价的容差式)
+                if(!eqd(ref_nearest(u, v, h), 0, 1e-6L * (1 + dd(u, v)))) pb.hit("1e9 量级垂足不在线段上", ref_nearest(u, v, h), 0);
                 db d1 = dd(h, q), d2 = min(dd(u, q), dd(v, q));
                 if(d1 > d2 * (1 + 1e-9L) + 1e-6L) pb.hit("1e9 量级垂足不是最近点", d1, d2);
             }
@@ -1222,16 +1222,16 @@ int main() {
             p2 w = P((db) rnd(-1000000, 1000000), (db) rnd(-1000000, 1000000)), z = P((db) rnd(-1000000, 1000000), (db) rnd(-1000000, 1000000));
             if(dd(u, v) < 1 || dd(w, z) < 1) continue;
             seg s1 = {u, v}, s2 = {w, z};
-            if(chkss(s1, s2) != refChkss(u, v, w, z)) pb.hit("1e6 量级 chkss 与参考不符", chkss(s1, s2), refChkss(u, v, w, z));
-            db d = disss(s1, s2), rd = refDisss(u, v, w, z);
+            if(chkss(s1, s2) != ref_chkss(u, v, w, z)) pb.hit("1e6 量级 chkss 与参考不符", chkss(s1, s2), ref_chkss(u, v, w, z));
+            db d = disss(s1, s2), rd = ref_disss(u, v, w, z);
             if(!eqd(d, rd, 1e-9L * (1 + rd))) pb.hit("1e6 量级 disss 与参考不符", d, rd);
             if(!chkll(s1, s2)) continue;
             p2 p = isll(s1, s2);
             db sc1 = dis(s1.dir()) * (1 + dis(p - u)), sc2 = dis(s2.dir()) * (1 + dis(p - w));
-            if(Abs(cross(s1, p)) > 1e-6L * sc1 || Abs(cross(s2, p)) > 1e-6L * sc2) pb.hit("1e6 量级 isll 交点偏离直线", cross(s1, p), 0);
+            if(abs_db(cross(s1, p)) > 1e-6L * sc1 || abs_db(cross(s2, p)) > 1e-6L * sc2) pb.hit("1e6 量级 isll 交点偏离直线", cross(s1, p), 0);
             if(chkss_s(s1, s2)) {  // 规范相交 -> 交点必须落在两段上(用距离判,避开 ons 的绝对 eps)
                 db sc = 1e-6L * (1 + dis(v - u) + dis(z - w));
-                if(refNearest(u, v, p) > sc || refNearest(w, z, p) > sc) pb.hit("1e6 量级规范相交时交点不在段上", refNearest(u, v, p), 0);
+                if(ref_nearest(u, v, p) > sc || ref_nearest(w, z, p) > sc) pb.hit("1e6 量级规范相交时交点不在段上", ref_nearest(u, v, p), 0);
             }
         }
         CHECK(pb.bad == 0, "1e6 量级 chkss/disss/isll/chkll 与精确参考一致(8000 组)");
@@ -1247,12 +1247,12 @@ int main() {
             auto H = convex_hull(a2);
             int k = H.size();
             if(k < 3) continue;
-            db A = Abs(area(H));
+            db A = abs_db(area(H));
             if(A < -1e-6) pb.hit("1e9 量级 area 为负", A, 0);
-            if(!eqd(A, Abs(refArea(H)), 1e-9L * (1 + A))) pb.hit("1e9 量级 area 与 shoelace 不符", A, Abs(refArea(H)));
+            if(!eqd(A, abs_db(ref_area(H)), 1e-9L * (1 + A))) pb.hit("1e9 量级 area 与 shoelace 不符", A, abs_db(ref_area(H)));
             for(int it = 0; it < 25; ++it) {
                 p2 q = P((db) rnd(-1000000000, 1000000000), (db) rnd(-1000000000, 1000000000));
-                int got = contain(H, q), want = refContain(H, q);
+                int got = contain(H, q), want = ref_contain(H, q);
                 if(got != want) pb.hit("1e9 量级 contain 与独立射线法不符", got, want);
             }
             // 凸包内部点(顶点加权平均)必判为「内」
@@ -1284,7 +1284,7 @@ int main() {
             p2 A = P((db) rnd(-1000000000, 1000000000), (db) rnd(-1000000000, 1000000000));
             p2 B = P((db) rnd(-1000000000, 1000000000), (db) rnd(-1000000000, 1000000000));
             p2 C = P((db) rnd(-1000000000, 1000000000), (db) rnd(-1000000000, 1000000000));
-            db d = Abs((B - A).det(C - A));
+            db d = abs_db((B - A).det(C - A));
             if(d < 1e6L) continue;  // 过滤近共线的病态三角形(模板 / 参考都无法保证)
             db D = circumcircle_diameter(A, B, C);
             if(D < 0) { pb.hit("非共线却不返回正直径", D, 1); continue; }
@@ -1321,7 +1321,7 @@ int main() {
             if(k != n) pb.hit("圆上点凸包漏顶点", k, n);
             for(int i = 0; i < n; ++i) for(int j = 0; j < k; ++j) {
                 p2 u = h[j], w = h[(j + 1) % k];
-                if(refDet(w - u, v[i] - u) < -1e-9L * (R * (1 + Abs(R)))) pb.hit("圆上点被判在凸包外", 0, 0);
+                if(ref_det(w - u, v[i] - u) < -1e-9L * (R * (1 + abs_db(R)))) pb.hit("圆上点被判在凸包外", 0, 0);
             }
             db bf = 0;
             for(int i = 0; i < k; ++i) for(int j = 0; j < k; ++j) bf = max(bf, dd(h[i], h[j]));
@@ -1383,10 +1383,10 @@ int main() {
         vector<p2> gset = {P(0, 0), P(3, 0), P(4, 2), P(3, 4), P(0, 4), P(-1, 2), P(1, 1), P(2, 3)};
         p2 gp[16], gb[32];
         for(int i = 0; i < (int) gset.size(); ++i) gp[i] = gset[i];
-        int gk = lowerChainWithTemplateMinusEq(gset.size(), gp, gb);
+        int gk = lower_chain_with_template_minus_eq(gset.size(), gp, gb);
         printf("        实际后果(用模板的 -= 求相邻点差向量再 det):%s(正确凸包有 %zu 个顶点、面积 %Lg)\n",
                gk < 0 ? "diff = b[k-1] -= b[k-2] 得到的叉积与真实值不同 -> 整个扫描判据失效" : "叉积与真实值一致",
-               refHull(gset).size(), Abs(refArea(refHull(gset))));
+               ref_hull(gset).size(), abs_db(ref_area(ref_hull(gset))));
         if(!minus_ok) {
             printf("        ==> a -= b 得到的是 a + b,任何用 -= 做差向量的几何代码(凸包/扫描线/极角排序)都会算错\n");
         }

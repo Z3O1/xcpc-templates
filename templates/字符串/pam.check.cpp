@@ -63,7 +63,7 @@ static void brute_pals(const vector<string> &strs, set<string> &S, ll &total) {
     }
 }
 // 双基哈希(数不同回文个数用,给中大 n)
-struct H2 {
+struct h2 {
     u64 B[2];
     vector<u64> f[2], pw[2];
     // 构建 1-indexed 前缀哈希；要求 s 为普通 0-indexed 字符串；覆盖内部数组。
@@ -85,7 +85,7 @@ static ll brute_pal_count_hash(const vector<string> &strs) {
     vector<pair<u64, u64>> hs;
     for(auto &s : strs) {
         int n = (int) s.size();
-        H2 h;
+        h2 h;
         h.build(s);
         For(c, 1, 2 * n - 1) {   // 中心扩展:奇中心 c = 2i-1,偶中心 c = 2i
             int lo = (c & 1) ? (c + 1) / 2 : c / 2, hi = (c & 1) ? (c + 1) / 2 : c / 2 + 1;
