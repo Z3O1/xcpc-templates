@@ -25,31 +25,3 @@ pdfinfo xcpc.pdf | grep '^Pages:'
 ```
 
 Typst 调试小样放 `tmp/`（需要时放项目目录），可用 `#panic(...)` 输出值。
-
-## GitHub 连接排障
-
-远端为 private 仓库 `Z3O1/xcpc-templates`，origin 使用 SSH。22 端口不可靠时，可用已登录 gh 的 HTTPS 凭据助手；token 不写进 URL、日志或仓库文件，以下配置只对单次命令生效，不永久修改 origin/helper。
-
-先检查登录并获取远端状态：
-
-```bash
-gh auth status
-git -c credential.helper= -c credential.helper='!gh auth git-credential' \
-  fetch https://github.com/Z3O1/xcpc-templates.git main:refs/remotes/origin/main
-```
-
-拉取失败时，`origin/main` 可能陈旧；不能据此认定已同步。检查远端是否领先并确认提交内容后，才手动推送，不自动强推：
-
-```bash
-git -c credential.helper= -c credential.helper='!gh auth git-credential' \
-  push https://github.com/Z3O1/xcpc-templates.git main:main
-```
-
-推送后查询实际远端 SHA，与本地 `git rev-parse main` 比较，不凭旧缓存宣称成功：
-
-```bash
-git -c credential.helper= -c credential.helper='!gh auth git-credential' \
-  ls-remote https://github.com/Z3O1/xcpc-templates.git refs/heads/main
-```
-
-SSH 也可走 `ssh.github.com:443`，但首次信任须按 GitHub 官方指纹核验，不未经核验追加 host key。
