@@ -1,5 +1,5 @@
 // 头文件 自测:宏与类型别名的语义(For/rFor 闭区间与右端只求值一次、cmin/cmax 改左值、
-// mtc 多测循环)
+// mtc 多测循环、M 与 qpow 的模数与快速幂)
 //
 // 本条目直接包含 头文件.cpp(不经 ../_check_base.hpp):这里要跑完全部断言再统一报错,
 // 用自己的累计式 CHECK;而 _check_base 的 CHECK 首次失败即 exit。
@@ -85,6 +85,19 @@ int main() {
         cin.rdbuf(old);
     }
     CHECK(rounds == 4, "mtc 多测循环");
+
+    // M 是全书统一模数;qpow 默认按它取模,支持 p=1 退化与任意 ll 指数。
+    CHECK(M == 998244353, "M 为 998244353");
+    CHECK(qpow(2, 10) == 1024, "qpow 默认模数");
+    CHECK(qpow(3, M - 2, M) * 3 % M == 1, "qpow 求逆元");
+    CHECK((ll) qpow(7, 0, 1) == 1 && (ll) qpow(7, 5, 1) == 0, "qpow p=1 退化");
+    ll w = 1;
+    For(i, 1, 60) w = w * 2 % M;
+    CHECK(qpow(2, 60, M) == w, "qpow 与逐次乘对照");
+    w = 1;
+    For(i, 1, 1000) w = w * 1234567 % (M - 2);
+    CHECK(qpow(1234567, 1000, M - 2) == w, "qpow 非默认模数");
+    CHECK(qpow((ll) M + 2, 3, M) == 8, "qpow 底数先取模");
 
 #if __SIZEOF_POINTER__ == 8
     u128 u = (u128) ULLONG_MAX * 2 + 1;

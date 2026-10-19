@@ -12,7 +12,7 @@
   不再写 `__int128`、`unsigned __int128`、`unsigned long long`；冗余别名（`i64`/`ull`/`u32`）不用于新代码。
 - 遍历统一用宏 `For(i, l, r)` / `rFor(i, r, l)`，闭区间 `[l, r]`，端点缓存见头文件。
 - 普通多项式统一 `poly = vector<int>`、模数 `M = 998244353`、系数在 `[0, M)`；乘法升 `ll` 逐步取模。
-- 模幂统一 `qpow(a, b, p)`（原 `ksm` 已改名），定义在 `templates/_check_base.hpp`；非零逆元写 `qpow(x, M - 2, M)`。
+- 模幂统一 `qpow(a, b, p)`（原 `ksm` 已改名），与 `M` 一起定义在 `templates/通用/头文件.cpp`；非零逆元写 `qpow(x, M - 2, M)`。
 - 不重复定义局部 `typedef vector<...> vi/vv`，不另起 `mod` 别名代替 `M`；算法自有结构体保留。
 
 ## 2. 命名与封装
