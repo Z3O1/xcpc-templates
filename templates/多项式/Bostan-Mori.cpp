@@ -1,6 +1,6 @@
 // bostan_mori(): 多项式 · 线性递推第 n 项 (Bostan-Mori)
 
-// 依赖 多项式 · NTT（mul）。
+// 依赖 6.3 NTT（mul）。
 // 求 P/Q 的第 n 项系数 [x^n]P/Q，O(k log k log n)，k 为输入长度上界；系数在 [0,M)。
 
 using poly = vector<int>;

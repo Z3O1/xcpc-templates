@@ -1,6 +1,6 @@
 // Wilber(): 数据结构 · Wilber (在线 1D1D 线性决策单调)
 
-// 依赖 数据结构 · SMAWK。
+// 依赖 2.3.2 SMAWK。
 // 在线 1D1D 的线性决策单调 DP，0 <= k < i <= n；返回 f 与前驱 fp。
 template <typename T, int B = 16, typename Q>
 pair<vector<T>, vector<int>> Wilber(int n, Q &&que, const T Z = numeric_limits<T>::max()) {

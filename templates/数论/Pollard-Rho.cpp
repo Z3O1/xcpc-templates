@@ -1,6 +1,6 @@
 // Pollard-Rho 分解质因数
 
-// 依赖 数论 · Miller-Rabin 素性检验。
+// 依赖 5.5 Miller-Rabin 素性检验。
 // 分解 u64 的质因数，返回升序含重因子的向量；期望 O(n^1/4)。
 
 u64 isqrt(u64 x) {

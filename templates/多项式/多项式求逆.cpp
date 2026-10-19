@@ -1,6 +1,6 @@
 // poly_inv(): 多项式 · 多项式求逆 (牛顿迭代 NTT)
 
-// 依赖 多项式 · NTT。
+// 依赖 6.3 NTT。
 // 牛顿迭代求逆，O(n log n)；系数在 [0,M)，f 不足 n 项时高次补零。
 
 using poly = vector<int>;

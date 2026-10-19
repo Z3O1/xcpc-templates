@@ -1,6 +1,6 @@
 // comp_inv(): 多项式 · 多项式复合逆 (拉格朗日反演, O(n log² n))
 
-// 依赖 多项式 · NTT。
+// 依赖 6.3 NTT。
 // 拉格朗日反演求复合逆，O(n log² n)；系数在 [0,M)，每轮变换长度 <= 2^23。
 
 using poly = vector<int>;

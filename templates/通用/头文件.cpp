@@ -1,6 +1,6 @@
 // head(): 通用 · 头文件（宏、类型别名与模幂）
 
-// 依赖 仅 <bits/stdc++.h>。
+// 仅依赖 <bits/stdc++.h>。
 // 全仓基础头：For/rFor 等宏、类型别名、模数 M 与 qpow。
 
 #include <bits/stdc++.h>
