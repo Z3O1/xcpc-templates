@@ -5,37 +5,17 @@
 // word-RAM 字长 >= ceil(log2(n+1))，位运算/clz 为 O(1)；int 下用 u64。
 // 初始化 O(n)，q 次操作总 O(n+q)，空间 O(n)；非逐次最坏 O(1)。微宏划分与证明见同名介绍。
 struct tree_dsu_t {
-    int root;
-    int width;
-    vector<int> cluster;
-    vector<int> index;
-    vector<int> offset;
-    vector<int> vertex;
-    vector<int> boundary;
-    vector<int> macro_id;
-    vector<u64> mask;
-    vector<u64> alive;
-    vector<int> parent;
-    vector<int> rank;
-    vector<int> top;
+    int root, width;
+    vector<int> cluster, index, offset, vertex;
+    vector<int> boundary, macro_id, parent, rank, top;
+    vector<u64> mask, alive;
 
     void init(const vector<int> &p) {
-        int n = p.size();
-        int bits = 1;
-        while((1LL << bits) <= n) ++bits;
-        width = (bits + 1) / 2;
-        root = -1;
-        cluster.resize(n);
-        index.resize(n);
-        mask.resize(n);
-        macro_id.assign(n, -1);
-        offset.clear();
-        vertex.clear();
-        boundary.clear();
-        alive.clear();
-        vector<int> head(n, -1);
-        vector<int> sibling(n, -1);
-        vector<int> order;
+        int n = p.size(), bits = n ? __lg(n) + 1 : 1;
+        root = -1, width = (bits + 1) / 2;
+        cluster.resize(n), index.resize(n), mask.resize(n), macro_id.assign(n, -1);
+        offset.clear(), vertex.clear(), boundary.clear(), alive.clear();
+        vector<int> head(n, -1), sibling(n, -1), order;
         For(v, 0, n - 1) {
             if(p[v] == -1) root = v;
             else sibling[v] = head[p[v]], head[p[v]] = v;
@@ -44,60 +24,46 @@ struct tree_dsu_t {
         For(i, 0, n - 1) {
             for(int u = head[order[i]]; u != -1; u = sibling[u]) order.push_back(u);
         }
-        vector<int> first(n);
-        vector<int> last(n);
-        vector<int> length(n);
-        vector<int> next(n, -1);
-        // 残余用链表 O(1) 拼接；成簇时每点仅遍历一次，禁止逐层复制 vector。
+        vector<int> first(n), last(n), length(n), next(n, -1);
+        // 孩子的剩余链父先子后；整组输出成簇，每点仅分配一次。
         auto emit = [&](int begin, int outside) {
-            int c = alive.size();
-            offset.push_back(vertex.size());
-            boundary.push_back(outside);
-            int count = 0;
+            int c = alive.size(), count = 0;
+            offset.push_back(vertex.size()), boundary.push_back(outside);
             for(int v = begin; v != -1; v = next[v]) {
-                cluster[v] = c;
-                index[v] = count++;
+                cluster[v] = c, index[v] = count++;
                 vertex.push_back(v);
             }
             alive.push_back((1ULL << count) - 1);
         };
         rFor(i, n - 1, 0) {
             int v = order[i];
-            int begin = -1;
-            int end = -1;
-            int count = 0;
+            int begin = -1, end = -1, count = 0;
             for(int u = head[v]; u != -1; u = sibling[u]) {
                 if(count) next[end] = first[u];
                 else begin = first[u];
-                end = last[u];
-                count += length[u];
+                end = last[u], count += length[u];
                 if(count >= width) {
                     emit(begin, v);
-                    begin = end = -1;
-                    count = 0;
+                    begin = end = -1, count = 0;
                 }
             }
-            next[v] = begin;
-            first[v] = v;
-            last[v] = count ? end : v;
-            length[v] = count + 1;
+            next[v] = begin, first[v] = v;
+            last[v] = count ? end : v, length[v] = count + 1;
         }
         if(n) emit(root, -1);
         for(int v : order) {
             mask[v] = 1ULL << index[v];
             if(p[v] != -1 && cluster[v] == cluster[p[v]]) mask[v] |= mask[p[v]];
         }
+        // 仅不同外边界及根作为宏点。
         int k = 0;
         for(int b : boundary)
             if(b != -1 && macro_id[b] == -1) macro_id[b] = k++;
         if(n && macro_id[root] == -1) macro_id[root] = k++;
-        parent.resize(k);
-        rank.assign(k, 0);
-        top.resize(k);
+        parent.resize(k), rank.assign(k, 0), top.resize(k);
         For(v, 0, n - 1) if(macro_id[v] != -1) {
             int x = macro_id[v];
-            parent[x] = x;
-            top[x] = v;
+            parent[x] = x, top[x] = v;
         }
     }
     int macro_find(int x) {
@@ -119,12 +85,10 @@ struct tree_dsu_t {
             int b = top[x];
             bits = mask[b] & alive[cluster[b]];
             if(bits) return vertex[offset[cluster[b]] + 63 - __builtin_clzll(bits)];
-            int y = macro_find(macro_id[boundary[cluster[b]]]);
-            int highest = top[y];
+            int y = macro_find(macro_id[boundary[cluster[b]]]), highest = top[y];
             if(rank[x] < rank[y]) swap(x, y);
-            parent[y] = x;
+            parent[y] = x, top[x] = highest;
             if(rank[x] == rank[y]) ++rank[x];
-            top[x] = highest;
         }
     }
 };
