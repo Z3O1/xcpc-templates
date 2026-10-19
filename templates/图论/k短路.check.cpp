@@ -17,9 +17,9 @@ static vector<ll> ref_walks(const k_shortest_t &g, int s, int t, int k) {
         ++count[u];
         if(u == t) ans.push_back(d);
         for(int id : g.g[u]) {
-            auto e = g.edges[id];
+            auto e = g.e[id];
             i128 nd = (i128)d + e.w;
-            if(nd < LLONG_MAX) q.push({(ll)nd, e.to});
+            if(nd < LLONG_MAX) q.push({(ll)nd, e.v});
         }
     }
     return ans;
@@ -30,7 +30,7 @@ static void compare(k_shortest_t &g, int s, int t, int k) {
     auto got = g.solve(s, t, k);
     if(got != want || !is_sorted(got.begin(), got.end())) {
         printf("FAIL n=%zu s=%d t=%d k=%d\n", g.g.size(), s, t, k);
-        for(auto e : g.edges) printf("%d %d %lld\n", e.from, e.to, e.w);
+        for(auto e : g.e) printf("%d %d %lld\n", e.u, e.v, e.w);
         printf("want:");
         for(ll x : want) printf(" %lld", x);
         printf("\ngot:");
@@ -43,8 +43,8 @@ static void compare(k_shortest_t &g, int s, int t, int k) {
 static void enumerate(const k_shortest_t &g, int u, int t, ll d, vector<ll> &out) {
     if(u == t) out.push_back(d);
     for(int id : g.g[u]) {
-        auto e = g.edges[id];
-        enumerate(g, e.to, t, d + e.w, out);
+        auto e = g.e[id];
+        enumerate(g, e.v, t, d + e.w, out);
     }
 }
 
@@ -107,7 +107,7 @@ int main() {
         auto got = g.solve(s, t, k);
         if(got != want) {
             printf("FAIL DAG rep=%d n=%d s=%d t=%d k=%d\n", rep, n, s, t, k);
-            for(auto e : g.edges) printf("%d %d %lld\n", e.from, e.to, e.w);
+            for(auto e : g.e) printf("%d %d %lld\n", e.u, e.v, e.w);
             return 1;
         }
     }
@@ -126,6 +126,6 @@ int main() {
     CHECK(g.solve(n - 1, 0, 10).empty(), "同图换向无路");
     CHECK(g.solve(n - 1, n - 1, 10) == vector<ll>{0}, "终点无出边，仅空游走");
     g.init(0);
-    CHECK(g.g.empty() && g.edges.empty() && g.heap.empty(), "init(0) 清除图与堆");
+    CHECK(g.g.empty() && g.e.empty() && g.h.empty(), "init(0) 清除图与堆");
     PASSED("k短路");
 }

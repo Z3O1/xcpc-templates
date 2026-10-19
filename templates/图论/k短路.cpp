@@ -1,96 +1,93 @@
 // k_shortest_t: 图论 · k 短路 (可重游走)
 
-// 0-based 有向非负 ll 权图；按边序列计重，重边分别计数，允许重复点边及零环。
-// 返回前 k 个长度，s=t 时空游走计第一个；只枚举长度 < LLONG_MAX 的游走。
-// 反向 Dijkstra + 可持久化左偏树，O((n+m)log(m+2)+k log(k+2)) 时间，
-// O(n+m log(m+2)+k) 空间；init 清图，solve 可换起终点重复调用。
+// 0-based 有向非负 ll 权图，按边序列计重；允许重边、重复点边及零环。
+// solve 返回前 k 个长度；s=t 时空游走计第一个，只枚举长度 < LLONG_MAX 的游走。
+// O((n+m)log(m+2)+k log(k+2)) 时间，O(n+m log(m+2)+k) 空间。
+// init 清图，solve 可换起终点重复调用。
 struct k_shortest_t {
     struct edge {
-        int from, to;
+        int u, v;
         ll w;
     };
     struct node {
-        ll key;
-        int to, l, r, rank;
+        ll w;
+        int v, l, r, d;
     };
-    vector<edge> edges;
+    vector<edge> e;
     vector<vector<int>> g, rg;
-    vector<node> heap;
+    vector<node> h;
     void init(int n) {
         g.assign(n, {}), rg.assign(n, {});
-        edges.clear(), heap.clear();
+        e.clear(), h.clear();
     }
     void add(int u, int v, ll w) {
-        int id = edges.size();
-        edges.push_back({u, v, w});
-        g[u].push_back(id), rg[v].push_back(id);
+        int i = e.size();
+        e.push_back({u, v, w});
+        g[u].push_back(i), rg[v].push_back(i);
     }
-    // 持久化合并；不能持有 heap 元素的引用跨越递归（push_back 会扩容）。
+    // 递归会扩容，不能跨调用持有 h 元素的引用。
     int meld(int a, int b) {
         if(!a || !b) return a + b;
-        if(heap[a].key > heap[b].key) swap(a, b);
-        int x = heap.size();
-        heap.push_back(heap[a]);
-        int r = meld(heap[x].r, b);
-        heap[x].r = r;
-        if(heap[heap[x].l].rank < heap[heap[x].r].rank) swap(heap[x].l, heap[x].r);
-        heap[x].rank = heap[heap[x].r].rank + 1;
+        if(h[a].w > h[b].w) swap(a, b);
+        int x = h.size();
+        h.push_back(h[a]);
+        int r = meld(h[x].r, b);
+        h[x].r = r;
+        if(h[h[x].l].d < h[h[x].r].d) swap(h[x].l, h[x].r);
+        h[x].d = h[h[x].r].d + 1;
         return x;
     }
     vector<ll> solve(int s, int t, int k) {
         vector<ll> ans;
-        heap.assign(1, {});
+        h.assign(1, {});
         if(k <= 0) return ans;
         int n = g.size();
         const ll inf = LLONG_MAX;
-        vector<ll> dist(n, inf);
-        vector<int> tree(n, -1), order, h(n);
-        using state = pair<ll, int>;
-        priority_queue<state, vector<state>, greater<state>> q;
-        // 反向最短路，同时记录父亲先出队的顺序。
-        dist[t] = 0, q.push({0, t});
+        vector<ll> d(n, inf);
+        vector<int> pre(n, -1), ord, rt(n);
+        using pli = pair<ll, int>;
+        priority_queue<pli, vector<pli>, greater<pli>> q;
+        d[t] = 0, q.push({0, t});
         while(!q.empty()) {
-            auto [d, u] = q.top();
+            auto [du, u] = q.top();
             q.pop();
-            if(d != dist[u]) continue;
-            order.push_back(u);
-            for(int id : rg[u]) {
-                auto e = edges[id];
-                i128 nd = (i128)d + e.w;
-                if(nd < dist[e.from]) {
-                    dist[e.from] = nd, tree[e.from] = id;
-                    q.push({(ll)nd, e.from});
+            if(du != d[u]) continue;
+            ord.push_back(u);
+            for(int i : rg[u]) {
+                auto a = e[i];
+                i128 nd = (i128)du + a.w;
+                if(nd < d[a.u]) {
+                    d[a.u] = nd, pre[a.u] = i;
+                    q.push({(ll)nd, a.u});
                 }
             }
         }
-        if(dist[s] == inf) return ans;
-        // 树父亲先出队，零权边也不会把最短路树连成环；只排除选中的那条边。
-        for(int u : order) {
-            if(tree[u] != -1) h[u] = h[edges[tree[u]].to];
-            for(int id : g[u]) {
-                auto e = edges[id];
-                if(id == tree[u] || dist[e.to] == inf) continue;
-                i128 delta = (i128)e.w + dist[e.to] - dist[u];
-                if(delta >= inf) continue;
-                int x = heap.size();
-                heap.push_back({(ll)delta, e.to, 0, 0, 1});
-                h[u] = meld(h[u], x);
+        if(d[s] == inf) return ans;
+        // 父亲先出队，零边不成树环；只排除选中的那条边。
+        for(int u : ord) {
+            if(pre[u] != -1) rt[u] = rt[e[pre[u]].v];
+            for(int i : g[u]) {
+                auto a = e[i];
+                if(i == pre[u] || d[a.v] == inf) continue;
+                i128 w = (i128)a.w + d[a.v] - d[u];
+                if(w >= inf) continue;
+                int x = h.size();
+                h.push_back({(ll)w, a.v, 0, 0, 1});
+                rt[u] = meld(rt[u], x);
             }
         }
-        // 候选向堆孩子替换侧边，或从侧边终点追加下一条。
-        auto push = [&](i128 cost, int x) {
-            if(x && cost < inf) q.push({(ll)cost, x});
+        auto push = [&](i128 w, int x) {
+            if(x && w < inf) q.push({(ll)w, x});
         };
-        ans.push_back(dist[s]);
-        push((i128)dist[s] + heap[h[s]].key, h[s]);
+        ans.push_back(d[s]);
+        push((i128)d[s] + h[rt[s]].w, rt[s]);
         while((int)ans.size() < k && !q.empty()) {
-            auto [cost, x] = q.top();
+            auto [w, x] = q.top();
             q.pop();
-            ans.push_back(cost);
-            for(int y : {heap[x].l, heap[x].r})
-                push((i128)cost + heap[y].key - heap[x].key, y);
-            int y = h[heap[x].to];
-            push((i128)cost + heap[y].key, y);
+            ans.push_back(w);
+            for(int y : {h[x].l, h[x].r}) push((i128)w + h[y].w - h[x].w, y);
+            int y = rt[h[x].v];
+            push((i128)w + h[y].w, y);
         }
         return ans;
     }
