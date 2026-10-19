@@ -1,7 +1,6 @@
 // disjoint_sparse_t: 数据结构 · 二区间合并 (区间半群)
 
-// 依赖 通用/头文件.cpp 的 For，及模板参数 T、op。
-// O(n log n) 预处理后任意 0-based 闭区间最多合并一次；op 只需结合律，T 可复制。
+// O(n log n) 预处理后任意 0-based 闭区间最多合并一次；op 只需结合律。
 template <class T, class F>
 struct disjoint_sparse_t {
     vector<T> a;

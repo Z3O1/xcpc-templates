@@ -1,7 +1,6 @@
 // Dinic_t: 图论 · 网络流 (Dinic 最大流 + cut 割集)
 // hide
 
-// 依赖 通用/头文件.cpp 的 For、ll 与本类的上界 N、无穷 Z。
 // 1..n 编号的增广路最大流与最小割源侧；容量非负，流与残量加法在 ll 内。
 
 class Dinic_t {

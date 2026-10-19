@@ -1,6 +1,5 @@
 // BSGS(): 数论 · 离散对数 (a^x ≡ b mod p)
 
-// 依赖 通用/头文件.cpp 的 ll 与 unordered_map。
 // 求模素数 p 的离散对数，O(sqrt(p)) 时间与空间。
 
 // 返回最小的 x >= 0 使 a^x ≡ b (mod p)，无解返回 -1。

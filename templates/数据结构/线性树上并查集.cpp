@@ -1,6 +1,5 @@
 // tree_dsu_t(): 数据结构 · 线性树上并查集
 
-// 依赖 通用/头文件.cpp 的 For 与 u64 位图。
 // 静态树上向上收缩：merge_parent(v) 并掉原父边、根不动；init O(n)，q 次操作总 O(n+q)。
 struct tree_dsu_t {
     int rt, w;

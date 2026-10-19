@@ -1,6 +1,6 @@
 // poly_interp(): 多项式 · 快速插值 (分治 多点求值)
 
-// 依赖 多项式/多点求值.cpp 的 poly_eval 与 ntt.cpp 的 mul。
+// 依赖 多项式 · NTT、多项式 · 多点求值。
 // 分治合并插值，O(m log² m)；所有输入在 [0,M)，m = |xs|。
 
 using poly = vector<int>;

@@ -1,6 +1,6 @@
 // poly_eval(): 多项式 · 多点求值 (分治取模)
 
-// 依赖 多项式/多项式除法.cpp 的 poly_mod、求逆与 ntt.cpp 的 mul。
+// 依赖 多项式 · NTT、多项式 · 带余除法、多项式 · 多项式求逆。
 // 分治取模做多点求值，O((|f|+m) log²(|f|+m)) 时间、O(m log m) 空间。
 
 using poly = vector<int>;

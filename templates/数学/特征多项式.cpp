@@ -1,7 +1,6 @@
 // charpoly(): 数学 · 特征多项式
 
-// 依赖 qpow 与 M = 998244353。
-// 先相似变换到上 Hessenberg 再递推特征多项式；mat 为 n 阶方阵、元素在 [0,M)。
+// 先相似变换到上 Hessenberg 再递推；mat 为 n 阶方阵、元素在 [0,M)。
 
 using poly = vector<int>;
 using mat = vector<vector<int>>;

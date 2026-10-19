@@ -1,6 +1,5 @@
 // SMAWK(): 数据结构 · SMAWK (全单调矩阵行最值)
 
-// 依赖 通用/头文件.cpp 的 For，及使用者提供的全单调矩阵 que(i,j)。
 // 全单调矩阵每行最小值，O(n+m)；行列均 1-based，返回 f 与最小列 fp。
 template <typename T, typename Q> pair<vector<T>, vector<int>> SMAWK(int n0, int m, Q &&que) {
     vector<T> f(n0 + 1, T());

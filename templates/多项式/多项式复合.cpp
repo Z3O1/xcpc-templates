@@ -1,6 +1,6 @@
 // comp(): 多项式 · 多项式复合 (分治卷积, O(n log² n))
 
-// 依赖 多项式/ntt.cpp 的 mul。
+// 依赖 多项式 · NTT。
 // 双变量分治卷积做复合，O(n log² n)；系数低次在前且在 [0,M)，每层变换长度 <= 2^23。
 
 using poly = vector<int>;

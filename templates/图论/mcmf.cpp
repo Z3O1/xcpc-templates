@@ -1,7 +1,6 @@
 // MCMF_t: 图论 · 费用流 (势优化 + mcmf2 负环/下界修正)
 
-// 依赖 通用/头文件.cpp 的 For/cmax/min、ll 与本类的上界 N、无穷 Z。
-// 1..n 编号的最小费用增广路；容量为非负 int、费用为 ll，求流修改残量网络。
+// 1..n 编号的最小费用增广路（势优化）；容量为非负 int、费用为 ll，求流修改残量网络。
 
 struct MCMF_t {
     static constexpr int N = 1e6 + 10, FL = 1e9;

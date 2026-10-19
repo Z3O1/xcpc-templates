@@ -1,7 +1,7 @@
 // head(): 通用 · 头文件（宏、类型别名与模幂）
 
-// 基础头：后面所有模板都假定这层已在上方。
-// 提供 For/rFor/all/cmin/cmax/mtc 宏、类型别名、模数 M 与 qpow 两参/三参。
+// 依赖 仅 <bits/stdc++.h>。
+// 全仓基础头：For/rFor 等宏、类型别名、模数 M 与 qpow。
 
 #include <bits/stdc++.h>
 #define For(i, l, r) for(int i = l, i##_e = r; i <= i##_e; ++i)

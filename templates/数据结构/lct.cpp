@@ -1,6 +1,6 @@
 // LCT 命名空间: 数据结构 · Link-Cut Tree (link/cut/que/upd)
 
-// 依赖 通用/头文件.cpp 的 For，及全局 N 与点权 a[1..n]。
+// 依赖 全局 N 与点权 a[1..n]。
 // 1..n 编号的动态森林：link/cut/路径点权异或/单点改；操作会改变辅助树形态。
 namespace LCT {
 #define ls(k) ch[k][0]

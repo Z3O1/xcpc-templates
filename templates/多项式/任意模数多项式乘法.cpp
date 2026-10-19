@@ -1,7 +1,6 @@
 // Mul::mul(): 多项式 · 任意模数多项式乘法 (三模 NTT + CRT)
 
-// 依赖 通用/头文件.cpp 的 For/ll，与 ntt.cpp 相互独立。
-// 三模 NTT + CRT 做任意模卷积；2 <= P <= 2^31-1，变换长度 <= 2^20。
+// 三模 NTT + CRT 做任意模卷积，与普通 NTT 那页相互独立；2 <= P <= 2^31-1，变换长度 <= 2^20。
 
 using poly = vector<int>;
 namespace Mul {

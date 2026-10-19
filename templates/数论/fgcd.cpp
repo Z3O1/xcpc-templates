@@ -1,7 +1,6 @@
 // fgcd_t: 数论 · O(V)-O(1) GCD
 
-// 依赖 通用/头文件.cpp 的 For；对象内含大数组。
-// 预处理 O(V)，之后每次 gcd 为 O(1)。
+// 预处理 O(V)，之后每次 gcd 为 O(1)；对象内含大数组，不宜放栈上。
 
 struct fgcd_t {
     static constexpr int n = 1e7, B = 3163;

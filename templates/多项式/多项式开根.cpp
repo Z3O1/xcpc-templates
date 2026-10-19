@@ -1,6 +1,6 @@
 // poly_sqrt(): 多项式 · 多项式开根 (牛顿迭代求逆)
 
-// 依赖 多项式/多项式求逆.cpp 的 poly_inv 与 ntt.cpp 的 mul。
+// 依赖 多项式 · NTT、多项式 · 多项式求逆。
 // 牛顿迭代开根，O(n log n)；系数在 [0,M)，f 高次缺项视零。
 
 using poly = vector<int>;

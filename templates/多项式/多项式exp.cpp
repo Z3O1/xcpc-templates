@@ -1,6 +1,6 @@
 // poly_exp(): 多项式 · 多项式指数 (牛顿迭代取对数)
 
-// 依赖 多项式/多项式ln.cpp 的 poly_ln、求逆与 ntt.cpp 的 mul。
+// 依赖 多项式 · NTT、多项式 · 多项式对数、多项式 · 多项式求逆。
 // 牛顿迭代求 exp，O(n log n)；系数在 [0,M)，n < M，f 高次缺项视零。
 
 using poly = vector<int>;

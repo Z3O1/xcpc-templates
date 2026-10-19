@@ -1,7 +1,6 @@
 // exgcd(): 数论 · 扩展欧几里得
 // hide
 
-// 依赖 通用/头文件.cpp 的 ll 与 gcd。
 // 求 a*x + b*y = gcd(a,b) 的一组解，顺带返回 gcd。
 
 // 返回 gcd(a, b)，并通过引用给出满足 a*x + b*y = gcd(a, b) 的一组 x,y。

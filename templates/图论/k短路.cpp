@@ -1,6 +1,5 @@
 // k_shortest_t: 图论 · k 短路 (可重游走)
 
-// 依赖 通用/头文件.cpp 的 ll、i128 与 LLONG_MAX。
 // 0-based 有向非负权图按边序列计重的 k 短路，允许重边、重游与零环；O((n+m)log m + k log k)。
 
 struct k_shortest_t {

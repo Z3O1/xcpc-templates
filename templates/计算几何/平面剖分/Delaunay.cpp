@@ -1,6 +1,6 @@
 // delaunay(): 计算几何 · Delaunay 三角剖分 (随机增量 + Lawson 翻边,返回逆时针三角形)
 
-// 依赖 凸包/凸包.cpp 的凸包与凸包内点判定。
+// 依赖 计算几何 · 凸包、直径与裁剪。
 // 随机增量 + Lawson 翻边求 Delaunay，返回拼平的逆时针三角形坐标；最坏 O(n²)。
 namespace Geo {
 namespace Delaunay {

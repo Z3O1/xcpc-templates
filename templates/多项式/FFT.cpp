@@ -1,6 +1,5 @@
 // fft_conv(): 多项式 · 复数 FFT 卷积 (double 精度)
 
-// 依赖 通用/头文件.cpp 的 For/db 与 complex。
 // 实系数卷积，O((n+m) log(n+m))；系数绝对值须明显小于 1e15。
 
 using cp = complex<db>;

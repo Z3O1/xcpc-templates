@@ -1,6 +1,5 @@
 // floor_sum(): 数论 · 下取整和 (sum floor((a * i + b) / m))
 
-// 依赖 通用/头文件.cpp 的 u64、u128。
 // 类欧的裸下取整特例，O(log m)。
 
 // 返回 sum_{i=0}^{n-1} floor((a*i+b)/m)；参数无符号、要求 m > 0，a/b 不必小于 m。

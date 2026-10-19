@@ -1,7 +1,6 @@
 // DOM::getdom(): 图论 · 支配树 (Lengauer-Tarjan)
 
-// 依赖 通用/头文件.cpp 的 For/rFor/cmin、pii 与命名空间内的 N。
-// 1 为根的有向图支配树，O((n+m)α)；点编号 1..n，不可达点 dm=0。
+// 以 1 为根的有向图支配树，O((n+m)α)；点编号 1..n，不可达点 dm=0。
 
 namespace DOM {
 

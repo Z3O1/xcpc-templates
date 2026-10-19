@@ -1,6 +1,5 @@
 // BM(): 多项式 · 最短线性递推 (Berlekamp-Massey)
 
-// 依赖 通用/头文件.cpp 的 For、ll、qpow 与 M = 998244353。
 // 求最短线性递推；序列各项在 [0,M)，O(n²)。只保证拟合给定前缀，退化时系数可能不唯一。
 
 using poly = vector<int>;

@@ -1,7 +1,7 @@
 // minkowski_sum(): 计算几何 · 整数闵可夫斯基和
 
-// 依赖 整数/整数点.cpp、整数/极角排序.cpp。
-// O(n+m) 求 A+B 的逆时针严格凸包，从最低最左点开始；输入须逆时针严格凸、不重复首点。
+// 依赖 计算几何 · 整数点与精确运算、计算几何 · 整数极角排序。
+// O(n+m) 求 A+B 的逆时针严格凸包（从最低最左点起）；输入须逆时针严格凸。
 namespace IGeo {
 
 vector<p2i> minkowski_sum(vector<p2i> a, vector<p2i> b) {
