@@ -74,13 +74,9 @@
 
 == 线性序列并查集
 
-#include "templates/数据结构/线性序列并查集.typ"
-
 #zebraw(lang: false)[#raw(readcode("templates/数据结构/线性序列并查集.cpp"), lang: "cpp", block: true)]
 
 == 线性树上并查集
-
-#include "templates/数据结构/线性树上并查集.typ"
 
 #zebraw(lang: false)[#raw(readcode("templates/数据结构/线性树上并查集.cpp"), lang: "cpp", block: true)]
 
@@ -103,8 +99,6 @@
 #zebraw(lang: false)[#raw(readcode("templates/图论/k短路.cpp"), lang: "cpp", block: true)]
 
 == 拟阵交
-
-#include "templates/图论/拟阵交.typ"
 
 #zebraw(lang: false)[#raw(readcode("templates/图论/拟阵交.cpp"), lang: "cpp", block: true)]
 
@@ -324,8 +318,6 @@
 
 === 闵可夫斯基和
 
-#include "templates/计算几何/凸包/闵可夫斯基和.typ"
-
 #zebraw(lang: false)[#raw(readcode("templates/计算几何/凸包/闵可夫斯基和.cpp"), lang: "cpp", block: true)]
 
 === 上凸壳
@@ -381,8 +373,6 @@
 #zebraw(lang: false)[#raw(readcode("templates/计算几何/圆/图形交.cpp"), lang: "cpp", block: true)]
 
 === 圆并面积与周长
-
-#include "templates/计算几何/圆/圆并.typ"
 
 #zebraw(lang: false)[#raw(readcode("templates/计算几何/圆/圆并.cpp"), lang: "cpp", block: true)]
 
