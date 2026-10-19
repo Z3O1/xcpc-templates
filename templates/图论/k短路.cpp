@@ -19,9 +19,8 @@ struct k_shortest_t {
         e.clear(), h.clear();
     }
     void add(int u, int v, ll w) {
-        int i = e.size();
+        g[u].push_back(e.size()), rg[v].push_back(e.size());
         e.push_back({u, v, w});
-        g[u].push_back(i), rg[v].push_back(i);
     }
     // 递归中 h 会扩容，调用方不能跨调用持有 h 元素的引用。
     int meld(int a, int b) {
