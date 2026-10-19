@@ -17,13 +17,13 @@
 
 ## 2. 命名与封装
 
-- 变量、函数、成员用 lowercase snake_case；宏除外。
+- 变量、函数、成员用 lowercase snake_case；宏除外。面向 ICPC 手抄，内部变量优先常见短名，如 `fa/sz/rk/rt/bel/id/st/cnt/lim`，不为英文完整性拉长。
 - 以下既有的大写缩写名是**契约名，不改写**：`NTT`、`FFT`、`SA`、`SAM`、`BSGS`、`CRT`、`BM`、
   `DJS_mu`、`DJS_phi`、`Wilber`、`SMAWK`、`chkp`，以及宏 `For`、`rFor`。
   `chkp` 与 `数论/Miller-Rabin.cpp` 绑定，是 `数论/Pollard-Rho.cpp` 的共用入口（AGENTS.md §1），不要改成 `is_prime`。
 - 有状态的“工具型”结构体保留 `_t` 后缀：`Dinic_t`、`MCMF_t`、`rmq_t`、`sieve_t`、`fgcd_t` 等；
   纯数据类型不加后缀：`p2`、`plane`、`nd`、`mat`、`poly`，既有 `SPQR_tree`、`Tri` 保留。
-- **替换拼音与不透明缩写**（限新代码）：`ksm → qpow` 已完成；新名字不用 `bd`/`ins` 这类残词。
+- 优先竞赛常用命名，不强求通用库式长名；有歧义时用一句注释说明。既有统一接口 `qpow` 保留。
   `que` 是四边形不等式章节的回调名契约（代码与介绍页都这么写），保留。
 - 命名空间：既有的 `Geo`、`IGeo`、`DOM`、`Mul`、`LCT`、`DS`、`Probe`、`Delaunay`、`Voronoi` 保留；
   新命名空间用 lowercase snake_case。
