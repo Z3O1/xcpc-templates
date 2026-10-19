@@ -1,94 +1,86 @@
 // tree_dsu_t(): 数据结构 · 线性树上并查集
 
-// init(p)：静态有根树，点 [0,n)，恰一个 p[root]=-1，其余为合法父亲；空树合法，可重复初始化。
-// 仅收缩原父边；find 返回当前分量中深度最小的原顶点，不支持动态改树/拆分。
-// word-RAM 字长 >= ceil(log2(n+1))，位运算/clz 为 O(1)；int 下用 u64。
-// 初始化 O(n)，q 次操作总 O(n+q)，空间 O(n)；非逐次最坏 O(1)。微宏划分与证明见同名介绍。
+// p 为静态树父亲数组，下标 [0,n)，唯一根 p[rt]=-1；可空，可重复 init。
+// merge_parent(v) 收缩原父边，根不动；find(v) 返回分量最高点，不支持拆分/改树。
+// 初始化 O(n)，q 次操作总 O(n+q)，空间 O(n)；非单次最坏 O(1)。
+// 位操作按 O(1) 计；n 为非负 int，位图用 u64。
 struct tree_dsu_t {
-    int root, width;
-    vector<int> cluster, index, offset, vertex;
-    vector<int> boundary, macro_id, parent, rank, top;
-    vector<u64> mask, alive;
-
+    int rt, w;
+    vector<int> bel, id, st, a;  // 簇号、位号、起点、点号
+    vector<int> up, mp, fa, rk, top;
+    vector<u64> mask, live;
     void init(const vector<int> &p) {
-        int n = p.size(), bits = n ? __lg(n) + 1 : 1;
-        root = -1, width = (bits + 1) / 2;
-        cluster.resize(n), index.resize(n), mask.resize(n), macro_id.assign(n, -1);
-        offset.clear(), vertex.clear(), boundary.clear(), alive.clear();
-        vector<int> head(n, -1), sibling(n, -1), order;
+        int n = p.size(), lg = n ? __lg(n) + 1 : 1;
+        rt = -1, w = (lg + 1) / 2;
+        bel.resize(n), id.resize(n), mask.resize(n), mp.assign(n, -1);
+        st.clear(), a.clear(), up.clear(), live.clear();
+        vector<int> son(n, -1), bro(n, -1), ord;
         For(v, 0, n - 1) {
-            if(p[v] == -1) root = v;
-            else sibling[v] = head[p[v]], head[p[v]] = v;
+            if(p[v] == -1) rt = v;
+            else bro[v] = son[p[v]], son[p[v]] = v;
         }
-        if(n) order.push_back(root);
-        For(i, 0, n - 1) {
-            for(int u = head[order[i]]; u != -1; u = sibling[u]) order.push_back(u);
-        }
-        vector<int> first(n), last(n), length(n), next(n, -1);
-        // 孩子的剩余链父先子后；整组输出成簇，每点仅分配一次。
-        auto emit = [&](int begin, int outside) {
-            int c = alive.size(), count = 0;
-            offset.push_back(vertex.size()), boundary.push_back(outside);
-            for(int v = begin; v != -1; v = next[v]) {
-                cluster[v] = c, index[v] = count++;
-                vertex.push_back(v);
+        if(n) ord.push_back(rt);
+        For(i, 0, n - 1) for(int u = son[ord[i]]; u != -1; u = bro[u]) ord.push_back(u);
+        vector<int> l(n), r(n), sz(n), nxt(n, -1);
+        auto add = [&](int l0, int u) {
+            int c = live.size(), cnt = 0;
+            st.push_back(a.size()), up.push_back(u);
+            for(int v = l0; v != -1; v = nxt[v]) {
+                bel[v] = c, id[v] = cnt++;
+                a.push_back(v);
             }
-            alive.push_back((1ULL << count) - 1);
+            live.push_back((1ULL << cnt) - 1);
         };
         rFor(i, n - 1, 0) {
-            int v = order[i];
-            int begin = -1, end = -1, count = 0;
-            for(int u = head[v]; u != -1; u = sibling[u]) {
-                if(count) next[end] = first[u];
-                else begin = first[u];
-                end = last[u], count += length[u];
-                if(count >= width) {
-                    emit(begin, v);
-                    begin = end = -1, count = 0;
+            int v = ord[i], l0 = -1, r0 = -1, cnt = 0;
+            for(int u = son[v]; u != -1; u = bro[u]) {
+                if(cnt) nxt[r0] = l[u];
+                else l0 = l[u];
+                r0 = r[u], cnt += sz[u];
+                if(cnt >= w) {
+                    add(l0, v);
+                    l0 = r0 = -1, cnt = 0;
                 }
             }
-            next[v] = begin, first[v] = v;
-            last[v] = count ? end : v, length[v] = count + 1;
+            nxt[v] = l0, l[v] = v;
+            r[v] = cnt ? r0 : v, sz[v] = cnt + 1;
         }
-        if(n) emit(root, -1);
-        for(int v : order) {
-            mask[v] = 1ULL << index[v];
-            if(p[v] != -1 && cluster[v] == cluster[p[v]]) mask[v] |= mask[p[v]];
+        if(n) add(rt, -1);
+        for(int v : ord) {
+            mask[v] = 1ULL << id[v];
+            if(p[v] != -1 && bel[v] == bel[p[v]]) mask[v] |= mask[p[v]];
         }
-        // 仅不同外边界及根作为宏点。
         int k = 0;
-        for(int b : boundary)
-            if(b != -1 && macro_id[b] == -1) macro_id[b] = k++;
-        if(n && macro_id[root] == -1) macro_id[root] = k++;
-        parent.resize(k), rank.assign(k, 0), top.resize(k);
-        For(v, 0, n - 1) if(macro_id[v] != -1) {
-            int x = macro_id[v];
-            parent[x] = x, top[x] = v;
+        for(int u : up)
+            if(u != -1 && mp[u] == -1) mp[u] = k++;
+        if(n && mp[rt] == -1) mp[rt] = k++;
+        fa.resize(k), rk.assign(k, 0), top.resize(k);
+        For(v, 0, n - 1) if(mp[v] != -1) {
+            int x = mp[v];
+            fa[x] = x, top[x] = v;
         }
     }
-    int macro_find(int x) {
-        return parent[x] == x ? x : parent[x] = macro_find(parent[x]);
-    }
-    // 0 <= v < n；根或重复收缩返回 false，否则清除原父边并返回 true。
+    int get(int x) { return fa[x] == x ? x : fa[x] = get(fa[x]); }
+    // 0<=v<n；根或重复收缩返回 false。
     bool merge_parent(int v) {
-        u64 bit = 1ULL << index[v];
-        if(v == root || !(alive[cluster[v]] & bit)) return false;
-        alive[cluster[v]] ^= bit;
+        u64 s = 1ULL << id[v];
+        if(v == rt || !(live[bel[v]] & s)) return false;
+        live[bel[v]] ^= s;
         return true;
     }
-    // 0 <= v < n；宏物理根按秩选取，top 另存最高边界。
+    // 0<=v<n。
     int find(int v) {
-        u64 bits = mask[v] & alive[cluster[v]];
-        if(bits) return vertex[offset[cluster[v]] + 63 - __builtin_clzll(bits)];
-        int x = macro_find(macro_id[boundary[cluster[v]]]);
+        u64 s = mask[v] & live[bel[v]];
+        if(s) return a[st[bel[v]] + 63 - __builtin_clzll(s)];
+        int x = get(mp[up[bel[v]]]);
         while(true) {
-            int b = top[x];
-            bits = mask[b] & alive[cluster[b]];
-            if(bits) return vertex[offset[cluster[b]] + 63 - __builtin_clzll(bits)];
-            int y = macro_find(macro_id[boundary[cluster[b]]]), highest = top[y];
-            if(rank[x] < rank[y]) swap(x, y);
-            parent[y] = x, top[x] = highest;
-            if(rank[x] == rank[y]) ++rank[x];
+            int u = top[x];
+            s = mask[u] & live[bel[u]];
+            if(s) return a[st[bel[u]] + 63 - __builtin_clzll(s)];
+            int y = get(mp[up[bel[u]]]), t = top[y];
+            if(rk[x] < rk[y]) swap(x, y);
+            fa[y] = x, top[x] = t;
+            if(rk[x] == rk[y]) ++rk[x];
         }
     }
 };

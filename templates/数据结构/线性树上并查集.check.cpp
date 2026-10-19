@@ -45,25 +45,25 @@ static void reset(tree_dsu_t &ds, const vector<int> &p, bool small = true) {
     cut.assign(n, 0);
     history.clear();
     ds.init(p);
-    require(ds.vertex.size() == p.size(), "partition covers every vertex");
-    require(ds.alive.size() <= (n ? n / ds.width + 1 : 0), "few micro clusters");
-    require(ds.parent.size() <= ds.alive.size() + (n != 0), "few macro vertices");
+    require(ds.a.size() == p.size(), "partition covers every vertex");
+    require(ds.live.size() <= (n ? n / ds.w + 1 : 0), "few micro clusters");
+    require(ds.fa.size() <= ds.live.size() + (n != 0), "few macro vertices");
     For(v, 0, n - 1) {
         require(ds.find(v) == v, "reset singleton");
-        require(ds.vertex[ds.offset[ds.cluster[v]] + ds.index[v]] == v, "local index inverse");
+        require(ds.a[ds.st[ds.bel[v]] + ds.id[v]] == v, "local index inverse");
         u64 want = 0;
         int x = v;
-        while(x != -1 && ds.cluster[x] == ds.cluster[v]) {
-            want |= 1ULL << ds.index[x];
+        while(x != -1 && ds.bel[x] == ds.bel[v]) {
+            want |= 1ULL << ds.id[x];
             x = p[x];
         }
         require(ds.mask[v] == want, "exact in-cluster ancestors");
-        require(x == ds.boundary[ds.cluster[v]], "single external ancestor boundary");
+        require(x == ds.up[ds.bel[v]], "single external ancestor boundary");
     }
-    For(c, 0, (int)ds.alive.size() - 1) {
-        int size = __builtin_popcountll(ds.alive[c]);
-        require(size <= 2 * ds.width - 1, "word-sized cluster");
-        require(c + 1 == (int)ds.alive.size() || size >= ds.width, "large nonroot cluster");
+    For(c, 0, (int)ds.live.size() - 1) {
+        int size = __builtin_popcountll(ds.live[c]);
+        require(size <= 2 * ds.w - 1, "word-sized cluster");
+        require(c + 1 == (int)ds.live.size() || size >= ds.w, "large nonroot cluster");
     }
     if(!small) return;
     graph.assign(n, {});
@@ -188,10 +188,10 @@ int main() {
         for(int v : order) require(ds.merge_parent(v), "shape fresh edge");
         shuffle(all(order), rng);
         for(int v : order) require(ds.find(v) == 0, "shape fully connected");
-        For(i, 0, (int)ds.parent.size() - 1) {
-            int f = ds.parent[i];
-            require(f == i || ds.rank[f] > ds.rank[i], "strict parent rank");
-            require(ds.rank[i] <= __lg(ds.parent.size()), "logarithmic rank");
+        For(i, 0, (int)ds.fa.size() - 1) {
+            int f = ds.fa[i];
+            require(f == i || ds.rk[f] > ds.rk[i], "strict parent rank");
+            require(ds.rk[i] <= __lg(ds.fa.size()), "logarithmic rank");
         }
     }
     context = "reuse";
