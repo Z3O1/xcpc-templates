@@ -92,24 +92,34 @@ class GeneratorTests(Workspace):
         self.assertEqual(list(files['章']), ['a.cpp'])
         self.assertEqual(intros, {'章': {'a': 'a.typ'}})
 
-    # 验证缺失项原位恢复、隐藏/显示切换及 manifest 自订标题保留。
-    def test_missing_restore_hidden_and_manifest_titles(self):
+    # 验证删掉的文件连条目一起移除、同名文件再加回时按新条目追加,并保留隐藏标记与自订标题。
+    def test_deleted_entry_removed_and_manifest_titles_kept(self):
         path = self.source('章/a.cpp', '原题')
         data = self.generate()
         data['entries'][0]['title'] = '自订标题'
         self.put('.manifest.json', json.dumps(data, ensure_ascii=False))
-        path.unlink()
-        self.assertTrue(self.generate()['entries'][0]['missing'])
-        self.source('章/a.cpp', '新题', '// hide\n\nint x;')
+        self.source('章/a.cpp', '新题')
         data = self.generate()
         self.assertEqual(data['entries'][0]['title'], '自订标题')
-        self.assertFalse(data['entries'][0]['missing'])
+        self.assertNotIn('missing', data['entries'][0])
+        # 隐藏标记仍按代码头部读取,隐藏后不进正文。
+        self.source('章/a.cpp', '新题', '// hide\n\nint x;')
+        data = self.generate()
         self.assertTrue(data['entries'][0]['hidden'])
         files, intros = gen.scan_templates(self.root / 'templates')
         _, chapters, total = gen.render_sections(data, files, intros)
         self.assertEqual((chapters, total), (0, 0))
         self.source('章/a.cpp', '新题')
         self.assertFalse(self.generate()['entries'][0]['hidden'])
+        # 文件删掉 → 条目移除:sections 不再残留,manifest 不留 missing。
+        path.unlink()
+        data = self.generate()
+        self.assertEqual(data['entries'], [])
+        self.assertNotIn('readcode("templates/', (self.root / 'sections.typ').read_text(encoding='utf-8'))
+        # 同路径回来视为新条目:标题取当前头注释,追加在末尾。
+        self.source('章/a.cpp', '回来')
+        data = self.generate()
+        self.assertEqual([(e['key'], e['title']) for e in data['entries']], [('章/a.cpp', '回来')])
 
     # 验证隐藏标记只在连续头注释区生效，进入代码后的标记无效。
     def test_hide_marker_in_body_does_not_hide_template(self):
@@ -132,7 +142,18 @@ class GeneratorTests(Workspace):
         self.assertNotIn('templates/章/a.typ', (self.root / 'sections.typ').read_text(encoding='utf-8'))
         (self.root / 'templates/章/a.cpp').unlink()
         data = self.generate()
-        self.assertEqual([e['key'] for e in data['entries'] if not e['missing']], ['章/a.typ'])
+        self.assertEqual([e['key'] for e in data['entries']], ['章/a.typ'])
+
+    # 验证旧 manifest（带 missing 字段）对账后字段被清掉,不再回写。
+    def test_legacy_missing_field_dropped(self):
+        self.source('章/a.cpp')
+        self.generate()
+        data = json.loads((self.root / '.manifest.json').read_text(encoding='utf-8'))
+        data['entries'][0]['missing'] = False
+        self.put('.manifest.json', json.dumps(data, ensure_ascii=False))
+        entry = self.generate()['entries'][0]
+        self.assertEqual(entry.get('hidden'), False)
+        self.assertNotIn('missing', entry)
 
     # 验证普通模板和小节模板均可单独隐藏/恢复介绍而不隐藏源码。
     def test_intro_can_be_hidden_without_hiding_code(self):

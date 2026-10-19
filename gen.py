@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """扫描 templates/ → .manifest.json → sections.typ → xcpc.typ。
 
-章节顺序与标题以 manifest 为准;删除只标 missing,同名文件回来时原位恢复。
+章节顺序与标题以 manifest 为准;模板文件删掉时连 manifest 条目一起移除。
 同名 .typ 是代码介绍,不占条目;子目录是小节,同名 .typ 是小节正文。
 首行注释取新条目的标题,头部 // hide 或 // 隐藏使代码及介绍不进 PDF。
 manifest 丢失时优先从 old_versions/xcpc.typ.bak,再从 sections.typ 恢复。
@@ -221,7 +221,7 @@ def load_manifest(root: pathlib.Path, files: dict, intros: dict) -> dict:
     return data
 
 
-# 原地对账并返回同一 data：新项追加、历史项标记 missing/hidden，已转为介绍的条目移出。
+# 原地对账并返回同一 data：新项追加、文件已不在的条目移除，已转为介绍的条目移出。
 def reconcile(data: dict, files: dict, intros: dict) -> dict:
     intro_keys = {f'{chapter}/{stem}.typ' for chapter, entries in intros.items() for stem in entries}
     for entry in data['entries']:
@@ -239,18 +239,20 @@ def reconcile(data: dict, files: dict, intros: dict) -> dict:
                 data['entries'].append({'key': key, 'title': title})
                 keys.add(key)
                 print(f'+ 新增: {key} (标题: {title})')
+    kept = []
     for entry in data['entries']:
         chapter, name = entry['key'].split('/', 1)
         path = files.get(chapter, {}).get(name)
-        missing = path is None
-        hidden = not missing and hidden_from_header(path)
-        if missing and not entry.get('missing'):
-            print(f'- 已移除: {entry["key"]}')
-        elif not missing and entry.get('missing'):
-            print(f'^ 已恢复: {entry["key"]} -> 原位 {chapter} / {entry["title"] or name}')
+        if path is None:
+            print(f'- 已删除: {entry["key"]}')
+            continue
+        hidden = hidden_from_header(path)
         if hidden != entry.get('hidden', False):
             print(f'{"- 已隐藏" if hidden else "^ 已恢复显示"}: {entry["key"]}')
-        entry['missing'], entry['hidden'] = missing, hidden
+        entry.pop('missing', None)
+        entry['hidden'] = hidden
+        kept.append(entry)
+    data['entries'] = kept
     return data
 
 
@@ -293,7 +295,7 @@ def render_sections(data: dict, files: dict, intros: dict) -> tuple[str, int, in
     out = PREAMBLE.splitlines() + ['']
     total, chapters = 0, 0
     for chapter in data['sections']:
-        items = [entry for entry in data['entries'] if not entry['missing'] and not entry['hidden']
+        items = [entry for entry in data['entries'] if not entry['hidden']
                  and entry['key'].startswith(chapter + '/')]
         if not items:
             continue

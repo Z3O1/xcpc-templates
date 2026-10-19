@@ -13,601 +13,501 @@
   {
    "key": "字符串/manacher.cpp",
    "title": "Manacher",
-   "missing": false,
    "hidden": true
   },
   {
    "key": "字符串/zfunc.cpp",
    "title": "Z 函数",
-   "missing": false,
    "hidden": true
   },
   {
    "key": "字符串/最小表示法.cpp",
    "title": "最小表示法",
-   "missing": false,
    "hidden": false
   },
   {
    "key": "字符串/sam.cpp",
    "title": "SAM",
-   "missing": false,
    "hidden": true
   },
   {
    "key": "字符串/sa.cpp",
    "title": "SA",
-   "missing": false,
    "hidden": true
   },
   {
    "key": "字符串/pam.cpp",
    "title": "广义 PAM",
-   "missing": false,
    "hidden": true
   },
   {
    "key": "数学/barrett.cpp",
    "title": "Barret 约简",
-   "missing": false,
    "hidden": false
   },
   {
    "key": "数学/lagrange.cpp",
    "title": "拉格朗日插值",
-   "missing": false,
    "hidden": false
   },
   {
    "key": "数学/类欧.cpp",
    "title": "类欧",
-   "missing": false,
    "hidden": false
   },
   {
    "key": "数据结构/李超树.cpp",
    "title": "李超树",
-   "missing": false,
    "hidden": true
   },
   {
    "key": "数据结构/全局平衡二叉树.cpp",
    "title": "全局平衡二叉树",
-   "missing": false,
    "hidden": true
   },
   {
    "key": "数据结构/lct.cpp",
    "title": "LCT",
-   "missing": false,
    "hidden": false
   },
   {
    "key": "数据结构/广义串并联图.cpp",
    "title": "广义串并联图",
-   "missing": false,
    "hidden": false
   },
   {
    "key": "数据结构/四边形不等式/四边形不等式.typ",
    "title": "四边形不等式",
-   "missing": false,
    "hidden": false
   },
   {
    "key": "数据结构/四边形不等式/分治.cpp",
    "title": "决策单调性分治",
-   "missing": false,
    "hidden": false
   },
   {
    "key": "数据结构/四边形不等式/SMAWK.cpp",
    "title": "SMAWK",
-   "missing": false,
    "hidden": false
   },
   {
    "key": "数据结构/四边形不等式/Wilber.cpp",
    "title": "Wilber",
-   "missing": false,
    "hidden": false
   },
   {
    "key": "数据结构/四边形不等式/二分栈.cpp",
    "title": "二分栈",
-   "missing": false,
    "hidden": false
   },
   {
    "key": "数据结构/wqs.cpp",
    "title": "wqs 二分构造方案",
-   "missing": false,
    "hidden": false
   },
   {
    "key": "图论/dinic.cpp",
    "title": "网络流",
-   "missing": false,
    "hidden": true
   },
   {
    "key": "图论/mcmf.cpp",
    "title": "费用流",
-   "missing": false,
    "hidden": false
   },
   {
    "key": "图论/支配树.cpp",
    "title": "支配树",
-   "missing": false,
    "hidden": false
   },
   {
    "key": "数据结构/rmq.cpp",
    "title": "O(1) RMQ",
-   "missing": false,
    "hidden": false
   },
   {
    "key": "数论/分数还原.cpp",
    "title": "分数还原",
-   "missing": false,
    "hidden": false
   },
   {
    "key": "多项式/ntt.cpp",
    "title": "任意模数 NTT",
-   "missing": false,
    "hidden": false
   },
   {
    "key": "多项式/多项式复合.cpp",
    "title": "多项式复合",
-   "missing": false,
    "hidden": false
   },
   {
    "key": "多项式/多项式复合逆.cpp",
    "title": "多项式复合逆",
-   "missing": false,
    "hidden": false
   },
   {
    "key": "数论/fgcd.cpp",
    "title": "O(V)-O(1) GCD",
-   "missing": false,
    "hidden": false
   },
   {
    "key": "图论/一般图最大匹配.cpp",
    "title": "一般图最大匹配",
-   "missing": false,
    "hidden": false
   },
   {
    "key": "数论/BSGS.cpp",
    "title": "离散对数",
-   "missing": false,
    "hidden": false
   },
   {
    "key": "数论/CRT.cpp",
    "title": "中国剩余定理",
-   "missing": false,
    "hidden": false
   },
   {
    "key": "数论/Miller-Rabin.cpp",
    "title": "Miller-Rabin 素性检验",
-   "missing": false,
    "hidden": false
   },
   {
    "key": "数论/Pollard-Rho.cpp",
    "title": "Pollard-Rho 分解质因数",
-   "missing": false,
    "hidden": false
   },
   {
    "key": "数论/exgcd.cpp",
    "title": "扩展欧几里得",
-   "missing": false,
    "hidden": true
   },
   {
    "key": "数论/minmod.cpp",
    "title": "最小模线性值",
-   "missing": false,
    "hidden": false
   },
   {
    "key": "数论/二次剩余.cpp",
    "title": "二次剩余",
-   "missing": false,
    "hidden": false
   },
   {
    "key": "数论/原根.cpp",
    "title": "原根与阶",
-   "missing": false,
    "hidden": false
   },
   {
    "key": "数论/积性函数/积性函数.typ",
    "title": "积性函数",
-   "missing": false,
    "hidden": false
   },
   {
    "key": "数论/积性函数/线性筛.cpp",
    "title": "线性筛",
-   "missing": false,
    "hidden": true
   },
   {
    "key": "数论/积性函数/杜教筛.cpp",
    "title": "杜教筛",
-   "missing": false,
    "hidden": false
   },
   {
    "key": "数论/积性函数/min25.cpp",
    "title": "min_25",
-   "missing": false,
    "hidden": false
   },
   {
    "key": "数论/下取整和.cpp",
    "title": "下取整和",
-   "missing": false,
    "hidden": false
   },
   {
    "key": "多项式/Berlekamp-Massey.cpp",
    "title": "最短线性递推",
-   "missing": false,
    "hidden": false
   },
   {
    "key": "多项式/Bostan-Mori.cpp",
    "title": "线性递推第 n 项",
-   "missing": false,
    "hidden": false
   },
   {
    "key": "多项式/FFT.cpp",
    "title": "复数 FFT 卷积",
-   "missing": false,
    "hidden": false
   },
   {
    "key": "多项式/多点求值.cpp",
    "title": "多点求值",
-   "missing": false,
    "hidden": false
   },
   {
    "key": "多项式/多项式exp.cpp",
    "title": "多项式指数",
-   "missing": false,
    "hidden": false
   },
   {
    "key": "多项式/多项式ln.cpp",
    "title": "多项式对数",
-   "missing": false,
    "hidden": false
   },
   {
    "key": "多项式/多项式开根.cpp",
    "title": "多项式开根",
-   "missing": false,
    "hidden": false
   },
   {
    "key": "多项式/多项式求逆.cpp",
    "title": "多项式求逆",
-   "missing": false,
    "hidden": false
   },
   {
    "key": "多项式/多项式除法.cpp",
    "title": "带余除法",
-   "missing": false,
    "hidden": false
   },
   {
    "key": "多项式/快速插值.cpp",
    "title": "快速插值",
-   "missing": false,
    "hidden": false
   },
   {
    "key": "计算几何/使用说明.typ",
    "title": "选用与依赖",
-   "missing": false,
    "hidden": false
   },
   {
    "key": "计算几何/整数/整数点.cpp",
    "title": "整数点与精确运算",
-   "missing": false,
    "hidden": false
   },
   {
    "key": "计算几何/整数/线段.cpp",
    "title": "整数线段",
-   "missing": false,
    "hidden": false
   },
   {
    "key": "计算几何/整数/多边形.cpp",
    "title": "整数面积与点包含",
-   "missing": false,
    "hidden": false
   },
   {
    "key": "计算几何/整数/凸包.cpp",
    "title": "整数凸包与直径",
-   "missing": false,
    "hidden": false
   },
   {
    "key": "计算几何/整数/凸包内点判定.cpp",
    "title": "整数凸包内点判定",
-   "missing": false,
    "hidden": false
   },
   {
    "key": "计算几何/整数/最近点对.cpp",
    "title": "整数最近点对",
-   "missing": false,
    "hidden": false
   },
   {
    "key": "计算几何/基础/二维向量.cpp",
    "title": "二维点与向量",
-   "missing": false,
    "hidden": false
   },
   {
    "key": "计算几何/基础/直线与线段.cpp",
    "title": "直线与线段",
-   "missing": false,
    "hidden": false
   },
   {
    "key": "计算几何/基础/最近点对.cpp",
    "title": "最近点对",
-   "missing": false,
    "hidden": false
   },
   {
    "key": "计算几何/凸包/凸包.cpp",
    "title": "凸包、直径与裁剪",
-   "missing": false,
    "hidden": false
   },
   {
    "key": "计算几何/凸包/凸多边形最远点.cpp",
    "title": "凸多边形逐点最远点",
-   "missing": false,
    "hidden": false
   },
   {
    "key": "计算几何/凸包/闵可夫斯基和.cpp",
    "title": "闵可夫斯基和",
-   "missing": false,
    "hidden": false
   },
   {
    "key": "计算几何/凸包/上凸壳.cpp",
    "title": "上凸壳",
-   "missing": false,
    "hidden": false
   },
   {
    "key": "计算几何/凸包/凸包内点判定.cpp",
    "title": "凸包内点判定",
-   "missing": false,
    "hidden": false
   },
   {
    "key": "计算几何/凸包/半平面交.cpp",
    "title": "半平面交",
-   "missing": false,
    "hidden": false
   },
   {
    "key": "计算几何/多边形/多边形基础.cpp",
    "title": "面积与点包含",
-   "missing": false,
    "hidden": false
   },
   {
    "key": "计算几何/多边形/多边形包含.cpp",
    "title": "缠绕数包含",
-   "missing": false,
    "hidden": false
   },
   {
    "key": "计算几何/多边形/多边形重心.cpp",
    "title": "多边形重心",
-   "missing": false,
    "hidden": false
   },
   {
    "key": "计算几何/多边形/简单多边形三角剖分.cpp",
    "title": "简单多边形三角剖分",
-   "missing": false,
    "hidden": false
   },
   {
    "key": "计算几何/圆/圆基础.cpp",
    "title": "圆与内外接圆",
-   "missing": false,
    "hidden": false
   },
   {
    "key": "计算几何/圆/切线.cpp",
    "title": "点圆与两圆切线",
-   "missing": false,
    "hidden": false
   },
   {
    "key": "计算几何/圆/图形交.cpp",
    "title": "圆相关求交与面积交",
-   "missing": false,
    "hidden": false
   },
   {
    "key": "计算几何/圆/圆并.cpp",
    "title": "圆并面积与周长",
-   "missing": false,
    "hidden": false
   },
   {
    "key": "计算几何/圆/最小圆覆盖.cpp",
    "title": "最小圆覆盖",
-   "missing": false,
    "hidden": false
   },
   {
    "key": "计算几何/平面剖分/Delaunay.cpp",
    "title": "Delaunay 三角剖分",
-   "missing": false,
    "hidden": false
   },
   {
    "key": "计算几何/平面剖分/Voronoi.cpp",
    "title": "Voronoi 图",
-   "missing": false,
    "hidden": false
   },
   {
    "key": "计算几何/三维/三维向量.cpp",
    "title": "三维向量",
-   "missing": false,
    "hidden": false
   },
   {
    "key": "计算几何/三维/三维直线.cpp",
    "title": "三维直线与线段",
-   "missing": false,
    "hidden": false
   },
   {
    "key": "计算几何/三维/三维平面.cpp",
    "title": "三维平面",
-   "missing": false,
    "hidden": false
   },
   {
    "key": "计算几何/三维/三维旋转.cpp",
    "title": "三维旋转",
-   "missing": false,
    "hidden": false
   },
   {
    "key": "计算几何/三维/三维凸包.cpp",
    "title": "三维凸包",
-   "missing": false,
    "hidden": false
   },
   {
    "key": "通用/头文件.cpp",
    "title": "头文件",
-   "missing": false,
    "hidden": false
   },
   {
    "key": "通用/大质数表.typ",
    "title": "大质数表",
-   "missing": false,
    "hidden": false
   },
   {
    "key": "通用/常数速查表.typ",
    "title": "常数速查表",
-   "missing": false,
    "hidden": false
   },
   {
    "key": "数论/高斯整数.cpp",
    "title": "高斯整数",
-   "missing": false,
    "hidden": false
   },
   {
    "key": "数学/反射容斥.typ",
    "title": "反射容斥",
-   "missing": false,
    "hidden": false
   },
   {
    "key": "计算几何/整数/极角排序.cpp",
    "title": "整数极角排序",
-   "missing": false,
    "hidden": false
   },
   {
    "key": "计算几何/整数/闵可夫斯基和.cpp",
    "title": "整数闵可夫斯基和",
-   "missing": false,
    "hidden": false
   },
   {
    "key": "计算几何/凸包/凸包方向极值.cpp",
    "title": "凸包方向极值",
-   "missing": false,
    "hidden": false
   },
   {
    "key": "计算几何/凸包/凸包直线求交.cpp",
    "title": "凸包直线求交",
-   "missing": false,
    "hidden": false
   },
   {
    "key": "数据结构/二区间合并.cpp",
    "title": "二区间合并",
-   "missing": false,
    "hidden": false
   },
   {
    "key": "图论/k短路.cpp",
    "title": "k 短路",
-   "missing": false,
    "hidden": false
   },
   {
    "key": "图论/拟阵交.cpp",
    "title": "拟阵交",
-   "missing": false,
    "hidden": false
   },
   {
    "key": "数学/特征多项式.cpp",
    "title": "特征多项式",
-   "missing": false,
    "hidden": false
   },
   {
    "key": "数学/行列式多项式.cpp",
    "title": "行列式多项式",
-   "missing": false,
    "hidden": false
   },
   {
    "key": "数据结构/线性序列并查集.cpp",
    "title": "线性序列并查集",
-   "missing": false,
    "hidden": false
   },
   {
    "key": "数据结构/线性树上并查集.cpp",
    "title": "线性树上并查集",
-   "missing": false,
    "hidden": false
   }
  ]
