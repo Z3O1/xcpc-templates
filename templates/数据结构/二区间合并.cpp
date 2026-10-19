@@ -12,14 +12,12 @@ struct disjoint_sparse_t {
     // 可重复构建；不要求 T 有默认构造函数。
     void build(const vector<T> &v) {
         a = v;
-        int n = a.size();
-        int h = n > 1 ? 32 - __builtin_clz(n - 1) : 0;
+        int n = a.size(), h = n > 1 ? __lg(n - 1) + 1 : 0;
         table.assign(h, a);
         For(k, 0, h - 1) {
             int half = 1 << k;
             for(int l = 0; l < n;) {
-                int mid = l + min(half, n - l);
-                int r = mid + min(half, n - mid);
+                int mid = l + min(half, n - l), r = mid + min(half, n - mid);
                 rFor(i, mid - 2, l) table[k][i] = merge(a[i], table[k][i + 1]);
                 For(i, mid + 1, r - 1) table[k][i] = merge(table[k][i - 1], a[i]);
                 l = r;
@@ -29,7 +27,7 @@ struct disjoint_sparse_t {
     // 0 <= l <= r < n；最高不同位对应的中点恰好把 [l,r] 分成两段。
     T query(int l, int r) const {
         if(l == r) return a[l];
-        int k = 31 - __builtin_clz(l ^ r);
+        int k = __lg(l ^ r);
         return merge(table[k][l], table[k][r]);
     }
 };
