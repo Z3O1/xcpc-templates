@@ -7,7 +7,6 @@
 const int N = 1e6 + 10;
 // sa/rk/height 缓冲；height[1]=0，height[i] 是 sa[i-1] 与 sa[i] 两个后缀的 LCP。
 int sa[N], rk[N << 1], height[N];
-// 从只读 a[1..n] 覆盖构建 sa/rk/height。
 // 可重复调用；n=0 时不读写数组。
 template <class T> void SA(int n, const T *a) {
     if(!n) return;

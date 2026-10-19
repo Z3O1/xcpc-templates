@@ -14,7 +14,6 @@ struct k_shortest_t {
     vector<edge> e;
     vector<vector<int>> g, rg;
     vector<node> h;
-    // 清空图，按点数 n 重建两份邻接表。
     void init(int n) {
         g.assign(n, {}), rg.assign(n, {});
         e.clear(), h.clear();

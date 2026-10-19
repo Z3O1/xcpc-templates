@@ -12,7 +12,6 @@ vector<char> live;
 vector<int> fre;
 int verc;
 
-// 分配三角形槽，优先复用空闲下标。
 int nw() {
     if(!fre.empty()) {
         int t = fre.back();
@@ -37,7 +36,6 @@ int finde(int t, int a, int b) {
     for(int i = 0; i < 3; ++i) if(tri[t].v[(i + 1) % 3] == a && tri[t].v[(i + 2) % 3] == b) return i;
     return -1;
 }
-// 将 t 的边 i 与共享反向边的 g 双向相连；g=-1 标记凸包边。
 void lnk(int t, int i, int g) {
     tri[t].f[i] = g;
     if(g >= 0) tri[g].f[finde(g, tri[t].v[(i + 2) % 3], tri[t].v[(i + 1) % 3])] = t;

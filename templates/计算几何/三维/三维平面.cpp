@@ -40,10 +40,8 @@ line3 ispl(const plane &a, const plane &b) {
     p3 o = (cross(b.n, w) * a.d + cross(w, a.n) * b.d) / dis2(w);
     return line3(o, o + w);
 }
-// 返回直线与平面的唯一交点。
 p3 islp(const plane &p, const line3 &l) { return l.o + l.d * ((p.d - dot(p.n, l.o)) / dot(p.n, l.d)); }
 line3 perpthrough(const plane &p, p3 o) { return line3(o, o + p.n); }
-// 直线是否整个在平面内
 bool ons(const plane &p, const line3 &l) { return !sign(p.side(l.o)) && !sign(dot(p.n, l.d)); }
 db dis(const plane &p, p3 x) { return p.dis(x); }
 p3 proj(const plane &p, p3 x) { return p.proj(x); }

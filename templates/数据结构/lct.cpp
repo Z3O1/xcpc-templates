@@ -18,7 +18,6 @@ inline void pd(int k) {
     if(lz[k]) pl(ls(k)), pl(rs(k)), lz[k] = 0;
 }
 inline bool gc(int k) { return ch[fa[k]][1] == k; }
-// 判断是否为辅助树根，虚父不算辅助树父亲。
 inline bool ir(int k) { return ch[fa[k]][gc(k)] != k; }
 void pda(int k) {
     static int st[N], t;

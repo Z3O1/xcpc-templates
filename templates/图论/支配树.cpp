@@ -23,7 +23,6 @@ pii que(int u) {
     fa[u] = fa[fa[u]];
     return f[u];
 }
-// 求当前图的直接支配点 dm[1.._n]，可重复调用。
 // 调用方维护并按需清空 t/t2；getdom 自行重置算法状态；需足够递归栈。
 void getdom(int _n) {
     n = _n;

@@ -7,12 +7,10 @@ struct rmq_t {
     vector<T> a, pre, suf;
     vector<vector<T>> st;
     vector<int> f;
-    // 查询块编号闭区间 [L,R]，块号从 0 开始。
     T _que(int L, int R) {
         int k = __lg(R - L + 1);
         return max(st[k][L], st[k][R - (1 << k) + 1], cmp());
     }
-    // 查询第 k 块内的 0-based 闭区间 [L,R]。
     T _que_bitc(int k, int L, int R) {
         int l = k * B, x = f[R] & ~((1 << (L - l)) - 1);
         return a[l + __lg(x & -x)];
@@ -42,9 +40,7 @@ struct rmq_t {
             For(j, 0, m) st[i][j] = max(st[i - 1][j], st[i - 1][j + (1 << (i - 1))], cmp());
         }
     }
-    // 从非空 v 构建，查询下标仍从 dt 开始。
     void bd(vector<T> &v) { bd(v.size(), v.data() - dt); }
-    // 从 func(dt..dt+n-1) 构建；n >= 1。
     template <class F> void bd(int n, F func) {
         vector<T> v(n);
         For(i, 0, n - 1) v[i] = func(i + dt);

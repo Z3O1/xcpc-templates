@@ -11,7 +11,6 @@ static void _interp_build(poly *t, int k, int l, int r, const poly &xs) {
     _interp_build(t, k + k, l, mid, xs), _interp_build(t, k + k + 1, mid + 1, r, xs);
     t[k] = mul(t[k + k], t[k + k + 1]);
 }
-// 用已建乘积树合并该段的插值贡献，w[i]=ys[i]/Π_{j!=i}(xs[i]-xs[j])。
 static poly _interp_rec(const poly *t, int k, int l, int r, const poly &w) {
     if(l == r) return poly{w[l]};
     int mid = (l + r) >> 1;

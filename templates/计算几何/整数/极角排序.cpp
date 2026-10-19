@@ -15,7 +15,6 @@ int direction_cmp(i128 ax, i128 ay, i128 bx, i128 by) {
     i128 d = ax * by - ay * bx;
     return (d < 0) - (d > 0);
 }
-// sort(a.begin(), a.end(), polar_less{中心})；默认原点；中心点最先，同向由近到远。
 // 要求各坐标减中心后的绝对值 < 2^63（均在 |坐标|<2^62 内自动满足）。
 // 比较为严格弱序，仅完全相同的点等价，不修改输入。
 struct polar_less {

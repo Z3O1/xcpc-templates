@@ -33,7 +33,6 @@ p3 rot(p3 v, p3 axis, db ang) {
     p3 k = unit(axis), c = cross(k, v), d = k * dot(k, v);
     return v * cos(ang) + c * sin(ang) + d * (1 - cos(ang));
 }
-// 绕过点 o、方向为 axis 的轴旋转。
 p3 rot(p3 v, p3 axis, db ang, p3 o) { return o + rot(v - o, axis, ang); }
 mat3 rotmat(p3 axis, db ang) {
     p3 k = unit(axis);

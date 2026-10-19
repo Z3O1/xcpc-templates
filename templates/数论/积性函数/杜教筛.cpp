@@ -5,7 +5,6 @@
 // 求 S(n) = sum_{i=1}^n f(i)；O(n^{2/3})。
 // 前置：调用方提供阈值 N 及预处理的前缀和 smu[0..N]、sphi[0..N]（下标 0 为 0）。
 unordered_map<ll, ll> smu_big, sphi_big;
-// 莫比乌斯函数前缀和。
 ll DJS_mu(ll n) {
     if(n <= N) return smu[n];
     if(smu_big.count(n)) return smu_big[n];

@@ -17,4 +17,3 @@ template <class T> int minrep(const T &a) {
     }
     return i;
 }
-// rotate(a.begin(), a.begin() + minrep(a), a.end());

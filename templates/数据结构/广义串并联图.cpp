@@ -12,7 +12,6 @@ struct SPQR_tree {
         fa[u] = fa[v] = m;
         return m;
     }
-    // 加边 u-v，编号 w；平行边合并为并联结点。
     void add(int u, int v, int w) {
         if(t[u].count(v)) {
             t[u][v] = t[v][u] = node(t[u][v], w, 0);

@@ -10,7 +10,6 @@ void sub(int &a, int b) {
 const int N = 1e5 + 10;
 int p[N], pc, p2[N];
 int s1[N], s2[N], s[N];
-// 筛 1e5 内素数及前缀表；可重复调用。
 void init() {
     if(pc) return;
     static const int n = 1e5;

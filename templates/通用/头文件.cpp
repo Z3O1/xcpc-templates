@@ -26,7 +26,6 @@ using pll = array<ll, 2>;
 // 普通多项式与逆元统一用这个模数；系数保持 [0, M)。
 constexpr int M = 998244353;
 // 返回 a^b mod M；要求 a,b >= 0，b=0 返回 1。
-// 模数是编译期常量，乘模不走路除法，热路径比三参版本快。
 ll qpow(ll a, ll b) {
     ll s = 1;
     a %= M;

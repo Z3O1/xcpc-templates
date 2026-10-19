@@ -28,7 +28,6 @@ db dot(p3 a, p3 b) { return a.x * b.x + a.y * b.y + a.z * b.z; }
 p3 cross(p3 a, p3 b) {
     return {a.y * b.z - a.z * b.y, a.z * b.x - a.x * b.z, a.x * b.y - a.y * b.x};
 }
-// 返回混合积 a·(b×c)，即平行六面体带号体积。
 db det(p3 a, p3 b, p3 c) { return dot(a, cross(b, c)); }
 db dis2(p3 a) { return dot(a, a); }
 db dis(p3 a) { return hypot(a.x, a.y, a.z); }
@@ -38,7 +37,6 @@ p3 unit(p3 a) {
 }
 db cosang(p3 a, p3 b) { return max((db) -1, min((db) 1, dot(unit(a), unit(b)))); }
 db sinang(p3 a, p3 b) { return min((db) 1, dis(cross(unit(a), unit(b)))); }
-// 夹角，弧度范围 [0,pi]。
 db angle(p3 a, p3 b) {
     a /= max({abs(a.x), abs(a.y), abs(a.z)});
     b /= max({abs(b.x), abs(b.y), abs(b.z)});

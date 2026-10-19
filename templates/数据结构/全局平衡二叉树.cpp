@@ -88,7 +88,6 @@ void upd(int p, mat x, int k, int l, int r) {
     else upd(p, x, rs, m + 1, r);
     pushup(k);
 }
-// 查询 [L,R] 从右到左的矩阵积；[L,R] 包含于当前区间 [l,r]。
 mat que(int L, int R, int k, int l, int r) {
     if(L <= l && r <= R) return tr[k].x;
     int m = k >> 1;

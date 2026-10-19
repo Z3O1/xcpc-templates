@@ -13,7 +13,6 @@ struct MCMF_t {
     void _add(int u, int v, int w, ll c) {
         e[++tot] = {v, hd[u], w, c}, hd[u] = tot;
     }
-    // 加有向费用容量边与反向残量边，保留平行边。
     void add(int u, int v, int w, ll c) {
         cmax(mx, u), cmax(mx, v);
         _add(u, v, w, c), _add(v, u, 0, -c);
@@ -24,7 +23,6 @@ struct MCMF_t {
         tot = 1, s = t = 0;
     }
     ll h[N], d[N];
-    // 按已设的 s,n 做一次 SPFA，结果写进初始势能 h[1..n]。
     void spfa() {
         static bool vis[N];
         For(i, 1, n) h[i] = Z;
@@ -43,8 +41,7 @@ struct MCMF_t {
             }
         }
     }
-    // h 有效时找最短增广路。
-    // 更新 d/p/h，返回 t 是否可达。
+    // 要求 h 有效；更新 d/p/h，返回 t 是否可达。
     bool dij() {
         For(i, 1, n) d[i] = Z;
         priority_queue<pair<ll, int>> q;
@@ -79,7 +76,6 @@ struct MCMF_t {
         }
         return {a1, a2};
     }
-    // 带下界/负费用时先饱和负费用边再求流，返回 (流量, 费用)。
     // 须传 _n 且 _n + 2 < N；实例须零初始化。
     pair<int, ll> mcmf2(int _s, int _t, bool mcf = 0, int _n = 0) {
         s = _s, t = _t, n = _n, cmax(mx, _n + 2);
