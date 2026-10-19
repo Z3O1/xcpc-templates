@@ -1,20 +1,11 @@
 // 介绍: 拟阵交
-*无权最大公共独立集*
 
-拟阵的独立集族须含空集、对取子集封闭，并满足交换公理：若独立集 $I, J$ 满足 $|I| < |J|$，则存在 $x in J minus I$ 使 $I union {x}$ 独立。
-任意两种限制不一定是拟阵，不能直接套用。
-
-当前公共独立集为 $I$。对 $x in.not I$、$y in I$，若 $I minus {y} union {x}$ 在第一个拟阵中独立，连 $y arrow.r x$；在第二个拟阵中独立，连 $x arrow.r y$。
-能直接加入第一个拟阵的元素为源，能直接加入第二个拟阵的元素为汇。BFS 找边数最少的源汇路，将沿路元素的选中状态翻转，独立性不变且大小增加一；没有增广路即已最大。不能用任意一条路代替最短路。
-
-*调用示例*
-
-图拟阵的独立集为森林，划分拟阵限制每类选取数量。以下求每种颜色至多取一条边的最大森林（边号即地集元素）：
+带颜色限额的最大森林：
 
 ```cpp
-graphic_matroid_t graph{3, {{0, 1}, {1, 2}, {0, 2}}};
-partition_matroid_t color{{0, 0, 1}, {1, 1}};
-auto selected = matroid_intersection(3, graph, color);
+graphic_matroid_t a{n, e};       // e: vector<pii>，无向边表
+partition_matroid_t b{c, lim};   // c/lim: vector<int>，边颜色/各色限额
+auto s = matroid_intersection(e.size(), a, b);
 ```
 
-oracle 接收元素编号列表（无重复，顺序不作保证），判断整个列表是否独立；例子可直接替换为自写回调。设单次调用上界为 $T$，答案大小为 $r$，总时间为 $O(n (r+1)^2 (T+1))$，示例 oracle 各自的复杂度见源码。本板不处理权值。
+返回选中边编号；本板无权。自写回调时，两个独立性条件都必须是拟阵。

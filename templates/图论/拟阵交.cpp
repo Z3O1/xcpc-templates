@@ -7,7 +7,7 @@ template <class A, class B>
 vector<int> matroid_intersection(int n, A a, B b) {
     vector<int> in(n);
     while(true) {
-        vector<int> s, pre(n, -1), sink(n);
+        vector<int> s, pre(n, -1), ok(n);
         vector<vector<int>> g(n);
         queue<int> q;
         For(x, 0, n - 1) if(in[x]) s.push_back(x);
@@ -15,7 +15,7 @@ vector<int> matroid_intersection(int n, A a, B b) {
         For(x, 0, n - 1) if(!in[x]) {
             s.push_back(x);
             if(a(s)) pre[x] = n, q.push(x);
-            sink[x] = b(s);
+            ok[x] = b(s);
             s.pop_back();
             for(int &y : s) {
                 int v = y;
@@ -29,7 +29,7 @@ vector<int> matroid_intersection(int n, A a, B b) {
         while(!q.empty()) {
             int x = q.front();
             q.pop();
-            if(sink[x]) {
+            if(ok[x]) {
                 t = x;
                 break;
             }
@@ -42,35 +42,34 @@ vector<int> matroid_intersection(int n, A a, B b) {
     }
 }
 
-// 划分拟阵示例：color[x] 为元素所属类，capacity[c] >= 0 为该类容量。
+// 划分拟阵：c[x] 为元素类别，lim[c]>=0 为该类容量。
 // 单次 oracle 时间 O(类数 + |s|)，空间 O(类数)。
 struct partition_matroid_t {
-    vector<int> color, capacity;
+    vector<int> c, lim;
     bool operator()(const vector<int> &s) const {
-        vector<int> count(capacity.size());
+        vector<int> cnt(lim.size());
         for(int x : s)
-            if(++count[color[x]] > capacity[color[x]]) return false;
+            if(++cnt[c[x]] > lim[c[x]]) return false;
         return true;
     }
 };
 
-// 图拟阵示例：顶点 [0,vertices)，edge[x] 为无向边；允许平行边、自环。
-// 单次 oracle 时间 O(vertices + |s| log(vertices+1))，空间 O(vertices)。
+// 图拟阵：顶点 [0,n)，e[x] 为无向边；允许重边、自环。
+// 单次 oracle 时间 O(n+|s| log(n+1))，空间 O(n)。
 struct graphic_matroid_t {
-    int vertices;
-    vector<pii> edge;
+    int n;
+    vector<pii> e;
     bool operator()(const vector<int> &s) const {
-        vector<int> parent(vertices, -1);
-        auto root = [&](int x) {
-            while(parent[x] >= 0) x = parent[x];
+        vector<int> fa(n, -1);
+        auto find = [&](int x) {
+            while(fa[x] >= 0) x = fa[x];
             return x;
         };
         for(int x : s) {
-            int u = root(edge[x][0]), v = root(edge[x][1]);
+            int u = find(e[x][0]), v = find(e[x][1]);
             if(u == v) return false;
-            if(parent[u] > parent[v]) swap(u, v);
-            parent[u] += parent[v];
-            parent[v] = u;
+            if(fa[u] > fa[v]) swap(u, v);
+            fa[u] += fa[v], fa[v] = u;
         }
         return true;
     }

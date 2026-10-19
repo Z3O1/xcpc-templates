@@ -162,13 +162,13 @@ static test_matroid_t random_matroid(int n, int kind) {
 static void long_exchange(int k) {
     partition_matroid_t a;
     partition_matroid_t b;
-    a.capacity.assign(k + 1, 1);
-    b.capacity.assign(k + 1, 1);
+    a.lim.assign(k + 1, 1);
+    b.lim.assign(k + 1, 1);
     // 先选 k 条对角边；再沿长度 2k+1 的增广路，删除所有对角边。
-    For(i, 0, k - 1) a.color.push_back(i), b.color.push_back(i);
-    For(i, 0, k - 1) a.color.push_back(i), b.color.push_back(i + 1);
-    a.color.push_back(k);
-    b.color.push_back(0);
+    For(i, 0, k - 1) a.c.push_back(i), b.c.push_back(i);
+    For(i, 0, k - 1) a.c.push_back(i), b.c.push_back(i + 1);
+    a.c.push_back(k);
+    b.c.push_back(0);
     auto answer = matroid_intersection(2 * k + 1, a, b);
     vector<int> expected;
     For(i, k, 2 * k) expected.push_back(i);
@@ -207,7 +207,7 @@ int main() {
     long_exchange(100);
     graphic_matroid_t large_graph{10000, {}};
     partition_matroid_t large_free{vector<int>(200), {200}};
-    For(i, 1, 200) large_graph.edge.push_back({i - 1, i});
+    For(i, 1, 200) large_graph.e.push_back({i - 1, i});
     auto answer = matroid_intersection(200, large_graph, large_free);
     CHECK(answer.size() == 200 && large_graph(answer) && large_free(answer), "large sparse forest");
     PASSED("拟阵交");
