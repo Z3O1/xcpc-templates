@@ -79,7 +79,7 @@ db cir_cir_area(const c2 &c1, const c2 &other) {
 
 // 有向夹角，保留 atan2 的正负号，不能归一到 [0,2pi)。
 db arg2(const p2 &u, const p2 &v) { return atan2l(u.det(v), dot(u, v)); }
-// 圆盘与三角形 (c.o,a,b) 的有向交面积的两倍。
+// 圆盘与三角形 (c.o,a,b) 的有向交面积的两倍；内部平移到圆心。
 db tri_disk2(const c2 &c, p2 a, p2 b) {
     a = a - c.o, b = b - c.o;
     db r2 = c.r * c.r;

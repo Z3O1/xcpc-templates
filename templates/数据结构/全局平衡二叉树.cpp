@@ -21,7 +21,7 @@ struct mat {
 int n;
 vector<int> t[N];
 int sz[N], s[N], tp[N], dw[N], fa[N];
-// 会从 t 删除父边和重儿子边。
+// 无向树定根、选重儿子；会从 t 删除父边和重儿子边。
 void dfs0(int u) {
     sz[u] = 1;
     for(auto v : t[u]) {
@@ -35,7 +35,7 @@ void dfs0(int u) {
 }
 int dfn[N], wt[N], rt[N];
 int f[N][2];
-// 内部 dt 不重置。
+// 剖分重链并初始化轻儿子 DP；内部 dt 不重置。
 pll dfs1(int u) {
     static int dt;
     dfn[u] = ++dt;
@@ -60,7 +60,7 @@ struct tree_t {
 } tr[N << 1];
 #define ls (tr[k].ls)
 #define rs (tr[k].rs)
-// 返回重链分治树根编号；1 <= l <= r。
+// 按 wt[l..r] 构建重链的加权分治树，返回根编号；1 <= l <= r。
 int build(int l, int r) {
     if(l == r) return l << 1;
     int s1 = 0, s2 = 0, m = l;
@@ -97,6 +97,7 @@ mat que(int L, int R, int k, int l, int r) {
 }
 #undef ls
 #undef rs
+// build 后把点 p 的当前 DP 写回所在重链。
 void apply(int p) {
     int l = dfn[tp[p]], r = dfn[dw[tp[p]]];
     upd(dfn[p], {f[p][0], f[p][1], f[p][0], -INF}, rt[tp[p]], l, r);
@@ -107,7 +108,7 @@ pll que(int p) {
     auto res = que(dfn[p], r, rt[tp[p]], l, r);
     return {max(res[0][0], res[1][0]), max(res[0][1], res[1][1])};
 }
-// 须先 init；不修改 a[p]。
+// 初始化后给点 p 的点权增加 dt 并沿祖先链更新，不修改 a[p]。
 // 首次使用前须按 For(i,1,n) f[i][1]=a[i]; dfs0(1); dfs1(1); 建 rt[]; For(i,1,n) apply(i); 初始化。
 void upd(int p, int dt) {
     f[p][1] += dt;

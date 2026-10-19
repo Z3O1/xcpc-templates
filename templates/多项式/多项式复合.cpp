@@ -6,7 +6,7 @@
 using poly = vector<int>;
 namespace composition {
 using polys = vector<poly>;
-// 返回 m 行、每行 n 项的合并结果。
+// 双变量分治：g[0](x)=1；n 递减、m 倍增，返回 m 行、每行 n 项的合并结果。
 polys solve(const poly &f, const polys &g, int n, int m) {
     polys ans(m);
     if(n == 1) {

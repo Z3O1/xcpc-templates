@@ -4,7 +4,7 @@
 // 随机增量法求最小覆盖圆，期望 O(n)、最坏 O(n³)；三点共线时取最远两点为直径。
 namespace Geo {
 
-// 空输入返回 {{0,0},-1} 作无解标记。
+// 返回覆盖所有点的最小圆；空输入返回 {{0,0},-1} 作无解标记。
 c2 mcc(vector<p2> a) {
     if(a.empty()) return {{0, 0}, -1};
     static mt19937_64 mcc_rng(chrono::steady_clock::now().time_since_epoch().count());

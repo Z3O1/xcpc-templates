@@ -42,8 +42,11 @@ db angle(p3 a, p3 b) {
     b /= max({abs(b.x), abs(b.y), abs(b.z)});
     return atan2(dis(cross(a, b)), dot(a, b));
 }
+// 返回三角形 abc 面积的 2 倍。
 db area2(p3 a, p3 b, p3 c) { return dis(cross(b - a, c - a)); }
+// 返回四面体 abcd 带号体积的 6 倍。
 db volume6(p3 a, p3 b, p3 c, p3 d) { return det(b - a, c - a, d - a); }
+// 返回与 a 垂直的向量；a 非零时结果也非零。
 p3 perp(p3 a) {
     return abs(a.x) > abs(a.z) ? p3{a.y, -a.x, 0} : p3{0, -a.z, a.y};
 }

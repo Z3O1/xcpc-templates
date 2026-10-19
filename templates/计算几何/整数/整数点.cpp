@@ -21,6 +21,7 @@ i128 dot(p2i a, p2i b, p2i c) {
     return (i128(b.x) - a.x) * (i128(c.x) - a.x) +
            (i128(b.y) - a.y) * (i128(c.y) - a.y);
 }
+// 两点距离平方；保持整数，最后需要距离时再开根号。
 i128 dis2(p2i a, p2i b) {
     i128 x = i128(a.x) - b.x, y = i128(a.y) - b.y;
     return x * x + y * y;
