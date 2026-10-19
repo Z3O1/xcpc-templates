@@ -1,7 +1,7 @@
 // comp(): 多项式 · 多项式复合 (分治卷积, O(n log² n))
 
-// 系数低次在前且在 [0,M)，M=998244353；依赖 ntt.cpp 的 mul，无需预处理。
-// 每层展平卷积的变换长度须 <=2^23；递归共 O(log n) 层，每层 O(n log n)。
+// 依赖 多项式/ntt.cpp 的 mul。
+// 双变量分治卷积做复合，O(n log² n)；系数低次在前且在 [0,M)，每层变换长度 <= 2^23。
 
 using poly = vector<int>;
 namespace composition {

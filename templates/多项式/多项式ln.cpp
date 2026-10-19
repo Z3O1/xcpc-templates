@@ -1,7 +1,7 @@
 // poly_ln(): 多项式 · 多项式对数 (求导 积分 求逆)
 
-// 系数在 [0,M)，M=998244353，n<M；依赖 poly_inv、mul，O(n log n)。
-// f 的高次缺项视零，卷积长度须满足 mul 的上限。
+// 依赖 多项式/多项式求逆.cpp 的 poly_inv 与 ntt.cpp 的 mul。
+// 求导 + 积分 + 求逆得 ln，O(n log n)；系数在 [0,M)，n < M，f 高次缺项视零。
 
 using poly = vector<int>;
 // 缓存 1..n 的模逆元。
@@ -18,8 +18,8 @@ static const poly &_ln_inv_num(int n) {
 poly poly_ln(const poly &f, int n) {
     if(n <= 0) return poly();
     poly d(n - 1);
-    For(i, 1, min((int) f.size(), n) - 1) d[i - 1] = 1ll * f[i] * i % M;  // f'
-    d = mul(d, poly_inv(f, n));                                           // f'/f
+    For(i, 1, min((int) f.size(), n) - 1) d[i - 1] = 1ll * f[i] * i % M;
+    d = mul(d, poly_inv(f, n));
     d.resize(n - 1);
     const poly &iv = _ln_inv_num(n);
     poly g(n);

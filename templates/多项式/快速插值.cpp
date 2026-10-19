@@ -1,7 +1,7 @@
 // poly_interp(): 多项式 · 快速插值 (分治 多点求值)
 
-// 所有输入在 [0,M)，M=998244353；依赖 poly_eval、mul，O(m log² m)，m=|xs|。
-// 卷积长度须满足 mul 的上限。
+// 依赖 多项式/多点求值.cpp 的 poly_eval 与 ntt.cpp 的 mul。
+// 分治合并插值，O(m log² m)；所有输入在 [0,M)，m = |xs|。
 
 using poly = vector<int>;
 // t[k]=Π_{i=l..r}(x-xs[i])。
@@ -28,9 +28,9 @@ poly poly_interp(const poly &xs, const poly &ys) {
     vector<poly> t(4 * m);
     _interp_build(t.data(), 1, 0, m - 1, xs);
     poly dM(m);
-    For(i, 1, m) dM[i - 1] = 1ll * t[1][i] * i % M;     // M' 的系数
+    For(i, 1, m) dM[i - 1] = 1ll * t[1][i] * i % M;
     poly ev = poly_eval(dM, xs), w(m);
-    For(i, 0, m - 1) w[i] = 1ll * ys[i] * qpow(ev[i], M - 2) % M;    // M'(xs[i]) 互异时非 0
+    For(i, 0, m - 1) w[i] = 1ll * ys[i] * qpow(ev[i], M - 2) % M;
     poly res = _interp_rec(t.data(), 1, 0, m - 1, w);
     res.resize(m);
     return res;

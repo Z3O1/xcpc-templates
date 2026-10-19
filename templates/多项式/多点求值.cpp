@@ -1,7 +1,7 @@
 // poly_eval(): 多项式 · 多点求值 (分治取模)
 
-// 系数与点在 [0,M)，M=998244353；依赖 poly_mod、poly_inv、mul，卷积长度须满足 mul 上限。
-// m=|xs|，时间 O((|f|+m) log²(|f|+m))，额外空间 O(m log m)。
+// 依赖 多项式/多项式除法.cpp 的 poly_mod、求逆与 ntt.cpp 的 mul。
+// 分治取模做多点求值，O((|f|+m) log²(|f|+m)) 时间、O(m log m) 空间。
 
 using poly = vector<int>;
 // t[k]=Π_{i=l..r}(x-xs[i])。

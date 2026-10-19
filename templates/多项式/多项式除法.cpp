@@ -1,7 +1,7 @@
 // poly_divmod(): 多项式 · 带余除法 (反转求逆)
 
-// 系数在 [0,M)，M=998244353；依赖 poly_inv、mul，O(n log n)，n=|f|。
-// 卷积长度须满足 mul 的上限；f 可为空，g 须先去掉高次零。
+// 依赖 多项式/多项式求逆.cpp 的 poly_inv 与 ntt.cpp 的 mul。
+// 反转后求逆做带余除法，O(n log n)；系数在 [0,M)，n = |f|。
 
 using poly = vector<int>;
 // 返回 {q,r}，满足 f=q*g+r、deg r<deg g；g 非空且 g.back()!=0。

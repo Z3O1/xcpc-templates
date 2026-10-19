@@ -1,8 +1,7 @@
 // comp_inv(): 多项式 · 多项式复合逆 (拉格朗日反演, O(n log² n))
 
-// 系数低次在前且在 [0,M)，M=998244353；依赖 ntt.cpp 的 NTT、mul，无需预处理。
-// 每轮展平卷积的变换长度须 <=2^23；幂投影 O(n log² n)，末尾幂运算 O(n log n log M)。
-// 按值复制整个输入另需 O(|f|) 时间/空间，不计入上述以 n 为参数的界。
+// 依赖 多项式/ntt.cpp 的 NTT 与 mul。
+// 拉格朗日反演求复合逆，O(n log² n)；系数在 [0,M)，每轮变换长度 <= 2^23。
 
 using poly = vector<int>;
 namespace reversion {

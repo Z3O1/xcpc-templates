@@ -1,8 +1,7 @@
 // Mul::mul(): 多项式 · 任意模数多项式乘法 (三模 NTT + CRT)
 
-// 系数须为非负 int（可 >= P，负数先归一），2 <= P <= 2^31-1。
-// 变换长度 l = 2^ceil(lg(n+m-1)) <= 2^20；即使 P 为某个 NTT 模数也须遵守。
-// 与 ntt.cpp 的普通 NTT 独立：本页自带三模模板，变换上限 2^20。
+// 依赖 通用/头文件.cpp 的 For/ll，与 ntt.cpp 相互独立。
+// 三模 NTT + CRT 做任意模卷积；2 <= P <= 2^31-1，变换长度 <= 2^20。
 
 using poly = vector<int>;
 namespace Mul {
