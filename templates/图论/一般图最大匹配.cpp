@@ -1,11 +1,13 @@
 // getmat(): 图论 · 一般图最大匹配
 
-// n: 点数，t: 无向边，点编号 1..n；mat 为函数内静态匹配，仅支持单图构建。
+// 依赖外部上界 N、全局 n 与邻接表 t，及 通用/头文件.cpp 的 For。
+// 带花树：一次调用就某点增广一次，外层遍历未匹配点即得最大匹配。
 
 int n, fa[N];
 vector<int> t[N];
 int fd(int u) { return fa[u] == u ? u : fa[u] = fd(fa[u]); }
-// 从未匹配点 rt 尝试增广；外层依次对仍未匹配的点调用，匹配保留在内部 mat。
+// 从 1..n 中选一个未匹配点 rt 尝试增广。
+// 匹配保存在函数内静态 mat，仅支持单图构建；外层要对每个未匹配点各谓一次。
 void getmat(int rt) {
     static int vis[N], mat[N], pr[N];
     For(i, 1, n) vis[i] = pr[i] = 0, fa[i] = i;

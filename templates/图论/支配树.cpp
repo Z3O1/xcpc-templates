@@ -1,6 +1,8 @@
 // DOM::getdom(): 图论 · 支配树 (Lengauer-Tarjan)
 
-// 点编号 1..n，以 1 为根；调用方维护/清空 t,t2，getdom 重置算法状态；需足够递归栈。
+// 依赖 通用/头文件.cpp 的 For/rFor/cmin、pii 与命名空间内的 N。
+// 1 为根的有向图支配树，O((n+m)α)；点编号 1..n，不可达点 dm=0。
+
 namespace DOM {
 
 const int N = 1e6 + 10;
@@ -22,7 +24,8 @@ pii que(int u) {
     fa[u] = fa[fa[u]];
     return f[u];
 }
-// 求当前图的直接支配点 dm[1.._n]；根和不可达点为 0，可重复调用。
+// 求当前图的直接支配点 dm[1.._n]，可重复调用。
+// 调用方维护并按需清空 t/t2；getdom 自行重置算法状态；需足够递归栈。
 void getdom(int _n) {
     n = _n;
     For(i, 1, n) q1[i].clear(), fa[i] = f1[i] = dfn[i] = pos[i] = sd[i] = dm[i] = 0;

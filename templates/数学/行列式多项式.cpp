@@ -1,8 +1,9 @@
 // det_poly(): 数学 · 行列式多项式
 
-// 依赖特征多项式的 charpoly、mat、poly（别名只在该模板定义），及 qpow、M=998244353。
-// a,b 是同阶方阵，元素在 [0,M)，可奇异；返回 det(a*x+b) 的升幂 n+1 项，空矩阵为 {1}。
-// O(n^3) 时间、O(n^2) 空间，不改实参；不需要随机寻找可逆点。
+// 依赖 数学/特征多项式.cpp 的 charpoly、mat、poly，及 qpow、M = 998244353。
+// 求 det(a*x+b)：a,b 同阶、元素在 [0,M)，可奇异，不需要随机找可逆点。
+
+// 返回升幂 n+1 项；空矩阵为 {1}，不改实参；O(n^3) 时间、O(n^2) 空间。
 poly det_poly(mat a, mat b) {
     int n = a.size(), t = 1, d = 0;
     poly ans(n + 1);
@@ -14,7 +15,6 @@ poly det_poly(mat a, mat b) {
                 break;
             }
             if(a[i][i]) break;
-            // a 的整行已为零，将该多项式行乘 x；最终需除回 x^d。
             if(++d > n) return ans;
             For(j, 0, n - 1) a[i][j] = b[i][j], b[i][j] = 0;
             For(j, 0, i - 1) {
@@ -33,7 +33,6 @@ poly det_poly(mat a, mat b) {
             For(k, 0, n - 1) b[j][k] = (b[j][k] + (ll)c * b[i][k]) % M;
         }
     }
-    // 此时 a=I，det(xI+b)=charpoly(-b)。
     For(i, 0, n - 1) For(j, 0, n - 1) b[i][j] = (M - b[i][j]) % M;
     poly r = charpoly(b);
     For(i, d, n) ans[i - d] = (ll)t * r[i] % M;

@@ -1,12 +1,14 @@
 // f(n,a,b,c): 数学 · 类欧几里得 (一次递归求出 f/g/h)
 
-// 依赖：ll/qpow；结果按 M = 998244353 取模。
+// 依赖 通用/头文件.cpp 的 ll、qpow；结果按 M = 998244353 取模。
+// 一次递归同时求下取整和、平方和与带权和，是 O(log) 级的辗转相除。
+
 const int i2 = (M + 1) / 2, i6 = qpow(6, M - 2);
 struct nd {
     int f, g, h;
 };
-// 一次递归求 f/g/h：下取整和、平方和、乘 i 的带权和（i = 0..n）。
-// 要求 n/a/b >= 0、c > 0。
+// 求 i=0..n 的 f=Σ⌊(ai+b)/c⌋、g=Σ⌊·⌋²、h=Σi⌊·⌋。
+// 要求 n,a,b >= 0、c > 0；返回 {f,g,h}，三者均已 mod M。
 nd f(int n_, int a, int b, int c) {
     if(n_ < 0) return {0, 0, 0};
     ll n = n_ % M, x = (a / c) % M, y = (b / c) % M;

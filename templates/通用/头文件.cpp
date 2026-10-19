@@ -1,5 +1,8 @@
 // head(): 通用 · 头文件（宏、类型别名与模幂）
 
+// 基础头：后面所有模板都假定这层已在上方。
+// 提供 For/rFor/all/cmin/cmax/mtc 宏、类型别名、模数 M 与 qpow 两参/三参。
+
 #include <bits/stdc++.h>
 #define For(i, l, r) for(int i = l, i##_e = r; i <= i##_e; ++i)
 #define rFor(i, r, l) for(int i = r, i##_e = l; i >= i##_e; --i)
@@ -22,8 +25,8 @@ using pii = array<int, 2>;
 using pll = array<ll, 2>;
 // 普通多项式与逆元统一用这个模数；系数保持 [0, M)。
 constexpr int M = 998244353;
-// 返回 a^b mod M；模数是编译期常量，乘模不走路除法，热路径比三参版本快。
-// 要求 a,b >= 0；b=0 返回 1。
+// 返回 a^b mod M；要求 a,b >= 0，b=0 返回 1。
+// 模数是编译期常量，乘模不走路除法，热路径比三参版本快。
 ll qpow(ll a, ll b) {
     ll s = 1;
     a %= M;
@@ -32,7 +35,7 @@ ll qpow(ll a, ll b) {
     return s;
 }
 // 返回 a^b mod p；要求 a,b >= 0、1 <= p <= 3037000500（ll 模乘安全界）。
-// 模数不是 M 时用（如原根/BSGS 的输入 p）；b=0 返回 1（含 p=1）。
+// b=0 返回 1（含 p=1）；模数不是 M 时用（如原根/BSGS 的输入 p）。
 ll qpow(ll a, ll b, ll p) {
     ll s = 1;
     a %= p;

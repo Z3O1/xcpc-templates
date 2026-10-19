@@ -1,12 +1,14 @@
 // charpoly(): 数学 · 特征多项式
 
-// 依赖 qpow、M=998244353；mat 为 n 阶方阵，元素在 [0,M)。
-// 返回 det(xI-a) 的升幂 n+1 项；空矩阵返回 {1}。O(n^3) 时间、O(n^2) 空间，不改实参。
+// 依赖 qpow 与 M = 998244353。
+// 先相似变换到上 Hessenberg 再递推特征多项式；mat 为 n 阶方阵、元素在 [0,M)。
+
 using poly = vector<int>;
 using mat = vector<vector<int>>;
+// 返回 det(xI-a) 的升幂 n+1 项；空矩阵返回 {1}，不改实参。
+// O(n^3) 时间、O(n^2) 空间。
 poly charpoly(mat a) {
     int n = a.size();
-    // 相似变换为上 Hessenberg 矩阵，非零次对角元归一为 1。
     For(i, 1, n - 1) {
         For(j, i, n - 1) if(a[j][i - 1]) {
             swap(a[i], a[j]);
@@ -23,7 +25,6 @@ poly charpoly(mat a) {
             For(k, i - 1, n - 1) a[j][k] = (a[j][k] + (ll)a[i][k] * (M - z)) % M;
         }
     }
-    // dp[i] 是左上 i 阶子矩阵的特征多项式，按最后一列展开。
     mat dp(n + 1, poly(n + 1));
     dp[0][0] = 1;
     For(i, 0, n - 1) {

@@ -1,8 +1,10 @@
 // matroid_intersection(): 图论 · 拟阵交
 
-// 地集 [0,n)，返回最大公共独立集的元素编号；每次从空集开始，可重复调用。
-// a(s)、b(s) 判断 s 是否独立；须为同一地集上的拟阵，不得修改 s。
-// 答案大小 r：O(n(r+1)^2) 次 oracle 调用及额外时间，空间 O(n(r+1))，不计 oracle。
+// 依赖 通用/头文件.cpp 的 For。
+// 求两个拟阵的最大公共独立集，地集 [0,n)；O(n(r+1)^2) 次 oracle 调用，空间 O(n(r+1))。
+
+// a(s)、b(s) 判断 s 是否独立，须为同一地集上的拟阵且不得改 s。
+// 返回最大公共独立集的元素编号；每次从空集开始，可重复调用。
 template <class A, class B>
 vector<int> matroid_intersection(int n, A a, B b) {
     vector<int> in(n);
@@ -11,7 +13,6 @@ vector<int> matroid_intersection(int n, A a, B b) {
         vector<vector<int>> g(n);
         queue<int> q;
         For(x, 0, n - 1) if(in[x]) s.push_back(x);
-        // A 中可加入为源，B 中可加入为汇；交换弧分别是 y->x 和 x->y。
         For(x, 0, n - 1) if(!in[x]) {
             s.push_back(x);
             if(a(s)) pre[x] = n, q.push(x);
@@ -37,7 +38,6 @@ vector<int> matroid_intersection(int n, A a, B b) {
                 if(pre[y] == -1) pre[y] = x, q.push(y);
         }
         if(t == -1) return s;
-        // 必须取边数最少的增广路，才能保证对称差仍在两个拟阵中独立。
         for(int x = t; x != n; x = pre[x]) in[x] ^= 1;
     }
 }

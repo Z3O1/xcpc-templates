@@ -1,9 +1,8 @@
 // k_shortest_t: 图论 · k 短路 (可重游走)
 
-// 0-based 有向非负 ll 权图，按边序列计重；允许重边、重复点边及零环。
-// solve 返回前 k 个长度；s=t 时空游走计第一个，只枚举长度 < LLONG_MAX 的游走。
-// O((n+m)log(m+2)+k log(k+2)) 时间，O(n+m log(m+2)+k) 空间。
-// init 清图，solve 可换起终点重复调用。
+// 依赖 通用/头文件.cpp 的 ll、i128 与 LLONG_MAX。
+// 0-based 有向非负权图按边序列计重的 k 短路，允许重边、重游与零环；O((n+m)log m + k log k)。
+
 struct k_shortest_t {
     struct edge {
         int u, v;
@@ -16,6 +15,7 @@ struct k_shortest_t {
     vector<edge> e;
     vector<vector<int>> g, rg;
     vector<node> h;
+    // 清空图，按点数 n 重建两份邻接表。
     void init(int n) {
         g.assign(n, {}), rg.assign(n, {});
         e.clear(), h.clear();
@@ -25,7 +25,7 @@ struct k_shortest_t {
         e.push_back({u, v, w});
         g[u].push_back(i), rg[v].push_back(i);
     }
-    // 递归会扩容，不能跨调用持有 h 元素的引用。
+    // 递归中 h 会扩容，调用方不能跨调用持有 h 元素的引用。
     int meld(int a, int b) {
         if(!a || !b) return a + b;
         if(h[a].w > h[b].w) swap(a, b);
@@ -37,6 +37,8 @@ struct k_shortest_t {
         h[x].d = h[h[x].r].d + 1;
         return x;
     }
+    // 返回从 s 到 t 的前 k 个游走长度（升序）；s=t 时空游走计第一个。
+    // 只枚举长度 < LLONG_MAX 的游走；k <= 0 返回空；可换起终点重复调用。
     vector<ll> solve(int s, int t, int k) {
         vector<ll> ans;
         h.assign(1, {});
@@ -63,7 +65,6 @@ struct k_shortest_t {
             }
         }
         if(d[s] == inf) return ans;
-        // 父亲先出队，零边不成树环；只排除选中的那条边。
         for(int u : ord) {
             if(pre[u] != -1) rt[u] = rt[e[pre[u]].v];
             for(int i : g[u]) {
