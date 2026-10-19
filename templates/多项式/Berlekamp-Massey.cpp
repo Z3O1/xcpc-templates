@@ -18,7 +18,7 @@ poly BM(const poly &a) {
         ++off;
         if(!d) continue;
         poly tmp = res;
-        int k = 1ll * d * qpow(s, M - 2, M) % M;                // res ← res - (d/s) * lst * x^off
+        int k = 1ll * d * qpow(s, M - 2) % M;                // res ← res - (d/s) * lst * x^off
         For(j, off, n) res[j] = (res[j] - 1ll * k * lst[j - off] % M + M) % M;
         if(len * 2 > i) continue;
         len = i - len + 1, lst = tmp, s = d, off = 0;

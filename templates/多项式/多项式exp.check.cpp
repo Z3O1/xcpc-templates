@@ -20,7 +20,7 @@ static poly naive_exp(const poly &f, int n, bool *okp = nullptr) {
     For(k, 1, n - 1) {
         ll s = 0;
         For(j, 1, min((int) f.size() - 1, k)) s = (s + (ll) f[j] * j % M * b[k - j]) % M;
-        b[k] = s * qpow(k, M - 2, M) % M;
+        b[k] = s * qpow(k, M - 2) % M;
     }
     if(okp) *okp = okk;
     return b;
@@ -34,7 +34,7 @@ static poly naive_exp2(const poly &f, int n) {
         poly nx(n);
         For(i, 0, n - 1) if(cur[i]) For(j, 0, min((int) f.size(), n - i) - 1) nx[i + j] = (nx[i + j] + (ll) cur[i] * f[j]) % M;
         cur = nx, fac = (ll) fac * t % M;
-        int ifac = qpow(fac, M - 2, M);
+        int ifac = qpow(fac, M - 2);
         For(i, 0, n - 1) s[i] = (s[i] + (ll) cur[i] * ifac) % M;
     }
     return s;
@@ -212,7 +212,7 @@ int main() {
             int fac = 1;
             For(i, 0, 299) {
                 if(i) fac = (ll) fac * i % M;
-                want[i] = qpow(fac, M - 2, M);
+                want[i] = qpow(fac, M - 2);
             }
             int at = firstdiff(want, got);
             if(at >= 0) return bad("exp x = Σ x^i/i!", f, 300, want, got, at);
@@ -221,7 +221,7 @@ int main() {
         // f = -ln(1-x) = Σ_{i>=1} x^i/i → exp f = 1/(1-x) = 全 1
         {
             poly f(200);
-            For(i, 1, 199) f[i] = qpow(i, M - 2, M);
+            For(i, 1, 199) f[i] = qpow(i, M - 2);
             poly want(200), got = poly_exp(f, 200);
             For(i, 0, 199) want[i] = 1;
             int at = firstdiff(want, got);

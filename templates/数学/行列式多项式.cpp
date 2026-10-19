@@ -24,7 +24,7 @@ poly det_poly(mat a, mat b) {
             }
         }
         t = (ll)t * a[i][i] % M;
-        int inv = qpow(a[i][i], M - 2, M);
+        int inv = qpow(a[i][i], M - 2);
         For(j, 0, n - 1) a[i][j] = (ll)a[i][j] * inv % M;
         For(j, 0, n - 1) b[i][j] = (ll)b[i][j] * inv % M;
         For(j, 0, n - 1) if(j != i) {

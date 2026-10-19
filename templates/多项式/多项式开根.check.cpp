@@ -11,7 +11,7 @@
 #include "多项式求逆.cpp"
 #include "多项式开根.cpp"
 
-static const int ih2 = qpow(2, M - 2, M);
+static const int ih2 = qpow(2, M - 2);
 // 由 g² = f 逐项解 g；要求 f[0]==1、n >= 1；返回长度 n 的平方根。
 static poly naive_sqrt(const poly &f, int n) {
     poly g(n);

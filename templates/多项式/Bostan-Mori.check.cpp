@@ -6,7 +6,7 @@
 // 独立参考幂级数除法；要求 n >= 0 且 Q[0] != 0；返回 P/Q 的 0..n 项。
 static poly series_ref(const poly &P, const poly &Q, int n) {
     poly f(n + 1);
-    int iq = qpow(Q[0], M - 2, M);
+    int iq = qpow(Q[0], M - 2);
     For(i, 0, n) {
         ll v = i < (int)P.size() ? P[i] : 0;
         For(j, 1, min(i, (int)Q.size() - 1)) v = (v - 1ll * Q[j] * f[i - j] % M + M) % M;
@@ -91,7 +91,7 @@ int main() {
     // 4) 退化与边界
     {
         poly Q{5}, P{7};
-        CHECK(bostan_mori(P, Q, 0) == 7 * qpow(5, M - 2, M) % M, "常数生成函数 P/Q 在 k=0");
+        CHECK(bostan_mori(P, Q, 0) == 7 * qpow(5, M - 2) % M, "常数生成函数 P/Q 在 k=0");
         CHECK(bostan_mori(P, Q, 100) == 0, "k > 0 且 Q 为常数 → 0");
         // 高次分子确实影响展开,不能按分母次数直接丢弃。
         poly P2{0, 1, M - 1, 12345}, Q2{1, M - 1, M - 1};

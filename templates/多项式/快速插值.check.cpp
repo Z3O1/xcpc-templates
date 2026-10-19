@@ -32,7 +32,7 @@ static poly lagrange(const poly &xs, const poly &ys) {
         rFor(k, m - 1, 1) q[k - 1] = (prod[k] + (ll) r * q[k]) % M;
         ll den = 1;
         For(j, 0, m - 1) if(j != i) den = den * (r - xs[j] + M) % M;
-        int c = (ll) ys[i] * qpow(den, M - 2, M) % M;
+        int c = (ll) ys[i] * qpow(den, M - 2) % M;
         For(k, 0, m - 1) res[k] = (res[k] + (ll) c * q[k]) % M;
     }
     return res;

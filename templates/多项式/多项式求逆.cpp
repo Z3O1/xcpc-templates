@@ -6,7 +6,7 @@
 using poly = vector<int>;
 // 返回 n 项的 g，使 f*g ≡ 1 (mod x^n)；n>=1，f 非空且 f[0]!=0。
 poly poly_inv(const poly &f, int n) {
-    poly g{int(qpow(f[0], M - 2, M))};
+    poly g{int(qpow(f[0], M - 2))};
     for(int m = 1; m < n; m <<= 1) {
         int t = min(m << 1, n);
         poly c(f.begin(), f.begin() + min((int) f.size(), t));

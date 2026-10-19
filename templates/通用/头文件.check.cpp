@@ -86,18 +86,20 @@ int main() {
     }
     CHECK(rounds == 4, "mtc 多测循环");
 
-    // M 是全书统一模数;qpow 默认按它取模,支持 p=1 退化与任意 ll 指数。
+    // M 是全书统一模数;两参 qpow 按 M 取模(热路径),三参重载给非 M 模数。
     CHECK(M == 998244353, "M 为 998244353");
-    CHECK(qpow(2, 10) == 1024, "qpow 默认模数");
-    CHECK(qpow(3, M - 2, M) * 3 % M == 1, "qpow 求逆元");
-    CHECK((ll) qpow(7, 0, 1) == 1 && (ll) qpow(7, 5, 1) == 0, "qpow p=1 退化");
+    CHECK(qpow(2, 10) == 1024, "qpow 2^10");
+    CHECK(qpow(3, M - 2) * 3 % M == 1, "qpow 求逆元");
     ll w = 1;
     For(i, 1, 60) w = w * 2 % M;
-    CHECK(qpow(2, 60, M) == w, "qpow 与逐次乘对照");
+    CHECK(qpow(2, 60) == w, "qpow 与逐次乘对照");
+    CHECK(qpow((ll) M + 2, 3) == 8, "qpow 底数先取模");
+    CHECK(qpow(12345, 678) == qpow(12345, 678, M), "两参/三参在 M 下一致");
+    CHECK(qpow(6, M - 2, M) * 6 % M == 1, "三参重载按 p 取模");
+    CHECK((ll) qpow(7, 0, 1) == 1 && (ll) qpow(7, 5, 1) == 0, "三参重载 p=1 退化");
     w = 1;
     For(i, 1, 1000) w = w * 1234567 % (M - 2);
-    CHECK(qpow(1234567, 1000, M - 2) == w, "qpow 非默认模数");
-    CHECK(qpow((ll) M + 2, 3, M) == 8, "qpow 底数先取模");
+    CHECK(qpow(1234567, 1000, M - 2) == w, "三参重载非 M 模数");
 
 #if __SIZEOF_POINTER__ == 8
     u128 u = (u128) ULLONG_MAX * 2 + 1;

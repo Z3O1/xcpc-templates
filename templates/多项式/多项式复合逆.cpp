@@ -60,7 +60,7 @@ poly pw_pj(const poly &f, int n) {
 // 不足项补零，高次忽略，不改输入；即使 n=1 也须提供非零一次项。
 poly comp_inv(poly f, int n) {
     if(n == 1) return {0};
-    int p = qpow(f[1], M - 2, M);
+    int p = qpow(f[1], M - 2);
     f.resize(n);
     int c = 1;
     For(i, 0, n - 1) {

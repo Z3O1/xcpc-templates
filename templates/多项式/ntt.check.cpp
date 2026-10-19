@@ -340,8 +340,8 @@ int main() {
             For(t, 1, 20) {
                 poly a = rpoly(n, M, t % 5);
                 for(int direction : {1, -1}) {
-                    int root = qpow(3, (M - 1) / n, M);
-                    if(direction == -1) root = qpow(root, M - 2, M);
+                    int root = qpow(3, (M - 1) / n);
+                    if(direction == -1) root = qpow(root, M - 2);
                     poly want(n);
                     int step = 1;
                     For(i, 0, n - 1) {
@@ -351,7 +351,7 @@ int main() {
                             pw = (ll)pw * step % M;
                         }
                         step = (ll)step * root % M;
-                        if(direction == -1) want[i] = (ll)want[i] * qpow(n, M - 2, M) % M;
+                        if(direction == -1) want[i] = (ll)want[i] * qpow(n, M - 2) % M;
                     }
                     poly got = a;
                     NTT(got, direction);
@@ -365,7 +365,7 @@ int main() {
             poly a(n);
             a[1] = M - 1;
             NTT(a, 1);
-            int root = qpow(3, (M - 1) / n, M);
+            int root = qpow(3, (M - 1) / n);
             int pw = 1;
             For(i, 0, n - 1) {
                 if(a[i] != M - pw) {

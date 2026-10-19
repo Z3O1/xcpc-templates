@@ -55,7 +55,7 @@ static int ref_det(mat a) {
         if(pivot == n) return 0;
         if(pivot != i) swap(a[pivot], a[i]), ans = (M - ans) % M;
         ans = ans * a[i][i] % M;
-        ll inv = qpow(a[i][i], M - 2, M);
+        ll inv = qpow(a[i][i], M - 2);
         For(j, i + 1, n - 1) {
             ll c = a[j][i] * inv % M;
             For(k, i, n - 1) a[j][k] = (a[j][k] - c * a[i][k] % M + M) % M;

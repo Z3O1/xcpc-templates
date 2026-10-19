@@ -14,7 +14,7 @@
 // 按定义解系数递推求逆；要求 f 非空且 f[0]!=0、n >= 1；返回长度 n 的逆。
 static poly naive_inv(const poly &f, int n) {
     poly g(n);
-    int i0 = qpow(f[0], M - 2, M);
+    int i0 = qpow(f[0], M - 2);
     For(i, 0, n - 1) {
         ll s = 0;
         For(j, 1, i) if(j < (int) f.size()) s = (s + (ll) f[j] * g[i - j]) % M;
@@ -189,7 +189,7 @@ int main() {
             For(t, 1, 20) {
                 int c = (int) rnd(1, M - 1);
                 poly f{c}, got = poly_inv(f, 40), want(40);
-                want[0] = qpow(c, M - 2, M);
+                want[0] = qpow(c, M - 2);
                 if(firstdiff(want, got) >= 0) return bad("单系数 f", f, 40, want, got);
             }
             ok("f = {c}(只 1 项)时逆 = {1/c, 0, 0, ...},20 组一致");

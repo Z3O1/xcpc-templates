@@ -73,7 +73,7 @@ void NTT(poly &a, int k) {
     }
     for(int m = roots.size(); m < n; m <<= 1) {
         roots.resize(m << 1);
-        int w = qpow(3, (M - 1) / (m << 1), M);
+        int w = qpow(3, (M - 1) / (m << 1));
         roots[m] = 1;
         For(j, 1, m - 1) roots[m + j] = (ll)roots[m + j - 1] * w % M;
     }
@@ -93,7 +93,7 @@ void NTT(poly &a, int k) {
     For(i, 0, n - 1) a[i] = tmp[i];
     if(k == -1) {
         reverse(a.begin() + 1, a.end());
-        int inv = qpow(n, M - 2, M);
+        int inv = qpow(n, M - 2);
         For(i, 0, n - 1) a[i] = (ll)a[i] * inv % M;
     }
 }

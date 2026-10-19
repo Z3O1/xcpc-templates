@@ -1,7 +1,7 @@
 // f(n,a,b,c): 数学 · 类欧几里得 (一次递归求出 f/g/h)
 
 // 依赖：ll/qpow；结果按 M = 998244353 取模。
-const int i2 = (M + 1) / 2, i6 = qpow(6, M - 2, M);
+const int i2 = (M + 1) / 2, i6 = qpow(6, M - 2);
 struct nd {
     int f, g, h;
 };

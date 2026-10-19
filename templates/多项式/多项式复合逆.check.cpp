@@ -54,7 +54,7 @@ static poly naive_comp2(const poly &f, const poly &g, int n) {
 // 独立逐项反解：第 k 项仅以 f[1]*g[k] 线性出现。
 static poly naive_inverse(const poly &f, int n) {
     poly g(n);
-    int inv = qpow(f[1], M - 2, M);
+    int inv = qpow(f[1], M - 2);
     if(n > 1) g[1] = inv;
     For(k, 2, n - 1) {
         int c = naive_comp(f, g, k + 1)[k];
@@ -80,7 +80,7 @@ static void compare(const poly &f, int n, bool reverse_way) {
     require_same("不改输入", f, n, saved, f);
     require_same("f(g)=x", f, n, ser_x(n), naive_comp(f, g, n));
     if(reverse_way) require_same("g(f)=x", f, n, ser_x(n), naive_comp(g, f, n));
-    if((int)g.size() != n || g[0] != 0 || (n > 1 && g[1] != qpow(f[1], M - 2, M))) {
+    if((int)g.size() != n || g[0] != 0 || (n > 1 && g[1] != qpow(f[1], M - 2))) {
         dump("f", f);
         dump("g", g);
         exit(1);
@@ -139,7 +139,7 @@ int main() {
     for(int n : {1, 2, 3, 6, 8, 17, 32, 33}) {
         for(int c : {1, 3, M - 1}) {
             poly want(n);
-            if(n > 1) want[1] = qpow(c, M - 2, M);
+            if(n > 1) want[1] = qpow(c, M - 2);
             require_same("c*x 的闭式", {0, c}, n, want, comp_inv({0, c}, n));
             compare({0, c}, n, true);
         }
@@ -178,7 +178,7 @@ int main() {
     }
     for(int n : {1024, 2048}) {
         poly f = rnd_f(n, 0), scaled(n);
-        int inv_c = qpow(13, M - 2, M);
+        int inv_c = qpow(13, M - 2);
         ll pw = 1;
         For(i, 1, n - 1) scaled[i] = (ll)f[i] * pw % M, pw = pw * inv_c % M;
         poly want = comp_inv(f, n);

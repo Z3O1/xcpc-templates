@@ -7,7 +7,7 @@ using poly = vector<int>;
 // 返回 [x^n]P/Q；n>=0、Q 非空且 Q[0]!=0；P 可空或长于 Q。
 int bostan_mori(poly P, poly Q, ll n) {
     if(P.empty()) return 0;
-    if(Q.size() == 1) return n < (ll)P.size() ? 1ll * P[n] * qpow(Q[0], M - 2, M) % M : 0;
+    if(Q.size() == 1) return n < (ll)P.size() ? 1ll * P[n] * qpow(Q[0], M - 2) % M : 0;
     while(n) {
         // 只求第 n 项,高于 n 次的分子/分母项可安全丢弃。
         if(n < (ll) P.size()) P.resize(n + 1);
@@ -21,5 +21,5 @@ int bostan_mori(poly P, poly Q, ll n) {
         for(int i = 0; i < (int) V.size(); i += 2) Q.push_back(V[i]);
         n >>= 1;
     }
-    return 1ll * P[0] * qpow(Q[0], M - 2, M) % M;
+    return 1ll * P[0] * qpow(Q[0], M - 2) % M;
 }

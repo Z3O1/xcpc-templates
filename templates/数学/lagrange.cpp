@@ -15,7 +15,7 @@ vector<int> lag(vector<pair<int, int>> a) {
         auto [x, y] = a[i - 1];
         int w = 1, z = 0;
         For(j, 1, n) if(i != j) w = 1ll * w * (x - a[j - 1].first + M) % M;
-        w = qpow(w, M - 2, M) * y % M;
+        w = qpow(w, M - 2) * y % M;
         rFor(j, n - 1, 0) z = (f[j + 1] + 1ll * x * z) % M, ans[j] = (ans[j] + 1ll * z * w) % M;
     }
     return ans;

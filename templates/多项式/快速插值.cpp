@@ -30,7 +30,7 @@ poly poly_interp(const poly &xs, const poly &ys) {
     poly dM(m);
     For(i, 1, m) dM[i - 1] = 1ll * t[1][i] * i % M;     // M' 的系数
     poly ev = poly_eval(dM, xs), w(m);
-    For(i, 0, m - 1) w[i] = 1ll * ys[i] * qpow(ev[i], M - 2, M) % M;    // M'(xs[i]) 互异时非 0
+    For(i, 0, m - 1) w[i] = 1ll * ys[i] * qpow(ev[i], M - 2) % M;    // M'(xs[i]) 互异时非 0
     poly res = _interp_rec(t.data(), 1, 0, m - 1, w);
     res.resize(m);
     return res;

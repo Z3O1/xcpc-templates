@@ -16,7 +16,7 @@
 static poly naive_ln(const poly &f, int n) {
     if(n <= 0) return poly();
     poly g(n);
-    int i0 = qpow(f[0], M - 2, M);
+    int i0 = qpow(f[0], M - 2);
     For(i, 0, n - 1) {
         ll s = 0;
         For(j, 1, i) if(j < (int) f.size()) s = (s + (ll) f[j] * g[i - j]) % M;
@@ -26,7 +26,7 @@ static poly naive_ln(const poly &f, int n) {
     For(k, 0, n - 2) {  // [(f'·g)]_k → ln 的 k+1 次项
         ll s = 0;
         For(j, 1, min((int) f.size() - 1, k + 1)) s = (s + (ll) f[j] * j % M * g[k + 1 - j]) % M;
-        r[k + 1] = s * qpow(k + 1, M - 2, M) % M;
+        r[k + 1] = s * qpow(k + 1, M - 2) % M;
     }
     return r;
 }
@@ -37,7 +37,7 @@ static poly naive_ln2(const poly &f, int n) {
     u[0] = (u[0] - 1 + M) % M;
     cur = u;
     For(m, 1, n - 1) {
-        int c = qpow(m, M - 2, M);
+        int c = qpow(m, M - 2);
         if(!(m & 1)) c = M - c;
         For(i, 0, n - 1) s[i] = (s[i] + (ll) cur[i] * c) % M;
         poly t(n);  // cur *= u(O(n²) 朴素卷积,截到 n 项)
@@ -198,7 +198,7 @@ int main() {
         // f = 1 - x → ln = -Σ x^i/i
         {
             poly f{1, M - 1}, want(200), got = poly_ln(f, 200);
-            For(i, 1, 199) want[i] = M - qpow(i, M - 2, M);
+            For(i, 1, 199) want[i] = M - qpow(i, M - 2);
             int at = firstdiff(want, got);
             if(at >= 0) return bad("ln(1-x) = -Σ x^i/i", f, 200, want, got, at);
             ok("f = 1-x → ln f = -x - x²/2 - x³/3 - ...(n = 200)");
