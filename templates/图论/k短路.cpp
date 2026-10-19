@@ -6,32 +6,24 @@
 // O(n+m log(m+2)+k) 空间；init 清图，solve 可换起终点重复调用。
 struct k_shortest_t {
     struct edge {
-        int from;
-        int to;
+        int from, to;
         ll w;
     };
     struct node {
         ll key;
-        int to;
-        int l;
-        int r;
-        int rank;
+        int to, l, r, rank;
     };
     vector<edge> edges;
-    vector<vector<int>> g;
-    vector<vector<int>> rg;
+    vector<vector<int>> g, rg;
     vector<node> heap;
     void init(int n) {
-        edges.clear();
-        g.assign(n, {});
-        rg.assign(n, {});
-        heap.clear();
+        g.assign(n, {}), rg.assign(n, {});
+        edges.clear(), heap.clear();
     }
     void add(int u, int v, ll w) {
         int id = edges.size();
         edges.push_back({u, v, w});
-        g[u].push_back(id);
-        rg[v].push_back(id);
+        g[u].push_back(id), rg[v].push_back(id);
     }
     // 持久化合并；不能持有 heap 元素的引用跨越递归（push_back 会扩容）。
     int meld(int a, int b) {
@@ -47,18 +39,16 @@ struct k_shortest_t {
     }
     vector<ll> solve(int s, int t, int k) {
         vector<ll> ans;
-        heap.assign(1, {0, 0, 0, 0, 0});
+        heap.assign(1, {});
         if(k <= 0) return ans;
         int n = g.size();
         const ll inf = LLONG_MAX;
         vector<ll> dist(n, inf);
-        vector<int> tree(n, -1);
-        vector<int> order;
-        vector<int> h(n);
+        vector<int> tree(n, -1), order, h(n);
         using state = pair<ll, int>;
         priority_queue<state, vector<state>, greater<state>> q;
-        dist[t] = 0;
-        q.push({0, t});
+        // 反向最短路，同时记录父亲先出队的顺序。
+        dist[t] = 0, q.push({0, t});
         while(!q.empty()) {
             auto [d, u] = q.top();
             q.pop();
@@ -68,8 +58,7 @@ struct k_shortest_t {
                 auto e = edges[id];
                 i128 nd = (i128)d + e.w;
                 if(nd < dist[e.from]) {
-                    dist[e.from] = nd;
-                    tree[e.from] = id;
+                    dist[e.from] = nd, tree[e.from] = id;
                     q.push({(ll)nd, e.from});
                 }
             }
@@ -88,6 +77,7 @@ struct k_shortest_t {
                 h[u] = meld(h[u], x);
             }
         }
+        // 候选向堆孩子替换侧边，或从侧边终点追加下一条。
         auto push = [&](i128 cost, int x) {
             if(x && cost < inf) q.push({(ll)cost, x});
         };
