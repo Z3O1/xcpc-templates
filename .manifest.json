@@ -271,11 +271,6 @@
    "hidden": false
   },
   {
-   "key": "计算几何/使用说明.typ",
-   "title": "选用与依赖",
-   "hidden": false
-  },
-  {
    "key": "计算几何/整数/整数点.cpp",
    "title": "整数点与精确运算",
    "hidden": false

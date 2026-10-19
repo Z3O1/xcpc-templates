@@ -1,6 +1,6 @@
 // voronoi(): 计算几何 · Voronoi 图 (半平面交逐站点裁剪包围盒,返回每个站点的区域)
 
-// 依赖 7.4.1 凸包、直径与裁剪（convex_cut）。
+// 依赖 7.3.1 凸包、直径与裁剪（convex_cut）。
 // 逐站点用中垂线裁包围盒，返回每个站点的逆时针区域；最坏 O(n³) 时间、O(n²) 空间。
 namespace Geo {
 namespace Voronoi {
