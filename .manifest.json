@@ -11,24 +11,6 @@
  ],
  "entries": [
   {
-   "key": "通用/快读.cpp",
-   "title": "快读",
-   "missing": true,
-   "hidden": false
-  },
-  {
-   "key": "通用/随机.cpp",
-   "title": "随机",
-   "missing": true,
-   "hidden": false
-  },
-  {
-   "key": "通用/对拍.sh",
-   "title": "对拍",
-   "missing": true,
-   "hidden": false
-  },
-  {
    "key": "字符串/manacher.cpp",
    "title": "Manacher",
    "missing": false,
@@ -65,21 +47,9 @@
    "hidden": true
   },
   {
-   "key": "数学/modint.cpp",
-   "title": "ModInt",
-   "missing": true,
-   "hidden": false
-  },
-  {
    "key": "数学/barrett.cpp",
    "title": "Barret 约简",
    "missing": false,
-   "hidden": false
-  },
-  {
-   "key": "数学/ntt.cpp",
-   "title": "任意模数 NTT",
-   "missing": true,
    "hidden": false
   },
   {
@@ -89,27 +59,9 @@
    "hidden": false
   },
   {
-   "key": "数学/pollard-rho.cpp",
-   "title": "Pollard Rho",
-   "missing": true,
-   "hidden": false
-  },
-  {
-   "key": "数学/min25.cpp",
-   "title": "min_25",
-   "missing": true,
-   "hidden": false
-  },
-  {
    "key": "数学/类欧.cpp",
    "title": "类欧",
    "missing": false,
-   "hidden": false
-  },
-  {
-   "key": "数据结构/线段树.cpp",
-   "title": "线段树",
-   "missing": true,
    "hidden": false
   },
   {
@@ -191,39 +143,9 @@
    "hidden": false
   },
   {
-   "key": "数学/fgcd.cpp",
-   "title": "O(V)-O(1) GCD",
-   "missing": true,
-   "hidden": false
-  },
-  {
    "key": "数据结构/rmq.cpp",
    "title": "O(1) RMQ",
    "missing": false,
-   "hidden": false
-  },
-  {
-   "key": "数学/多项式复合.cpp",
-   "title": "多项式复合",
-   "missing": true,
-   "hidden": false
-  },
-  {
-   "key": "数学/多项式复合逆.cpp",
-   "title": "多项式复合逆",
-   "missing": true,
-   "hidden": false
-  },
-  {
-   "key": "通用/typ演示.typ",
-   "title": "Typst 演示",
-   "missing": true,
-   "hidden": false
-  },
-  {
-   "key": "数学/类欧测试.cpp",
-   "title": "类欧测试",
-   "missing": true,
    "hidden": false
   },
   {
@@ -332,18 +254,6 @@
    "key": "数论/积性函数/min25.cpp",
    "title": "min_25",
    "missing": false,
-   "hidden": false
-  },
-  {
-   "key": "数论/杜教筛.cpp",
-   "title": "杜教筛",
-   "missing": true,
-   "hidden": false
-  },
-  {
-   "key": "数论/线性筛.cpp",
-   "title": "线性筛",
-   "missing": true,
    "hidden": false
   },
   {
@@ -605,18 +515,6 @@
    "hidden": false
   },
   {
-   "key": "通用/常数表.cpp",
-   "title": "常用素数与大整数",
-   "missing": true,
-   "hidden": false
-  },
-  {
-   "key": "通用/高合成数表.typ",
-   "title": "高合成数表",
-   "missing": true,
-   "hidden": false
-  },
-  {
    "key": "通用/头文件.cpp",
    "title": "头文件",
    "missing": false,
@@ -638,12 +536,6 @@
    "key": "数论/高斯整数.cpp",
    "title": "高斯整数",
    "missing": false,
-   "hidden": false
-  },
-  {
-   "key": "数论/两平方和.typ",
-   "title": "两平方和",
-   "missing": true,
    "hidden": false
   },
   {
