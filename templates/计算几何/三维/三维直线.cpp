@@ -1,13 +1,7 @@
 // line3(): 计算几何 · 三维直线与线段 (点线距/线线距/线段相交)
 
-// 依赖本节 三维向量.cpp；seg3{x,y} 为线段，line3(a,b) 由两点构造。
-// line3 存 o=a、d=b-a，表示 o+t·d；d 须非零，不必单位化。
-// 只有真正零长的线段按点处理；线段距离不把近乎平行当作平行。
-// 两直线距离按 ispara 将夹角正弦 <= eps 的方向视为平行。
-// 判定用绝对长度 eps；ispara 用夹角正弦 eps，严格内部距两端的轴向距离须 > eps。
-// isss 按 ispara 分类；共线投影重叠长度 > eps 不算唯一点，其余 eps 内接触算单点。
-// 要求坐标差、长度及中间点积/参数可表示；舍入误差须小于所需容差。
-// 近乎平行时最近点病态，误差可按 1/sin(夹角) 放大，远处交点尤其需注意。
+// 依赖 三维/三维向量.cpp。line3 存 o=a、d=b-a（d 非零、不必单位化）。
+// 点线距、线线距与线段相交；用绝对长度 eps 与夹角正弦 eps，近平行时最近点病态。
 namespace Geo {
 
 struct line3 {
@@ -76,7 +70,7 @@ db dis(const seg3 &a, const seg3 &b, p3 &pa, p3 &pb) {
     db la = dis(a.dir()), lb = dis(b.dir());
     p3 e = la == 0 ? p3{0, 0, 0} : unit(a.dir());
     p3 f = lb == 0 ? p3{0, 0, 0} : unit(b.dir());
-    // 比较四个端点投影与两直线的内部驻点。
+
     auto project = [](const seg3 &s, p3 dir, db len, p3 p) {
         if(len == 0) return s.x;
         db t = dot(dir, p - s.x);

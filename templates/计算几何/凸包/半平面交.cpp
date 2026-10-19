@@ -1,11 +1,7 @@
 // 半平面交(): 计算几何 · 半平面交 (有向直线左侧求交 O(n log n))
 
-// 依赖 基础/直线与线段.cpp；交每条有向直线的左侧及边界，方向非零、单位法向偏移须有限。
-// 调用方须保证交集有界，通常加入足够大的包围盒；空输入返回空。
-// 返回逆时针边界；空集、点、线段或二倍面积/周长<=eps 返回空，不修改调用方输入。
-// 同向角差在angle_eps内合并；侧别/面积周长比用长度eps，排序不用容差。
-// 非平行线夹角接近0或pi时不保证数值精度。
-// 极角排序 + 双端队列，O(n log n) 时间、O(n) 空间。
+// 依赖 基础/直线与线段.cpp。
+// 有向直线左侧求交 O(n log n)；要求交集有界（通常加包围盒），退化（点/线段）返回空。
 
 namespace Geo {
 
@@ -28,7 +24,7 @@ vector<p2> hpi(vector<seg> vs) {
         p2 d = vs[i].dir();
         order.push_back({d.alpha(), unit(d).det(vs[i].x), i});
     }
-    // 与 hpi_less 同序；极角与单位法向偏移各只算一次。
+
     sort(order.begin(), order.end(), [](const key &a, const key &b) {
         return a.angle != b.angle ? a.angle < b.angle : a.offset > b.offset;
     });
@@ -62,17 +58,17 @@ vector<p2> hpi(vector<seg> vs) {
     while(t - h >= 2 && crossop(ls[q[h]], isll(ls[q[t - 2]], ls[q[t - 1]])) < 0) --t;
     while(t - h >= 2 && crossop(ls[q[t - 1]], isll(ls[q[h]], ls[q[h + 1]])) < 0) ++h;
     if(t - h < 3) return {};
-    vector<p2> ret;  // 相邻两条直线的交点,按环形顺序:逆时针
+    vector<p2> ret;
     for(int i = h; i < t; ++i) ret.push_back(isll(ls[q[i]], ls[q[i + 1 < t ? i + 1 : h]]));
     vector<p2> qs;
-    for(int i = 0; i < (int) ret.size(); ++i) if(qs.empty() || !(qs.back() == ret[i])) qs.push_back(ret[i]);  // 合并重合点
+    for(int i = 0; i < (int) ret.size(); ++i) if(qs.empty() || !(qs.back() == ret[i])) qs.push_back(ret[i]);
     while(qs.size() > 1 && qs.front() == qs.back()) qs.pop_back();
     if(qs.size() < 3) return {};
     db s = 0;
     for(int i = 1; i + 1 < (int) qs.size(); ++i) s += (qs[i] - qs[0]).det(qs[i + 1] - qs[0]);
     db p = 0;
     for(int i = 0; i < (int) qs.size(); ++i) p += dis(qs[(i + 1) % qs.size()] - qs[i]);
-    if(sign(s / p) <= 0) return {};  // 面积/周长是长度，三角形时等于内切圆半径。
+    if(sign(s / p) <= 0) return {};
     return qs;
 }
 

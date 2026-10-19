@@ -2,6 +2,7 @@
 
 // 依赖 通用/头文件.cpp 的 For、qpow 与 vector。
 // 求素数的原根、元素的阶，并共用一份素因子分解；均 O(sqrt p + log^2 p)。
+
 // 返回 x 的所有互异素因子（升序）；O(sqrt x)。
 vector<int> fac_of(int x) {
     vector<int> fac;

@@ -1,9 +1,7 @@
 // convex_line(): 计算几何 · 凸包直线求交
 
-// 依赖 凸包方向极值.cpp；凸包与浮点判号契约同该文件，首点可循环移动。
-// 无限直线用线上点 o 和非零方向 d 表示；o 也满足上述坐标界。
-// 不带 eps，按 2 幂缩放 d 后叉积须判号可靠，非零积不能下溢。
-// O(log n) 时间、O(1) 额外空间（含输出），无预处理；不用 eps/开方。
+// 依赖 凸包/凸包方向极值.cpp。
+// O(log n) 求凸包与无限直线的交集端点（无交 0 / 相切 1 / 穿过或重合边 2），不用 eps 与开方。
 namespace Geo {
 
 // 返回凸包与直线交集的端点，沿 d 排序且不重复：无交 0，相切 1，穿过/重合边 2。
@@ -29,7 +27,7 @@ vector<p2> convex_line(const vector<p2> &a, p2 o, p2 d) {
             if(j != k && side(j) == 0) ans.push_back(a[j]);
         }
     } else {
-        // 两条单调链各二分一个异号区间；只在局部边上插值，不求远处直线交点。
+
         auto cut = [&](int s, int t) {
             int l = 0, r = t >= s ? t - s : n - (s - t);
             auto index = [&](int k) { return k < n - s ? s + k : k - (n - s); };

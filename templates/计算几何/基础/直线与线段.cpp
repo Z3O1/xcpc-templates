@@ -1,8 +1,7 @@
 // seg(): 计算几何 · 直线与线段
 
-// 依赖 基础/二维向量.cpp；seg{x,y} 方向 x→y，作为直线时要求 x!=y。
-// 线段允许退化为点；nearest / disss 返回距离平方，proj / reflect 操作无限直线。
-// 点差、缩放后的积/差须有限；有效小分量不能在缩放时丢失，近病态须可靠判号。
+// 依赖 基础/二维向量.cpp。
+// 直线与线段的方向判定、相交、投影与距离；线段可退化为点，距离类接口返回平方。
 namespace Geo {
 
 struct seg {
@@ -19,7 +18,7 @@ int crossop(const seg &l, const p2 &q) {
     if(d.x == 0 && d.y == 0) return 0;
     d = scaled_dir(d);
     db h = d.det(q - l.x);
-    // 缩放后模长在 [1,sqrt(2)]，只在容差附近开方。
+
     if(abs(h) > 2 * eps) return (h > 0) - (h < 0);
     if(abs(h) <= eps) return 0;
     db t = eps * sqrt(dis2(d));
@@ -57,7 +56,7 @@ int turnop(p2 a, p2 b, p2 c) {
     p2 u = b - a, v = c - a;
     db m = max({abs(u.x), abs(u.y), abs(v.x), abs(v.y)});
     if(m <= eps / 2) return 0;
-    // 最长边<=4m；普通量级远离阈值时，原叉积即可确定非零转向。
+
     if(m <= ldexp(db(1), numeric_limits<db>::max_exponent / 4)) {
         db t = eps * m;
         if(isnormal(t)) {
@@ -67,7 +66,7 @@ int turnop(p2 a, p2 b, p2 c) {
     }
     u /= m, v /= m;
     db h = u.det(v), t = eps / m;
-    // 最长边缩放后在[1,2sqrt(2)]内，远离阈值时不用开方。
+
     if(abs(h) > 4 * t) return s * ((h > 0) - (h < 0));
     if(abs(h) <= t) return 0;
     t *= sqrt(max({dis2(u), dis2(v), dis2(v - u)}));
@@ -116,7 +115,7 @@ inline p2 proj(const seg &l, const p2 &q) {
     d /= max(abs(d.x), abs(d.y));
     p2 w = q - l.x;
     db n = dis2(d), hi = numeric_limits<db>::max() / 4;
-    // 普通偏移先点积，避免小量提前乘权重下溢；巨大偏移分摊权重防溢出。
+
     db t = abs(w.x) <= hi && abs(w.y) <= hi ? dot(d, w) / n :
            dot(d * (1 / n), w);
     return l.x + d * t;
@@ -138,7 +137,7 @@ inline db nearest(const seg &s, const p2 &q) {
     db b = dot(d, v);
     if(b > eps * n) return dis2(v);
     if(a > -b) w = v;
-    db h = d.det(w);  // 选较近端点作局部原点，避免大平移吞掉垂距。
+    db h = d.det(w);
     return (h / n) * h;
 }
 // 两线段最近距离平方；相交返回 0，支持点线段。

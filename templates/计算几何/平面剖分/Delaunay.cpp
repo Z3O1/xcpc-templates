@@ -1,13 +1,7 @@
 // delaunay(): 计算几何 · Delaunay 三角剖分 (随机增量 + Lawson 翻边,返回逆时针三角形)
 
-// 依赖 凸包/凸包.cpp；允许精确重复点（内部去重）、共线、共圆、点落在已有边上。
-// 返回拼平的三角形顶点坐标，每连续 3 点为逆时针三角形；无非退化三角形返回空。
-// 内部 Tri::v 存 pts 的下标，公开返回值不是下标；每次调用重置内部状态，不修改调用方输入。
-// 先剖分凸包，再随机插入内部点并 Lawson 翻边；固定随机种子可复现。
-// 转向用三点最小高的长度eps（排列一致），内圆判定仍用1e-12相对容差。
-// 点差各分量<=B时，内圆四次积要求12B^4在db范围；有效相对量不能下溢。
-// 近共线/共圆及容差门槛附近须能可靠判号，不承诺精确谓词。
-// 最坏 O(n^2) 时间、O(n) 空间；不承诺 O(n log n)。
+// 依赖 凸包/凸包.cpp 的凸包与凸包内点判定。
+// 随机增量 + Lawson 翻边求 Delaunay，返回拼平的逆时针三角形坐标；最坏 O(n²)。
 namespace Geo {
 namespace Delaunay {
 
@@ -63,15 +57,15 @@ void flipall(vector<Tst> &st) {
         Tst e = st.back();
         st.pop_back();
         int t = e[0], i = e[1];
-        if(!live[t] || tri[t].ver != e[2]) continue;  // 这条边早已被别的翻边改掉了
+        if(!live[t] || tri[t].ver != e[2]) continue;
         int a = tri[t].v[(i + 1) % 3], b = tri[t].v[(i + 2) % 3], g = tri[t].f[i];
-        if(g < 0) continue;  // 凸包边:合法
+        if(g < 0) continue;
         int k = finde(g, b, a), q = tri[g].v[k];
-        if(!ill(q, tri[t].v[0], tri[t].v[1], tri[t].v[2])) continue;  // 合法(含共圆):不翻
+        if(!ill(q, tri[t].v[0], tri[t].v[1], tri[t].v[2])) continue;
         int p = tri[t].v[i];
         int X = tri[t].f[(i + 1) % 3], Y = tri[t].f[(i + 2) % 3];
         int W = tri[g].f[(k + 1) % 3], Z = tri[g].f[(k + 2) % 3];
-        tri[t].v[0] = p, tri[t].v[1] = a, tri[t].v[2] = q;  // (p,a,b)+(b,a,q) -> (p,a,q)+(p,q,b)
+        tri[t].v[0] = p, tri[t].v[1] = a, tri[t].v[2] = q;
         tri[g].v[0] = p, tri[g].v[1] = q, tri[g].v[2] = b;
         lnk(t, 0, W);
         lnk(t, 2, Y);
@@ -100,12 +94,12 @@ vector<p2> delaunay(vector<p2> a) {
     vector<int> hv(k), fs(k - 2);
     for(int j = 0; j < k; ++j) hv[j] = (int) (lower_bound(pts.begin(), pts.end(), hb[j], lt) - pts.begin());
     vector<Tst> st;
-    For(i, 1, k - 2) fs[i - 1] = mk(hv[0], hv[i], hv[i + 1]);  // 先做扇形剖分
+    For(i, 1, k - 2) fs[i - 1] = mk(hv[0], hv[i], hv[i + 1]);
     For(i, 1, k - 3) lnk(fs[i - 1], 1, fs[i]);
     for(int t = 0; t < (int) tri.size(); ++t)
-        for(int i = 0; i < 3; ++i) st.push_back({t, i, tri[t].ver});  // 把它翻成 Delaunay
+        for(int i = 0; i < 3; ++i) st.push_back({t, i, tri[t].ver});
     flipall(st);
-    vector<int> in;  // 内部点(不在凸包上的点;可能正好落在凸包边上)
+    vector<int> in;
     vector<char> onh(n, 0);
     for(int j = 0; j < k; ++j) onh[hv[j]] = 1;
     for(int i = 0; i < n; ++i) if(!onh[i]) in.push_back(i);
@@ -114,7 +108,7 @@ vector<p2> delaunay(vector<p2> a) {
     int last = fs[0];
     for(int ii = 0; ii < (int) in.size(); ++ii) {
         int p = in[ii], cur = last, go, side[3];
-        for(;;) {  // 游走定位:p 一定在凸包内(或凸包边上),所以走不出三角剖分
+        for(;;) {
             go = -1;
             for(int j = 0; j < 3; ++j) {
                 side[j] = ori(tri[cur].v[(j + 1) % 3], tri[cur].v[(j + 2) % 3], p);
@@ -123,13 +117,13 @@ vector<p2> delaunay(vector<p2> a) {
             if(go < 0 || tri[cur].f[go] < 0) break;
             cur = tri[cur].f[go];
         }
-        // 复用末次定位的转向；在凸包边提前停步时补齐未检查的边。
+
         for(int j = go + 1; go >= 0 && j < 3; ++j)
             side[j] = ori(tri[cur].v[(j + 1) % 3], tri[cur].v[(j + 2) % 3], p);
-        int e = -1;  // p 正好落在某条边上
+        int e = -1;
         for(int j = 0; j < 3; ++j) if(!side[j]) { e = j; break; }
         st.clear();
-        if(e < 0) {  // 1. p 在三角形内:拆成 3 个
+        if(e < 0) {
             int a = tri[cur].v[0], b = tri[cur].v[1], c = tri[cur].v[2];
             int f0 = tri[cur].f[0], f1 = tri[cur].f[1], f2 = tri[cur].f[2];
             rm(cur);
@@ -142,11 +136,11 @@ vector<p2> delaunay(vector<p2> a) {
             lnk(t3, 0, t1);
             st.push_back({t1, 2, tri[t1].ver}), st.push_back({t2, 2, tri[t2].ver}), st.push_back({t3, 2, tri[t3].ver});
             last = t1;
-        } else {  // 2. p 在边 (a,b) 上:两侧的三角形各拆成 2 个(凸包边只有一侧)
+        } else {
             int a = tri[cur].v[(e + 1) % 3], b = tri[cur].v[(e + 2) % 3], c = tri[cur].v[e];
             int g = tri[cur].f[e];
             int fc1 = tri[cur].f[(e + 1) % 3], fc2 = tri[cur].f[(e + 2) % 3];
-            if(g < 0) {  // 凸包边:只有一个三角形,拆成 2 个
+            if(g < 0) {
                 rm(cur);
                 int t1 = mk(c, a, p), t2 = mk(c, p, b);
                 lnk(t1, 1, t2);

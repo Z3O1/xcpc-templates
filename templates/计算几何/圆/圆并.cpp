@@ -1,20 +1,19 @@
 // cir_union(): 计算几何 · 圆并面积与周长
 
-// 依赖 圆基础.cpp；半径非负，允许重合、包含及点圆，不修改输入，n 须在 int 内。
-// O(n² log n) 时间、O(n) 空间；建议 db=long double，点差、中间量及总和须有限。
-// 按浮点值判覆盖，极近相切时受舍入影响；零半径对面积、周长贡献均为 0。
+// 依赖 圆/圆基础.cpp。
+// O(n² log n) 求圆并的面积与周长（包括洞的边界）；半径非负，极近相切受浮点舍入影响。
 namespace Geo {
 
 // 求所有圆盘并集的 {面积,周长}，包括洞的边界长度；空集返回 {0,0}。
 array<db, 2> cir_union(const vector<c2> &a) {
     int n = a.size();
-    auto ge = [](db x, db y, db z) {  // x >= y+z，避免大数相加吞掉小半径。
+    auto ge = [](db x, db y, db z) {
         return x >= max(y, z) && x - max(y, z) >= min(y, z);
     };
     vector<int> f(n);
     iota(f.begin(), f.end(), 0);
     auto root = [&](int x) { while(f[x] != x) x = f[x] = f[f[x]]; return x; };
-    // 每个相交连通块各自平移，避免远处小圆簇的面积大数相消。
+
     For(i, 0, n - 1) For(j, 0, i - 1)
         if(a[i].r > 0 && a[j].r > 0 && !ge(dis(a[i].o - a[j].o), a[i].r, a[j].r))
             f[root(i)] = root(j);
@@ -34,7 +33,7 @@ array<db, 2> cir_union(const vector<c2> &a) {
             auto gap = [&](db x, db y, db z) {
                 return max(db(0), min(y, z) / scale - (x - max(y, z)) / scale);
             };
-            // 三角形半角公式，避免平方相减及 acos 在悬殊半径下失真。
+
             db x = sqrt(gap(d, r, R)) * sqrt(gap(r, d, R));
             db y = sqrt(d / scale + r / scale + R / scale) * sqrt(gap(R, d, r));
             db half = 2 * atan2(x, y);
@@ -60,7 +59,7 @@ array<db, 2> cir_union(const vector<c2> &a) {
             area += r * (r * d / 2 + correction);
             perimeter += r * d;
         };
-        sort(arcs.begin(), arcs.end());  // 精确排序，不用 eps 破坏严格弱序。
+        sort(arcs.begin(), arcs.end());
         db last = 0;
         for(auto v : arcs) {
             if(v[0] > last) add(last, v[0]);

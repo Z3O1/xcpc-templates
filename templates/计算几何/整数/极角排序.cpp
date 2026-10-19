@@ -1,6 +1,7 @@
 // polar_less: 计算几何 · 整数极角排序
 
-// 依赖 整数点.cpp；全程精确整数，无 eps、开方或反三角函数。
+// 依赖 整数/整数点.cpp。
+// 全局精确整数极角排序，无 eps、开方或三角函数；要求 |坐标| < 2^62。
 namespace IGeo {
 
 // 比较方向，返回 -1/0/1；零向量最先，其后从正 x 轴逆时针，同向返回 0。
@@ -24,7 +25,7 @@ struct polar_less {
         i128 bx = i128(b.x) - center.x, by = i128(b.y) - center.y;
         int c = direction_cmp(ax, ay, bx, by);
         if(c) return c < 0;
-        // 同向时按非零分量比较远近，无须平方。
+
         if(ax != bx) return ax < 0 ? ax > bx : ax < bx;
         return ay < 0 ? ay > by : ay < by;
     }

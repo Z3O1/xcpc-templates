@@ -1,7 +1,7 @@
 // rot3(): 计算几何 · 三维旋转 (罗德里格斯/旋转矩阵/坐标基底)
 
-// 依赖本节 三维向量.cpp（unit / cross / perp）；角度单位为弧度。
-// rot / rotmat 的轴与 basis 的 n 须非零且分量有限，内部安全单位化。
+// 依赖 三维/三维向量.cpp 的 unit/cross/perp，角度用弧度。
+// 罗德里格斯旋转、旋转矩阵与坐标基底；轴与法向须非零，内部安全单位化。
 namespace Geo {
 
 struct mat3 {

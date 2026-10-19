@@ -1,7 +1,7 @@
 // 图形交(): 计算几何 · 圆相关求交与面积交
 
-// 依赖 圆/圆基础.cpp；与最小圆覆盖共用 c2，可同时抄入。
-// 交点/圆圆面积 O(1)，圆多边形面积 O(n)；无孤立交点返回空，点圆面积为 0。
+// 依赖 圆/圆基础.cpp（与最小圆覆盖共用 c2）。
+// 圆与直线/线段/圆/多边形的交点与面积交：交点 O(1)，多边形面积 O(n)；无孤立交点返回空。
 
 namespace Geo {
 
@@ -17,7 +17,7 @@ vector<p2> cir_line(const c2 &c, const seg &l) {
     p2 f = c.o + r90(u) * side;
     int k = cmp(c.r, dist);
     if(k < 0) return {};
-    if(k == 0) return {f};  // 点圆也只按长度容差判相交，不比较平方判别式。
+    if(k == 0) return {f};
     db h = sqrtl(c.r - dist) * sqrtl(c.r + dist);
     return {f - u * h, f + u * h};
 }
@@ -36,13 +36,13 @@ vector<p2> cir_cir(const c2 &c1, const c2 &other) {
     db d = dis(dv);
     if(c1.r == 0) return !cmp(d, other.r) ? vector<p2>{c1.o} : vector<p2>{};
     if(other.r == 0) return !cmp(d, c1.r) ? vector<p2>{other.o} : vector<p2>{};
-    if(!sign(d)) return {};                                   // 同心/重合:无孤立交点
-    p2 u = dv / d;                                            // o1 -> o2 的单位方向
-    db x = (d * d + c1.r * c1.r - other.r * other.r) / (2 * d);      // 交点连线到 o1 的距离
+    if(!sign(d)) return {};
+    p2 u = dv / d;
+    db x = (d * d + c1.r * c1.r - other.r * other.r) / (2 * d);
     db h2 = c1.r * c1.r - x * x;
-    // 判别式按半径换算到长度量纲。
+
     db sc2 = h2 / c1.r;
-    if(sign(sc2) < 0) return {};                              // 两圆相离(含内含)
+    if(sign(sc2) < 0) return {};
     vector<p2> r;
     r.reserve(2);
     p2 base = c1.o + u * x;
@@ -52,11 +52,11 @@ vector<p2> cir_cir(const c2 &c1, const c2 &other) {
         r.push_back(base + w);
         r.push_back(base - w);
     } else
-        r.push_back(base);                                    // 相切:两处解重合,只留 1 个
+        r.push_back(base);
     auto good = [&](const p2 &p) {
         db t1 = dis(p - c1.o) - c1.r, t2 = dis(p - other.o) - other.r;
-        db e = eps + db(1e-10) * max(c1.r, other.r);  // 输出残差：长度eps+独立相对误差。
-        return abs(t1) <= e && abs(t2) <= e;                  // 极端半径比下过滤数值伪交点
+        db e = eps + db(1e-10) * max(c1.r, other.r);
+        return abs(t1) <= e && abs(t2) <= e;
     };
     r.erase(remove_if(r.begin(), r.end(), [&](p2 p) { return !good(p); }), r.end());
     sort(r.begin(), r.end(), [&](const p2 &a, const p2 &b) { return (a - c1.o).alpha() < (b - c1.o).alpha(); });
@@ -66,14 +66,14 @@ vector<p2> cir_cir(const c2 &c1, const c2 &other) {
 // 两圆交面积；按长度 eps 判内外切，内含取小圆面积，外离返回 0；平方等中间量须可表示。
 db cir_cir_area(const c2 &c1, const c2 &other) {
     db r1 = c1.r, r2 = other.r;
-    if(r1 < r2) swap(r1, r2);                                 // 保证 r1 >= r2
+    if(r1 < r2) swap(r1, r2);
     db d = dis(c1.o - other.o);
-    if(d >= r1 + r2 - eps) return 0;                          // 外离 / 外切:交面积 0
-    if(d <= r1 - r2 + eps) return pi * r2 * r2;               // 内含 / 内切:小圆整个被盖住
-    db a1 = 2 * acosl((r1 * r1 + d * d - r2 * r2) / (2 * r1 * d));   // 交点在圆 1 里的圆心角
-    db a2 = 2 * acosl((r2 * r2 + d * d - r1 * r1) / (2 * r2 * d));   // 交点在圆 2 里的圆心角
-    db x = (d * d + r1 * r1 - r2 * r2) / (2 * d);             // 公共弦到圆 1 圆心的距离
-    db h = sqrtl(max((db) 0, r1 * r1 - x * x));               // 公共弦的一半
+    if(d >= r1 + r2 - eps) return 0;
+    if(d <= r1 - r2 + eps) return pi * r2 * r2;
+    db a1 = 2 * acosl((r1 * r1 + d * d - r2 * r2) / (2 * r1 * d));
+    db a2 = 2 * acosl((r2 * r2 + d * d - r1 * r1) / (2 * r2 * d));
+    db x = (d * d + r1 * r1 - r2 * r2) / (2 * d);
+    db h = sqrtl(max((db) 0, r1 * r1 - x * x));
     return max((db) 0, (r1 * r1 * a1 / 2 - d * h / 2) + (r2 * r2 * a2 / 2 - d * h / 2));
 }
 
@@ -83,15 +83,15 @@ db arg2(const p2 &u, const p2 &v) { return atan2l(u.det(v), dot(u, v)); }
 db tri_disk2(const c2 &c, p2 a, p2 b) {
     a = a - c.o, b = b - c.o;
     db r2 = c.r * c.r;
-    // eps 是长度容差，不能直接比较平方距离。
+
     int va = cmp(dis(a), c.r) <= 0, vb = cmp(dis(b), c.r) <= 0;
     if(va && vb) return a.det(b);
-    vector<p2> v = cir_seg(c2{{0, 0}, c.r}, {a, b});  // 圆(圆心在原点)与线段 ab 的交点,按 a->b 递增
-    if(v.empty()) return arg2(a, b) * r2;                 // 整条边在圆盘外:纯扇形(有向角,不用归一)
+    vector<p2> v = cir_seg(c2{{0, 0}, c.r}, {a, b});
+    if(v.empty()) return arg2(a, b) * r2;
     db s = 0;
-    s += va ? a.det(v[0]) : arg2(a, v[0]) * r2;           // 起点那一侧的扇形/三角形
-    s += vb ? v.back().det(b) : arg2(v.back(), b) * r2;   // 终点那一侧
-    if(v.size() > 1) s += v[0].det(v[1]);                 // 圆内那段弦与圆心围成的三角形
+    s += va ? a.det(v[0]) : arg2(a, v[0]) * r2;
+    s += vb ? v.back().det(b) : arg2(v.back(), b) * r2;
+    if(v.size() > 1) s += v[0].det(v[1]);
     return s;
 }
 
@@ -101,7 +101,7 @@ db cir_poly_area(const vector<p2> &a, const c2 &c) {
     if(n < 3 || !sign(c.r)) return 0;
     db s = 0;
     for(int i = 0; i < n; ++i) s += tri_disk2(c, a[i], a[(i + 1) % n]);
-    return s > 0 ? s / 2 : 0;  // 逆时针 -> 有向和为正;数值噪声造成的极小负值归零
+    return s > 0 ? s / 2 : 0;
 }
 
 }  // namespace Geo

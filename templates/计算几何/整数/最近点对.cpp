@@ -1,7 +1,7 @@
 // closest_pair2(): 计算几何 · 整数最近点对
 
-// 依赖 整数点.cpp；距离平方及中间运算须在 i128 内。
-// 原地重排 a[0..n)，O(n log n) 时间、O(n) 辅助空间；不复制整份输入。
+// 依赖 整数/整数点.cpp。
+// 分治求整数最近点对，O(n log n)；原地重排 a[0..n)，距离平方与中间量在 i128 内。
 namespace IGeo {
 
 // 返回最近距离平方；重合点返回 0，n<2 返回 -1；不转浮点、不求平方根。
@@ -12,7 +12,7 @@ i128 closest_pair2(vector<p2i> &a) {
     if(adjacent_find(a.begin(), a.end()) != a.end()) return 0;
     i128 ans = dis2(a[0], a[1]);
     vector<p2i> b(n);
-    auto rec = [&](auto &&self, int l, int r) -> void {  // [l,r)，结束后按 y 有序
+    auto rec = [&](auto &&self, int l, int r) -> void {
         if(r - l <= 1) return;
         int mid = l + (r - l) / 2;
         ll mx = a[mid].x;

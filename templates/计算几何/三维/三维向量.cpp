@@ -1,10 +1,7 @@
 // p3(): 计算几何 · 三维向量 (加减/点积/叉积/模长/混合积)
 
-// 依赖 基础/二维向量.cpp 的 eps / sign / cmp，与 p2 同在 Geo 命名空间。
-// unit / cosang / sinang / angle 要求向量非零且分量有限；只将数学零视为退化。
-// eps 是绝对容差：colinear / coplanar 直接将叉积模长/混合积与 eps 比较。
-// 坐标缩放会改变判定尺度，应按数据尺度调整容差或另用相对判据。
-// 判等用 eps，排序用精确字典序。
+// 依赖 基础/二维向量.cpp 的 eps/sign/cmp，与 p2 同在 Geo 命名空间。
+// 三维向量的加减/点积/叉积/模长/混合积；unit 与夹角类要求向量非零，判等用 eps。
 namespace Geo {
 
 struct p3 {

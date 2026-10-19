@@ -1,7 +1,7 @@
 // 最小圆覆盖(): 计算几何 · 最小圆覆盖 (随机增量法 期望 O(n))
 
-// 依赖 圆/圆基础.cpp；允许重复点，不修改调用方的点集。
-// 随机增量：期望 O(n)，最坏 O(n^3)，空间 O(n)；三点共线时取最远两点为直径。
+// 依赖 圆/圆基础.cpp。
+// 随机增量法求最小覆盖圆，期望 O(n)、最坏 O(n³)；三点共线时取最远两点为直径。
 namespace Geo {
 
 // 返回覆盖所有点的最小圆；空输入返回 {{0,0},-1} 作无解标记。
@@ -18,7 +18,7 @@ c2 mcc(vector<p2> a) {
             c = cir(a[i], a[j]);
             for(int k = 0; k < j; ++k) {
                 if(in_circle(c, a[k])) continue;
-                if(!turnop(a[i], a[j], a[k])) {  // 最小高<=eps:取最远两点为直径
+                if(!turnop(a[i], a[j], a[k])) {
                     db dij = dis2(a[i] - a[j]), dik = dis2(a[i] - a[k]), djk = dis2(a[j] - a[k]);
                     if(dij >= dik && dij >= djk)
                         c = cir(a[i], a[j]);

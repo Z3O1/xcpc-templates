@@ -1,7 +1,7 @@
 // upper_hull(): 计算几何 · 上凸壳 (O(n log n))
 
-// 依赖 基础/直线与线段.cpp；a 原地按 x 递增/y 递减排序，返回从左到右的上凸链。
-// 每个精确相同的 x 只留最大 y；nos=1 保留共线点，默认去掉；O(n) 输出空间。
+// 依赖 基础/直线与线段.cpp。
+// O(n log n) 求从左到右的上凸链；a 原地按 x 递增、y 递减排序，每个 x 只留最大 y。
 namespace Geo {
 
 vector<p2> upper_hull(vector<p2> &a, bool nos = false) {
