@@ -36,7 +36,7 @@ static void reset(sequence_dsu_t &ds, int n) {
     cut.assign(max(0, n - 1), 0);
     history.clear();
     ds.init(n);
-    require((int)ds.alive.size() == (n ? (n - 1) / ds.width + 1 : 0), "macro count");
+    require((int)ds.s.size() == (n ? (n - 1) / ds.w + 1 : 0), "macro count");
     For(x, 0, n - 1) require(ds.find(x) == x, "reset singleton");
 }
 int main() {
@@ -83,10 +83,10 @@ int main() {
             }
         }
         For(i, 0, n - 1) require(ds.find(i) == n - 1, "all connected");
-        For(i, 0, (int)ds.parent.size() - 1) {
-            int p = ds.parent[i];
-            require(p == i || ds.rank[p] > ds.rank[i], "strict parent rank");
-            require(ds.rank[i] <= __lg(ds.parent.size()), "logarithmic rank");
+        For(i, 0, (int)ds.fa.size() - 1) {
+            int p = ds.fa[i];
+            require(p == i || ds.rk[p] > ds.rk[i], "strict parent rank");
+            require(ds.rk[i] <= __lg(ds.fa.size()), "logarithmic rank");
         }
     }
     reset(ds, 0);
