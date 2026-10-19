@@ -130,6 +130,10 @@
 
 #zebraw(lang: false)[#raw(readcode("templates/数学/行列式多项式.cpp"), lang: "cpp", block: true)]
 
+== 杨表
+
+#include "templates/数学/杨表.typ"
+
 = 数论
 
 == 分数还原

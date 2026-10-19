@@ -514,6 +514,11 @@
    "key": "多项式/任意模数多项式乘法.cpp",
    "title": "任意模数多项式乘法",
    "hidden": false
+  },
+  {
+   "key": "数学/杨表.typ",
+   "title": "杨表",
+   "hidden": false
   }
  ]
 }
