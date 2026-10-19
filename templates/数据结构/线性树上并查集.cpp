@@ -20,7 +20,9 @@ struct tree_dsu_t {
             else bro[v] = son[p[v]], son[p[v]] = v;
         }
         if(n) ord.push_back(rt);
-        For(i, 0, n - 1) for(int u = son[ord[i]]; u != -1; u = bro[u]) ord.push_back(u);
+        For(i, 0, n - 1) {
+            for(int u = son[ord[i]]; u != -1; u = bro[u]) ord.push_back(u);
+        }
         vector<int> l(n), r(n), sz(n), nxt(n, -1);
         auto add = [&](int l0, int u) {
             int c = live.size(), cnt = 0;
