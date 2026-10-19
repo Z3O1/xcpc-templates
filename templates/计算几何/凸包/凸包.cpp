@@ -52,7 +52,7 @@ db convex_diameter(const vector<p2> &a) {
     return ret;
 }
 
-// 用非零有向直线 q 裁凸多边形，保留左侧及边界；O(n)，不修改输入、保持旋向。
+// 保留 q 左侧及边界；O(n)，不修改输入、保持旋向。
 // 允许空/点/线段，结果可能有重复相邻点。
 vector<p2> convex_cut(const vector<p2> &a, const seg &q) {
     int n = a.size();

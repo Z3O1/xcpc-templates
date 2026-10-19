@@ -5,7 +5,6 @@
 
 namespace Geo {
 
-// 多边形闭合周长(顶点顺序任意)。
 db perimeter(const vector<p2> &a) {
     int n = a.size();
     db s = 0;

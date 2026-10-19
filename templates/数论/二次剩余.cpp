@@ -2,7 +2,7 @@
 
 // 判二次剩余 + Cipolla 开根，均要求 p 为奇素数。
 
-// 判断 a 是否为奇素数 p 的二次剩余；要求 0 <= a < p。
+// 要求 p 为奇素数、0 <= a < p。
 bool quadres(u64 a, u64 p) {
     if(!a) return 1;
     auto mul = [p](u64 x, u64 y) { return (u64) ((u128) x * y % p); };
@@ -14,7 +14,7 @@ bool quadres(u64 a, u64 p) {
     };
     return pw(a, (p - 1) >> 1) == 1;
 }
-// 求 x 模奇素数 p 的平方根；要求 0 <= x < p；x 非二次剩余时返回 -1。
+// 要求 p 为奇素数、0 <= x < p；非二次剩余返回 -1。
 ll sqrtp(ll x, ll p) {
     if(x <= 1) return x;
     auto mul = [p](ll a, ll b) { return (ll) ((u64) ((u128) a * b % p)); };

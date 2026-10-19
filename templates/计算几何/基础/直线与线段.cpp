@@ -10,7 +10,6 @@ struct seg {
 };
 // 有向直线与点的叉积；q 在左侧为正。
 db cross(const seg &l, const p2 &q) { return l.dir().det(q - l.x); }
-// 非零方向按最大分量缩放；不改变方向，避免原始平方的溢出/下溢。
 p2 scaled_dir(p2 d) { return d / max(abs(d.x), abs(d.y)); }
 // 点对有向直线的侧别，垂距<=eps 算在线上；零方向返回0，供点线段使用。
 int crossop(const seg &l, const p2 &q) {
@@ -41,7 +40,6 @@ bool eqll(const seg &a, const seg &b) {
     return !chkll(a, b) && inc(a, b.x) && inc(b, a.x);
 }
 // 两非零直线的交点；要求真正不平行，局部偏移及结果可表示。
-// 推荐先chkll；夹角<=angle_eps时不保证精度。
 p2 isll(const seg &a, const seg &b) {
     p2 u = scaled_dir(a.dir()), v = scaled_dir(b.dir());
     return a.x + u * ((b.x - a.x).det(v) / u.det(v));

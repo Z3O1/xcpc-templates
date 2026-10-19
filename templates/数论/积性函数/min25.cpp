@@ -2,7 +2,6 @@
 
 // 求积性函数在 1..n 的前缀和，1 <= n <= 1e10；solve 可重复调用，init 只需一次。
 constexpr int i6 = (M + 1) / 6;
-// 模 M 减法；要求 0 <= a,b < M。
 void sub(int &a, int b) {
     a -= b;
     a < 0 && (a += M);
@@ -61,7 +60,6 @@ void solveg(ll _n0) {
 }
 // 查询素数贡献前缀；要求 solveg(n0) 后且 n 是 n0 的除法块取值。
 int g(ll n) { return (g2[id(n)] - g1[id(n)] + M) % M; }
-// 素数幂处的函数值；要求 n >= 1。
 ll func(ll n) {
     n %= M;
     return n * (n - 1) % M;

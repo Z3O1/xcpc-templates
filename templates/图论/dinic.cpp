@@ -60,8 +60,7 @@ public:
         while(bfs()) ans += dfs(s, Z);
         return ans;
     }
-    // solve 之后求最小割源侧：c[i]=0 表示 i 在源侧。
-    // 按已设的 s,n 覆盖 c[1..n]，不改残量网络。
+    // solve 之后求最小割源侧：按已设的 s,n 覆盖 c[1..n]，c[i]=0 表示 i 在源侧，不改残量网络。
     void cut(int *c) {
         For(i, 1, n) c[i] = 1;
         queue<int> q;

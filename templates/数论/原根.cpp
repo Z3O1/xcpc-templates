@@ -14,7 +14,6 @@ vector<int> fac_of(int x) {
     return fac;
 }
 // 求模素数 p 的最小原根；要求 p 为素数；p=2 返回 1，无原根返回 -1。
-// g 是原根 <=> 对 p-1 的每个素因子 q 都有 g^((p-1)/q) != 1。
 int root(int p) {
     if(p == 2) return 1;
     auto fac = fac_of(p - 1);

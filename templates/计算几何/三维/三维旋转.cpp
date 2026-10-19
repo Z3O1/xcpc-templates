@@ -58,7 +58,6 @@ p3 tolocal(p3 x, p3 o, p3 u, p3 v, p3 w) {
     p3 d = x - o;
     return {dot(u, d), dot(v, d), dot(w, d)};
 }
-// 局部坐标转世界坐标，与 tolocal 使用同一原点和基。
 p3 toworld(p3 l, p3 o, p3 u, p3 v, p3 w) { return o + u * l.x + v * l.y + w * l.z; }
 
 }  // namespace Geo

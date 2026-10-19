@@ -17,7 +17,7 @@ struct MCMF_t {
         cmax(mx, u), cmax(mx, v);
         _add(u, v, w, c), _add(v, u, 0, -c);
     }
-    // 清空图、边池与源汇；mx 留着当历次用点的清零上界。
+    // mx 留着当历次用点的清零上界。
     void clear() {
         For(i, 1, mx) hd[i] = 0;
         tot = 1, s = t = 0;
