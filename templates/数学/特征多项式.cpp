@@ -14,8 +14,7 @@ poly charpoly(mat a) {
             break;
         }
         if(!a[i][i - 1]) continue;
-        int x = a[i][i - 1];
-        int inv = qpow(x, M - 2, M);
+        int x = a[i][i - 1], inv = qpow(x, M - 2, M);
         For(j, 0, n - 1) a[j][i] = (ll)a[j][i] * x % M;
         For(j, i - 1, n - 1) a[i][j] = (ll)a[i][j] * inv % M;
         For(j, i + 1, n - 1) {
