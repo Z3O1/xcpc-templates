@@ -8,22 +8,21 @@ using poly = vector<int>;
 poly BM(const poly &a) {
     int n = a.size();
     if(!n) return poly();
-    int len = 0, off = 0;        // len: 当前递推阶数;off: 距上次更新阶数的项数
-    int s = 1;                   // s: 上次更新时的偏差
-    poly res(n + 1), lst(n + 1);  // 开 n+1:len 最多到 n,末尾要用 res[len]
+    int len = 0, off = 0, s = 1;
+    poly res(n + 1), lst(n + 1);
     res[0] = 1;
     For(i, 0, n - 1) {
-        int d = 0;                          // 偏差 d = Σ res[j]*a[i-j](j <= len <= i)
+        int d = 0;
         For(j, 0, len) d = (d + 1ll * res[j] * a[i - j]) % M;
         ++off;
         if(!d) continue;
         poly tmp = res;
-        int k = 1ll * d * qpow(s, M - 2) % M;                // res ← res - (d/s) * lst * x^off
+        int k = 1ll * d * qpow(s, M - 2) % M;
         For(j, off, n) res[j] = (res[j] - 1ll * k * lst[j - off] % M + M) % M;
         if(len * 2 > i) continue;
         len = i - len + 1, lst = tmp, s = d, off = 0;
     }
     poly c(len);
-    For(i, 0, len - 1) c[i] = (M - res[i + 1]) % M;   // res[0]=1 且 d=0 ⇒ a[i] = -Σ_{j>=1} res[j]a[i-j]
+    For(i, 0, len - 1) c[i] = (M - res[i + 1]) % M;
     return c;
 }
