@@ -131,18 +131,18 @@
    "hidden": false
   },
   {
+   "key": "多项式/Berlekamp-Massey.cpp",
+   "title": "最短线性递推",
+   "hidden": false
+  },
+  {
+   "key": "多项式/FFT.cpp",
+   "title": "复数 FFT 卷积",
+   "hidden": false
+  },
+  {
    "key": "多项式/ntt.cpp",
-   "title": "任意模数 NTT",
-   "hidden": false
-  },
-  {
-   "key": "多项式/多项式复合.cpp",
-   "title": "多项式复合",
-   "hidden": false
-  },
-  {
-   "key": "多项式/多项式复合逆.cpp",
-   "title": "多项式复合逆",
+   "title": "NTT",
    "hidden": false
   },
   {
@@ -221,28 +221,8 @@
    "hidden": false
   },
   {
-   "key": "多项式/Berlekamp-Massey.cpp",
-   "title": "最短线性递推",
-   "hidden": false
-  },
-  {
-   "key": "多项式/Bostan-Mori.cpp",
-   "title": "线性递推第 n 项",
-   "hidden": false
-  },
-  {
-   "key": "多项式/FFT.cpp",
-   "title": "复数 FFT 卷积",
-   "hidden": false
-  },
-  {
-   "key": "多项式/多点求值.cpp",
-   "title": "多点求值",
-   "hidden": false
-  },
-  {
-   "key": "多项式/多项式exp.cpp",
-   "title": "多项式指数",
+   "key": "多项式/多项式求逆.cpp",
+   "title": "多项式求逆",
    "hidden": false
   },
   {
@@ -251,13 +231,13 @@
    "hidden": false
   },
   {
-   "key": "多项式/多项式开根.cpp",
-   "title": "多项式开根",
+   "key": "多项式/多项式exp.cpp",
+   "title": "多项式指数",
    "hidden": false
   },
   {
-   "key": "多项式/多项式求逆.cpp",
-   "title": "多项式求逆",
+   "key": "多项式/多项式开根.cpp",
+   "title": "多项式开根",
    "hidden": false
   },
   {
@@ -266,8 +246,28 @@
    "hidden": false
   },
   {
+   "key": "多项式/多点求值.cpp",
+   "title": "多点求值",
+   "hidden": false
+  },
+  {
    "key": "多项式/快速插值.cpp",
    "title": "快速插值",
+   "hidden": false
+  },
+  {
+   "key": "多项式/Bostan-Mori.cpp",
+   "title": "线性递推第 n 项",
+   "hidden": false
+  },
+  {
+   "key": "多项式/多项式复合.cpp",
+   "title": "多项式复合",
+   "hidden": false
+  },
+  {
+   "key": "多项式/多项式复合逆.cpp",
+   "title": "多项式复合逆",
    "hidden": false
   },
   {
@@ -508,6 +508,11 @@
   {
    "key": "数据结构/线性树上并查集.cpp",
    "title": "线性树上并查集",
+   "hidden": false
+  },
+  {
+   "key": "多项式/任意模数多项式乘法.cpp",
+   "title": "任意模数多项式乘法",
    "hidden": false
   }
  ]

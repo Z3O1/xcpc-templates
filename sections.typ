@@ -202,9 +202,49 @@
 
 = 多项式
 
-== 任意模数 NTT
+== 最短线性递推
+
+#zebraw(lang: false)[#raw(readcode("templates/多项式/Berlekamp-Massey.cpp"), lang: "cpp", block: true)]
+
+== 复数 FFT 卷积
+
+#zebraw(lang: false)[#raw(readcode("templates/多项式/FFT.cpp"), lang: "cpp", block: true)]
+
+== NTT
 
 #zebraw(lang: false)[#raw(readcode("templates/多项式/ntt.cpp"), lang: "cpp", block: true)]
+
+== 多项式求逆
+
+#zebraw(lang: false)[#raw(readcode("templates/多项式/多项式求逆.cpp"), lang: "cpp", block: true)]
+
+== 多项式对数
+
+#zebraw(lang: false)[#raw(readcode("templates/多项式/多项式ln.cpp"), lang: "cpp", block: true)]
+
+== 多项式指数
+
+#zebraw(lang: false)[#raw(readcode("templates/多项式/多项式exp.cpp"), lang: "cpp", block: true)]
+
+== 多项式开根
+
+#zebraw(lang: false)[#raw(readcode("templates/多项式/多项式开根.cpp"), lang: "cpp", block: true)]
+
+== 带余除法
+
+#zebraw(lang: false)[#raw(readcode("templates/多项式/多项式除法.cpp"), lang: "cpp", block: true)]
+
+== 多点求值
+
+#zebraw(lang: false)[#raw(readcode("templates/多项式/多点求值.cpp"), lang: "cpp", block: true)]
+
+== 快速插值
+
+#zebraw(lang: false)[#raw(readcode("templates/多项式/快速插值.cpp"), lang: "cpp", block: true)]
+
+== 线性递推第 n 项
+
+#zebraw(lang: false)[#raw(readcode("templates/多项式/Bostan-Mori.cpp"), lang: "cpp", block: true)]
 
 == 多项式复合
 
@@ -214,45 +254,9 @@
 
 #zebraw(lang: false)[#raw(readcode("templates/多项式/多项式复合逆.cpp"), lang: "cpp", block: true)]
 
-== 最短线性递推
+== 任意模数多项式乘法
 
-#zebraw(lang: false)[#raw(readcode("templates/多项式/Berlekamp-Massey.cpp"), lang: "cpp", block: true)]
-
-== 线性递推第 n 项
-
-#zebraw(lang: false)[#raw(readcode("templates/多项式/Bostan-Mori.cpp"), lang: "cpp", block: true)]
-
-== 复数 FFT 卷积
-
-#zebraw(lang: false)[#raw(readcode("templates/多项式/FFT.cpp"), lang: "cpp", block: true)]
-
-== 多点求值
-
-#zebraw(lang: false)[#raw(readcode("templates/多项式/多点求值.cpp"), lang: "cpp", block: true)]
-
-== 多项式指数
-
-#zebraw(lang: false)[#raw(readcode("templates/多项式/多项式exp.cpp"), lang: "cpp", block: true)]
-
-== 多项式对数
-
-#zebraw(lang: false)[#raw(readcode("templates/多项式/多项式ln.cpp"), lang: "cpp", block: true)]
-
-== 多项式开根
-
-#zebraw(lang: false)[#raw(readcode("templates/多项式/多项式开根.cpp"), lang: "cpp", block: true)]
-
-== 多项式求逆
-
-#zebraw(lang: false)[#raw(readcode("templates/多项式/多项式求逆.cpp"), lang: "cpp", block: true)]
-
-== 带余除法
-
-#zebraw(lang: false)[#raw(readcode("templates/多项式/多项式除法.cpp"), lang: "cpp", block: true)]
-
-== 快速插值
-
-#zebraw(lang: false)[#raw(readcode("templates/多项式/快速插值.cpp"), lang: "cpp", block: true)]
+#zebraw(lang: false)[#raw(readcode("templates/多项式/任意模数多项式乘法.cpp"), lang: "cpp", block: true)]
 
 = 计算几何
 
