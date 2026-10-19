@@ -1,8 +1,7 @@
 // SPQR_tree: 数据结构 · 广义串并联图 (平行边/度1缩点)
 
-// 新图使用值初始化实例,先设 m = 原边数;add 的原边编号为 1..m,无自环。
-// 顶点数与最终结点数须 < N。typ 为真表示串联,假表示并联;fa 是约简森林的父结点。
-// build 保留不可约核,不构造任意图的完整 SPQR 分解;删点的邻接表可有残留。
+// 依赖 通用/头文件.cpp 的 For，及全局上界 N。
+// 平行边合并为并联结点、反复约简度 1/2 顶点；须值初始化、m 先设为原边数，add 的边号 1..m 且无自环。
 struct SPQR_tree {
     int m = 1, fa[N];
     bool typ[N];
@@ -22,6 +21,7 @@ struct SPQR_tree {
         }
     }
     // add 完后约简 1..n 的度 1/2 顶点，修改 fa/typ/t；每张图只调用一次。
+// 结果保留不可约核，不构造完整 SPQR 分解；删点的邻接表可有残留。
     void build(int n) {
         queue<int> q;
         auto ins = [&](int u) { if(!vis[u] && t[u].size() <= 2) vis[u] = 1, q.push(u); };

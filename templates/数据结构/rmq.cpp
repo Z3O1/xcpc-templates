@@ -1,6 +1,7 @@
 // rmq_t: 数据结构 · O(1) RMQ(四毛子)
 
-// 下标从 dt 开始，查询闭区间；cmp=less<T> 取最大值，greater<T> 取最小值。
+// 依赖 通用/头文件.cpp 的 For，及模板参数 T、cmp。
+// O(n log n) 预处理后 O(1) 闭区间最值，下标从 dt 开始。
 template <typename T, typename cmp = less<T>, int dt = 1>
 struct rmq_t {
     static constexpr int B = 20;

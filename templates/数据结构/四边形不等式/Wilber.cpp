@@ -1,6 +1,7 @@
 // Wilber(): 数据结构 · Wilber (在线 1D1D 线性决策单调)
 
-// 求在线 1D1D DP；要求 que(k,i) 定义于 0 <= k < i <= n 且决策单调；返回 f 与前驱 fp。
+// 依赖 数据结构/四边形不等式/SMAWK.cpp 与使用者提供的 que(k,i)。
+// 在线 1D1D 的线性决策单调 DP，0 <= k < i <= n；返回 f 与前驱 fp。
 template <typename T, int B = 16, typename Q>
 pair<vector<T>, vector<int>> Wilber(int n, Q &&que, const T Z = numeric_limits<T>::max()) {
     vector<T> f(n + 1, Z);
@@ -22,7 +23,7 @@ pair<vector<T>, vector<int>> Wilber(int n, Q &&que, const T Z = numeric_limits<T
         For(i, c + 1, p) f[i] = g[i - c], fp[i] = gp[i - c] + r - 1;
         auto q2 = [&](int x, int y) { return x > y ? f[y + c] + que(y + c, x + c) : Z; };
         auto [h, hp] = SMAWK<T>(p - c, p - c, q2);
-        int nc = p; // 默认整段归纳;一旦某行能由第二段取得更优值,就停在该行重算
+        int nc = p;
         For(i, c + 1, p) {
             if(f[i] > h[i - c]) {
                 f[i] = h[i - c];

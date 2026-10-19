@@ -1,6 +1,7 @@
 // SMAWK(): 数据结构 · SMAWK (全单调矩阵行最值)
 
-// 求全单调矩阵每行最小值；行列均 1-based，要求 que(i,j) 可比较；返回 f 与最小列 fp。
+// 依赖 通用/头文件.cpp 的 For，及使用者提供的全单调矩阵 que(i,j)。
+// 全单调矩阵每行最小值，O(n+m)；行列均 1-based，返回 f 与最小列 fp。
 template <typename T, typename Q> pair<vector<T>, vector<int>> SMAWK(int n0, int m, Q &&que) {
     vector<T> f(n0 + 1, T());
     vector<int> fp(n0 + 1, 0), b(m + 1, 0);
@@ -8,7 +9,7 @@ template <typename T, typename Q> pair<vector<T>, vector<int>> SMAWK(int n0, int
     auto F = [&](auto &&F, int d, int m) -> void {
         int n = (n0 >> d), k = 1, j = 1;
         if(!n) return;
-        if(n < m) { // 行数少于列数:先删掉不可能成为行最小值位置的列
+        if(n < m) {
             while(j < m) {
                 if(que(k << d, b[j]) > que(k << d, b[j + 1])) {
                     if(k == 1) ++j;
@@ -23,7 +24,6 @@ template <typename T, typename Q> pair<vector<T>, vector<int>> SMAWK(int n0, int
             m = k;
             j = 1;
         }
-        // 同名新变量:每层留一份截断后的列序供本层取用,不要改写成对外层 b 的赋值
         vector<int> b2(b.begin(), b.begin() + min<int>(m + 1, (int) b.size())), b = move(b2);
         F(F, d + 1, m);
         For(i, 1, n) if(i % 2 == 1) {

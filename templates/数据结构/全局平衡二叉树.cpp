@@ -1,15 +1,8 @@
 // 全局平衡二叉树: 数据结构 · 全局平衡二叉树 (树上带权最大独立集模板)
 // hide
 
-// 支持:单点改权 upd(p, d)、全树查询 getans()(返回最大权独立集大小)。
-// 单进程只建一次;点权非负且中间和须在 int 内;递归 DFS 需要足够栈空间。
-// 使用者需要自己提供:全局 n、点的邻接表 t[]、点权 a[]。
-// 初始化顺序(在 main 里、读完输入点权与边之后调一次即可):
-//   For(i, 1, n) f[i][1] = a[i];                       // 把点权塞进矩阵
-//   dfs0(1), dfs1(1);                                  // 两遍 DFS 求 dfn/tp/dw
-//   For(i, 1, n) if(tp[i] == i) rt[i] = build(dfn[tp[i]], dfn[dw[tp[i]]]);
-//   For(i, 1, n) apply(i);                             // 沿祖先链合并
-// 之后每次 upd(p, y - a[p]), a[p] = y; 再 getans() 即可。
+// 依赖 通用/头文件.cpp 的 For/cmax，及使用者提供的 n、邻接表 t[]、点权 a[1..n]。
+// 树上最大权独立集：单点改权 upd(p,d)、全树查询 getans()；单进程只建一次，点权非负。
 
 
 const int N = 1e6 + 10;
@@ -116,7 +109,8 @@ pll que(int p) {
     auto res = que(dfn[p], r, rt[tp[p]], l, r);
     return {max(res[0][0], res[1][0]), max(res[0][1], res[1][1])};
 }
-// 初始化后给点 p 的点权增加 dt 并沿祖先链更新；不修改 a[p]。
+// 初始化后给点 p 的点权增加 dt 并沿祖先链更新，不修改 a[p]。
+// 首次使用前须按 For(i,1,n) f[i][1]=a[i]; dfs0(1); dfs1(1); 建 rt[]; For(i,1,n) apply(i); 初始化。
 void upd(int p, int dt) {
     f[p][1] += dt;
     auto fix = [&](int k, int sgn) {

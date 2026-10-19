@@ -1,8 +1,11 @@
 // exgcd(): 数论 · 扩展欧几里得
 // hide
 
-// 返回 gcd(a, b)，并给出满足 a*x + b*y = gcd(a, b) 的一组解。
-// 系数乘法用 ll，大数场景由调用方按需改用 i128 核验。
+// 依赖 通用/头文件.cpp 的 ll 与 gcd。
+// 求 a*x + b*y = gcd(a,b) 的一组解，顺带返回 gcd。
+
+// 返回 gcd(a, b)，并通过引用给出满足 a*x + b*y = gcd(a, b) 的一组 x,y。
+// 系数乘法用 ll；大数场景由调用方改用 i128 核验。
 ll exgcd(ll a, ll b, ll &x, ll &y) {
     if(!b) return x = 1, y = 0, a;
     ll g = exgcd(b, a % b, y, x);

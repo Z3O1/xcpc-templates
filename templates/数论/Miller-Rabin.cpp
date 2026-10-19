@@ -1,4 +1,7 @@
-// chkp(): 数论 · Miller-Rabin 素性检验 (确定性判定 u64)
+// Miller-Rabin 素性检验
+
+// 依赖 通用/头文件.cpp 的 u64、u128。
+// 确定性判定 u64 素数，7 个底覆盖全 u64；O(log p)。
 
 constexpr bool chkp(u64 p) {
     if(p < 2) return 0;

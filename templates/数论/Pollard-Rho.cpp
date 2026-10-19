@@ -1,4 +1,7 @@
-// fact(): 数论 · Pollard-Rho 分解质因数 (配合 chkp 使用)
+// Pollard-Rho 分解质因数
+
+// 依赖 数论/Miller-Rabin.cpp 的 chkp，以及 通用/头文件.cpp 的 u64、u128、gcd。
+// 分解 u64 的质因数，返回升序含重因子的向量；期望 O(n^1/4)。
 
 u64 isqrt(u64 x) {
     if(x < 2) return x;
@@ -19,7 +22,7 @@ u64 rho(u64 x) {
         auto f = [&](u64 v) { return ((u128) v * v + c) % x; };
         for(int i = 1;; ++i) {
             t = f(t), r = f(f(r));
-            if(t == r) break; // 撞环:换个 c 重来(w 一并重置)
+            if(t == r) break;
             u64 d = t > r ? t - r : r - t;
             w = (u128) w * d % x;
             if(!w) {

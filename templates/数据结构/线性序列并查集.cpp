@@ -1,8 +1,7 @@
 // sequence_dsu_t(): 数据结构 · 线性序列并查集
 
-// n>=0，下标 [0,n)；merge_right(i) 收缩原边 i->i+1，find(x) 返回分量右端。
-// init 可重用；总 O(n+q) 时间，O(n/log(n+1)+1) 空间，非单次最坏 O(1)。
-// 位操作按 O(1) 计；n 为非负 int，位图用 u64。
+// 依赖 通用/头文件.cpp 的 For 与 u64 位图。
+// 长度 n 的序列只支持向右收缩：merge_right(i) 并掉原边 i->i+1，find(x) 返回分量右端；总 O(n+q)、空间 O(n/log n)。
 struct sequence_dsu_t {
     int n, w;
     vector<u64> s;

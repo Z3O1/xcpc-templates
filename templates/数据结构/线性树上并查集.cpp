@@ -1,9 +1,7 @@
 // tree_dsu_t(): 数据结构 · 线性树上并查集
 
-// p 为静态树父亲数组，下标 [0,n)，唯一根 p[rt]=-1；可空，可重复 init。
-// merge_parent(v) 收缩原父边，根不动；find(v) 返回分量最高点，不支持拆分/改树。
-// 初始化 O(n)，q 次操作总 O(n+q)，空间 O(n)；非单次最坏 O(1)。
-// 位操作按 O(1) 计；n 为非负 int，位图用 u64。
+// 依赖 通用/头文件.cpp 的 For 与 u64 位图。
+// 静态树上向上收缩：merge_parent(v) 并掉原父边、根不动；init O(n)，q 次操作总 O(n+q)。
 struct tree_dsu_t {
     int rt, w;
     vector<int> bel, id, st, a;  // 簇号、位号、起点、点号

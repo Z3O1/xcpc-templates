@@ -1,7 +1,7 @@
 // LCT 命名空间: 数据结构 · Link-Cut Tree (link/cut/que/upd)
 
-// 点编号 1..n，点权 a[1..n]；调用前清零 ch/fa/lz/tr，0 号点保持零值。
-// 操作会改变辅助树形态；init 只初始化聚合值，不清空旧森林。
+// 依赖 通用/头文件.cpp 的 For，及全局 N 与点权 a[1..n]。
+// 1..n 编号的动态森林：link/cut/路径点权异或/单点改；操作会改变辅助树形态。
 namespace LCT {
 #define ls(k) ch[k][0]
 #define rs(k) ch[k][1]

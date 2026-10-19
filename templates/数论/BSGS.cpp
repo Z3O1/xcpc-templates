@@ -1,7 +1,10 @@
 // BSGS(): 数论 · 离散对数 (a^x ≡ b mod p)
 
-// 求最小的 x >= 0 使 a^x ≡ b (mod p)，无解返回 -1；要求 gcd(a,p)=1 且 p 为素数。
-// O(sqrt(p))。
+// 依赖 通用/头文件.cpp 的 ll 与 unordered_map。
+// 求模素数 p 的离散对数，O(sqrt(p)) 时间与空间。
+
+// 返回最小的 x >= 0 使 a^x ≡ b (mod p)，无解返回 -1。
+// 要求 gcd(a, p) = 1 且 p 为素数。
 ll BSGS(ll a, ll b, ll p) {
     a %= p, b %= p;
     if(p == 1) return 0;

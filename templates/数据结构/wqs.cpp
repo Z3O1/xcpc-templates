@@ -1,9 +1,10 @@
 // wqs(): 数据结构 · WQS 二分构造方案
 
-// n >= 1,1 <= k <= n;up >= 0,二分范围须覆盖所需惩罚值,OPT(k) 关于 k 凸。
-// 打包值与 DP 中间和须在 i128 及内层 Wilber 的无穷大范围内。
-// 构造恰好 k 段的最优划分；que(l,r) 为 (l,r] 的代价，0 <= l < r <= n。
-// 返回以 0 开始、n 结束的划分边界序列。
+// 依赖 数据结构/四边形不等式/Wilber.cpp 与 i128。
+// 外层二分惩罚值、内层 Wilber 做 DP，构造恰好 k 段的最优划分；OPT(k) 须关于 k 凸。
+
+// 返回以 0 开始、n 结束的划分边界序列；que(l,r) 是 (l,r] 的代价。
+// 要求 n >= 1、1 <= k <= n、up >= 0 且二分范围 -up..1 覆盖所需惩罚值。
 template <typename Q> vector<int> wqs(int n, int k, Q &&que, i128 up) {
     int B = __lg(n) + 1;
     ll T = (1ll << B) - 1;
