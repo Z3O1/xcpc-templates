@@ -12,6 +12,8 @@
     while(T--) work();
 using namespace std;
 using ll = long long;
+using ull = unsigned long long;
+using i64 = long long;
 using u64 = unsigned long long;
 using i128 = __int128;
 using u128 = __uint128_t;
