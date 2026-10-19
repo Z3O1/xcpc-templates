@@ -4,22 +4,15 @@
 // word-RAM：字长 >= ceil(log2(n+1))，位运算/ctz 为 O(1)；int 下用 u64。
 // 初始化 O(n)，q 次操作总 O(n+q)，空间 O(n/log(n+1)+1)；非逐次最坏 O(1)。证明见同名介绍。
 struct sequence_dsu_t {
-    int n;
-    int width;
+    int n, width;
     vector<u64> alive;
-    vector<int> parent;
-    vector<int> rank;
-    vector<int> right;
+    vector<int> parent, rank, right;
 
     void init(int size) {
-        n = size;
-        width = 1;
-        while((1LL << width) <= n) ++width;
+        n = size, width = n ? __lg(n) + 1 : 1;
         int k = n ? (n - 1) / width + 1 : 0;
         alive.resize(k);
-        parent.resize(k);
-        rank.assign(k, 0);
-        right.resize(k);
+        parent.resize(k), rank.assign(k, 0), right.resize(k);
         For(i, 0, k - 1) {
             parent[i] = right[i] = i;
             alive[i] = (1ULL << min(width, n - i * width)) - 1;
@@ -30,13 +23,11 @@ struct sequence_dsu_t {
     }
     // 仅在左块删空时合并，语义代表总是右块；物理根按秩选取。
     void join(int x, int y) {
-        x = macro_find(x);
-        y = macro_find(y);
+        x = macro_find(x), y = macro_find(y);
         int last = right[y];
         if(rank[x] < rank[y]) swap(x, y);
-        parent[y] = x;
+        parent[y] = x, right[x] = last;
         if(rank[x] == rank[y]) ++rank[x];
-        right[x] = last;
     }
     // 0 <= i < n-1；重复收缩无效果，返回是否首次收缩。
     bool merge_right(int i) {
