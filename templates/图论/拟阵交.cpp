@@ -14,14 +14,15 @@ vector<int> matroid_intersection(int n, A a, B b) {
         For(x, 0, n - 1) if(in[x]) s.push_back(x);
         For(x, 0, n - 1) if(!in[x]) {
             s.push_back(x);
-            if(a(s)) pre[x] = n, q.push(x);
-            ok[x] = b(s);
+            bool ka = a(s), kb = b(s);
+            if(ka) pre[x] = n, q.push(x);
+            ok[x] = kb;
             s.pop_back();
             for(int &y : s) {
                 int v = y;
                 y = x;
-                if(a(s)) g[v].push_back(x);
-                if(b(s)) g[x].push_back(v);
+                if(!ka && a(s)) g[v].push_back(x);
+                if(!kb && b(s)) g[x].push_back(v);
                 y = v;
             }
         }
