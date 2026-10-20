@@ -1,6 +1,6 @@
 // LCT 命名空间: 数据结构 · Link-Cut Tree (link/cut/que/upd)
 
-// 依赖 全局 N 与点权 a[1..n]。
+// 依赖 全局 N、n 与点权 a[1..n]。
 // 1..n 编号的动态森林：link/cut/路径点权异或/单点改；操作会改变辅助树形态。
 namespace LCT {
 #define ls(k) ch[k][0]
@@ -54,8 +54,9 @@ int fd(int u) {
 void mkr(int u) {
     access(u), pl(u);
 }
+// 按 a[1..n] 重建 n 个孤立点，可重复调用。
 void init() {
-    For(i, 1, n) pu(i);
+    For(i, 0, n) ch[i][0] = ch[i][1] = fa[i] = lz[i] = 0, tr[i] = i ? a[i] : 0;
 }
 // 连接两棵树；u、v 已连通则不加边。
 void link(int u, int v) {

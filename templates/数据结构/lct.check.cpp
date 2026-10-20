@@ -1,14 +1,6 @@
-// lct.cpp 自测:与暴力(邻接表 + BFS)对照维护森林的 link/cut/upd/路径异或查询
-//
-// 覆盖:随机操作序列(link 只在不同树之间、cut 只在边存在时)、fd 判连通性、upd 改点权、
-//       que 路径异或;另有链/星/反复 upd/重复 link 等结构化用例。
-//
-// 进程模型:模板的 ch/fa/lz 是全局数组,init() 只做 `For(i,1,n) pu(i)` 并不清空它们,
-//   所以「一组数据一个进程」是模板的隐含契约 —— 每个用例(甚至每一轮随机)都在 fork 出的
-//   子进程里跑,父进程只汇总退出码。这样既保证全局状态干净,也能把子进程崩溃记成失败。
+// lct 自测:同进程重置/点数缩放/空图与哨兵/暴力森林随机对拍/链星与重复 link
+// 所有用例连续运行，不借助 fork 隔离全局状态；init 须清空旧结构并按新点权重建。
 #include "../_check_base.hpp"
-#include <sys/wait.h>
-#include <unistd.h>
 const int N = 4005;
 int n;
 int a[N];
@@ -42,14 +34,40 @@ struct brute {
         return true;
     }
 };
-// 打印失败信息并退出子进程；要求格式串与参数匹配；不返回。
+// 打印失败信息并退出；要求格式串与参数匹配；不返回。
 [[noreturn]] static void die(const char *fmt, ...) {
     va_list ap;
     va_start(ap, fmt);
     vprintf(fmt, ap);
     va_end(ap);
     fflush(stdout);
-    _exit(1);
+    exit(1);
+}
+
+// 连续重建，上一组故意留下整条链及翻转标记；新组必须是孤立点。
+static void case_reinit() {
+    const vector<int> sizes{N - 1, 2, 0, 1, 50, N - 1, 3};
+    For(rep, 0, (int)sizes.size() - 1) {
+        n = sizes[rep];
+        a[0] = 123456789;
+        For(i, 1, n) a[i] = (i * 17) ^ (rep * 101);
+        LCT::init();
+        if(LCT::tr[0] != 0) die("  [FAIL] init rep=%d: tr[0] 必须为异或单位元 0\n", rep);
+        For(i, 1, n) {
+            if(LCT::ch[i][0] || LCT::ch[i][1] || LCT::fa[i] || LCT::lz[i])
+                die("  [FAIL] init rep=%d n=%d: 点 %d 保留旧结构或翻转标记\n", rep, n, i);
+            if(LCT::fd(i) != i || LCT::que(i, i) != a[i])
+                die("  [FAIL] init rep=%d n=%d: 点 %d 不是新点权的孤立点\n", rep, n, i);
+        }
+        int want = 0;
+        For(i, 1, n) want ^= a[i];
+        For(i, 2, n) LCT::link(i - 1, i);
+        if(n) {
+            if(LCT::que(1, n) != want) die("  [FAIL] init rep=%d n=%d: 新链异或不符\n", rep, n);
+            LCT::mkr(n);
+        }
+    }
+    ok("同进程连续 init：最大点数/缩小/空图/单点/扩大，清除旧边及翻转标记");
 }
 
 // 一轮随机:随机森林 + 随机操作序列 + 收尾全点对校验
@@ -58,6 +76,8 @@ static void one_round(int round) {
     brute B(n);
     For(i, 1, n) a[i] = (int) rnd(0, 1000), B.val[i] = a[i];
     LCT::init();
+    For(i, 1, n) if(LCT::fd(i) != i || LCT::que(i, i) != a[i])
+        die("  [FAIL] 随机 round %d:init 未清空点 %d 的旧状态\n", round, i);
     For(i, 2, n) if(rnd(0, 1)) {
         int u = (int) rnd(1, i - 1);
         LCT::link(u, i), B.add(u, i);
@@ -96,7 +116,6 @@ static void one_round(int round) {
         if(LCT::que(u, v) != want)
             die("  [FAIL] 随机 round %d 收尾 que(%d,%d) want=%d got=%d\n", round, u, v, want, LCT::que(u, v));
     }
-    _exit(0);
 }
 
 // 链:区间异或 + 断边/连边
@@ -116,7 +135,6 @@ static void case_chain() {
     if(LCT::fd(1) != LCT::fd(200)) die("  [FAIL] 链上重新 link 后仍不连通\n");
     printf("  [ok] 链(200 点)3000 次区间异或 + 断边/连边\n");
     fflush(stdout);
-    _exit(0);
 }
 
 // 星(中心 1 连所有叶子),点权全 1 → 路径异或 = 路径点数 mod 2
@@ -136,7 +154,6 @@ static void case_star() {
     if(LCT::fd(1) == LCT::fd(50)) die("  [FAIL] 星:cut 中心-叶子后仍连通\n");
     printf("  [ok] 星(100 点)路径异或 + cut 中心-叶子\n");
     fflush(stdout);
-    _exit(0);
 }
 
 // 反复 upd
@@ -155,7 +172,6 @@ static void case_upd() {
     }
     printf("  [ok] 2000 次 upd 后链上查询仍正确\n");
     fflush(stdout);
-    _exit(0);
 }
 
 // 重复 link / 树内 link 不应改变结构
@@ -169,54 +185,19 @@ static void case_relink() {
     For(u, 1, n) if(LCT::fd(u) != LCT::fd(1)) die("  [FAIL] 重复 link 后 %d 脱离连通块\n", u);
     printf("  [ok] 重复 link / 树内 link 不改变结构(1000 次)\n");
     fflush(stdout);
-    _exit(0);
 }
 
-// 在干净子进程运行无参用例；返回 0 表示通过，非 0 表示崩溃或断言失败。
-static int forked(void (*fn)()) {
-    fflush(stdout);
-    pid_t pid = fork();
-    if(pid < 0) { perror("fork"); return 1; }
-    if(pid == 0) { fn(); _exit(0); }
-    int st = 0;
-    pid_t waited;
-    do waited = waitpid(pid, &st, 0); while(waited < 0 && errno == EINTR);
-    if(waited != pid) { perror("waitpid"); return 1; }
-    if(WIFEXITED(st) && WEXITSTATUS(st) == 0) return 0;
-    printf("  [FAIL] 子进程%s\n", WIFSIGNALED(st) ? "崩溃(SIGSEGV 等)" : "断言不通过");
-    return 1;
-}
-// 在干净子进程运行带轮次参数的用例；父进程推进随机种子以避免继承同序列。
-template <class F> static int forked_arg(F fn, int arg) {
-    fflush(stdout);
-    u64 seed = rng(); // 在父进程推进状态,不能让各 fork 继承同一条随机序列。
-    pid_t pid = fork();
-    if(pid < 0) { perror("fork"); return 1; }
-    if(pid == 0) {
-        rng.seed(seed);
-        fn(arg);
-        _exit(0);
-    }
-    int st = 0;
-    pid_t waited;
-    do waited = waitpid(pid, &st, 0); while(waited < 0 && errno == EINTR);
-    if(waited != pid) { perror("waitpid"); return 1; }
-    if(WIFEXITED(st) && WEXITSTATUS(st) == 0) return 0;
-    printf("  [FAIL] round=%d seed=%llu 子进程%s\n", arg, seed, WIFSIGNALED(st) ? "崩溃(SIGSEGV 等)" : "断言不通过");
-    return 1;
-}
-
-// 运行随机与结构化回归；任一子进程失败则返回非 0。
+// 运行同进程重入、随机与结构化回归；失败立即退出。
 int main() {
-    int bad = 0;
-    const int ROUNDS = 300;
-    For(r, 1, ROUNDS) bad += forked_arg(one_round, r);
-    if(!bad) printf("  [ok] %d 轮随机操作序列(每轮 <= 150 步,含 link/cut/upd/que/fd)+ 收尾全点对校验\n", ROUNDS);
-    bad += forked(case_chain);
-    bad += forked(case_star);
-    bad += forked(case_upd);
-    bad += forked(case_relink);
-    if(bad) return 1;
-
+    rng.seed(20261021);
+    case_reinit();
+    const int ROUNDS = 1000;
+    For(r, 1, ROUNDS) one_round(r);
+    printf("  [ok] %d 轮同进程随机操作序列(每轮 <= 150 步,含 link/cut/upd/que/fd)+ 收尾全点对校验\n", ROUNDS);
+    case_chain();
+    case_star();
+    case_upd();
+    case_relink();
+    case_reinit();
     PASSED("lct");
 }
