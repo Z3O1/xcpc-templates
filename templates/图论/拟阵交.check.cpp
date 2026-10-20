@@ -1,4 +1,4 @@
-// 拟阵交 自测:枚举参考/划分图线性拟阵两两组合/交换增广/自环平行边/重复调用
+// 拟阵交 自测:枚举参考/增删依赖态与非末次删除/划分图线性拟阵/交换增广/操作上界/带状态重复调用
 #include "../_check_base.hpp"
 #include "拟阵交.cpp"
 
@@ -9,26 +9,6 @@ struct test_matroid_t {
     vector<int> capacity;
     vector<pii> edge;
     vector<int> column;
-
-    function<bool(const vector<int> &)> oracle() const {
-        if(kind == 0) return partition_matroid_t{color, capacity};
-        if(kind == 1) return graphic_matroid_t{dimension, edge};
-        return [=](const vector<int> &s) {
-            vector<int> pivot(dimension);
-            for(int i : s) {
-                int x = column[i];
-                rFor(j, dimension - 1, 0) if(x >> j & 1) {
-                    if(pivot[j]) x ^= pivot[j];
-                    else {
-                        pivot[j] = x;
-                        break;
-                    }
-                }
-                if(!x) return false;
-            }
-            return true;
-        };
-    }
 
     // 独立参考：分类计数、连通分量秩、枚举异或张成空间，均不调用被测 oracle。
     bool reference(int n, int mask) const {
@@ -95,31 +75,125 @@ static void fail(int n, const test_matroid_t &a, const test_matroid_t &b,
     exit(1);
 }
 
-static void run_case(int n, const test_matroid_t &a, const test_matroid_t &b) {
-    auto oracle_a = a.oracle();
-    auto oracle_b = b.oracle();
-    vector<int> valid(1 << n);
-    int best = 0;
-    For(mask, 0, (1 << n) - 1) {
+struct oracle_counts_t {
+    int init = 0;
+    ll add = 0, del = 0, check = 0;
+};
+
+struct test_oracle_t {
+    test_matroid_t model;
+    vector<int> in;
+    partition_matroid_t partition;
+    graphic_matroid_t graphic;
+    oracle_counts_t *calls = nullptr;
+
+    test_oracle_t(const test_matroid_t &m, int n)
+        : model(m), in(n), partition{m.color, m.capacity}, graphic{m.dimension, m.edge} {
+        init();
+    }
+
+    vector<int> elements() const {
         vector<int> s;
-        For(i, 0, n - 1) if(mask >> i & 1) s.push_back(i);
+        For(i, 0, (int)in.size() - 1) if(in[i]) s.push_back(i);
+        return s;
+    }
+
+    int mask() const {
+        int mask = 0;
+        For(i, 0, (int)in.size() - 1) if(in[i]) mask |= 1 << i;
+        return mask;
+    }
+
+    void require(bool good, int x, const char *op) const {
+        if(good) return;
+        cerr << "FAIL " << op << " x=" << x << " state:";
+        for(int y : elements()) cerr << ' ' << y;
+        cerr << '\n';
+        model.print();
+        exit(1);
+    }
+
+    void init() {
+        if(calls) ++calls->init;
+        fill(all(in), 0);
+        if(model.kind == 0) partition.init();
+        if(model.kind == 1) graphic.init();
+    }
+
+    void add(int x) {
+        require(0 <= x && x < (int)in.size(), x, "add range");
+        require(!in[x], x, "duplicate add");
+        in[x] = 1;
+        if(calls) ++calls->add;
+        if(model.kind == 0) partition.add(x);
+        if(model.kind == 1) graphic.add(x);
+    }
+
+    void del(int x) {
+        require(0 <= x && x < (int)in.size(), x, "del range");
+        require(in[x], x, "delete absent element");
+        in[x] = 0;
+        if(calls) ++calls->del;
+        if(model.kind == 0) partition.del(x);
+        if(model.kind == 1) graphic.del(x);
+    }
+
+    bool check() const {
+        if(calls) ++calls->check;
+        if(model.kind == 0) return partition.check();
+        if(model.kind == 1) return graphic.check();
+        vector<int> pivot(model.dimension);
+        for(int i : elements()) {
+            int x = model.column[i];
+            rFor(j, model.dimension - 1, 0) if(x >> j & 1) {
+                if(pivot[j]) x ^= pivot[j];
+                else {
+                    pivot[j] = x;
+                    break;
+                }
+            }
+            if(!x) return false;
+        }
+        return true;
+    }
+};
+
+template <class M>
+static bool independent(M m, const vector<int> &s) {
+    m.init();
+    for(int x : s) m.add(x);
+    return m.check();
+}
+
+static void run_case(int n, const test_matroid_t &a, const test_matroid_t &b) {
+    test_oracle_t oracle_a(a, n), oracle_b(b, n);
+    vector<int> valid(1 << n);
+    int best = 0, previous = 0;
+    // Gray 序逐次增删，遍历所有子集；删除不限于最后加入的元素。
+    For(step, 0, (1 << n) - 1) {
+        int mask = step ^ (step >> 1);
+        if(step) {
+            int x = __builtin_ctz((unsigned)(mask ^ previous));
+            if(mask >> x & 1) oracle_a.add(x), oracle_b.add(x);
+            else oracle_a.del(x), oracle_b.del(x);
+        }
         bool ref_a = a.reference(n, mask);
         bool ref_b = b.reference(n, mask);
-        if(oracle_a(s) != ref_a || oracle_b(s) != ref_b) fail(n, a, b, s, -1, "oracle/reference");
+        if(oracle_a.check() != ref_a || oracle_b.check() != ref_b)
+            fail(n, a, b, oracle_a.elements(), -1, "incremental oracle/reference");
         valid[mask] = ref_a && ref_b;
         if(valid[mask]) best = max(best, __builtin_popcount((unsigned)mask));
+        previous = mask;
     }
-    int calls_a = 0;
-    int calls_b = 0;
-    auto counted_a = [&](const vector<int> &s) {
-        ++calls_a;
-        return oracle_a(s);
-    };
-    auto counted_b = [&](const vector<int> &s) {
-        ++calls_b;
-        return oracle_b(s);
-    };
-    auto answer = matroid_intersection(n, counted_a, counted_b);
+    // 以可能依赖的全集作为调用者旧状态，入口必须清空局部副本且不得修改调用者。
+    For(x, 0, n - 1) {
+        if(!oracle_a.in[x]) oracle_a.add(x);
+        if(!oracle_b.in[x]) oracle_b.add(x);
+    }
+    oracle_counts_t calls_a, calls_b;
+    oracle_a.calls = &calls_a;
+    oracle_b.calls = &calls_b;
+    auto answer = matroid_intersection(n, oracle_a, oracle_b);
     int mask = 0;
     for(int x : answer) {
         if(x < 0 || x >= n || (mask >> x & 1)) fail(n, a, b, answer, best, "invalid element");
@@ -129,8 +203,16 @@ static void run_case(int n, const test_matroid_t &a, const test_matroid_t &b) {
         fail(n, a, b, answer, best, "maximum common independence");
     For(i, 0, n - 1) if(!(mask >> i & 1) && valid[mask | (1 << i)])
         fail(n, a, b, answer, best, "addable element");
-    if(calls_a > n * (best + 1) * (best + 1) || calls_b > n * (best + 1) * (best + 1))
-        fail(n, a, b, answer, best, "oracle complexity");
+    for(auto calls : {calls_a, calls_b}) {
+        ll bound = 1LL * n * (best + 1) * (best + 1);
+        if(calls.init != 1 || calls.check > bound || calls.add + calls.del + calls.check > 4 * bound)
+            fail(n, a, b, answer, best, "incremental operation complexity");
+        if(calls.add - calls.del != best)
+            fail(n, a, b, answer, best, "unbalanced add/del");
+    }
+    if(oracle_a.mask() != (1 << n) - 1 || oracle_b.mask() != (1 << n) - 1)
+        fail(n, a, b, answer, best, "caller state modified");
+    oracle_a.calls = oracle_b.calls = nullptr;
     if(matroid_intersection(n, oracle_a, oracle_b) != answer)
         fail(n, a, b, answer, best, "repeat call");
     auto swapped = matroid_intersection(n, oracle_b, oracle_a);
@@ -172,7 +254,7 @@ static void long_exchange(int k) {
     auto answer = matroid_intersection(2 * k + 1, a, b);
     vector<int> expected;
     For(i, k, 2 * k) expected.push_back(i);
-    if(answer != expected || !a(answer) || !b(answer)) {
+    if(answer != expected || !independent(a, answer) || !independent(b, answer)) {
         cerr << "FAIL long_exchange k=" << k << " answer:";
         for(int x : answer) cerr << ' ' << x;
         cerr << '\n';
@@ -193,6 +275,9 @@ int main() {
     test_matroid_t free{0, 1, vector<int>(10), {10}, {}, {}};
     run_case(10, zero, free);
     run_case(10, free, free);
+    test_matroid_t large_capacity{0, 2, {0, 0, 1}, {INT_MAX, 0}, {}, {}};
+    run_case(3, large_capacity, first);
+    run_case(0, test_matroid_t{0, 0, {}, {}, {}, {}}, test_matroid_t{1, 0, {}, {}, {}, {}});
     test_matroid_t loops{1, 1, {}, {}, vector<pii>(10, {0, 0}), {}};
     test_matroid_t parallel{1, 2, {}, {}, vector<pii>(10, {0, 1}), {}};
     run_case(10, loops, free);
@@ -209,6 +294,7 @@ int main() {
     partition_matroid_t large_free{vector<int>(200), {200}};
     For(i, 1, 200) large_graph.e.push_back({i - 1, i});
     auto answer = matroid_intersection(200, large_graph, large_free);
-    CHECK(answer.size() == 200 && large_graph(answer) && large_free(answer), "large sparse forest");
+    CHECK(answer.size() == 200 && independent(large_graph, answer) && independent(large_free, answer),
+          "large sparse forest");
     PASSED("拟阵交");
 }
