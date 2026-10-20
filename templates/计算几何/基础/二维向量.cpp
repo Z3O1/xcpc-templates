@@ -31,8 +31,8 @@ p2 operator/=(p2 &a, db k) { return a = a / k; }
 db dis2(p2 a) { return dot(a, a); }
 // 两点距离写 dis(a-b)。
 db dis(p2 a) {
-    const db lo = ldexp(db(1), numeric_limits<db>::min_exponent / 2);
-    const db hi = ldexp(db(1), numeric_limits<db>::max_exponent / 2 - 1);
+    static const db lo = ldexp(db(1), numeric_limits<db>::min_exponent / 2);
+    static const db hi = ldexp(db(1), numeric_limits<db>::max_exponent / 2 - 1);
     db m = max(abs(a.x), abs(a.y));
     return m >= lo && m <= hi ? sqrt(dis2(a)) : hypot(a.x, a.y);
 }

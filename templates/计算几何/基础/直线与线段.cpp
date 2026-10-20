@@ -55,7 +55,8 @@ int turnop(p2 a, p2 b, p2 c) {
     db m = max({abs(u.x), abs(u.y), abs(v.x), abs(v.y)});
     if(m <= eps / 2) return 0;
 
-    if(m <= ldexp(db(1), numeric_limits<db>::max_exponent / 4)) {
+    static const db big = ldexp(db(1), numeric_limits<db>::max_exponent / 4);
+    if(m <= big) {
         db t = eps * m;
         if(isnormal(t)) {
             db h = u.det(v);
