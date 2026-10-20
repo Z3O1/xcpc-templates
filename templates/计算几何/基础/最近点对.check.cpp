@@ -46,23 +46,19 @@ static db brute_closest(const vector<p2> &v) {
 
 static bool exponent_ranges() {
     mt19937_64 gen(2026101703);
-    vector<int> exponents{numeric_limits<db>::min_exponent - numeric_limits<db>::digits + 3,
-                          numeric_limits<db>::min_exponent * 3 / 4, -100, 0, 100, 300};
-    for(int d = -4; d <= 4; ++d) {
-        exponents.push_back(numeric_limits<db>::min_exponent / 2 + d);
-        exponents.push_back((numeric_limits<db>::min_exponent - numeric_limits<db>::digits) / 2 + d);
-    }
+    // 二进制指数窗 2^-64..2^160：对应坐标 5e-20..1.5e48。
+    vector<int> exponents{-64, -40, -20, 0, 40, 100, 160};
     for(int t = 0; t < 3000; ++t) {
         int e = exponents[t % exponents.size()], n = 2 + gen() % 30;
         db scale = ldexp(db(1), e);
-        db shift = t % 3 == 0 ? ldexp(scale, numeric_limits<db>::digits - 8) : 0;
+        db shift = t % 3 == 0 && e <= 100 ? ldexp(scale, numeric_limits<db>::digits - 8) : 0;
         vector<p2> v;
         for(int i = 0; i < n; ++i)
             v.push_back({shift + db(int(gen() % 201) - 100) * scale,
                          -shift + db(int(gen() % 201) - 100) * scale});
         if(t % 7 == 0) v.push_back(v[0]);
-        // 极小点对与相距极远的点混用，不能因远处点的平方溢出而丢掉局部解。
-        if(t % 5 == 0) v.push_back({1e90L, -1e90L});
+        // 极小点对与相距很远的点混用，不能因为远处点把局部解带偏。
+        if(t % 5 == 0) v.push_back({1e45L, -1e45L});
         db got = dis_closest(v), want = brute_closest(v);
         db tolerance = 16 * numeric_limits<db>::epsilon() * want + 4 * numeric_limits<db>::denorm_min();
         if(abs(got - want) > tolerance || (got == 0) != (want == 0)) {
@@ -77,7 +73,7 @@ static bool exponent_ranges() {
 // 暴力对拍 + 退化/大规模用例;通过则 PASSED("最近点对")。
 int main() {
     printf("== 最近点对.check:O(n^2) 暴力对拍 + 退化/大规模用例 ==\n");
-    CHECK(exponent_ranges(), "独立hypot参考3000组：全指数/平方下溢边界/大平移/远近混合");
+    CHECK(exponent_ranges(), "独立hypot参考3000组：尺度窗/大平移/远近混合");
 
     // ===== 1. 解析用例 =====
     {

@@ -466,7 +466,7 @@ int main() {
         int bad = 0, cases = 0;
         for(int rep = 0; rep < 40; ++rep) {
             vector<p2> in = rep ? rnd_pts(12, 30) : vector<p2>{{0,0},{8,0},{8,8},{0,8},{4,0},{4,4},{4,8},{2,2},{6,6}};
-            for(int e : {-20, 0, 20, 1000, 4000}) for(int shift : {0, 1}) {
+            for(int e : {-20, 0, 20, 100, 160}) for(int shift : {0, 1}) {
                 db s = ldexp(db(1), e);
                 p2 o = p2{ldexp(db(1), 20), -ldexp(db(1), 19)} * (s * shift);
                 vector<p2> moved;

@@ -63,7 +63,7 @@ void verify(c2 a, c2 b, bool inner) {
 }
 // 全类别与尺度回归，以及固定种子的随机独立对拍。
 int main() {
-    for(db s : {db(1e-2000L), db(1e-12L), db(1), db(1e12L), db(1e2000L)}) {
+    for(db s : {db(1e-18L), db(1e-12L), db(1), db(1e12L), db(1e45L)}) {
         p2 origin{16 * s, -16 * s};
         for(bool inner : {false, true}) {
             c2 a{origin, (inner ? 2 : 4) * s}, b{origin + p2{5 * s, 0}, s};
@@ -90,7 +90,7 @@ int main() {
         for(bool inner : {false, true}) verify({{0, 0}, 1}, b, inner);
     verify({{0, 0}, 2}, {{1, 0}, 1}, false);
     verify({{0, 0}, 3}, {{1, 0}, 1}, false);
-    for(db scale : {db(1e-2000L), db(1e-12L), db(1), db(1e12L), db(1e2000L)}) {
+    for(db scale : {db(1e-18L), db(1e-12L), db(1), db(1e12L), db(1e45L)}) {
         for(bool inner : {false, true}) {
             verify({{0, 0}, scale}, {{4 * scale, 0}, scale}, inner);
             verify({{0, 0}, 0}, {{scale, 0}, 0}, inner);

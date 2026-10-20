@@ -2,6 +2,7 @@
 
 // 依赖 7.2.2 直线与线段。
 // 圆与内外接圆、包含关系与三点外接圆；r >= 0，r=0 表示点圆。
+// 数值范围同 7.2.1：坐标、半径及其平方都在 [1e-20, 1e50] 内。
 namespace Geo {
 
 struct c2 {
@@ -11,20 +12,14 @@ struct c2 {
 // 以 ab 为直径的圆；允许 a=b。
 c2 cir(p2 a, p2 b) { return {(a + b) / 2, dis(a - b) / 2}; }
 // 三角形内切圆；点差及结果须有限；共线时 r=0，全重合时圆心取 a。
+// 权重用三边长，再减 a 转局部坐标，避免远处三点相减丢精度。
 c2 incir(p2 a, p2 b, p2 c) {
-    auto span = [](p2 p) { return max(abs(p.x), abs(p.y)); };
-    if(span(c - b) < min(span(b - a), span(c - a))) swap(a, b);
+    auto sp = [](p2 p) { return max(abs(p.x), abs(p.y)); };
+    if(sp(c - b) < min(sp(b - a), sp(c - a))) swap(a, b);  // 让 a 落在最短边上，避免 a+o 相消
     p2 u = b - a, v = c - a;
-    db U = max(abs(u.x), abs(u.y)), V = max(abs(v.x), abs(v.y)), s = max(U, V);
-    if(s == 0) return {a, 0};
-    db B = V ? dis(v / V) : 0, C = U ? dis(u / U) : 0;
-    db p = (U / s) * C + (V / s) * B + dis(u / s - v / s);
-    auto mul = [&](db x, db y) {
-        if(abs(x) < abs(y)) swap(x, y);
-        return (x / s) * (y / p);
-    };
-    p2 o{mul(u.x, V) * B + mul(v.x, U) * C, mul(u.y, V) * B + mul(v.y, U) * C};
-    return {a + o, abs(mul(u.x, v.y) - mul(u.y, v.x))};
+    db x = dis(v - u), y = dis(v), z = dis(u), p = x + y + z;
+    if(p == 0) return {a, 0};
+    return {a + (u * y + v * z) / p, abs(u.det(v)) / p};
 }
 // 点是否在圆盘内，含边界，按长度 eps 判定；字面量显式用 p2{...} 或 c2{...}。
 bool in_circle(const c2 &c, const p2 &p) { return cmp(dis(c.o - p), c.r) <= 0; }

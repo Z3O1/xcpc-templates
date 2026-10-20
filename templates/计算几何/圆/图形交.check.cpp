@@ -396,7 +396,7 @@ int main() {
     tick0 = clock();
     printf("== 图形交 自测开始 ==\n");
     // 轴向3-4-5弦：筛去前/后/全部交点，及两圆交点的有序输出；不复用求交公式。
-    for(db s : {db(1e-6L), db(1), db(1e1000L)}) for(db shift : {db(0), 16 * s}) {
+    for(db s : {db(1e-6L), db(1), db(1e40L)}) for(db shift : {db(0), 16 * s}) {
         c2 a{{shift, -shift}, 5 * s}, b{{shift + 6 * s, -shift}, 5 * s};
         auto points = cir_cir(a, b);
         bool good = points.size() == 2;
@@ -449,7 +449,7 @@ int main() {
         db R = rndi(1,20), k = t%4 == 0 ? R : t%4 == 1 ? R+1 : rndi(0,int(R)-1);
         c2 c{r90(d)*k, dis(d)*R};
         int count = k > R ? 0 : k == R ? 1 : 2;
-        for(db scale : {db(1e-2000L),db(1e-6L),db(1),db(1e2000L),db(-1e-2000L),db(-1)}) {
+        for(db scale : {db(1e-18L),db(1e-6L),db(1),db(1e40L),db(-1e-18L),db(-1)}) {
             auto got = cir_line(c,{{0,0},d*scale});
             bool good = (int) got.size() == count;
             for(int i = 0; i < (int) got.size(); ++i) {
@@ -471,7 +471,7 @@ int main() {
           "平移解析3-4-5弦，仅允许两个输出ULP");
     }
     for(db gap : {db(-1e-7L),db(0),db(1e-7L)}) {
-        auto got = cir_line({{0,1-gap},1},{{0,0},{1e-1000L,0}});
+        auto got = cir_line({{0,1-gap},1},{{0,0},{1e-18L,0}});
         int count = gap < 0 ? 0 : gap == 0 ? 1 : 2;
         T((int)got.size() == count, "短非零方向近相切0/1/2");
         for(auto p : got) T(abs(dis(p-p2{0,1-gap})-1) < 1e-10L && abs(p.y) < 1e-10L, "近相切交点满足圆和直线");
@@ -490,8 +490,8 @@ int main() {
             for(auto p : got) T(abs(dis(p)-radius) <= eps*1.1L, "相切边界返回点的径向误差不超过eps");
         }
     }
-    auto large = cir_line({{0,0},1e2000L},{{0,0},{1e-2000L,0}});
-    T(large.size() == 2 && abs(large[0].x/1e2000L+1) < 1e-15L && abs(large[1].x/1e2000L-1) < 1e-15L,
+    auto large = cir_line({{0,0},1e45L},{{0,0},{1e-18L,0}});
+    T(large.size() == 2 && abs(large[0].x/1e45L+1) < 1e-15L && abs(large[1].x/1e45L-1) < 1e-15L,
       "巨大半径与极短方向不需要平方半径/方向");
 
     // ---------- 0. 手算确定用例 ----------

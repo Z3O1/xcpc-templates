@@ -468,7 +468,7 @@ int main() {
     mt19937 eps_rng(2026102803);
     {
         mt19937_64 gen(2026101702);
-        int E = numeric_limits<db>::max_exponent * 3 / 4;
+        int E = 150;
         for(int t = 0; t < 600; ++t) {
             db s = ldexp(db(1), (t % 3 - 1) * 20);
             db shift = t % 4 == 0 && s >= 1 ? ldexp(db(1), 40) : 0;
@@ -493,9 +493,9 @@ int main() {
                 return 1;
             }
         }
-        CHECK(true, "缓存排序600组：48条同角冗余约束/全指数方向/小尺度与大平移，矩形解析oracle");
+        CHECK(true, "缓存排序600组：48条同角冗余约束/宽范围方向/小尺度与大平移，矩形解析oracle");
     }
-    for(db L : {db(1),ldexp(db(1),numeric_limits<db>::min_exponent*3/4),numeric_limits<db>::denorm_min()}) {
+    for(db L : {db(1), ldexp(db(1), -60), db(1e-20L)}) {
         vector<seg> seam{{{-1,-1},{1,-1}},{{1,-1},{1,1}},{{-1,1},{-1,-1}},
                          {{0,0},{-L,-0.0L}},{{0,-1e-6L},{-L,-1e-6L}}};
         for(int t=0;t<24;++t) {

@@ -1,6 +1,7 @@
 // p2(): 计算几何 · 二维点与向量
 
 // p2 兼作点与向量，是后续几何模板的共用基座；坐标须有限，角度用弧度。
+// 数值范围按赛场:坐标、长度与其平方都在 [1e-20, 1e50] 内(超出即不再特殊处理)。
 namespace Geo {
 
 const db eps = 1e-10;
@@ -30,16 +31,9 @@ p2 operator/=(p2 &a, db k) { return a = a / k; }
 
 db dis2(p2 a) { return dot(a, a); }
 // 两点距离写 dis(a-b)。
-db dis(p2 a) {
-    static const db lo = ldexp(db(1), numeric_limits<db>::min_exponent / 2);
-    static const db hi = ldexp(db(1), numeric_limits<db>::max_exponent / 2 - 1);
-    db m = max(abs(a.x), abs(a.y));
-    return m >= lo && m <= hi ? sqrt(dis2(a)) : hypot(a.x, a.y);
-}
-// 单位化，要求非零向量。
+db dis(p2 a) { return sqrt(dis2(a)); }
+// 单位化，要求非零向量；先除最大分量，避免平方上下溢。
 p2 unit(p2 a) {
-    db d = dis(a);
-    if(isnormal(d)) return a / d;
     a /= max(abs(a.x), abs(a.y));
     return a / sqrt(dis2(a));
 }

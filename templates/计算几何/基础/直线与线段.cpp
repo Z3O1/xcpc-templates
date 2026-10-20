@@ -2,6 +2,7 @@
 
 // 依赖 7.2.1 二维点与向量。
 // 直线与线段的方向判定、相交、投影与距离；线段可退化为点，距离类接口返回平方。
+// 数值范围同 7.2.1：坐标、长度与其平方都在 [1e-20, 1e50] 内。
 namespace Geo {
 
 struct seg {
@@ -54,15 +55,6 @@ int turnop(p2 a, p2 b, p2 c) {
     p2 u = b - a, v = c - a;
     db m = max({abs(u.x), abs(u.y), abs(v.x), abs(v.y)});
     if(m <= eps / 2) return 0;
-
-    static const db big = ldexp(db(1), numeric_limits<db>::max_exponent / 4);
-    if(m <= big) {
-        db t = eps * m;
-        if(isnormal(t)) {
-            db h = u.det(v);
-            if(abs(h) > 4 * t) return s * ((h > 0) - (h < 0));
-        }
-    }
     u /= m, v /= m;
     db h = u.det(v), t = eps / m;
 
@@ -111,9 +103,7 @@ bool chkss_s(const seg &a, const seg &b) {
 // 点在无限直线上的投影；要求 l 非零长，中间量及结果可表示。
 inline p2 proj(const seg &l, const p2 &q) {
     p2 d = scaled_dir(l.dir()), w = q - l.x;
-    db n = dis2(d), hi = numeric_limits<db>::max() / 4;
-    db t = abs(w.x) <= hi && abs(w.y) <= hi ? dot(d, w) / n : dot(d * (1 / n), w);
-    return l.x + d * t;
+    return l.x + d * (dot(d, w) / dis2(d));
 }
 // 点关于无限直线的对称点；要求 l 非零长。
 p2 reflect(const seg &l, const p2 &q) {

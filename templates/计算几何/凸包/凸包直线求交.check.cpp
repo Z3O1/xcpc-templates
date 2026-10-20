@@ -92,7 +92,7 @@ void exercise(vector<p2> a) {
         p2 o = {db(rnd(-80,80)), db(rnd(-80,80))};
         p2 d = {db(rnd(-100,100)), db(rnd(-100,100))};
         if(!d.x && !d.y) d.x = 1;
-        for(db s : {db(1), db(-1), db(3), db(-7), ldexp(db(1),-200), ldexp(db(1),200)}) verify(a,o,d,s);
+        for(db s : {db(1), db(-1), db(3), db(-7), ldexp(db(1),-40), ldexp(db(1),40)}) verify(a,o,d,s);
         verify(a, {10000,10000}, {1,0});
         for(int i = 0; i < n; ++i) {
             verify(a, a[i], d);  // 穿顶点，包含点包。
@@ -117,7 +117,7 @@ int main() {
     verify({{-2,0},{2,0}}, {0,0}, {0,1});
     vector<p2> square = {{0,0},{8,0},{8,8},{0,8}};
     for(int r = 0; r < 4; ++r) {
-        for(int e : {0, numeric_limits<db>::min_exponent/2, numeric_limits<db>::max_exponent/2}) {
+        for(int e : {0, -60, 150}) {
             db s = ldexp(db(1),e);
             verify(square, {0,0}, {1,-1}, s);  // 相切。
             verify(square, {0,0}, {1,1}, s);   // 穿两个顶点。

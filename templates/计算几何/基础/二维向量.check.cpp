@@ -282,10 +282,10 @@ static bool hull_check_one(const vector<p2> &v, bool verbose = false) {
 // convex_cut 后的多边形面积(用带号面积 -> 绝对值)
 static db cut_area(const vector<p2> &v) { return abs_db(ref_area(v)); }
 
-// GCC 113 位参考：按二进制指数缩放后用 Newton 开方，不依赖 hypot/sqrt 或外部库。
+// 113 位参考：按二进制指数缩放后用 Newton 开方，不依赖 hypot/sqrt 或外部库。
+// 指数窗 2^-64..2^160(约 5.4e-20..1.5e48)，即全场坐标/长度的取值区间。
 static bool norm_extremes() {
-    const int low = numeric_limits<db>::min_exponent - numeric_limits<db>::digits;
-    const int high = numeric_limits<db>::max_exponent - 1;
+    const int low = -64, high = 160;
     mt19937_64 gen(2026102601);
     auto verify = [&](p2 a) {
         int exponent = 0;
@@ -309,13 +309,11 @@ static bool norm_extremes() {
         if(!ok) printf("norm a=(%La,%La) got=%La want=%La\n", a.x, a.y, got, want);
         return ok;
     };
-    for(int e : {low, low + 1, numeric_limits<db>::min_exponent / 2 - 1,
-                 numeric_limits<db>::min_exponent / 2, 0, high / 2, high / 2 + 1, high}) {
+    for(int e : {low, low + 1, -40, -20, 0, high / 2, high / 2 + 1, high}) {
         db x = ldexp(db(1), e);
         if(!verify({x, x}) || !verify({x, 0}) || !verify({x, -x / 2})) return false;
     }
-    db large = numeric_limits<db>::max() * 0.75L;
-    if(!verify({large, large}) || !verify({0, 0})) return false;
+    if(!verify({0, 0})) return false;
     for(int i = 0; i < 30000; ++i) {
         int ex = low + gen() % (high - low + 1), ey = low + gen() % (high - low + 1);
         db x = ldexp(db(1) + db(gen() % 1024) / 1024, ex);
@@ -329,7 +327,7 @@ static bool norm_extremes() {
 
 // 全量随机对拍与极端/退化用例；失败打印反例。
 int main() {
-    CHECK(norm_extremes(), "全指数模长/单位化 113 位参考 30000 组");
+    CHECK(norm_extremes(), "模长/单位化 113 位参考 30000 组(指数窗 2^-64..2^160)");
     printf("== 二维向量.check:随机对拍 + 极端/退化用例(独立参考实现见文件头部)==\n");
 
     // ===== 1. eps / pi / sign / cmp =====

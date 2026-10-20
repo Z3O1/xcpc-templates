@@ -141,7 +141,7 @@ int main() {
     }
     db two_area = 4 * pi / 3 + sqrt(db(3)) / 2, two_perimeter = 8 * pi / 3;
     // 同一解析并集旋转、平移并换根；覆盖小圆也可能成为连通块原点。
-    for(db scale : {db(1e-2000L), db(1e-12L), db(1), db(1e12L), db(1e2000L)})
+    for(db scale : {db(1e-18L), db(1e-12L), db(1), db(1e12L), db(1e40L)})
         for(int angle = 0; angle < 16; ++angle) for(bool hidden_root : {false, true}) {
             p2 origin{16 * scale, -16 * scale}, v = rot({scale, 0}, angle * pi / 8);
             vector<c2> cluster{{origin, scale}, {origin + v, scale}};
@@ -151,7 +151,7 @@ int main() {
                 rotate(cluster.begin(), cluster.begin() + 1, cluster.end());
             }
         }
-    for(db scale : {db(1e-2000L), db(1e-12L), db(1), db(1e12L), db(1e2000L)})
+    for(db scale : {db(1e-18L), db(1e-12L), db(1), db(1e12L), db(1e40L)})
         analytic({{{0, 0}, scale}, {{scale, 0}, scale}}, two_area, two_perimeter, scale);
     analytic({{{0, 0}, 1}, {{0, 0}, 1}, {{0, 0}, 0}}, pi, 2 * pi);
     analytic({{{0, 0}, 3}, {{1, 0}, 1}, {{2, 0}, 1}}, 9 * pi, 6 * pi);

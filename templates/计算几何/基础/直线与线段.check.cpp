@@ -93,41 +93,37 @@ bool check_projection(seg s, p2 q) {
     return ok;
 }
 bool projection_extremes() {
-    const int high = numeric_limits<db>::max_exponent * 3 / 4;
-    const int low = numeric_limits<db>::min_exponent * 3 / 4;
-    int tiny_exp = numeric_limits<db>::min_exponent - numeric_limits<db>::digits;
-    for(int e : {tiny_exp, low, -100, 0, 100, high}) {
+    // 长度窗 2^-60..2^150，即赛场坐标 1e-18..1e45。
+    const int high = 150, low = -60;
+    for(int e : {-60, -20, 0, 60, 150}) {
         db length = ldexp(db(1), e);
         for(seg s : vector<seg>{{{0, 0}, {length, 0}}, {{0, 0}, {0, -length}},
                                 {{0, 0}, {length, length / 2}}}) {
             for(p2 q : vector<p2>{{1, 1}, {-1, 2}, {0, 0}, {length, 0}}) {
-                // 巨长方向的端点查询平方可能超范围，只在可表示的查询上对拍距离。
-                if(max(abs(q.x), abs(q.y)) > ldexp(db(1), high / 2)) continue;
                 if(!check_projection(s, q) || !check_projection({s.y, s.x}, q)) return false;
             }
         }
         CHECK(proj({{0, 0}, {length, 0}}, {1, 1}).x == 1, "长/短非零轴方向投影");
     }
-    // 返回的是平方距离，覆盖可表示的次正规平方以及接近上限的平方。
-    for(int e : {tiny_exp / 2 + 1, numeric_limits<db>::max_exponent / 2 - 1}) {
+    // 返回的是平方距离，覆盖窗内的平方距离。
+    for(int e : {-60, 150}) {
         db height = ldexp(db(1), e), square = ldexp(db(1), 2 * e);
-        CHECK(nearest({{0, 0}, {2, 0}}, {1, height}) == square, "平方距离的指数边界");
+        CHECK(nearest({{0, 0}, {2, 0}}, {1, height}) == square, "平方距离的尺度窗两端");
     }
-    db large = numeric_limits<db>::max() * 0.75L;
+    db large = 1e45L;
     p2 mirror = reflect({{0, 0}, {1, 0}}, {large, 1});
     CHECK(mirror.x == large && mirror.y == -1, "反射不翻倍绝对坐标");
     // 大平移、短局部残差；旧版绝对投影的末位舍入不能当作真实距离。
-    db T = ldexp(db(1), numeric_limits<db>::digits - 3);
+    db T = ldexp(db(1), 40);
     CHECK(check_projection({{T, T}, {T + 8, T + 4}}, {T + 3, T + 2}), "大平移局部垂距");
     CHECK(nearest({{0, 0}, {2, 0}}, {-eps / 2, 0}) == 0 &&
           nearest({{0, 0}, {2, 0}}, {-2 * eps, 0}) == 4 * eps * eps, "原eps包围盒扩展");
     CHECK(nearest({{0, 0}, {2, 2}}, {-eps / 2, -eps / 2}) == 0 &&
           nearest({{0, 0}, {2, 2}}, {-2 * eps, -2 * eps}) == 8 * eps * eps, "对角方向eps扩展");
     mt19937_64 gen(2026102602);
-    const int bound = numeric_limits<db>::max_exponent / 2 - 32;
     for(int i = 0; i < 30000; ++i) {
         int de = low + gen() % (high - low + 1);
-        int we = int(gen() % (2 * bound + 1)) - bound;
+        int we = low + gen() % (high - low + 1);
         db dx = ldexp(db(1 + gen() % 16), de - 4);
         db dy = ldexp(db(int(gen() % 31) - 15), de - 4);
         p2 q{ldexp(db(int(gen() % 63) - 31), we - 5), ldexp(db(int(gen() % 63) - 31), we - 5)};
@@ -167,25 +163,20 @@ bool projection_offset_range() {
                          s.y.x, s.y.y, q.x, q.y, h.x, h.y, want.foot.x, want.foot.y, int(clean));
         return good;
     };
-    db tiny = numeric_limits<db>::denorm_min();
-    for(int k = 1; k <= 63; ++k) for(int sign : {-1, 1}) {
-        p2 q{tiny * k, tiny * k * sign};
+    // 点在线上时投影/反射应当恰好返回自身；尺度覆盖长度窗 1e-20..1e50。
+    for(db v : {db(1e-20L), db(1e-6L), db(1), db(1e20L), db(1e50L)}) for(int sign : {-1, 1}) {
+        p2 q{v, v * sign};
         seg s{{0, 0}, {1, db(sign)}};
         p2 h = proj(s, q), r = reflect(s, q);
         CHECK(h.x == q.x && h.y == q.y && r.x == q.x && r.y == q.y,
-              "次正规在线点投影/反射不丢末位");
+              "在线点投影/反射不丢末位");
     }
-    db hi = numeric_limits<db>::max() / 4;
-    for(db v : {nextafter(hi, db(0)), hi, nextafter(hi, numeric_limits<db>::max()), hi * 3})
-        for(p2 d : vector<p2>{{1, 1}, {-1, -1}, {3, 1}, {1, 0}, {0, -1}})
-            for(p2 q : vector<p2>{{v, v}, {v, -v}, {-v, v}})
-                if(!verify({{0, 0}, d}, q)) return false;
     mt19937_64 gen(2026102702);
-    int low = numeric_limits<db>::min_exponent - numeric_limits<db>::digits;
-    int high = numeric_limits<db>::max_exponent - 8;
+    // 方向与查询点的二进制指数都锁在长度窗内。
+    int low = -60, high = 150;
     for(int i = 0; i < 20000; ++i) {
         int e = low + gen() % (high - low + 1);
-        int de = (int(gen() % 3) - 1) * numeric_limits<db>::max_exponent * 3 / 4;
+        int de = (int(gen() % 3) - 1) * 40;
         p2 d{ldexp(db(1 + gen() % 15), de), ldexp(db(int(gen() % 31) - 15), de)};
         p2 q{ldexp(db(int(gen() % 63) - 31), e), ldexp(db(int(gen() % 63) - 31), e)};
         if(!verify({{0, 0}, d}, q)) return false;
@@ -229,8 +220,8 @@ int triangle_reference(p2 a,p2 b,p2 c) {
     return (h > t)-(h < -t);
 }
 bool eps_contracts() {
-    const int E=numeric_limits<db>::max_exponent*3/4;
-    for(int e : {-E,-40,0,40,E}) for(int reverse : {-1,1}) {
+    const int E = 150;  // 长度窗 2^-60..2^150
+    for(int e : {-60,-40,0,40,E}) for(int reverse : {-1,1}) {
         db L=ldexp(db(reverse),e);
         seg x{{0,0},{L,0}},y{{0,0},{0,L}};
         for(db h : {eps/2,eps,2*eps}) {
@@ -309,10 +300,9 @@ bool eps_contracts() {
 // 快判上下界与精确开方回退均与113位长度/夹角参考对照。
 bool predicate_bounds() {
     mt19937_64 gen(2026101701);
-    int E = numeric_limits<db>::max_exponent * 3 / 4;
     for(int i = 0; i < 6000; ++i) {
         p2 d{db(1 + gen() % 31), db(int(gen() % 63) - 31)};
-        int e = int(gen() % (2 * E + 1)) - E;
+        int e = -60 + int(gen() % 211);
         seg a{{0, 0}, d * ldexp(db(i % 2 ? -1 : 1), e)};
         db factor = db(1 + gen() % 30000) / 10000;
         if(i % 9 == 0) factor = 1 - 1e-5L;
@@ -341,7 +331,7 @@ bool predicate_bounds() {
 int main() {
     CHECK(predicate_bounds(), "快判/开方回退6000组：长度与角度eps邻域、全指数方向、大平移");
     CHECK(eps_contracts(), "EPS长度/角度/三点全排列113位oracle 20000组");
-    CHECK(projection_offset_range(), "投影偏移全指数/巨大分支 oracle 20000组");
+    CHECK(projection_offset_range(), "投影偏移分支 oracle 20000组(长度窗 2^-60..2^150)");
     CHECK(projection_extremes(), "113位投影/距离 oracle，3万随机与极端/平移/尺度");
     rng.seed(2026101401);
     auto point = []() -> p2 { return {db(rnd(-100, 100)), db(rnd(-100, 100))}; };

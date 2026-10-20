@@ -283,8 +283,8 @@ int main() {
               "近乎平行线段仍枚举内部驻点，距离不按角度 eps 退化");
     }
     {
-        int e = numeric_limits<db>::max_exponent * 3 / 4;
-        for(int k : {-e, e}) {
+        int e = 150;
+        for(int k : {-60, e}) {
             line3 l = ln(O, pt3(ldexp((db) 1, k), 0, 0));
             CHECK(dis(proj(l, pt3(3, 4, 0)) - pt3(3, 0, 0)) < 1e-14L && abs(dis(l, pt3(3, 4, 0)) - 4) < 1e-14L,
                   "直线方向极大/极小不影响投影与距离");
@@ -310,8 +310,8 @@ int main() {
     }
 
     {
-        int e = numeric_limits<db>::max_exponent * 3 / 4;
-        for(int k : {-e, -40, 0, 40, e}) {
+        int e = 150;
+        for(int k : {-60, -40, 0, 40, e}) {
             db s = ldexp((db) 1, k);
             seg3 a{O, pt3(3 * s, 4 * s, 0)};
             p3 pa, pb;

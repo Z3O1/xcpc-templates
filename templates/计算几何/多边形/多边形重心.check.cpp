@@ -101,12 +101,12 @@ int main() {
         }
     }
     {
-        db L = numeric_limits<db>::max() * 0.3L;
+        db L = 1e45L;
         feclearexcept(FE_ALL_EXCEPT);
         p2 got = centroid({{0,0},{L,L},{0,0}});
         CHECK(isfinite(got.x) && got.x == L/3 && got.y == L/3 &&
               !fetestexcept(FE_OVERFLOW | FE_INVALID | FE_DIVBYZERO),
-              "精确周长有限而L1溢出时半L1仍稳定");
+              "L=1e45 的半L1与坐标平均稳定");
     }
     CHECK(true, "L1快判及精确周长回退解析阈值20000组");
 

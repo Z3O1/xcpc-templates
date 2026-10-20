@@ -93,10 +93,10 @@ db eq(db x, db y, db tol) { return abs(x - y) <= tol; }
 
 // 手算/参考对照与退化用例;通过则 PASSED("三维向量")。
 int main() {
-    // 平方会溢出/下溢，但范数与方向仍可表示；幂次按 db 的实际范围选择。
+    // 平方的可表示范围要够用；幂次取赛场坐标窗 2^-60..2^150。
     {
-        int e = numeric_limits<db>::max_exponent * 3 / 4;
-        for(int k : {-e, e}) {
+        int e = 150;
+        for(int k : {-60, e}) {
             db s = ldexp((db) 1, k);
             p3 a{3 * s, 4 * s, 0}, b{-4 * s, 3 * s, 0};
             CHECK(isfinite(dis(a)) && abs(dis(a) / s - 5) < 1e-14L,
@@ -108,7 +108,7 @@ int main() {
         }
         for(int i = 0; i < 20000; ++i) {
             db x = db(grnd(1, 10000)) / 10000;
-            db s = ldexp((db) 1, int(grnd(-e, e)));
+            db s = ldexp((db) 1, int(grnd(-60, e)));
             p3 a{s, 0, 0}, b{s, s * x, 0};
             db got = angle(a, b), want = atan(x);
             if(abs(got - want) > 1e-14L) {
@@ -122,11 +122,11 @@ int main() {
               "近零角和近 pi 角不经 acos 消减");
     }
     {
-        int e = numeric_limits<db>::max_exponent * 3 / 4;
+        int e = 150;
         for(int i = 0; i < 20000; ++i) {
             p3 a{db(grnd(1, 100)), db(grnd(-100, 100)), db(grnd(-100, 100))};
             p3 b{db(grnd(-100, 100)), db(grnd(1, 100)), db(grnd(-100, 100))};
-            db sa = ldexp((db) 1, int(grnd(-e, e))), sb = ldexp((db) 1, int(grnd(-e, e)));
+            db sa = ldexp((db) 1, int(grnd(-60, e))), sb = ldexp((db) 1, int(grnd(-60, e)));
             db got = angle(a * sa, b * sb), want = ref_angle(a, b);
             if(!isfinite(got) || abs(got - want) > 2e-15L) {
                 fprintf(stderr, "angle a=%s b=%s exponents=%d,%d got=%Lg want=%Lg\n",

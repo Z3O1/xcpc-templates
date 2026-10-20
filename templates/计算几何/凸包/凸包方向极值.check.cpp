@@ -56,8 +56,7 @@ int main() {
         rotate(thin.begin(), thin.begin() + r, thin.end());
         for(p2 d : {p2{1,ldexp(db(1),-50)}, p2{-1,ldexp(db(1),-50)},
                     p2{ldexp(db(1),-50),1}, p2{0,-1}})
-            for(int e : {0, numeric_limits<db>::min_exponent / 2,
-                            numeric_limits<db>::max_exponent / 2}) verify(thin, d * ldexp(db(1),e));
+            for(int e : {0, -60, 150}) verify(thin, d * ldexp(db(1),e));
     }
     for(int t = 0; t < 2500; ++t) {
         vector<p2> a(rnd(0, 35));
@@ -69,7 +68,7 @@ int main() {
             p2 d = {db(rnd(-100, 100)), db(rnd(-100, 100))};
             if(d.x || d.y) dirs.push_back(d);
             if(n > 1) for(int i = 0; i < n; ++i) dirs.push_back(r90(a[(i + 1) % n] - a[i]));
-            for(p2 v : dirs) for(db s : {db(1), db(-1), ldexp(db(1), -200), ldexp(db(1), 200)}) verify(a, v * s);
+            for(p2 v : dirs) for(db s : {db(1), db(-1), ldexp(db(1), -40), ldexp(db(1), 40)}) verify(a, v * s);
             if(n) rotate(a.begin(), a.begin() + 1, a.end());
         }
         for(p2 &p : a) p += p2{ldexp(db(1), 40), -ldexp(db(1), 40)};
