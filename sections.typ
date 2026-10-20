@@ -102,6 +102,12 @@
 
 #zebraw(lang: false)[#raw(readcode("templates/图论/拟阵交.cpp"), lang: "cpp", block: true)]
 
+== 双极定向
+
+#include "templates/图论/双极定向.typ"
+
+#zebraw(lang: false)[#raw(readcode("templates/图论/双极定向.cpp"), lang: "cpp", block: true)]
+
 = 数学
 
 == Barret 约简
