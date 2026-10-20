@@ -4,13 +4,6 @@
 // 分治合并插值，O(m log² m)；所有输入在 [0,M)，m = |xs|。
 
 using poly = vector<int>;
-// t[k]=Π_{i=l..r}(x-xs[i])。
-static void _interp_build(poly *t, int k, int l, int r, const poly &xs) {
-    if(l == r) return void(t[k] = poly{(M - xs[l]) % M, 1});
-    int mid = (l + r) >> 1;
-    _interp_build(t, k + k, l, mid, xs), _interp_build(t, k + k + 1, mid + 1, r, xs);
-    t[k] = mul(t[k + k], t[k + k + 1]);
-}
 static poly _interp_rec(const poly *t, int k, int l, int r, const poly &w) {
     if(l == r) return poly{w[l]};
     int mid = (l + r) >> 1;
@@ -25,7 +18,7 @@ poly poly_interp(const poly &xs, const poly &ys) {
     int m = xs.size();
     if(!m) return poly();
     vector<poly> t(4 * m);
-    _interp_build(t.data(), 1, 0, m - 1, xs);
+    _eval_build(t.data(), 1, 0, m - 1, xs);
     poly dM(m);
     For(i, 1, m) dM[i - 1] = 1ll * t[1][i] * i % M;
     poly ev = poly_eval(dM, xs), w(m);

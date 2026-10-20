@@ -13,25 +13,19 @@ polys solve(const poly &f, const polys &g, int n, int m) {
         For(i, 0, m - 1) ans[i] = {i < (int)f.size() ? f[i] : 0};
         return ans;
     }
-    int d = 2 * n - 1;
-    int s = m * d + n;
-    poly a(s);
-    poly b(s);
-    For(i, 0, m)
-        For(j, 0, n - 1) {
+    int d = 2 * n - 1, s = m * d + n;
+    poly a(s), b(s);
+    For(i, 0, m) For(j, 0, n - 1) {
         a[i * d + j] = g[i][j];
         b[i * d + j] = (j & 1) && g[i][j] ? M - g[i][j] : g[i][j];
     }
     a = mul(move(a), b);
-    int u = (n + 1) / 2;
-    int v = 2 * m;
+    int u = (n + 1) / 2, v = 2 * m;
     polys h(v + 1, poly(u));
-    For(i, 0, v)
-        For(j, 0, u - 1) h[i][j] = a[i * d + 2 * j];
+    For(i, 0, v) For(j, 0, u - 1) h[i][j] = a[i * d + 2 * j];
     auto p = solve(f, h, u, v);
     poly c((v - 1) * d + n);
-    For(i, 0, v - 1)
-        For(j, 0, u - 1) c[i * d + 2 * j] = p[v - 1 - i][j];
+    For(i, 0, v - 1) For(j, 0, u - 1) c[i * d + 2 * j] = p[v - 1 - i][j];
     c = mul(move(c), move(b));
     For(i, 0, m - 1) {
         ans[i].resize(n);

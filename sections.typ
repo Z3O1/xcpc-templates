@@ -26,9 +26,31 @@
 
 = 字符串
 
+== Manacher
+
+#zebraw(lang: false)[#raw(readcode("templates/字符串/manacher.cpp"), lang: "cpp", block: true)]
+
+== Z 函数
+
+#zebraw(lang: false)[#raw(readcode("templates/字符串/zfunc.cpp"), lang: "cpp", block: true)]
+
 == 最小表示法
 
 #zebraw(lang: false)[#raw(readcode("templates/字符串/最小表示法.cpp"), lang: "cpp", block: true)]
+
+== SAM
+
+#zebraw(lang: false)[#raw(readcode("templates/字符串/sam.cpp"), lang: "cpp", block: true)]
+
+== SA
+
+#zebraw(lang: false)[#raw(readcode("templates/字符串/sa.cpp"), lang: "cpp", block: true)]
+
+== 广义 PAM
+
+#include "templates/字符串/pam.typ"
+
+#zebraw(lang: false)[#raw(readcode("templates/字符串/pam.cpp"), lang: "cpp", block: true)]
 
 = 数据结构
 
@@ -165,6 +187,10 @@
 == Pollard-Rho 分解质因数
 
 #zebraw(lang: false)[#raw(readcode("templates/数论/Pollard-Rho.cpp"), lang: "cpp", block: true)]
+
+== 扩展欧几里得
+
+#zebraw(lang: false)[#raw(readcode("templates/数论/exgcd.cpp"), lang: "cpp", block: true)]
 
 == 最小模线性值
 

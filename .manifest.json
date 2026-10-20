@@ -13,12 +13,12 @@
   {
    "key": "字符串/manacher.cpp",
    "title": "Manacher",
-   "hidden": true
+   "hidden": false
   },
   {
    "key": "字符串/zfunc.cpp",
    "title": "Z 函数",
-   "hidden": true
+   "hidden": false
   },
   {
    "key": "字符串/最小表示法.cpp",
@@ -28,17 +28,17 @@
   {
    "key": "字符串/sam.cpp",
    "title": "SAM",
-   "hidden": true
+   "hidden": false
   },
   {
    "key": "字符串/sa.cpp",
    "title": "SA",
-   "hidden": true
+   "hidden": false
   },
   {
    "key": "字符串/pam.cpp",
    "title": "广义 PAM",
-   "hidden": true
+   "hidden": false
   },
   {
    "key": "数学/barrett.cpp",
@@ -178,7 +178,7 @@
   {
    "key": "数论/exgcd.cpp",
    "title": "扩展欧几里得",
-   "hidden": true
+   "hidden": false
   },
   {
    "key": "数论/minmod.cpp",
