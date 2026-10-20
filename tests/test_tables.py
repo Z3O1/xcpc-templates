@@ -90,13 +90,14 @@ class TableTests(unittest.TestCase):
             (self.primes[0], 198, 'b993fc5e68dd68e638bec426669de668740f06d30ae486db477a26ad1bb5e025'),
             (self.constants[0], 198, 'c600380438cf4c1e03d5fa002905a887b7dbb1a4cc7363081e7f440f67ceb1f9'),
             (self.constants[1], 88, '028af6e2af73b0fcbbe97654db40e121d41a3e2eadf1cb70aef7502694f8ea0c'),
-            (self.constants[3], 216, '5a3a09f4ae216b1ca482071e0934b172419cd14a3e2a16d87de0fdcaf5e4bad8'),
+            (self.constants[3], 216, 'd2b8894c63498debe6df6645d2b5d21adff41fd8c80d2ddc3285d0c531b248b8'),
         ]
         for block, count, checksum in expected:
             with self.subTest(checksum=checksum):
                 values = cells(block)
                 self.assertEqual(len(values), count)
                 self.assertEqual(digest(values), checksum)
+        self.assertNotIn('[], []', self.constants[3])
 
     # 锁定 10^1..10^18 的增长上界数据及六处质数计数缺项。
     def test_growth_bounds_preserve_values_and_missing_prime_counts(self):

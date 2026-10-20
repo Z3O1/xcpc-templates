@@ -258,7 +258,29 @@ def reconcile(data: dict, files: dict, intros: dict) -> dict:
 
 PREAMBLE = r'''// 由 gen.py 自动生成 —— 请勿手动修改; 改动 templates/ 后运行: ./build.sh
 // 读取模板文件: 只丢掉第 1 个非空行(标题行), 其余内容含说明注释一律渲染
-#import "@preview/zebraw:0.6.3": zebraw
+#import "@preview/zebraw:0.6.3": zebraw as _zebraw
+#let linehash(line) = {
+  let s = line.replace(regex("//.*"), "").replace(regex("\\s+"), "")
+  if s == "" { return hide("00") }
+  let h = 0
+  for b in array(bytes(s)) { h = calc.rem(h * 131 + b, 256) }
+  let hex = str(h, base: 16)
+  if hex.len() < 2 { "0" + hex } else { hex }
+}
+#let zebraw(lang: false, body) = {
+  show raw.where(block: true): it => {
+    let lines = it.text.split("\n")
+    let nums = range(1, lines.len() + 1).map(str)
+    let hashes = lines.map(linehash)
+    _zebraw(
+      lang: lang,
+      numbering: (nums, hashes),
+      numbering-font-args: (font: "DejaVu Sans Mono", size: 7pt, fill: luma(110)),
+      it,
+    )
+  }
+  body
+}
 #let readcode(path) = {
   let lines = read(path).split("\n")
   let i = 0
