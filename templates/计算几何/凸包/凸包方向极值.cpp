@@ -8,10 +8,6 @@ namespace Geo {
 int convex_extreme(const vector<p2> &a, p2 d) {
     int n = a.size();
     if(!n) return -1;
-    int e;
-    frexp(max(abs(d.x), abs(d.y)), &e);
-    d = {ldexp(d.x, -e), ldexp(d.y, -e)};
-
     auto cmp = [&](int i, int j) {
         db v = dot(d, a[j % n] - a[i % n]);
         return (v > 0) - (v < 0);

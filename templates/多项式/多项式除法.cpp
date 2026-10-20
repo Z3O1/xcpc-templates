@@ -10,14 +10,11 @@ pair<poly, poly> poly_divmod(const poly &f, const poly &g) {
     int n = f.size(), m = g.size();
     if(n < m) return {poly(), f};
     int k = n - m + 1;
-    poly rf(f.rbegin(), f.rend()), rg(g.rbegin(), g.rend());
-    poly q = mul(rf, poly_inv(rg, k));
-    q.resize(k);
-    reverse(q.begin(), q.end());
+    poly q = mul(poly(f.rbegin(), f.rend()), poly_inv(poly(g.rbegin(), g.rend()), k));
+    q.resize(k), reverse(q.begin(), q.end());
     poly r = mul(q, g);
-    r.resize(n);
-    For(i, 0, n - 1) r[i] = (f[i] - r[i] + M) % M;
     r.resize(m - 1);
+    For(i, 0, m - 2) r[i] = (f[i] - r[i] + M) % M;
     return {q, r};
 }
 poly poly_mod(const poly &f, const poly &g) { return poly_divmod(f, g).second; }

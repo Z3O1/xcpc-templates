@@ -24,13 +24,9 @@ pair<vector<T>, vector<int>> Wilber(int n, Q &&que, const T Z = numeric_limits<T
         auto q2 = [&](int x, int y) { return x > y ? f[y + c] + que(y + c, x + c) : Z; };
         auto [h, hp] = SMAWK<T>(p - c, p - c, q2);
         int nc = p;
-        For(i, c + 1, p) {
-            if(f[i] > h[i - c]) {
-                f[i] = h[i - c];
-                fp[i] = hp[i - c] + c;
-                nc = i;
-                break;
-            }
+        For(i, c + 1, p) if(f[i] > h[i - c]) {
+            f[i] = h[i - c], fp[i] = hp[i - c] + c, nc = i;
+            break;
         }
         c = nc;
     }

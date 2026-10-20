@@ -30,16 +30,9 @@ p2 operator-=(p2 &a, p2 b) { return a = a - b; }
 p2 operator/=(p2 &a, db k) { return a = a / k; }
 
 db dis2(p2 a) { return dot(a, a); }
-// 两点距离写 dis(a-b)。
 db dis(p2 a) { return sqrt(dis2(a)); }
-// 单位化，要求非零向量；先除最大分量，避免平方上下溢。
-p2 unit(p2 a) {
-    a /= max(abs(a.x), abs(a.y));
-    return a / sqrt(dis2(a));
-}
-// 逆时针旋转 90 度。
+p2 unit(p2 a) { return a / dis(a); }
 p2 r90(p2 a) { return {-a.y, a.x}; }
-// 绕原点逆时针旋转 t 弧度。
 p2 rot(p2 a, db t) {
     db c = cos(t), s = sin(t);
     return {a.x * c - a.y * s, a.x * s + a.y * c};

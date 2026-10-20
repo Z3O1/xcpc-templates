@@ -28,13 +28,8 @@ bool bipolar(int n, int s, int t) {
     suf[s] = t, pre[t] = s;
     For(i, 3, n) {
         int v = inv[i], u = p[v];
-        if(!sgn[inv[low[v]]]) {
-            pre[v] = pre[u], suf[v] = u;
-            suf[pre[v]] = pre[u] = v;
-        } else {
-            pre[v] = u, suf[v] = suf[u];
-            pre[suf[v]] = suf[u] = v;
-        }
+        if(!sgn[inv[low[v]]]) pre[v] = pre[u], suf[v] = u, suf[pre[v]] = pre[u] = v;
+        else pre[v] = u, suf[v] = suf[u], pre[suf[v]] = suf[u] = v;
         sgn[u] = !sgn[inv[low[v]]];
     }
     for(int x = s, i = 1; i <= n; x = suf[x], ++i) topo[i] = x;

@@ -28,7 +28,8 @@ template <class T> vector<run_t> get_runs(const T &s) {
     For(i, 0, n - 1) pw[i + 1] = pw[i] * B, h[i + 1] = h[i] * B + ull(s[i]) + 998244353ULL;
     auto H = [&](int l, int r) { return h[r] - h[l] * pw[r - l]; };
     auto lcp = [&](int x, int y) {
-        int l = 0, r = n - max(x, y);
+        if(x >= n || y >= n || s[x] != s[y]) return 0;
+        int l = 1, r = n - max(x, y);
         while(l < r) {
             int m = (l + r + 1) >> 1;
             if(H(x, x + m) == H(y, y + m)) l = m;
@@ -37,7 +38,8 @@ template <class T> vector<run_t> get_runs(const T &s) {
         return l;
     };
     auto lcs = [&](int x, int y) {
-        int l = 0, r = min(x, y) + 1;
+        if(x < 0 || y < 0 || s[x] != s[y]) return 0;
+        int l = 1, r = min(x, y) + 1;
         while(l < r) {
             int m = (l + r + 1) >> 1;
             if(H(x + 1 - m, x + 1) == H(y + 1 - m, y + 1)) l = m;
@@ -46,15 +48,16 @@ template <class T> vector<run_t> get_runs(const T &s) {
         return l;
     };
     vector<run_t> ans;
+    vector<int> st;
     For(o, 0, 1) {
-        vector<int> st{n};
+        st.assign(1, n);
         rFor(i, n - 1, 0) {
             while(st.size() > 1) {
                 int j = st.back(), l = lcp(i, j);
                 if((j + l < n && s[i + l] < s[j + l]) != o) break;
                 st.pop_back();
             }
-            int j = st.back(), p = j - i, L = i - (i ? lcs(i - 1, j - 1) : 0), R = j + lcp(i, j) - 1;
+            int j = st.back(), p = j - i, L = i - lcs(i - 1, j - 1), R = j + lcp(i, j) - 1;
             if(R - L + 1 >= 2 * p) ans.push_back({L, R, p});
             st.push_back(i);
         }

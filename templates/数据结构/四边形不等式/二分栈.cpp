@@ -6,9 +6,7 @@
 struct nd {
     ll x;
     int c;
-    bool operator<(const nd b) const {
-        return x < b.x || (x == b.x && c < b.c);
-    }
+    bool operator<(const nd b) const { return x != b.x ? x < b.x : c < b.c; }
     nd operator+(const nd b) const { return {x + b.x, c + b.c}; }
 };
 // calc(l,r) 是 [l,r] 代价，须满足决策单调；中间代价须在 ll 内。

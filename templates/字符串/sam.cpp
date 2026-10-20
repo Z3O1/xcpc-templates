@@ -1,19 +1,13 @@
 // ins(x): 字符串 · SAM 后缀自动机
 
 // 依赖 全局 N。
-// 逐字符在线构建 SAM，字符集固定 26；出现次数须在调用方汇总。
-
+// 在线构建 SAM（x∈[0,25]）；新串须清空旧结点并置 lst=tot=1，克隆结点 cnt=0。
 int lst = 1, tot = 1, t[N][26], f[N], l[N], cnt[N];
-// 追加字符 x∈[0,25]，至多新增两结点；cnt[c]=1，克隆 cnt=0。
-// 新串须清空旧结点数组并置 lst=tot=1；连续调用则视为同一串。
 void ins(int x) {
     int c = ++tot, p = exchange(lst, c);
     l[c] = l[p] + 1, cnt[c] = 1;
     while(p && !t[p][x]) t[p][x] = c, p = f[p];
-    if(!p) {
-        f[c] = 1;
-        return;
-    }
+    if(!p) return f[c] = 1, void();
     int q = t[p][x];
     if(l[p] + 1 == l[q]) f[c] = q;
     else {

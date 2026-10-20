@@ -5,8 +5,8 @@
 namespace Geo {
 namespace Delaunay {
 
-vector<p2> pts;  // 去重后的点,按 (x, y) 精确升序
-struct Tri { int v[3], f[3], ver; };  // v 逆时针;f[i] 是顶点 i 对边的邻接三角形(-1 表示凸包边)
+vector<p2> pts;
+struct Tri { int v[3], f[3], ver; };
 vector<Tri> tri;
 vector<char> live;
 vector<int> fre;
@@ -15,23 +15,18 @@ int verc;
 int nw() {
     if(!fre.empty()) {
         int t = fre.back();
-        fre.pop_back(), live[t] = 1;
-        return t;
+        return fre.pop_back(), live[t] = 1, t;
     }
-    tri.push_back(Tri()), live.push_back(1);
-    return (int) tri.size() - 1;
+    return tri.push_back(Tri()), live.push_back(1), (int) tri.size() - 1;
 }
 void rm(int t) { live[t] = 0, fre.push_back(t); }
 bool lt(p2 u, p2 v) { return u.x != v.x ? u.x < v.x : u.y < v.y; }
-// pts 下标对应的三点转向，与凸包共用容差。
 int ori(int a, int b, int c) { return turnop(pts[a], pts[b], pts[c]); }
-// 按相对容差判断 p 是否在外接圆内；要求 a,b,c 按逆时针排列。
 int ill(int p, int a, int b, int c) {
     p2 A = pts[a] - pts[p], B = pts[b] - pts[p], C = pts[c] - pts[p];
     db t1 = dis2(A) * B.det(C), t2 = dis2(B) * C.det(A), t3 = dis2(C) * A.det(B);
     return t1 + t2 + t3 > 1e-12L * (abs(t1) + abs(t2) + abs(t3));
 }
-// 返回三角形 t 中有向边 (a,b) 的编号 [0,2]，不存在返回 -1。
 int finde(int t, int a, int b) {
     for(int i = 0; i < 3; ++i) if(tri[t].v[(i + 1) % 3] == a && tri[t].v[(i + 2) % 3] == b) return i;
     return -1;
@@ -40,7 +35,6 @@ void lnk(int t, int i, int g) {
     tri[t].f[i] = g;
     if(g >= 0) tri[g].f[finde(g, tri[t].v[(i + 2) % 3], tri[t].v[(i + 1) % 3])] = t;
 }
-// 创建逆时针三角形并返回编号；要求 a,b,c 非共线，必要时交换 b,c。
 int mk(int a, int b, int c) {
     if(ori(a, b, c) < 0) swap(b, c);
     int t = nw();
@@ -48,20 +42,17 @@ int mk(int a, int b, int c) {
     tri[t].f[0] = tri[t].f[1] = tri[t].f[2] = -1, tri[t].ver = ++verc;
     return t;
 }
-typedef array<int, 3> Tst;  // 待检查的边:(三角形, 该边对面顶点在三角形里的下标, 三角形版本号)
-// 消耗待检边栈并翻转非法边，更新邻接；凸包边不翻，过期版本跳过。
+typedef array<int, 3> Tst;
 void flipall(vector<Tst> &st) {
     while(!st.empty()) {
-        Tst e = st.back();
-        st.pop_back();
+        Tst e = st.back(); st.pop_back();
         int t = e[0], i = e[1];
         if(!live[t] || tri[t].ver != e[2]) continue;
         int a = tri[t].v[(i + 1) % 3], b = tri[t].v[(i + 2) % 3], g = tri[t].f[i];
         if(g < 0) continue;
         int k = finde(g, b, a), q = tri[g].v[k];
         if(!ill(q, tri[t].v[0], tri[t].v[1], tri[t].v[2])) continue;
-        int p = tri[t].v[i];
-        int X = tri[t].f[(i + 1) % 3], Y = tri[t].f[(i + 2) % 3];
+        int p = tri[t].v[i], X = tri[t].f[(i + 1) % 3], Y = tri[t].f[(i + 2) % 3];
         int W = tri[g].f[(k + 1) % 3], Z = tri[g].f[(k + 2) % 3];
         tri[t].v[0] = p, tri[t].v[1] = a, tri[t].v[2] = q;
         tri[g].v[0] = p, tri[g].v[1] = q, tri[g].v[2] = b;

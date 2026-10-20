@@ -4,8 +4,7 @@
 // 凸包、旋转卡壳直径与半平面裁剪；顶点不重复首点，size() 须在 int 内。
 namespace Geo {
 
-// a 原地排序、精确去重，返回逆时针凸包（不重复首点）；nos=1 留边上共线点，默认只留端点。
-// O(n log n)，转向用最小高eps；空/单点照常返回，全共线时默认留两端点，nos=1 按字典序各输出一次。
+// a 原地排序去重，返回逆时针凸包；nos=1 留边上共线点，默认只留端点。
 vector<p2> convex_hull(vector<p2> &a, bool nos = false) {
     sort(a.begin(), a.end());
     a.erase(unique(a.begin(), a.end(), [](p2 x, p2 y) { return x.x == y.x && x.y == y.y; }), a.end());
@@ -28,13 +27,10 @@ vector<p2> convex_hull(vector<p2> &a, bool nos = false) {
     }
     return b;
 }
-
-// 逆时针凸多边形的直径平方，O(n)，不修改输入；n<=1 返回 0，线段也支持。
-// 全共线须按沿线顺序给点，相邻重复点须先去掉。
+// 逆时针凸多边形的直径平方，O(n)。
 db convex_diameter(const vector<p2> &a) {
-    int n = a.size();
+    int n = a.size(), is = 0, js = 0;
     if(n <= 1) return 0;
-    int is = 0, js = 0;
     For(k, 1, n - 1) {
         if(a[k] < a[is]) is = k;
         if(a[js] < a[k]) js = k;
@@ -48,9 +44,7 @@ db convex_diameter(const vector<p2> &a) {
     } while(i != is || j != js);
     return ret;
 }
-
-// 用非零有向直线 q 裁凸多边形，保留左侧及边界；O(n)，不修改输入、保持旋向。
-// 允许空/点/线段，结果可能有重复相邻点。
+// 用有向直线 q 裁凸多边形，保留左侧及边界；O(n)。
 vector<p2> convex_cut(const vector<p2> &a, const seg &q) {
     int n = a.size();
     vector<p2> ret;

@@ -1,15 +1,11 @@
 // init()/solveg()/f()/solve(): 数论 · Min_25 筛
 
-// 求积性函数在 1..n 的前缀和，1 <= n <= 1e10；solve 可重复调用，init 只需一次。
+// 求积性函数在 1..n 的前缀和，1 <= n <= 1e10；solve 可重复调用。
 constexpr int i6 = (M + 1) / 6;
-// 模 M 减法；要求 0 <= a,b < M。
-void sub(int &a, int b) {
-    a -= b;
-    a < 0 && (a += M);
-}
+void sub(int &a, int b) { a -= b, a < 0 && (a += M); }
 const int N = 1e5 + 10;
-int p[N], pc, p2[N];
-int s1[N], s2[N], s[N];
+int p[N], pc, p2[N], s1[N], s2[N], s[N], g1[N * 2], g2[N * 2];
+ll lim, n0;
 void init() {
     if(pc) return;
     static const int n = 1e5;
@@ -26,21 +22,13 @@ void init() {
     p[pc + 1] = n + 1;
     For(i, 1, pc) {
         p2[i] = 1ll * p[i] * p[i] % M;
-        s1[i] = (s1[i - 1] + p[i]) % M;
-        s2[i] = (s2[i - 1] + p2[i]) % M;
+        s1[i] = (s1[i - 1] + p[i]) % M, s2[i] = (s2[i - 1] + p2[i]) % M;
         s[i] = (s2[i] - s1[i] + M) % M;
     }
 }
-ll lim, n0;
-int g1[N * 2], g2[N * 2];
-// 映射 n0/i 到数组下标；要求已调用 solveg 设置 n0 与 lim。
-int id(ll n) {
-    return n <= lim ? n : n0 / n + lim;
-}
-// 预处理 g 表；要求 1 <= _n0 <= 1e10 且 init 已完成。
+int id(ll n) { return n <= lim ? n : n0 / n + lim; }
 void solveg(ll _n0) {
-    n0 = _n0;
-    lim = sqrt(n0);
+    n0 = _n0, lim = sqrt(n0);
     bool fl = n0 / lim == lim;
     auto put = [&](ll k, int slot) {
         k %= M;
@@ -59,14 +47,8 @@ void solveg(ll _n0) {
         rFor(j, lim, min(lim + 1, y)) doit(i, j, j / x);
     }
 }
-// 查询素数贡献前缀；要求 solveg(n0) 后且 n 是 n0 的除法块取值。
 int g(ll n) { return (g2[id(n)] - g1[id(n)] + M) % M; }
-// 素数幂处的函数值；要求 n >= 1。
-ll func(ll n) {
-    n %= M;
-    return n * (n - 1) % M;
-}
-// 递归计算剩余贡献；要求 solveg(n) 已建表且 p[m] 以下素数已剔除。
+ll func(ll n) { return n %= M, n * (n - 1) % M; }
 int f(ll n, int m) {
     if(p[m] > n) return 0;
     ll ans = g(n) - s[m] + M;
@@ -77,9 +59,4 @@ int f(ll n, int m) {
     }
     return ans % M;
 }
-// 求 1 + sum_{2<=i<=n} F(i)。
-ll solve(ll n) {
-    init();
-    solveg(n);
-    return (f(n, 0) + 1) % M;
-}
+ll solve(ll n) { return init(), solveg(n), (f(n, 0) + 1) % M; }

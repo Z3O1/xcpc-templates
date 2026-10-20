@@ -9,9 +9,6 @@ namespace Geo {
 vector<p2> convex_line(const vector<p2> &a, p2 o, p2 d) {
     int n = a.size();
     if(!n) return {};
-    int e;
-    frexp(max(abs(d.x), abs(d.y)), &e);
-    d = {ldexp(d.x, -e), ldexp(d.y, -e)};
     auto side = [&](int i) { return d.det(a[i] - o); };
     int hi = convex_extreme(a, r90(d));
     int lo = convex_extreme(a, r90(d) * -1);

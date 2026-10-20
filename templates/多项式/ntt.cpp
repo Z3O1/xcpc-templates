@@ -43,15 +43,9 @@ void NTT(poly &a, int k) {
 // 返回普通卷积的 |a|+|b|-1 项，任一为空返回空；系数在 [0,M)，变换长度不超过 2^23。
 poly mul(poly a, poly b) {
     if(a.empty() || b.empty()) return {};
-    int len = a.size() + b.size() - 1;
-    int n = 1;
+    int len = a.size() + b.size() - 1, n = 1;
     while(n < len) n <<= 1;
-    a.resize(n);
-    b.resize(n);
-    NTT(a, 1);
-    NTT(b, 1);
+    a.resize(n), b.resize(n), NTT(a, 1), NTT(b, 1);
     For(i, 0, n - 1) a[i] = (ll)a[i] * b[i] % M;
-    NTT(a, -1);
-    a.resize(len);
-    return a;
+    return NTT(a, -1), a.resize(len), a;
 }

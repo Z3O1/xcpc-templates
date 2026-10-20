@@ -25,20 +25,16 @@ using pii = array<int, 2>;
 using pll = array<ll, 2>;
 // 普通多项式与逆元统一用这个模数；系数保持 [0, M)。
 constexpr int M = 998244353;
-// 返回 a^b mod M；要求 a,b >= 0，b=0 返回 1。
 ll qpow(ll a, ll b) {
     ll s = 1;
-    a %= M;
-    for(; b; b >>= 1, a = a * a % M)
+    for(a %= M; b; b >>= 1, a = a * a % M)
         if(b & 1) s = s * a % M;
     return s;
 }
-// 返回 a^b mod p；要求 a,b >= 0、1 <= p <= 3037000500（ll 模乘安全界）。
-// b=0 返回 1（含 p=1）；模数不是 M 时用（如原根/BSGS 的输入 p）。
+// 模 p 幂；要求 1 <= p <= 3037000500（ll 模乘安全界）。
 ll qpow(ll a, ll b, ll p) {
     ll s = 1;
-    a %= p;
-    for(; b; b >>= 1, a = a * a % p)
+    for(a %= p; b; b >>= 1, a = a * a % p)
         if(b & 1) s = s * a % p;
     return s;
 }

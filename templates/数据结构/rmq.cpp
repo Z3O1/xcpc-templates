@@ -50,12 +50,8 @@ struct rmq_t {
     T que(int l, int r) {
         l -= dt, r -= dt;
         int il = l / B, ir = r / B;
-        if(il == ir) {
-            return _que_bitc(il, l, r);
-        } else {
-            T s = max(pre[l], suf[r], cmp());
-            if(il + 1 < ir) s = max(s, _que(il + 1, ir - 1), cmp());
-            return s;
-        }
+        if(il == ir) return _que_bitc(il, l, r);
+        T s = max(pre[l], suf[r], cmp());
+        return il + 1 < ir ? max(s, _que(il + 1, ir - 1), cmp()) : s;
     }
 };

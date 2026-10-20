@@ -28,7 +28,6 @@ mat3 transpose(const mat3 &m) {
         for(int j = 0; j < 3; ++j) r.a[i][j] = m.a[j][i];
     return r;
 }
-// 绕过原点、方向为 axis 的轴作右手旋转。
 p3 rot(p3 v, p3 axis, db ang) {
     p3 k = unit(axis), c = cross(k, v), d = k * dot(k, v);
     return v * cos(ang) + c * sin(ang) + d * (1 - cos(ang));
@@ -37,28 +36,17 @@ p3 rot(p3 v, p3 axis, db ang, p3 o) { return o + rot(v - o, axis, ang); }
 mat3 rotmat(p3 axis, db ang) {
     p3 k = unit(axis);
     db c = cos(ang), s = sin(ang), t = 1 - c;
-    mat3 m{};
-    m.a[0][0] = t * k.x * k.x + c;
-    m.a[0][1] = t * k.x * k.y - s * k.z;
-    m.a[0][2] = t * k.x * k.z + s * k.y;
-    m.a[1][0] = t * k.x * k.y + s * k.z;
-    m.a[1][1] = t * k.y * k.y + c;
-    m.a[1][2] = t * k.y * k.z - s * k.x;
-    m.a[2][0] = t * k.x * k.z - s * k.y;
-    m.a[2][1] = t * k.y * k.z + s * k.x;
-    m.a[2][2] = t * k.z * k.z + c;
-    return m;
+    return {{{t * k.x * k.x + c, t * k.x * k.y - s * k.z, t * k.x * k.z + s * k.y},
+             {t * k.x * k.y + s * k.z, t * k.y * k.y + c, t * k.y * k.z - s * k.x},
+             {t * k.x * k.z - s * k.y, t * k.y * k.z + s * k.x, t * k.z * k.z + c}}};
 }
-// 返回右手单位正交基，w 与 n 同向。
 void basis(p3 n, p3 &u, p3 &v, p3 &w) {
     w = unit(n), u = unit(perp(w)), v = cross(w, u);
 }
-// 世界坐标转局部坐标；以 o 为原点，u/v/w 须为单位正交基。
 p3 tolocal(p3 x, p3 o, p3 u, p3 v, p3 w) {
     p3 d = x - o;
     return {dot(u, d), dot(v, d), dot(w, d)};
 }
-// 局部坐标转世界坐标，与 tolocal 使用同一原点和基。
 p3 toworld(p3 l, p3 o, p3 u, p3 v, p3 w) { return o + u * l.x + v * l.y + w * l.z; }
 
 }  // namespace Geo
