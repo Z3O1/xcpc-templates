@@ -519,6 +519,21 @@
    "key": "图论/双极定向.cpp",
    "title": "双极定向",
    "hidden": false
+  },
+  {
+   "key": "图论/二分图最大权匹配.cpp",
+   "title": "二分图最大权匹配",
+   "hidden": false
+  },
+  {
+   "key": "字符串/Lyndon与Runs.cpp",
+   "title": "Lyndon 分解与 Runs",
+   "hidden": false
+  },
+  {
+   "key": "数学/单纯形.cpp",
+   "title": "单纯形法线性规划",
+   "hidden": false
   }
  ]
 }

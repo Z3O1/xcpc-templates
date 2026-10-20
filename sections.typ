@@ -52,6 +52,10 @@
 
 #zebraw(lang: false)[#raw(readcode("templates/字符串/pam.cpp"), lang: "cpp", block: true)]
 
+== Lyndon 分解与 Runs
+
+#zebraw(lang: false)[#raw(readcode("templates/字符串/Lyndon与Runs.cpp"), lang: "cpp", block: true)]
+
 = 数据结构
 
 == LCT
@@ -130,6 +134,10 @@
 
 #zebraw(lang: false)[#raw(readcode("templates/图论/双极定向.cpp"), lang: "cpp", block: true)]
 
+== 二分图最大权匹配
+
+#zebraw(lang: false)[#raw(readcode("templates/图论/二分图最大权匹配.cpp"), lang: "cpp", block: true)]
+
 = 数学
 
 == Barret 约简
@@ -161,6 +169,10 @@
 == 杨表
 
 #include "templates/数学/杨表.typ"
+
+== 单纯形法线性规划
+
+#zebraw(lang: false)[#raw(readcode("templates/数学/单纯形.cpp"), lang: "cpp", block: true)]
 
 = 数论
 
