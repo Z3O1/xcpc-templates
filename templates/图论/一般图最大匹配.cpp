@@ -3,12 +3,12 @@
 // 依赖 全局 N、n 与邻接表 t[]。
 // 带花树增广：每个未匹配点调一次 getmat()，即得最大匹配。
 
-int n, fa[N];
+int n, fa[N], mat[N];
 vector<int> t[N];
 int fd(int u) { return fa[u] == u ? u : fa[u] = fd(fa[u]); }
-// 匹配保存在函数内静态 mat，仅支持单图构建；外层要对每个未匹配点各谓一次。
+// mat[i] 为匹配点，0 表示未匹配；新图先清空 mat[0..n]，再 For(i,1,n) if(!mat[i]) getmat(i)。
 void getmat(int rt) {
-    static int vis[N], mat[N], pr[N];
+    static int vis[N], pr[N];
     For(i, 1, n) vis[i] = pr[i] = 0, fa[i] = i;
     queue<int> q;
     auto lca = [](int x, int y) {

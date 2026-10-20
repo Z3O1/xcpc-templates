@@ -1,4 +1,4 @@
-// 一般图最大匹配(带花树)自测
+// 一般图最大匹配 自测:公开 mat 接口/同进程多图/双暴力对拍/奇环回归/死循环看门狗
 //
 // 覆盖:
 //   1) 与两种**独立暴力**对拍最大匹配大小:
@@ -26,12 +26,7 @@
 //   3-4,3-5,4-5)的最大匹配是 2 而不是 3 —— 每个三角形只能取 1 条边(取两条必有公共端点),
 //   暴力枚举确认可取 {(1,2),(3,4)}。
 //
-// 说明: 模板把 mat/vis/pr 声明成 getmat() 的函数内 static, 外部拿不到。
-//       本 check 用 Itanium ABI 的局部 static 符号名(_ZZ6getmatiE3mat)把 mat[] 别名过来
-//       **只读观测**(不改模板一个字符、不改语义), 开头会自检别名是否真的对得上:
-//       对得上 → 正常判定; 对不上(例如编译器/ABI 变了)→ 打印 [WARN] 并退化成
-//       "只测死循环 + 子进程自报大小"。若连符号名都不存在, 则链接直接失败
-//       (check.sh 报 COMPILE FAIL, 一眼可见, 比静默测错强)。
+// 直接使用公开的 mat[] 判断未匹配点并读取结果；同进程切换点数和图，按契约清空 mat。
 //
 // 所有已记录错误默认也必须失败,不再依赖 XCPC_CHECK_STRICT。
 #include "../_check_base.hpp"
@@ -44,24 +39,12 @@ static const int N = 1005;   // 模板依赖 house header 的 N(点数上界), c
 
 static const int CHK_MAXN = 24;   // check 自己用到的最大点数
 
-// 观测窗口: getmat(int) 的函数内 static `mat[]`(Itanium ABI 名 _ZZ6getmatiE3mat)
-extern int MAT[] asm("_ZZ6getmatiE3mat");
-
 static const int WATCHDOG_MS = 60;   // 单个用例的看门狗上限(正确实现跑 n<=10 只花微秒)
 // 打印回归缺陷说明；要求 fmt 与实参匹配；仅输出诊断不终止。
 static void bug(const char *fmt, ...) {
     va_list ap;
     va_start(ap, fmt);
     printf("  [BUG] ");
-    vprintf(fmt, ap);
-    va_end(ap);
-    fflush(stdout);
-}
-// 打印非致命观测警告；要求 fmt 与实参匹配；仅输出诊断不终止。
-static void warn(const char *fmt, ...) {
-    va_list ap;
-    va_start(ap, fmt);
-    printf("  [WARN] ");
     vprintf(fmt, ap);
     va_end(ap);
     fflush(stdout);
@@ -90,7 +73,14 @@ struct match_out {
     bool polluted = false;        // 是否观测到 mat[0] != 0(已知 bug 的指纹)
 };
 
-// 在子进程里跑标准驱动; done = false 表示挂死/异常
+// 按公开契约切换到一张新图，清空旧邻接表及新图使用的匹配数组。
+static void build_graph(int count, const vector<array<int, 2>> &es) {
+    For(i, 0, max(n, count)) t[i].clear();
+    n = count;
+    fill(mat, mat + n + 1, 0);
+    for(auto &e : es) t[e[0]].push_back(e[1]), t[e[1]].push_back(e[0]);
+}
+
 // 隔离运行模板标准驱动；要求 n<=CHK_MAXN；返回匹配、轨迹和是否超时。
 static match_out run_match(int n, const vector<array<int, 2>> &es) {
     match_out out;
@@ -99,25 +89,22 @@ static match_out run_match(int n, const vector<array<int, 2>> &es) {
     pid_t pid = fork();
     if(pid == 0) {
         close(fd[0]);
-        ::n = n;
-        For(i, 1, n) t[i].clear();
-        for(int i = 0; i < n + 2; ++i) MAT[i] = 0;
-        for(auto &e : es) t[e[0]].push_back(e[1]), t[e[1]].push_back(e[0]);
+        build_graph(n, es);
         rec r{};
-        For(i, 1, n) if(!MAT[i]) {
-            r = rec{}, r.tag = 1, r.step = i, r.m0 = MAT[0];
+        For(i, 1, n) if(!mat[i]) {
+            r = rec{}, r.tag = 1, r.step = i, r.m0 = mat[0];
             ssize_t w = write(fd[1], &r, sizeof r);
             (void) w;
             getmat(i);
-            r = rec{}, r.tag = 0, r.step = i, r.m0 = MAT[0];
-            For(j, 1, n) if(MAT[j] > j) ++r.msz;
+            r = rec{}, r.tag = 0, r.step = i, r.m0 = mat[0];
+            For(j, 1, n) if(mat[j] > j) ++r.msz;
             w = write(fd[1], &r, sizeof r);
             (void) w;
         }
         r = rec{}, r.tag = 2, r.msz = 0;
         For(i, 1, n) {
-            r.mm[i] = MAT[i];
-            if(MAT[i] > i && MAT[i] <= n) ++r.msz;
+            r.mm[i] = mat[i];
+            if(mat[i] > i && mat[i] <= n) ++r.msz;
         }
         ssize_t w = write(fd[1], &r, sizeof r);
         (void) w;
@@ -275,22 +262,43 @@ static verdict check_case(int n, const vector<array<int, 2>> &es) {
     return v;
 }
 
+// 同进程使用普通数组接口，不依赖符号别名或 fork 清零；与子集 DP 独立对拍。
+static void check_public_api() {
+    For(rep, 1, 1000) {
+        int count = rep <= 4 ? array<int, 4>{8, 1, 0, 12}[rep - 1] : rnd(0, 12);
+        vector<array<int, 2>> es;
+        For(u, 1, count) For(v, u + 1, count) if(rnd(0, 1)) es.push_back({u, v});
+        build_graph(count, es);
+        For(i, 1, n) if(!mat[i]) getmat(i);
+        int got = 0, want = brute_dp(n, es);
+        bool valid = mat[0] == 0;
+        For(i, 1, n) if(mat[i]) {
+            int j = mat[i];
+            if(j < 1 || j > n || j == i || mat[j] != i ||
+               find(t[i].begin(), t[i].end(), j) == t[i].end()) valid = false;
+            if(j > i) ++got;
+        }
+        if(!valid || got != want) {
+            printf("  [FAIL] 公开接口同进程 rep=%d valid=%d got=%d want=%d\n", rep, valid, got, want);
+            dump_edges(n, es);
+            exit(1);
+        }
+    }
+    ok("公开 mat 接口：1000 张同进程随机图，覆盖空图、点数缩放与清空重建");
+}
+
 static ll n_case = 0, n_ok = 0, n_hang = 0, n_sub = 0, n_invalid = 0, n_bug = 0;
 static int n_printed = 0;   // [BUG] 用例明细最多打印几条
 
 // 运行一般图匹配回归、穷举和随机对拍；返回 0 表示全部通过。
 int main() {
     rng.seed(20240514);   // 固定种子: 每次跑同一批随机用例, 出问题可复现
-    puts("— 观测窗口自检(getmat 内 static mat[] 的符号别名) —");
-    {
-        match_out o = run_match(2, {{1, 2}});
-        if(o.done && o.mm.size() > 2 && o.mm[1] == 2 && o.mm[2] == 1) {
-            ok("能读到模板内部的 mat[](别名有效: 单边图得到 mat[1]=2, mat[2]=1)");
-        } else {
-            warn("读不到 getmat() 内部的 mat[](符号名对不上? 编译器/ABI 变了?)\n");
-            warn("  → 只能靠子进程自报大小, 判定会变弱\n");
-        }
-    }
+    puts("— 公开接口与同进程多图 —");
+    check_public_api();
+    CHECK(mat[0] == 0, "匹配哨兵保持为 0");
+    build_graph(2, {{1, 2}});
+    For(i, 1, n) if(!mat[i]) getmat(i);
+    CHECK(mat[1] == 2 && mat[2] == 1, "普通调用者可读取单边图的匹配答案");
 
     puts("— 手算/结构用例(除标注外都硬断言: 匹配大小 == 手算最优) —");
     {
