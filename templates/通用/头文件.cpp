@@ -2,7 +2,6 @@
 
 // 仅依赖 <bits/stdc++.h>。
 // 全仓基础头：For/rFor 等宏、类型别名、模数 M 与 qpow。
-// 行哈希核对: python3 -c 'for i,s in enumerate(open("a.cpp"),1):s="".join(s.split("//")[0].split());h=0;[h:=(h*131+b)%256 for b in s.encode()];print(i,f"{h:02x}"if s else"")'
 
 #include <bits/stdc++.h>
 #define For(i, l, r) for(int i = l, i##_e = r; i <= i##_e; ++i)
