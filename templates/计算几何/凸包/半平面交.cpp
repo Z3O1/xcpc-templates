@@ -16,16 +16,26 @@ bool hpi_stronger(const seg &a, const seg &b) {
     return scaled_dir(b.dir()).det(a.x - b.x) > 0;
 }
 vector<p2> hpi(vector<seg> vs) {
-    sort(vs.begin(), vs.end(), hpi_less);
+    if(vs.empty()) return {};
+    struct key { db angle, offset; int id; };
+    vector<key> order;
+    order.reserve(vs.size());
+    for(int i = 0; i < (int) vs.size(); ++i) {
+        p2 d = vs[i].dir();
+        order.push_back({d.alpha(), unit(d).det(vs[i].x), i});
+    }
+    sort(order.begin(), order.end(), [](const key &a, const key &b) {
+        return a.angle != b.angle ? a.angle < b.angle : a.offset > b.offset;
+    });
     vector<seg> ls;
     db last = 0;
-    for(auto l : vs) {
-        db a = l.dir().alpha();
-        if(!ls.empty() && abs(last - a) <= angle_eps) {
-            if(hpi_stronger(l, ls.back())) ls.back() = l, last = a;
+    for(auto k : order) {
+        seg l = vs[k.id];
+        if(!ls.empty() && abs(last - k.angle) <= angle_eps) {
+            if(hpi_stronger(l, ls.back())) ls.back() = l, last = k.angle;
             continue;
         }
-        ls.push_back(l), last = a;
+        ls.push_back(l), last = k.angle;
     }
     if(ls.size() > 1 && abs(ls.front().dir().alpha() + 2 * pi - last) <= angle_eps) {
         if(hpi_stronger(ls.back(), ls.front())) ls.erase(ls.begin());
