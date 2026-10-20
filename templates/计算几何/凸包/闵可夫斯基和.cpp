@@ -13,17 +13,9 @@ vector<p2> minkowski_sum(vector<p2> a, vector<p2> b) {
             if(p[i].y < p[k].y || (p[i].y == p[k].y && p[i].x < p[k].x)) k = i;
         rotate(p.begin(), p.begin() + k, p.end());
     };
-    start(a);
-    start(b);
-    if(a.size() == 1) {
-        for(p2 &p : b) p += a[0];
-        return b;
-    }
-    if(b.size() == 1) {
-        for(p2 &p : a) p += b[0];
-        return a;
-    }
-
+    start(a), start(b);
+    if(a.size() == 1) { for(p2 &p : b) p += a[0]; return b; }
+    if(b.size() == 1) { for(p2 &p : a) p += b[0]; return a; }
     auto half = [](p2 p) { return p.y < 0 || (p.y == 0 && p.x < 0); };
     int n = a.size(), m = b.size(), i = 0, j = 0;
     vector<p2> ret;

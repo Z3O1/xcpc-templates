@@ -13,10 +13,8 @@ int in_convex(const vector<p2> &a, const p2 &p) {
     int l = 1, r = n - 1;
     while(l + 1 < r) {
         int m = (l + r) >> 1;
-        if(crossop({a[0], a[m]}, p) >= 0)
-            l = m;
-        else
-            r = m;
+        if(crossop({a[0], a[m]}, p) >= 0) l = m;
+        else r = m;
     }
     int c = crossop({a[l], a[l + 1]}, p);
     if(c == 0) return 1;

@@ -20,12 +20,7 @@ c2 mcc(vector<p2> a) {
                 if(in_circle(c, a[k])) continue;
                 if(!turnop(a[i], a[j], a[k])) {
                     db dij = dis2(a[i] - a[j]), dik = dis2(a[i] - a[k]), djk = dis2(a[j] - a[k]);
-                    if(dij >= dik && dij >= djk)
-                        c = cir(a[i], a[j]);
-                    else if(dik >= djk)
-                        c = cir(a[i], a[k]);
-                    else
-                        c = cir(a[j], a[k]);
+                    c = dij >= max(dik, djk) ? cir(a[i], a[j]) : dik >= djk ? cir(a[i], a[k]) : cir(a[j], a[k]);
                 } else {
                     auto o = circumcenter(a[i], a[j], a[k]);
                     p2 oc = {o[0], o[1]};

@@ -10,8 +10,7 @@ struct p2i {
     bool operator<(const p2i &b) const { return x != b.x ? x < b.x : y < b.y; }
 };
 i128 cross(p2i a, p2i b, p2i c) {
-    return (i128(b.x) - a.x) * (i128(c.y) - a.y) -
-           (i128(b.y) - a.y) * (i128(c.x) - a.x);
+    return (i128(b.x) - a.x) * (i128(c.y) - a.y) - (i128(b.y) - a.y) * (i128(c.x) - a.x);
 }
 // 三点转向的精确符号，返回 -1 / 0 / 1。
 int crossop(p2i a, p2i b, p2i c) {
@@ -19,8 +18,7 @@ int crossop(p2i a, p2i b, p2i c) {
     return (v > 0) - (v < 0);
 }
 i128 dot(p2i a, p2i b, p2i c) {
-    return (i128(b.x) - a.x) * (i128(c.x) - a.x) +
-           (i128(b.y) - a.y) * (i128(c.y) - a.y);
+    return (i128(b.x) - a.x) * (i128(c.x) - a.x) + (i128(b.y) - a.y) * (i128(c.y) - a.y);
 }
 // 两点距离平方；保持整数，最后需要距离时再开根号。
 i128 dis2(p2i a, p2i b) {

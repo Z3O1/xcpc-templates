@@ -7,11 +7,9 @@ namespace Geo {
 vector<p2> upper_hull(vector<p2> &a, bool nos = false) {
     sort(a.begin(), a.end(), [](p2 u, p2 v) { return u.x != v.x ? u.x < v.x : u.y > v.y; });
     vector<p2> b;
-    b.reserve(a.size());
     for(auto p : a) {
         if(!b.empty() && b.back().x == p.x) continue;
-        while(b.size() > 1 && turnop(b[b.size() - 2], b.back(), p) >= (int) nos)
-            b.pop_back();
+        while(b.size() > 1 && turnop(b[b.size() - 2], b.back(), p) >= (int) nos) b.pop_back();
         b.push_back(p);
     }
     return b;

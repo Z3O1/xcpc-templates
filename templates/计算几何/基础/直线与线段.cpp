@@ -16,11 +16,7 @@ int crossop(const seg &l, const p2 &q) {
     p2 d = l.dir();
     if(d.x == 0 && d.y == 0) return 0;
     d = scaled_dir(d);
-    db h = d.det(q - l.x);
-
-    if(abs(h) > 2 * eps) return (h > 0) - (h < 0);
-    if(abs(h) <= eps) return 0;
-    db t = eps * sqrt(dis2(d));
+    db h = d.det(q - l.x), t = eps * sqrt(dis2(d));
     return (h > t) - (h < -t);
 }
 // 点是否在直线上；要求 l 非零长。
@@ -30,10 +26,7 @@ bool chkll(const seg &a, const seg &b) {
     p2 u = a.dir(), v = b.dir();
     if((u.x == 0 && u.y == 0) || (v.x == 0 && v.y == 0)) return false;
     u = scaled_dir(u), v = scaled_dir(v);
-    db h = abs(u.det(v));
-    if(h > 2 * angle_eps) return true;
-    if(h <= angle_eps) return false;
-    return h > angle_eps * sqrt(dis2(u) * dis2(v));
+    return abs(u.det(v)) > angle_eps * sqrt(dis2(u) * dis2(v));
 }
 // 两直线近似重合；要求均非零长。
 bool eqll(const seg &a, const seg &b) {
@@ -54,20 +47,8 @@ int turnop(p2 a, p2 b, p2 c) {
     p2 u = b - a, v = c - a;
     db m = max({abs(u.x), abs(u.y), abs(v.x), abs(v.y)});
     if(m <= eps / 2) return 0;
-
-    if(m <= ldexp(db(1), numeric_limits<db>::max_exponent / 4)) {
-        db t = eps * m;
-        if(isnormal(t)) {
-            db h = u.det(v);
-            if(abs(h) > 4 * t) return s * ((h > 0) - (h < 0));
-        }
-    }
     u /= m, v /= m;
-    db h = u.det(v), t = eps / m;
-
-    if(abs(h) > 4 * t) return s * ((h > 0) - (h < 0));
-    if(abs(h) <= t) return 0;
-    t *= sqrt(max({dis2(u), dis2(v), dis2(v - u)}));
+    db h = u.det(v), t = eps / m * sqrt(max({dis2(u), dis2(v), dis2(v - u)}));
     return s * ((h > t) - (h < -t));
 }
 
@@ -109,13 +90,9 @@ bool chkss_s(const seg &a, const seg &b) {
 
 // 点在无限直线上的投影；要求 l 非零长，中间量及结果可表示。
 inline p2 proj(const seg &l, const p2 &q) {
-    p2 d = l.dir();
-    d /= max(abs(d.x), abs(d.y));
-    p2 w = q - l.x;
+    p2 d = scaled_dir(l.dir()), w = q - l.x;
     db n = dis2(d), hi = numeric_limits<db>::max() / 4;
-
-    db t = abs(w.x) <= hi && abs(w.y) <= hi ? dot(d, w) / n :
-           dot(d * (1 / n), w);
+    db t = abs(w.x) <= hi && abs(w.y) <= hi ? dot(d, w) / n : dot(d * (1 / n), w);
     return l.x + d * t;
 }
 // 点关于无限直线的对称点；要求 l 非零长。
@@ -125,24 +102,19 @@ p2 reflect(const seg &l, const p2 &q) {
 }
 // 点到线段的最近距离平方；支持点线段，沿用投影包围盒的 eps 扩展。
 inline db nearest(const seg &s, const p2 &q) {
-    p2 d = s.dir(), w = q - s.x;
+    p2 d = s.dir(), w = q - s.x, v = q - s.y;
     db m = max(abs(d.x), abs(d.y));
     if(m == 0) return dis2(w);
     d /= m;
-    db n = dis2(d), a = dot(d, w);
+    db n = dis2(d), a = dot(d, w), b = dot(d, v);
     if(a < -eps * n) return dis2(w);
-    p2 v = q - s.y;
-    db b = dot(d, v);
     if(b > eps * n) return dis2(v);
-    if(a > -b) w = v;
-    db h = d.det(w);
+    db h = d.det(a > -b ? v : w);
     return (h / n) * h;
 }
 // 两线段最近距离平方；相交返回 0，支持点线段。
 db disss(const seg &a, const seg &b) {
-    if(chkss(a, b)) return 0;
-    return min({nearest(a, b.x), nearest(a, b.y),
-                nearest(b, a.x), nearest(b, a.y)});
+    return chkss(a, b) ? 0 : min({nearest(a, b.x), nearest(a, b.y), nearest(b, a.x), nearest(b, a.y)});
 }
 
 }  // namespace Geo

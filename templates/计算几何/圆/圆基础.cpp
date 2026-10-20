@@ -23,8 +23,7 @@ c2 incir(p2 a, p2 b, p2 c) {
         if(abs(x) < abs(y)) swap(x, y);
         return (x / s) * (y / p);
     };
-    p2 o{mul(u.x, V) * B + mul(v.x, U) * C,
-         mul(u.y, V) * B + mul(v.y, U) * C};
+    p2 o{mul(u.x, V) * B + mul(v.x, U) * C, mul(u.y, V) * B + mul(v.y, U) * C};
     return {a + o, abs(mul(u.x, v.y) - mul(u.y, v.x))};
 }
 // 点是否在圆盘内，含边界，按长度 eps 判定；字面量显式用 p2{...} 或 c2{...}。
@@ -32,7 +31,6 @@ bool in_circle(const c2 &c, const p2 &p) { return cmp(dis(c.o - p), c.r) <= 0; }
 // a 是否包含 b，含内切、重合及点圆；同样按长度 eps 判定。
 bool in_circle(const c2 &a, const c2 &b) {
     db d = dis(a.o - b.o), x = max(d, b.r);
-
     return cmp(a.r, x) >= 0 && cmp(a.r - x, min(d, b.r)) >= 0;
 }
 // 三点外接圆直径；最小高<=eps 返回-1，点差及直径须可表示。

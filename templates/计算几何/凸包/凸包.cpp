@@ -17,16 +17,13 @@ vector<p2> convex_hull(vector<p2> &a, bool nos = false) {
         if(collinear) return a;
     }
     vector<p2> b;
-    b.reserve(a.size() + 1);
     for(auto p : a) {
-        while(b.size() > 1 && turnop(b[b.size() - 2], b.back(), p) <= -nos)
-            b.pop_back();
+        while(b.size() > 1 && turnop(b[b.size() - 2], b.back(), p) <= -nos) b.pop_back();
         b.push_back(p);
     }
     size_t t = b.size();
     rFor(i, n - 2, 0) {
-        while(b.size() > t && turnop(b[b.size() - 2], b.back(), a[i]) <= -nos)
-            b.pop_back();
+        while(b.size() > t && turnop(b[b.size() - 2], b.back(), a[i]) <= -nos) b.pop_back();
         if(i) b.push_back(a[i]);
     }
     return b;

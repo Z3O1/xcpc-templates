@@ -65,11 +65,7 @@ void flipall(vector<Tst> &st) {
         int W = tri[g].f[(k + 1) % 3], Z = tri[g].f[(k + 2) % 3];
         tri[t].v[0] = p, tri[t].v[1] = a, tri[t].v[2] = q;
         tri[g].v[0] = p, tri[g].v[1] = q, tri[g].v[2] = b;
-        lnk(t, 0, W);
-        lnk(t, 2, Y);
-        lnk(t, 1, g);
-        lnk(g, 0, Z);
-        lnk(g, 1, X);
+        lnk(t, 0, W), lnk(t, 2, Y), lnk(t, 1, g), lnk(g, 0, Z), lnk(g, 1, X);
         tri[t].ver = ++verc, tri[g].ver = ++verc;
         st.push_back({t, 0, tri[t].ver}), st.push_back({t, 2, tri[t].ver});
         st.push_back({g, 0, tri[g].ver}), st.push_back({g, 1, tri[g].ver});
@@ -77,11 +73,7 @@ void flipall(vector<Tst> &st) {
 }
 
 vector<p2> delaunay(vector<p2> a) {
-    pts = move(a);
-    tri.clear();
-    live.clear();
-    fre.clear();
-    verc = 0;
+    pts = move(a), tri.clear(), live.clear(), fre.clear(), verc = 0;
     sort(pts.begin(), pts.end(), lt);
     pts.erase(unique(pts.begin(), pts.end(), [](p2 u, p2 v) { return u.x == v.x && u.y == v.y; }), pts.end());
     int n = pts.size();
@@ -126,40 +118,26 @@ vector<p2> delaunay(vector<p2> a) {
             int f0 = tri[cur].f[0], f1 = tri[cur].f[1], f2 = tri[cur].f[2];
             rm(cur);
             int t1 = mk(a, b, p), t2 = mk(b, c, p), t3 = mk(c, a, p);
-            lnk(t1, 2, f2);
-            lnk(t2, 2, f0);
-            lnk(t3, 2, f1);
-            lnk(t1, 0, t2);
-            lnk(t2, 0, t3);
-            lnk(t3, 0, t1);
+            lnk(t1, 2, f2), lnk(t2, 2, f0), lnk(t3, 2, f1);
+            lnk(t1, 0, t2), lnk(t2, 0, t3), lnk(t3, 0, t1);
             st.push_back({t1, 2, tri[t1].ver}), st.push_back({t2, 2, tri[t2].ver}), st.push_back({t3, 2, tri[t3].ver});
             last = t1;
         } else {
             int a = tri[cur].v[(e + 1) % 3], b = tri[cur].v[(e + 2) % 3], c = tri[cur].v[e];
-            int g = tri[cur].f[e];
-            int fc1 = tri[cur].f[(e + 1) % 3], fc2 = tri[cur].f[(e + 2) % 3];
+            int g = tri[cur].f[e], fc1 = tri[cur].f[(e + 1) % 3], fc2 = tri[cur].f[(e + 2) % 3];
             if(g < 0) {
                 rm(cur);
                 int t1 = mk(c, a, p), t2 = mk(c, p, b);
-                lnk(t1, 1, t2);
-                lnk(t1, 2, fc2);
-                lnk(t2, 1, fc1);
+                lnk(t1, 1, t2), lnk(t1, 2, fc2), lnk(t2, 1, fc1);
                 st.push_back({t1, 2, tri[t1].ver}), st.push_back({t2, 1, tri[t2].ver});
                 last = t1;
             } else {
                 int kk = finde(g, b, a), d = tri[g].v[kk];
                 int fn1 = tri[g].f[(kk + 1) % 3], fn2 = tri[g].f[(kk + 2) % 3];
-                rm(cur);
-                rm(g);
+                rm(cur), rm(g);
                 int t1 = mk(c, a, p), t2 = mk(c, p, b), u1 = mk(d, b, p), u2 = mk(d, p, a);
-                lnk(t1, 0, u2);
-                lnk(t1, 1, t2);
-                lnk(t2, 0, u1);
-                lnk(u1, 1, u2);
-                lnk(t1, 2, fc2);
-                lnk(t2, 1, fc1);
-                lnk(u1, 2, fn2);
-                lnk(u2, 1, fn1);
+                lnk(t1, 0, u2), lnk(t1, 1, t2), lnk(t2, 0, u1), lnk(u1, 1, u2);
+                lnk(t1, 2, fc2), lnk(t2, 1, fc1), lnk(u1, 2, fn2), lnk(u2, 1, fn1);
                 st.push_back({t1, 2, tri[t1].ver}), st.push_back({t2, 1, tri[t2].ver});
                 st.push_back({u1, 2, tri[u1].ver}), st.push_back({u2, 1, tri[u2].ver});
                 last = t1;

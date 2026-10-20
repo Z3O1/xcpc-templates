@@ -24,9 +24,7 @@ struct polar_less {
         i128 bx = i128(b.x) - center.x, by = i128(b.y) - center.y;
         int c = direction_cmp(ax, ay, bx, by);
         if(c) return c < 0;
-
-        if(ax != bx) return ax < 0 ? ax > bx : ax < bx;
-        return ay < 0 ? ay > by : ay < by;
+        return ax != bx ? (ax < 0 ? ax > bx : ax < bx) : (ay < 0 ? ay > by : ay < by);
     }
 };
 
