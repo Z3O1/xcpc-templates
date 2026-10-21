@@ -203,7 +203,7 @@
   {
    "key": "数论/积性函数/线性筛.cpp",
    "title": "线性筛",
-   "hidden": true
+   "hidden": false
   },
   {
    "key": "数论/积性函数/杜教筛.cpp",

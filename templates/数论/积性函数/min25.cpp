@@ -12,9 +12,7 @@ void init() {
     static int b[N];
     For(i, 2, n) {
         if(!b[i]) p[++pc] = i;
-        For(j, 1, pc) {
-            int x = i * p[j];
-            if(x > n) break;
+        for(int j = 1, x; j <= pc && (x = i * p[j]) <= n; ++j) {
             b[x] = 1;
             if(i % p[j] == 0) break;
         }
@@ -43,14 +41,15 @@ void solveg(ll _n0) {
     For(i, 1, lim - fl) put(n0 / i, i + lim);
     For(i, 1, pc) {
         ll x = p[i], y = x * x, z = n0 / x;
+        if(y > n0) break;
         For(j, 1, min(lim - fl, n0 / y)) doit(i, j + lim, id(z / j));
-        rFor(j, lim, min(lim + 1, y)) doit(i, j, j / x);
+        if(y <= lim) rFor(j, lim, y) doit(i, j, j / x);
     }
 }
 int g(ll n) { return (g2[id(n)] - g1[id(n)] + M) % M; }
 ll func(ll n) { return n %= M, n * (n - 1) % M; }
 int f(ll n, int m) {
-    if(p[m] > n) return 0;
+    if(p[m] >= n) return 0;
     ll ans = g(n) - s[m] + M;
     For(j, m + 1, pc) {
         int q = p[j];
