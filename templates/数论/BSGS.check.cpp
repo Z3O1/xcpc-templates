@@ -57,7 +57,7 @@ int main() {
     }
 
     // 4) 退化:a = 1、b 任意 → b=1 时 0,否则 -1(p 为素数时)
-    for(ll p : {5, 97, 998244353}) {
+    for(ll p : {2, 5, 7, 23, 97, 998244353, 1000000007}) {
         if(BSGS(1, 1, p) != 0) return printf("  [FAIL] a=1,b=1 应 0\n"), 1;
         if(BSGS(1, 2, p) != -1) return printf("  [FAIL] a=1,b=2 应 -1\n"), 1;
     }

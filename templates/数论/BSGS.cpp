@@ -4,11 +4,10 @@
 ll BSGS(ll a, ll b, ll p) {
     a %= p, b %= p;
     if(p == 1 || b == 1) return 0;
-    if(!a) return -1;
+    if(a <= 1) return -1;
     ll l = p - 1;
     for(ll q = 2; q * q <= l; ++q)
         for(; l % q == 0 && qpow(a, l / q, p) == 1; l /= q);
-    if(l > 1 && qpow(a, l - 1, p) == 1) l = 1;
     ll m = (ll) sqrt((db) l);
     while(m * m < l) ++m;
     for(ll y = 0, w = 1 % p; y < min(m, l); ++y) {
