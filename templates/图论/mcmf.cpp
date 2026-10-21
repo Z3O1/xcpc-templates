@@ -13,7 +13,7 @@ struct MCMF_t {
     }
     void clear() {
         For(i, 1, mx) hd[i] = 0;
-        tot = 1, s = t = 0;
+        tot = 1, n = mx = s = t = 0;
     }
     void spfa() {
         static bool vis[N];
@@ -47,7 +47,7 @@ struct MCMF_t {
     }
     // 返回 (流量, 费用)，mcf=1 只作负费用增广；要求无负环。
     pair<int, ll> mcmf(int _s, int _t, bool mcf = 0, int _n = 0) {
-        s = _s, t = _t, n = _n, cmax(mx, _n), spfa();
+        s = _s, t = _t, n = _n ? _n : max({mx, s, t}), cmax(mx, n), spfa();
         int a1 = 0; ll a2 = 0;
         while(dij() && (!mcf || d[t] < 0)) {
             int m = FL;

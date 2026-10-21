@@ -776,5 +776,46 @@ int main() {
     }
     printf("  小结: 用例 %lld 组(mcmf() 与 mcmf2() 都与独立 SPFA 费用流对拍; mcmf2 的 static ex[] 已修)\n",
            ncase);
+    {
+        reset();
+        mf.add(1, 3, 2, -4);
+        auto r = mf.mcmf(1, 3, true);
+        CHECK(r == make_pair(2, -8LL) && mf.n == 3, "省略点数:负费用增广不受初始零值影响");
+        mf.clear();
+        CHECK(mf.mx == 0 && mf.n == 0 && mf.hd[1] == 0 && mf.hd[3] == 0,
+              "clear 同时清邻接表、点数和最大点号");
+        mf.h[11] = -17, mf.d[11] = -23;
+        r = mf.mcmf(7, 11);
+        CHECK(r == make_pair(0, 0LL) && mf.n == 11, "默认点数包含未加边的源汇，空图返回零流");
+
+        mt19937 gen(20261021);
+        For(rep, 1, 1200) {
+            mf.clear();
+            if(mf.mx || mf.n) return printf("  [FAIL] clear 未重置点数 rep=%d\n", rep), 1;
+            int n = 2 + gen() % 19, mode = rep % 3;
+            bool mcf = mode == 1;
+            ref_mcmf R;
+            R.init(n + 5);
+            vector<array<ll, 4>> edges;
+            auto add = [&](int u, int v, int w, ll c) {
+                mf.add(u, v, w, c), R.add(u, v, w, c);
+                edges.push_back({u, v, w, c});
+            };
+            For(i, 1, n + 5) mf.h[i] = 19, mf.d[i] = -23;
+            For(u, 1, n) For(v, u + 1, n) if(gen() % 4 == 0)
+                add(u, v, gen() % 9, int(gen() % 11) - 5);
+            if(rep % 2) add(n + 2, n + 5, 3, -2);
+            int want_n = max(n, mf.mx);
+            auto got = mode == 0 ? mf.mcmf(1, n) : mode == 1 ? mf.mcmf(1, n, true) : mf.mcmf(1, n, false, 0);
+            R.run(1, n, mcf);
+            if(got != make_pair(R.flow, R.cost) || mf.n != want_n) {
+                printf("  [FAIL] 默认点数 rep=%d n=%d mode=%d got=(%d,%lld) want=(%d,%lld) 实际点数=%d 应=%d\n",
+                       rep, n, mode, got.first, got.second, R.flow, R.cost, mf.n, want_n);
+                for(auto e : edges) printf("    %lld %lld %lld %lld\n", e[0], e[1], e[2], e[3]);
+                return 1;
+            }
+        }
+        ok("1200 组默认/显式零点数与 clear 复用，污染 h/d 后仍与独立 SPFA 一致");
+    }
     PASSED("mcmf");
 }
