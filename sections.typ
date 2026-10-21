@@ -48,8 +48,6 @@
 
 == 广义 PAM
 
-#include "templates/字符串/pam.typ"
-
 #zebraw(lang: false)[#raw(readcode("templates/字符串/pam.cpp"), lang: "cpp", block: true)]
 
 == Lyndon 分解与 Runs
