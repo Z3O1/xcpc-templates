@@ -349,6 +349,72 @@ class BuildTests(Workspace):
         self.assertFalse((self.root / '.manifest.json').exists())
 
 
+class PreviewRunnerTests(Workspace):
+    # 用假 Typst 检查参数、运行目录与退出码，正式正文和 PDF 不应被触碰。
+    def setUp(self):
+        super().setUp()
+        self.script('preview.sh')
+        self.put('tests/style-preview.typ', '// 样式小样\n')
+        self.originals = {'xcpc.typ': '#include "sections.typ"\n',
+                          'sections.typ': '原章节\n', 'xcpc.pdf': '正式 PDF\n'}
+        for name, text in self.originals.items():
+            self.put(name, text)
+        self.compiler = self.put('fake typst', '#!/usr/bin/env bash\nprintf "%s\\n" "$@" >> "$CALL_LOG"\n'
+                                 'if [[ "$1" == --version ]]; then echo "typst test"; '
+                                 'else exit "${FAKE_EXIT:-0}"; fi\n')
+        self.compiler.chmod(0o755)
+        self.log = self.root / 'calls.log'
+        self.env = {'TYPST': str(self.compiler), 'CALL_LOG': str(self.log)}
+
+    # 默认 watch，固定项目根与输出路径，不运行生成器、不覆盖正式产物。
+    def test_default_watch_preserves_book(self):
+        result = self.run_script('preview.sh', env=self.env)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertEqual(self.log.read_text().splitlines(),
+                         ['--version', 'watch', '--root', '.', 'tests/style-preview.typ', 'tmp/style-preview.pdf'])
+        self.assertTrue((self.root / 'tmp/xdg').is_dir())
+        self.assertFalse((self.root / '.manifest.json').exists())
+        for name, text in self.originals.items():
+            self.assertEqual((self.root / name).read_text(), text)
+
+    # --once 改为 compile，其余参数含空格时仍原样透传。
+    def test_once_consumes_option_and_forwards_arguments(self):
+        result = self.run_script('preview.sh', '--once', '--font-path', 'font dir', env=self.env)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertEqual(self.log.read_text().splitlines(),
+                         ['--version', 'compile', '--root', '.', 'tests/style-preview.typ',
+                          'tmp/style-preview.pdf', '--font-path', 'font dir'])
+
+    # 帮助不依赖编译器，也不创建运行目录。
+    def test_help_without_compiler(self):
+        result = self.run_script('preview.sh', '--help', env={'TYPST': str(self.root / 'missing')})
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn('--once', result.stdout)
+        self.assertFalse(self.log.exists())
+        self.assertFalse((self.root / 'tmp/xdg').exists())
+
+    # 找不到指定编译器时立即失败，不生成 PDF 或运行目录。
+    def test_missing_compiler_fails(self):
+        result = self.run_script('preview.sh', '--once', env={'TYPST': str(self.root / 'missing')})
+        self.assertNotEqual(result.returncode, 0)
+        self.assertFalse((self.root / 'tmp/style-preview.pdf').exists())
+        self.assertFalse((self.root / 'tmp/xdg').exists())
+
+    # 原样返回 Typst 失败码，方便脚本调用者判断是否编译成功。
+    def test_compiler_failure_is_propagated(self):
+        result = self.run_script('preview.sh', '--once', env={**self.env, 'FAKE_EXIT': '17'})
+        self.assertEqual(result.returncode, 17, result.stdout + result.stderr)
+
+    # 从其他目录调用脚本，产物仍归属脚本所在的仓库，路径可含空格。
+    def test_runs_from_another_directory(self):
+        result = subprocess.run(['bash', str(self.root / 'preview.sh'), '--once'], cwd=ROOT,
+                                env={**os.environ, **self.env}, capture_output=True, text=True, timeout=15)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertTrue((self.root / 'tmp/xdg').is_dir())
+        self.assertEqual(self.log.read_text().splitlines(),
+                         ['--version', 'compile', '--root', '.', 'tests/style-preview.typ', 'tmp/style-preview.pdf'])
+
+
 @unittest.skipUnless(shutil.which('typst') and shutil.which('pdffonts'), '需要 Typst 与 pdffonts')
 class TypographyTests(Workspace):
     # 独立编译中英文正文和代码，锁定指定字体并排除意外中文 fallback。
@@ -368,10 +434,12 @@ class TypographyTests(Workspace):
         self.assertIn('DejaVuSansMono', fonts)
         self.assertNotRegex(fonts, r'\+(KaiTi|NSimSun|SimSun)\b')
 
-    # 在不含板子书正文的工作区编译小样，确保它仅依赖共享样式和现有包。
+    # 在隔离工作区编译小样，复制共享样式与长代码示例引用的模板。
     def test_style_preview_compiles_with_shared_style(self):
         self.put('style.typ', (ROOT / 'style.typ').read_text(encoding='utf-8'))
         preview = self.put('tests/style-preview.typ', (ROOT / 'tests/style-preview.typ').read_text(encoding='utf-8'))
+        source = 'templates/计算几何/平面剖分/Delaunay.cpp'
+        self.put(source, (ROOT / source).read_text(encoding='utf-8'))
         pdf = self.root / 'preview.pdf'
         runtime = self.root / 'tmp/xdg'
         runtime.mkdir(parents=True)
