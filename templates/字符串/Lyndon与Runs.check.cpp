@@ -142,5 +142,32 @@ int main() {
     }
     ok("n=100000 大规模 Duval 与 Runs 验证");
 
+    {
+        vector<ll> s{5, 1, -1315423911LL, 5, 5, 0, 0, 5, 5, 0, 0, 5};
+        CHECK(get_runs(s) == brute_runs(s), "构造旧底数哈希碰撞，仍逐位符合暴力 Runs");
+        for(int n = 0; n <= 11; ++n) For(mask, 0, (1 << n) - 1) {
+            vector<int> s(n);
+            For(i, 0, n - 1) s[i] = (mask >> i) & 1;
+            if(get_runs(s) != brute_runs(s)) {
+                printf("  [FAIL] 二元穷举 n=%d mask=%d\n", n, mask);
+                return 1;
+            }
+        }
+        mt19937_64 gen(20261021);
+        vector<ll> values{LLONG_MIN, LLONG_MAX, -1315423911LL, -1, 0, 1, 5};
+        For(rep, 1, 2000) {
+            int n = 2 + gen() % 39;
+            vector<ll> s(n);
+            for(ll &x : s) x = values[gen() % values.size()];
+            if(get_runs(s) != brute_runs(s)) {
+                printf("  [FAIL] 极值序列 rep=%d n=%d 输入:", rep, n);
+                for(ll x : s) printf(" %lld", x);
+                printf("\n");
+                return 1;
+            }
+        }
+        CHECK(get_runs(string(100000, 'a')) == (vector<run_t>{{0, 99999, 1}}), "n=1e5 全同串只有一个最小周期为 1 的 Run");
+        ok("长度不超过 11 的二元串穷举与 2000 组含 int64 极值序列，全部符合独立暴力");
+    }
     PASSED("Lyndon与Runs");
 }

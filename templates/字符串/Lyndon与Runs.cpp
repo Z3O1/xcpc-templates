@@ -1,6 +1,6 @@
 // duval()/get_runs(): 字符串 · Lyndon 分解与 Runs
 
-// Duval 线性求 Lyndon 分解；单调栈 + 哈希二分 O(n log n) 求全部 Runs。
+// Duval 线性求 Lyndon 分解；单调栈 + 倍增排名 O(n log n) 确定性求全部 Runs。
 
 // 返回 Lyndon 分解的各段半开区间 [l, r)，0-based；O(n)。
 template <class T> vector<pii> duval(const T &s) {
@@ -23,30 +23,44 @@ struct run_t {
 template <class T> vector<run_t> get_runs(const T &s) {
     int n = s.size();
     if(n <= 1) return {};
-    const ull B = 1315423911ULL;
-    vector<ull> h(n + 1), pw(n + 1, 1);
-    For(i, 0, n - 1) pw[i + 1] = pw[i] * B, h[i + 1] = h[i] * B + ull(s[i]) + 998244353ULL;
-    auto H = [&](int l, int r) { return h[r] - h[l] * pw[r - l]; };
-    auto lcp = [&](int x, int y) {
-        if(x >= n || y >= n || s[x] != s[y]) return 0;
-        int l = 1, r = n - max(x, y);
-        while(l < r) {
-            int m = (l + r + 1) >> 1;
-            if(H(x, x + m) == H(y, y + m)) l = m;
-            else r = m - 1;
+    int m = 2 * n;
+    vector<int> id(m), tmp(m), cnt(m + 1);
+    iota(all(id), 0);
+    sort(id.begin(), id.begin() + n, [&](int x, int y) { return s[x] < s[y]; });
+    vector<vector<int>> h(1, vector<int>(m));
+    int c = 1;
+    For(i, 0, n - 1) {
+        if(i && s[id[i]] != s[id[i - 1]]) ++c;
+        h[0][id[i]] = h[0][m - 1 - id[i]] = c;
+    }
+    for(int len = 1; len <= n / 2; len *= 2) {
+        auto &a = h.back();
+        for(int shift : {len, 0}) {
+            fill(all(cnt), 0);
+            for(int i : id) ++cnt[i + shift < m ? a[i + shift] : 0];
+            For(i, 1, m) cnt[i] += cnt[i - 1];
+            rFor(j, m - 1, 0) {
+                int i = id[j];
+                tmp[--cnt[i + shift < m ? a[i + shift] : 0]] = i;
+            }
+            id.swap(tmp);
         }
-        return l;
-    };
-    auto lcs = [&](int x, int y) {
-        if(x < 0 || y < 0 || s[x] != s[y]) return 0;
-        int l = 1, r = min(x, y) + 1;
-        while(l < r) {
-            int m = (l + r + 1) >> 1;
-            if(H(x + 1 - m, x + 1) == H(y + 1 - m, y + 1)) l = m;
-            else r = m - 1;
+        vector<int> b(m);
+        auto key = [&](int i) { return pii{a[i], i + len < m ? a[i + len] : 0}; };
+        b[id[0]] = c = 1;
+        For(i, 1, m - 1) b[id[i]] = c += key(id[i]) != key(id[i - 1]);
+        h.push_back(move(b));
+    }
+    auto common = [&](int x, int y, int lim) {
+        int ans = 0;
+        rFor(k, (int) h.size() - 1, 0) {
+            int len = 1 << k;
+            if(len <= lim - ans && h[k][x + ans] == h[k][y + ans]) ans += len;
         }
-        return l;
+        return ans;
     };
+    auto lcp = [&](int x, int y) { return common(x, y, n - max(x, y)); };
+    auto lcs = [&](int x, int y) { return common(m - 1 - x, m - 1 - y, min(x, y) + 1); };
     vector<run_t> ans;
     vector<int> st;
     For(o, 0, 1) {
