@@ -27,7 +27,8 @@ vector<vector<p2>> voronoi(const vector<p2> &a) {
         vector<p2> cur = ini;
         for(p2 &p : cur) p -= a[i];
         for(int j = 0; j < n; ++j) {
-            if(j == i || a[i] == a[j] || cur.size() < 3) continue;
+            if(cur.size() < 3) break;
+            if(j == i || a[i] == a[j]) continue;
             cur = convex_cut(cur, bisector({0, 0}, a[j] - a[i]));
         }
         for(p2 &p : cur) p += a[i];
