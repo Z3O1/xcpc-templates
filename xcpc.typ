@@ -39,7 +39,12 @@
 #outline()
 #pagebreak()
 
-// ===== 正文: 两列 =====
+// ===== 正文: 两列; 保持字号,压缩段落、标题与代码行留白 =====
 #set page(columns: 2)
+#set par(leading: 0.5em, spacing: 0.6em)
+#show heading: set block(above: 0.7em, below: 0.35em)
+
+#import "@preview/zebraw:0.6.3": zebraw-init
+#show: zebraw-init.with(inset: (top: 0.16em, bottom: 0.16em))
 
 #include "sections.typ"
