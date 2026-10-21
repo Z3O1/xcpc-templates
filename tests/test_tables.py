@@ -114,6 +114,7 @@ class TableTests(unittest.TestCase):
         with tempfile.TemporaryDirectory(dir=ROOT / 'tmp') as directory:
             directory = Path(directory)
             (directory / 'xcpc.typ').write_text((ROOT / 'xcpc.typ').read_text(encoding='utf-8'), encoding='utf-8')
+            (directory / 'style.typ').write_text((ROOT / 'style.typ').read_text(encoding='utf-8'), encoding='utf-8')
             (directory / 'sections.typ').write_text(
                 '= 通用\n== 大质数表\n#include "../../templates/通用/大质数表.typ"\n'
                 '== 常数速查表\n#include "../../templates/通用/常数速查表.typ"\n', encoding='utf-8')

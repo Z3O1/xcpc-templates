@@ -354,6 +354,7 @@ class TypographyTests(Workspace):
     # 独立编译中英文正文和代码，锁定指定字体并排除意外中文 fallback。
     def test_document_keeps_original_body_and_code_fonts(self):
         self.put('xcpc.typ', (ROOT / 'xcpc.typ').read_text(encoding='utf-8'))
+        self.put('style.typ', (ROOT / 'style.typ').read_text(encoding='utf-8'))
         self.put('sections.typ', '= 字符串\n中文正文\n```cpp\n// 中文注释\nint main() {}\n```\n')
         runtime = self.root / 'tmp/xdg'
         runtime.mkdir(parents=True)
@@ -366,6 +367,21 @@ class TypographyTests(Workspace):
         self.assertIn('NotoSansCJKjp-Bold', fonts)
         self.assertIn('DejaVuSansMono', fonts)
         self.assertNotRegex(fonts, r'\+(KaiTi|NSimSun|SimSun)\b')
+
+    # 在不含板子书正文的工作区编译小样，确保它仅依赖共享样式和现有包。
+    def test_style_preview_compiles_with_shared_style(self):
+        self.put('style.typ', (ROOT / 'style.typ').read_text(encoding='utf-8'))
+        preview = self.put('tests/style-preview.typ', (ROOT / 'tests/style-preview.typ').read_text(encoding='utf-8'))
+        pdf = self.root / 'preview.pdf'
+        runtime = self.root / 'tmp/xdg'
+        runtime.mkdir(parents=True)
+        result = subprocess.run(['typst', 'compile', '--root', str(self.root), str(preview), str(pdf)],
+                                env={**os.environ, 'XDG_RUNTIME_DIR': str(runtime)},
+                                capture_output=True, text=True, timeout=30)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        fonts = subprocess.check_output(['pdffonts', str(pdf)], text=True)
+        self.assertIn('NotoSansCJKjp-Regular', fonts)
+        self.assertIn('DejaVuSansMono', fonts)
 
 
 if __name__ == '__main__':
