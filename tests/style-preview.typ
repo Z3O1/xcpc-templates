@@ -4,6 +4,29 @@
 #import "@preview/zebraw:0.6.3": zebraw
 #show: book
 
+#let readcode(path) = {
+  let lines = read(path).split("\n")
+  let i = 0
+  // 第 1 个非空行是元数据行(标题), 不渲染; 其后原样输出
+  while i < lines.len() and lines.at(i) == "" {
+    i += 1
+  }
+  if i < lines.len() and (lines.at(i).starts-with("//") or lines.at(i).starts-with("#")) {
+    i += 1
+  }
+  while i < lines.len() and lines.at(i) == "" {
+    i += 1
+  }
+  let body0 = lines.slice(i)
+  let body = if body0.len() > 0 and body0.last() == "" {
+    body0.slice(0, body0.len() - 1)
+  } else {
+    body0
+  }
+  // 空数组 join() 返回 none(Typst 0.15), 这里显式给空串
+  if body.len() > 0 { body.join("\n") } else { "" }
+}
+
 = 样式预览
 == 正文与段落
 这是一段中文说明,用于观察字号、文字行距与自动折行。English text、数字 0123456789 和行内代码 `vector<int>` 用来检查中英文混排。修改 `style.typ` 中的 `leading` 调整同一段内相邻文字行之间的空隙。
@@ -67,3 +90,7 @@ int maximum(int a, int b) {
     return a > b ? a : b;
 }
 ```]
+
+=== 长代码
+
+#zebraw(lang: false)[#raw(readcode("../templates/计算几何/平面剖分/Delaunay.cpp"), lang: "cpp", block: true)]

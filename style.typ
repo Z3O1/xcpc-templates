@@ -29,7 +29,7 @@
 
   // 正文字号; 固定字体,避免系统新增字体改变中文 fallback。
   set text(font: ("Libertinus Serif", "Noto Sans CJK JP"), size: 8pt)
-  show raw: set text(font: ("DejaVu Sans Mono", "Noto Sans CJK JP"))
+  show raw: set text(font: ("DejaVu Sans Mono", "Noto Sans CJK JP"), size: 6pt)
 
   set heading(numbering: "1.1")
   show heading: set block(sticky: true)
@@ -46,7 +46,7 @@
   show heading: set block(above: 0.7em, below: 0.35em)
 
   // 每行代码上、下的内边距; 数值越小越紧凑,不是纸张页边距。
-  show: zebraw-init.with(inset: (top: 0.20em, bottom: 0.20em))
+  show: zebraw-init.with(inset: (top: 0.25em, bottom: 0.25em))
 
   body
 }
