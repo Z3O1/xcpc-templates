@@ -3,7 +3,7 @@
 // 标准型 max c^T x，s.t. Ax <= b, x >= 0；0-based，两阶段单纯形法。
 
 namespace LP {
-const db eps = 1e-10, inf = 1 / .0;
+const db eps = 1e-10, inf = 1e100;
 // A 为 m*n 矩阵，b 长 m，c 长 n。
 // 返回 {状态, 最优值, 解 x}：状态 1 有界最优，0 无可行解，-1 无界。
 tuple<int, db, vector<db>> simplex(const vector<vector<db>> &A, const vector<db> &b, const vector<db> &c) {

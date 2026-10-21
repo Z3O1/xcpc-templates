@@ -79,11 +79,11 @@ int main() {
 
         // 无界: max x + y s.t. x - y <= 1, -x + y <= 1
         auto [st4, val4, x4] = simplex({{1, -1}, {-1, 1}}, {1, 1}, {1, 1});
-        CHECK(st4 == -1 && isinf(val4), "无界判定");
+        CHECK(st4 == -1 && val4 == inf && x4.empty(), "无界判定");
 
         // 空矩阵或 0 变量边界
         auto [st5, val5, x5] = simplex({}, {}, {1, 2});
-        CHECK(st5 == -1, "无约束正目标无界");
+        CHECK(st5 == -1 && val5 == inf && x5.empty(), "无约束正目标无界");
         auto [st6, val6, x6] = simplex({}, {}, {-1, -2});
         CHECK(st6 == 1 && abs(val6) < 1e-9L && x6 == vector<db>({0, 0}), "无约束负目标在原点最优");
         auto [st7, val7, x7] = simplex({{}, {}}, {1, 0}, {});
