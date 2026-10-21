@@ -203,7 +203,7 @@
   {
    "key": "数论/积性函数/线性筛.cpp",
    "title": "线性筛",
-   "hidden": false
+   "hidden": true
   },
   {
    "key": "数论/积性函数/杜教筛.cpp",
@@ -533,6 +533,11 @@
   {
    "key": "数学/单纯形.cpp",
    "title": "单纯形法线性规划",
+   "hidden": false
+  },
+  {
+   "key": "数论/积性函数/PN筛.cpp",
+   "title": "Powerful Number 筛",
    "hidden": false
   }
  ]

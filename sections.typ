@@ -220,10 +220,6 @@
 
 #include "templates/数论/积性函数/积性函数.typ"
 
-=== 线性筛
-
-#zebraw(lang: false)[#raw(readcode("templates/数论/积性函数/线性筛.cpp"), lang: "cpp", block: true)]
-
 === 杜教筛
 
 #zebraw(lang: false)[#raw(readcode("templates/数论/积性函数/杜教筛.cpp"), lang: "cpp", block: true)]
@@ -233,6 +229,10 @@
 #include "templates/数论/积性函数/min25.typ"
 
 #zebraw(lang: false)[#raw(readcode("templates/数论/积性函数/min25.cpp"), lang: "cpp", block: true)]
+
+=== Powerful Number 筛
+
+#zebraw(lang: false)[#raw(readcode("templates/数论/积性函数/PN筛.cpp"), lang: "cpp", block: true)]
 
 == 下取整和
 
