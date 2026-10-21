@@ -170,6 +170,8 @@
 
 == 单纯形法线性规划
 
+#include "templates/数学/单纯形.typ"
+
 #zebraw(lang: false)[#raw(readcode("templates/数学/单纯形.cpp"), lang: "cpp", block: true)]
 
 = 数论
