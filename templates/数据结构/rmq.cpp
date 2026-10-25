@@ -15,10 +15,10 @@ struct rmq_t {
         int l = k * B, x = f[R] & ~((1 << (L - l)) - 1);
         return a[l + __lg(x & -x)];
     }
-    // 从 _a[dt..dt+n-1] 构建，可重复调用；n >= 1。
-    void bd(int n, T *_a) {
+    // func 接收 dt..dt+n-1，可重复构建；n >= 1。
+    template <class F> void bd(int n, F func) {
         a.resize(n), pre.resize(n), suf.resize(n), f.resize(n);
-        For(i, 0, n - 1) pre[i] = suf[i] = a[i] = _a[i + dt];
+        For(i, 0, n - 1) pre[i] = suf[i] = a[i] = func(i + dt);
         int k = (n - 1) / B;
         st.resize(__lg(k + 1) + 1), st[0].resize(k + 1);
         For(i, 0, k) {
@@ -40,12 +40,8 @@ struct rmq_t {
             For(j, 0, m) st[i][j] = max(st[i - 1][j], st[i - 1][j + (1 << (i - 1))], cmp());
         }
     }
-    void bd(vector<T> &v) { bd(v.size(), v.data() - dt); }
-    template <class F> void bd(int n, F func) {
-        vector<T> v(n);
-        For(i, 0, n - 1) v[i] = func(i + dt);
-        bd(v);
-    }
+    void bd(int n, T *v) { bd(n, [&](int i) { return v[i]; }); }
+    void bd(vector<T> &v) { bd(v.size(), [&](int i) { return v[i - dt]; }); }
     // bd 后查询 [l,r]；dt <= l <= r < dt+n。
     T que(int l, int r) {
         l -= dt, r -= dt;

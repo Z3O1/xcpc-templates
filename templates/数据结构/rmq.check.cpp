@@ -2,7 +2,7 @@
 //
 // 覆盖 rmq_t 的三个 bd 重载与 que:
 //   bd(n, T*)        1-based 输入(dt=1)
-//   bd(vector<T>&)   0-based 输入(dt=1 时内部走 data()-dt)
+//   bd(vector<T>&)   0-based 输入，查询下标仍从 dt 开始
 //   bd(n, func)      func(i) 从偏移处取值
 //   dt = 0 的 0-based 用法(rmq_t<int, less<int>, 0>)
 #include "../_check_base.hpp"
@@ -45,7 +45,7 @@ int main() {
         printf("  [ok] 1-based dt=1:15 种规模 × 4 种数据 × 全部区间(%lld 次查询)\n", cnt);
     }
 
-    // 2) bd(vector&) 重载(dt=1,内部用 data()-dt)
+    // 2) bd(vector&) 重载(dt=1)
     {
         For(t, 1, 200) {
             int n = (int) rnd(1, 300);
@@ -60,7 +60,7 @@ int main() {
                 if(rmax.que(l, rr) != mx) return printf("  [FAIL] bd(vector) n=%d [%d,%d]\n", n, l, rr), 1;
             }
         }
-        ok("200 组 bd(vector<int>&)(dt=1,data()-dt 指针)一致");
+        ok("200 组 bd(vector<int>&)(dt=1)一致");
     }
 
     // 3) dt = 0 的 0-based 用法
@@ -119,5 +119,39 @@ int main() {
         ok("单元素 / 递增 / 递减 / 端点边界一致");
     }
 
+    // 任意正负 dt：三入口反复重建并逐区间对拍，回调必须恰好读取 n 次。
+    auto offsets = [&]<int dt>() {
+        rmq_t<int, less<int>, dt> r;
+        for(int n : {1, 21, 80, 3, 41, 1}) {
+            vector<int> v(n);
+            for(int &x : v) x = rnd(-1000, 1000);
+            auto verify = [&]() {
+                For(l, 0, n - 1) For(rr, l, n - 1) {
+                    int want = *max_element(v.begin() + l, v.begin() + rr + 1);
+                    if(r.que(l + dt, rr + dt) != want) {
+                        printf("[FAIL] rebuild dt=%d n=%d [%d,%d]\n", dt, n, l, rr);
+                        for(int x : v) printf("%d ", x);
+                        exit(1);
+                    }
+                }
+            };
+            r.bd(v), verify();
+            int calls = 0;
+            r.bd(n, [&](int i) {
+                if(i != calls++ + dt) {
+                    printf("[FAIL] callback dt=%d n=%d i=%d calls=%d\n", dt, n, i, calls);
+                    exit(1);
+                }
+                return v[i - dt];
+            });
+            CHECK(calls == n, "回调恰好调用 n 次");
+            verify();
+            vector<int> padded(n + abs(dt));
+            copy(all(v), padded.begin() + max(dt, 0));
+            r.bd(n, padded.data() + max(-dt, 0)), verify();
+        }
+    };
+    offsets.operator()<0>(), offsets.operator()<1>();
+    offsets.operator()<7>(), offsets.operator()<-7>();
     PASSED("rmq");
 }
