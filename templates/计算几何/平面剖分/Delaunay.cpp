@@ -17,7 +17,7 @@ int nw() {
         int t = fre.back();
         return fre.pop_back(), live[t] = 1, t;
     }
-    return tri.push_back(Tri()), live.push_back(1), (int) tri.size() - 1;
+    return tri.push_back(Tri()), live.push_back(1), ssize(tri) - 1;
 }
 void rm(int t) { live[t] = 0, fre.push_back(t); }
 bool lt(p2 u, p2 v) { return u.x != v.x ? u.x < v.x : u.y < v.y; }
@@ -65,19 +65,19 @@ void flipall(vector<Tst> &st) {
 
 vector<p2> delaunay(vector<p2> a) {
     pts = move(a), tri.clear(), live.clear(), fre.clear(), verc = 0;
-    sort(pts.begin(), pts.end(), lt);
-    pts.erase(unique(pts.begin(), pts.end(), [](p2 u, p2 v) { return u.x == v.x && u.y == v.y; }), pts.end());
+    sort(all(pts), lt);
+    pts.erase(unique(all(pts), [](p2 u, p2 v) { return u.x == v.x && u.y == v.y; }), pts.end());
     int n = pts.size();
     if(n < 3) return {};
     auto hb = convex_hull(pts);
     int k = hb.size();
     if(k < 3) return {};
     vector<int> hv(k), fs(k - 2);
-    for(int j = 0; j < k; ++j) hv[j] = (int) (lower_bound(pts.begin(), pts.end(), hb[j], lt) - pts.begin());
+    for(int j = 0; j < k; ++j) hv[j] = lower_bound(all(pts), hb[j], lt) - pts.begin();
     vector<Tst> st;
     For(i, 1, k - 2) fs[i - 1] = mk(hv[0], hv[i], hv[i + 1]);
     For(i, 1, k - 3) lnk(fs[i - 1], 1, fs[i]);
-    for(int t = 0; t < (int) tri.size(); ++t)
+    for(int t = 0; t < ssize(tri); ++t)
         for(int i = 0; i < 3; ++i) st.push_back({t, i, tri[t].ver});
     flipall(st);
     vector<int> in;
@@ -85,10 +85,10 @@ vector<p2> delaunay(vector<p2> a) {
     for(int j = 0; j < k; ++j) onh[hv[j]] = 1;
     for(int i = 0; i < n; ++i) if(!onh[i]) in.push_back(i);
     mt19937 rng(20240915);
-    shuffle(in.begin(), in.end(), rng);
+    shuffle(all(in), rng);
     int last = fs[0];
-    for(int ii = 0; ii < (int) in.size(); ++ii) {
-        int p = in[ii], cur = last, go, side[3];
+    for(int p : in) {
+        int cur = last, go, side[3];
         for(;;) {
             go = -1;
             for(int j = 0; j < 3; ++j) {
@@ -137,7 +137,7 @@ vector<p2> delaunay(vector<p2> a) {
         flipall(st);
     }
     vector<p2> res;
-    for(int t = 0; t < (int) tri.size(); ++t) if(live[t]) {
+    for(int t = 0; t < ssize(tri); ++t) if(live[t]) {
         int a = tri[t].v[0], b = tri[t].v[1], c = tri[t].v[2];
         res.push_back(pts[a]), res.push_back(pts[b]), res.push_back(pts[c]);
     }

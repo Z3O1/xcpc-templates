@@ -9,10 +9,10 @@ poly poly_inv(const poly &f, int n) {
     poly g{int(qpow(f[0], M - 2))};
     for(int m = 1; m < n; m <<= 1) {
         int t = min(m << 1, n);
-        poly d = mul(g, poly(f.begin(), f.begin() + min((int) f.size(), t)));
+        poly d = mul(g, poly(f.begin(), f.begin() + min<int>(f.size(), t)));
         d.resize(t);
         For(i, 0, t - 1) d[i] = ((i == 0 ? 2 : 0) - d[i] + M) % M;
         g = mul(g, d), g.resize(t);
     }
-    return g.resize(n), g;
+    return g;
 }

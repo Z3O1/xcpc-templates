@@ -6,7 +6,7 @@ struct tree_dsu_t {
     vector<int> bel, id, st, a, up, mp, fa, rk, top;
     vector<u64> mask, live;
     void init(const vector<int> &p) {
-        int n = p.size(), lg = n ? __lg(n) + 1 : 1;
+        int n = p.size(), lg = max(1, bit_width(unsigned(n)));
         rt = -1, w = (lg + 1) / 2;
         bel.resize(n), id.resize(n), mask.resize(n), mp.assign(n, -1);
         st.clear(), a.clear(), up.clear(), live.clear();
@@ -47,10 +47,10 @@ struct tree_dsu_t {
         return v != rt && (live[bel[v]] & s) ? (live[bel[v]] ^= s, true) : false;
     }
     int find(int v) {
-        if(u64 s = mask[v] & live[bel[v]]) return a[st[bel[v]] + 63 - __builtin_clzll(s)];
+        if(u64 s = mask[v] & live[bel[v]]) return a[st[bel[v]] + bit_width(s) - 1];
         for(int x = get(mp[up[bel[v]]]);;) {
             int u = top[x];
-            if(u64 s = mask[u] & live[bel[u]]) return a[st[bel[u]] + 63 - __builtin_clzll(s)];
+            if(u64 s = mask[u] & live[bel[u]]) return a[st[bel[u]] + bit_width(s) - 1];
             int y = get(mp[up[bel[u]]]), t = top[y];
             if(rk[x] < rk[y]) swap(x, y);
             fa[y] = x, top[x] = t, rk[x] += (rk[x] == rk[y]);

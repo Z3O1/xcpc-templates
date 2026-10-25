@@ -27,11 +27,11 @@ template <typename Q> vector<int> wqs(int n, int k, Q &&que, i128 up) {
         else r = m;
     }
     auto fp = get(l), gp = get(l + 1);
-    if(gp.size() - 1 == k) return gp;
+    if(ssize(gp) - 1 == k) return gp;
     int j = 1;
-    For(i, 1, (int)gp.size() - 2) {
+    For(i, 1, ssize(gp) - 2) {
         while(fp[j] < gp[i]) ++j;
-        if(fp[j - 1] <= gp[i - 1] && fp.size() - j + i - 1 == k) {
+        if(fp[j - 1] <= gp[i - 1] && ssize(fp) - j + i - 1 == k) {
             vector<int> r(gp.begin(), gp.begin() + i);
             r.insert(r.end(), fp.begin() + j, fp.end());
             return r;

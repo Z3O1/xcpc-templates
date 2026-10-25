@@ -10,7 +10,7 @@ ll CRT(ll a1, ll p1, ll a2, ll p2) {
     ll m1 = p1 / g, m2 = p2 / g, L = m1 * p2;
     ll k = (a2 - a1) / g % m2 * (x % m2 + m2) % m2;
     ll ans = ((i128) k * p1 + a1) % L;
-    return (ans + L) % L;
+    return ans < 0 ? ans + L : ans;
 }
 // 多方程:ans = 0, mod = 1;
 //   For(i, 1, n) {

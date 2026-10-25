@@ -7,7 +7,6 @@ namespace Geo {
 struct p3 {
     db x, y, z;
     bool operator==(const p3 &b) const { return !cmp(x, b.x) && !cmp(y, b.y) && !cmp(z, b.z); }
-    bool operator!=(const p3 &b) const { return !(*this == b); }
     bool operator<(const p3 &b) const { return x != b.x ? x < b.x : y != b.y ? y < b.y : z < b.z; }
 };
 p3 operator+(p3 a, p3 b) { return {a.x + b.x, a.y + b.y, a.z + b.z}; }
@@ -26,7 +25,7 @@ db det(p3 a, p3 b, p3 c) { return dot(a, cross(b, c)); }
 db dis2(p3 a) { return dot(a, a); }
 db dis(p3 a) { return sqrt(dis2(a)); }
 p3 unit(p3 a) { return a / dis(a); }
-db cosang(p3 a, p3 b) { return max((db) -1, min((db) 1, dot(unit(a), unit(b)))); }
+db cosang(p3 a, p3 b) { return clamp(dot(unit(a), unit(b)), db(-1), db(1)); }
 db sinang(p3 a, p3 b) { return min((db) 1, dis(cross(unit(a), unit(b)))); }
 db angle(p3 a, p3 b) { return atan2(dis(cross(a, b)), dot(a, b)); }
 db area2(p3 a, p3 b, p3 c) { return dis(cross(b - a, c - a)); }

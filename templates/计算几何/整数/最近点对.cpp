@@ -8,8 +8,8 @@ namespace IGeo {
 i128 closest_pair2(vector<p2i> &a) {
     int n = a.size();
     if(n < 2) return -1;
-    sort(a.begin(), a.end());
-    if(adjacent_find(a.begin(), a.end()) != a.end()) return 0;
+    sort(all(a));
+    if(adjacent_find(all(a)) != a.end()) return 0;
     i128 ans = dis2(a[0], a[1]);
     vector<p2i> b(n);
     auto rec = [&](auto &&self, int l, int r) -> void {
@@ -17,11 +17,8 @@ i128 closest_pair2(vector<p2i> &a) {
         int mid = l + (r - l) / 2;
         ll mx = a[mid].x;
         self(self, l, mid), self(self, mid, r);
-        int i = l, j = mid, k = l;
-        while(i < mid && j < r) b[k++] = a[i].y <= a[j].y ? a[i++] : a[j++];
-        while(i < mid) b[k++] = a[i++];
-        while(j < r) b[k++] = a[j++];
-        For(t, l, r - 1) a[t] = b[t];
+        merge(a.begin() + l, a.begin() + mid, a.begin() + mid, a.begin() + r, b.begin() + l, [](p2i x, p2i y) { return x.y < y.y; });
+        copy(b.begin() + l, b.begin() + r, a.begin() + l);
         int m = 0;
         For(t, l, r - 1) {
             i128 dx = i128(a[t].x) - mx;

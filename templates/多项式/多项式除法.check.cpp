@@ -264,5 +264,18 @@ int main() {
         }
     }
 
+    // 独立构造 f=q*g+r：长除数、短商，覆盖截断反转后只需 k 项的分支。
+    for(int m : {4095, 4096, 4097, 32769}) for(int k : {1, 2, 7, 32, 127}) {
+        poly g = rpoly_any(m, 0), q = rpoly_any(k, 0), r = rpoly_any(m - 1, 0);
+        g.back() = rnd(1, M - 1);
+        poly f(m + k - 1);
+        For(i, 0, k - 1) For(j, 0, m - 1) f[i + j] = (f[i + j] + 1ll * q[i] * g[j]) % M;
+        For(i, 0, m - 2) f[i] = (f[i] + r[i]) % M;
+        auto got = poly_divmod(f, g);
+        if(got.first != q) return bad("长除数短商:商", f, g, q, got.first);
+        if(got.second != r) return bad("长除数短商:余式", f, g, r, got.second);
+    }
+    ok("20 组长除数短商:独立朴素构造 f=q*g+r 一致");
+
     PASSED("多项式带余除法");
 }

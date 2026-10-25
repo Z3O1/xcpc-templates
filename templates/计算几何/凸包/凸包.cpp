@@ -6,8 +6,8 @@ namespace Geo {
 
 // a 原地排序去重，返回逆时针凸包；nos=1 留边上共线点，默认只留端点。
 vector<p2> convex_hull(vector<p2> &a, bool nos = false) {
-    sort(a.begin(), a.end());
-    a.erase(unique(a.begin(), a.end(), [](p2 x, p2 y) { return x.x == y.x && x.y == y.y; }), a.end());
+    sort(all(a));
+    a.erase(unique(all(a), [](p2 x, p2 y) { return x.x == y.x && x.y == y.y; }), a.end());
     int n = a.size();
     if(n <= 1) return a;
     if(nos) {
@@ -20,7 +20,7 @@ vector<p2> convex_hull(vector<p2> &a, bool nos = false) {
         while(b.size() > 1 && turnop(b[b.size() - 2], b.back(), p) <= -nos) b.pop_back();
         b.push_back(p);
     }
-    size_t t = b.size();
+    int t = b.size();
     rFor(i, n - 2, 0) {
         while(b.size() > t && turnop(b[b.size() - 2], b.back(), a[i]) <= -nos) b.pop_back();
         if(i) b.push_back(a[i]);

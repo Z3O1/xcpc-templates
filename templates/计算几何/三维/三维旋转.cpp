@@ -14,18 +14,12 @@ struct mat3 {
 };
 mat3 operator*(const mat3 &x, const mat3 &y) {
     mat3 r{};
-    for(int i = 0; i < 3; ++i)
-        for(int j = 0; j < 3; ++j) {
-            db s = 0;
-            for(int k = 0; k < 3; ++k) s += x.a[i][k] * y.a[k][j];
-            r.a[i][j] = s;
-        }
+    For(i, 0, 2) For(j, 0, 2) For(k, 0, 2) r.a[i][j] += x.a[i][k] * y.a[k][j];
     return r;
 }
 mat3 transpose(const mat3 &m) {
     mat3 r{};
-    for(int i = 0; i < 3; ++i)
-        for(int j = 0; j < 3; ++j) r.a[i][j] = m.a[j][i];
+    For(i, 0, 2) For(j, 0, 2) r.a[i][j] = m.a[j][i];
     return r;
 }
 p3 rot(p3 v, p3 axis, db ang) {

@@ -10,8 +10,8 @@ poly poly_exp(const poly &f, int n) {
     for(int m = 1; m < n; m <<= 1) {
         int t = min(m << 1, n);
         poly c = poly_ln(g, t);
-        For(i, 0, t - 1) c[i] = ((i < (int) f.size() ? f[i] : 0) - c[i] + M) % M;
+        For(i, 0, t - 1) c[i] = ((i < ssize(f) ? f[i] : 0) - c[i] + M) % M;
         c[0] = (c[0] + 1) % M, g = mul(g, c), g.resize(t);
     }
-    return g.resize(n), g;
+    return g;
 }

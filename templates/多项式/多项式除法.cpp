@@ -8,10 +8,10 @@ using poly = vector<int>;
 // n>=m=|g| 时长度为 {n-m+1,m-1}（不 trim）；否则返回 {空,f}。
 pair<poly, poly> poly_divmod(const poly &f, const poly &g) {
     int n = f.size(), m = g.size();
-    if(n < m) return {poly(), f};
+    if(n < m) return {{}, f};
     int k = n - m + 1;
-    poly q = mul(poly(f.rbegin(), f.rend()), poly_inv(poly(g.rbegin(), g.rend()), k));
-    q.resize(k), reverse(q.begin(), q.end());
+    poly q = mul(poly(f.rbegin(), f.rbegin() + k), poly_inv(poly(g.rbegin(), g.rbegin() + min(m, k)), k));
+    q.resize(k), reverse(all(q));
     poly r = mul(q, g);
     r.resize(m - 1);
     For(i, 0, m - 2) r[i] = (f[i] - r[i] + M) % M;

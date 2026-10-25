@@ -32,7 +32,7 @@ struct plane {
 bool ispara(const plane &a, const plane &b) { return !sign(sinang(a.n, b.n)); }
 bool isperp(const plane &a, const plane &b) { return !sign(cosang(a.n, b.n)); }
 // 返回两平面的锐夹角，弧度范围 [0, pi/2]。
-db angle(const plane &a, const plane &b) { return acos(max((db) -1, min((db) 1, abs(dot(a.n, b.n))))); }
+db angle(const plane &a, const plane &b) { return acos(clamp(abs(dot(a.n, b.n)), db(-1), db(1))); }
 // 返回交线；按 eps 判平行（含重合）时返回 d=0 的退化直线。
 line3 ispl(const plane &a, const plane &b) {
     p3 w = cross(a.n, b.n);

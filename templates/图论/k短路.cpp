@@ -37,7 +37,7 @@ struct k_shortest_t {
             }
         }
         if(d[s] == inf) return ans;
-        For(i, 0, (int)e.size() - 1) {
+        For(i, 0, ssize(e) - 1) {
             auto [u, v, w] = e[i];
             if(i != pre[u] && d[u] < inf && d[v] < inf)
                 h.push_back({w + d[v] - d[u], v, 1}), rt[u] = meld(rt[u], h.size() - 1);
@@ -45,7 +45,7 @@ struct k_shortest_t {
         for(int u : ord) if(pre[u] != -1) rt[u] = meld(rt[u], rt[e[pre[u]].v]);
         ans.push_back(d[s]);
         if(rt[s]) q.push({d[s] + h[rt[s]].w, rt[s]});
-        while((int)ans.size() < k && !q.empty()) {
+        while(ssize(ans) < k && !q.empty()) {
             auto [w, x] = q.top(); q.pop();
             ans.push_back(w);
             for(int y : {h[x].l, h[x].r}) if(y) q.push({w + h[y].w - h[x].w, y});

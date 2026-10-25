@@ -22,7 +22,7 @@ p2 centroid(const vector<p2> &a) {
         p2 u = a[i] - a[0], v = a[(i + 1) % n] - a[0];
         db c = u.det(v);
         s += c;
-        ret = ret + (u + v) * c;
+        ret += (u + v) * c;
         p2 d = a[(i + 1) % n] - a[i];
         half_l1 += abs(d.x) / 2 + abs(d.y) / 2;
     }
@@ -32,8 +32,8 @@ p2 centroid(const vector<p2> &a) {
     db p = perimeter(a);
     if(p == 0 || !sign(s / p)) {
         p2 av = {0, 0};
-        for(int i = 0; i < n; ++i) av = av + (a[i] - a[0]);
-        return a[0] + av / (db) n;
+        for(p2 p : a) av += p - a[0];
+        return a[0] + av / n;
     }
     return a[0] + ret / (3 * s);
 }

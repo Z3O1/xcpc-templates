@@ -6,7 +6,7 @@
 using poly = vector<int>;
 // t[k]=Π_{i=l..r}(x-xs[i])。
 static void _eval_build(poly *t, int k, int l, int r, const poly &xs) {
-    if(l == r) return void(t[k] = poly{(M - xs[l]) % M, 1});
+    if(l == r) return void(t[k] = {(M - xs[l]) % M, 1});
     int mid = (l + r) >> 1;
     _eval_build(t, k + k, l, mid, xs), _eval_build(t, k + k + 1, mid + 1, r, xs);
     t[k] = mul(t[k + k], t[k + k + 1]);
@@ -20,7 +20,7 @@ static void _eval_solve(const poly *t, int k, int l, int r, const poly &f, poly 
 // 返回各 f(xs[i])，长度 |xs|；xs 可空或重复，空 f 视作零多项式。
 poly poly_eval(const poly &f, const poly &xs) {
     int m = xs.size();
-    if(!m) return poly();
+    if(!m) return {};
     vector<poly> t(4 * m);
     _eval_build(t.data(), 1, 0, m - 1, xs);
     poly res(m);

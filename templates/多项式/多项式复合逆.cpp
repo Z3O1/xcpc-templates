@@ -12,8 +12,7 @@ poly pw_pj(const poly &f, int n) {
     a[0][0] = b[0][0] = 1;
     For(i, 0, n - 1) b[1][i] = f[i] ? M - f[i] : 0;
     while(d) {
-        int stride = 2 * d + 1, size = m * stride + d + 1, len = 1;
-        while(len < 2 * size - 1) len <<= 1;
+        int stride = 2 * d + 1, size = m * stride + d + 1, len = bit_ceil(unsigned(2 * size - 1));
         poly pa(len), pb(len), pc(len);
         For(i, 0, m) For(j, 0, d) {
             pa[i * stride + j] = a[i][j], pb[i * stride + j] = b[i][j];
@@ -43,7 +42,7 @@ poly comp_inv(poly f, int n) {
     f.resize(n);
     For(i, 0, n - 1) f[i] = (ll)f[i] * c % M, c = (ll)c * p % M;
     f = reversion::pw_pj(f, n);
-    reverse(f.begin(), f.end());
+    reverse(all(f));
     poly inv(n), g{1};
     inv[1] = 1;
     For(i, 2, n - 1) inv[i] = M - (ll)(M / i) * inv[M % i] % M;

@@ -10,7 +10,7 @@ using polys = vector<poly>;
 polys solve(const poly &f, const polys &g, int n, int m) {
     polys ans(m);
     if(n == 1) {
-        For(i, 0, m - 1) ans[i] = {i < (int)f.size() ? f[i] : 0};
+        For(i, 0, m - 1) ans[i] = {i < ssize(f) ? f[i] : 0};
         return ans;
     }
     int d = 2 * n - 1, s = m * d + n;
@@ -39,7 +39,7 @@ polys solve(const poly &f, const polys &g, int n, int m) {
 poly comp(const poly &f, const poly &g, int n) {
     composition::polys h(2, poly(n));
     h[0][0] = 1;
-    For(i, 1, min((int)g.size(), n) - 1) h[1][i] = g[i] ? M - g[i] : 0;
-    poly a(f.begin(), f.begin() + min((int)f.size(), n));
+    For(i, 1, min<int>(g.size(), n) - 1) h[1][i] = g[i] ? M - g[i] : 0;
+    poly a(f.begin(), f.begin() + min<int>(f.size(), n));
     return composition::solve(a, h, n, 1)[0];
 }

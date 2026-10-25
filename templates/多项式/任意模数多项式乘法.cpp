@@ -39,9 +39,9 @@ template <int M, int G> static poly conv(poly a, poly b, int l) {
 // 返回模 P 的卷积，长度 |a|+|b|-1；任一为空则返回空。
 poly mul(poly a, poly b, int P) {
     int n = a.size(), m = b.size();
-    if(!n || !m) return poly();
+    if(!n || !m) return {};
     if(n == 1 && m == 1) return poly{int(1ll * a[0] * b[0] % P)};
-    int l = 1 << (__lg(n + m - 2) + 1);
+    int l = bit_ceil(unsigned(n + m - 1));
     a.resize(l), b.resize(l);
     static constexpr int M[3]{998244353, 1004535809, 469762049}, G = 3;
     poly c[3]{conv<M[0], G>(a, b, l), conv<M[1], G>(a, b, l), conv<M[2], G>(a, b, l)}, d;

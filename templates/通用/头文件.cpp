@@ -7,8 +7,8 @@
 #define For(i, l, r) for(int i = l, i##_e = r; i <= i##_e; ++i)
 #define rFor(i, r, l) for(int i = r, i##_e = l; i >= i##_e; --i)
 #define all(a) a.begin(), a.end()
-#define cmin(a, b) a = min<remove_reference<decltype(a)>::type>(a, b)
-#define cmax(a, b) a = max<remove_reference<decltype(a)>::type>(a, b)
+#define cmin(a, b) a = min<remove_reference_t<decltype(a)>>(a, b)
+#define cmax(a, b) a = max<remove_reference_t<decltype(a)>>(a, b)
 #define mtc() \
     int T;    \
     cin >> T; \

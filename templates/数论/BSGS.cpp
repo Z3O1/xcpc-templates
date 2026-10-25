@@ -10,18 +10,17 @@ ll BSGS(ll a, ll b, ll p) {
         for(; l % q == 0 && qpow(a, l / q, p) == 1; l /= q);
     ll m = (ll) sqrt((db) l);
     while(m * m < l) ++m;
-    for(ll y = 0, w = 1 % p; y < min(m, l); ++y) {
-        if(w == b) return y;
-        w = (i128) w * a % p;
-    }
     unordered_map<ll, ll> pos;
     pos.reserve(m + 2);
-    for(ll j = 0, w = 1 % p; j < m; ++j) pos.emplace(w, j), w = (i128) w * a % p;
+    for(ll j = 0, w = 1 % p; j < m; ++j, w = (i128) w * a % p) {
+        if(w == b) return j;
+        pos.emplace(w, j);
+    }
     ll step = qpow(a, m, p), iv = qpow(step, p - 2, p), w = (i128) b * iv % p, ans = -1;
     for(ll i = 1; i <= m; ++i, w = (i128) w * iv % p)
         if(auto it = pos.find(w); it != pos.end()) {
             ll y = i * m + it->second;
             if(qpow(a, y, p) == b && (ans < 0 || y < ans)) ans = y;
         }
-    return ans < 0 ? -1 : ans;
+    return ans;
 }

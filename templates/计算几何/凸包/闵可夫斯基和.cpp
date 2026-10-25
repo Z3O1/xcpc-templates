@@ -8,10 +8,7 @@ namespace Geo {
 vector<p2> minkowski_sum(vector<p2> a, vector<p2> b) {
     if(a.empty() || b.empty()) return {};
     auto start = [](vector<p2> &p) {
-        int k = 0;
-        For(i, 1, (int) p.size() - 1)
-            if(p[i].y < p[k].y || (p[i].y == p[k].y && p[i].x < p[k].x)) k = i;
-        rotate(p.begin(), p.begin() + k, p.end());
+        rotate(p.begin(), min_element(all(p), [](p2 a, p2 b) { return tie(a.y, a.x) < tie(b.y, b.x); }), p.end());
     };
     start(a), start(b);
     if(a.size() == 1) { for(p2 &p : b) p += a[0]; return b; }

@@ -8,9 +8,9 @@ namespace Geo {
 c2 mcc(vector<p2> a) {
     if(a.empty()) return {{0, 0}, -1};
     static mt19937_64 mcc_rng(chrono::steady_clock::now().time_since_epoch().count());
-    shuffle(a.begin(), a.end(), mcc_rng);
+    shuffle(all(a), mcc_rng);
     c2 c = {a[0], 0};
-    for(int i = 1; i < (int) a.size(); ++i) {
+    for(int i = 1; i < ssize(a); ++i) {
         if(in_circle(c, a[i])) continue;
         c = cir(a[0], a[i]);
         for(int j = 0; j < i; ++j) {
@@ -23,8 +23,7 @@ c2 mcc(vector<p2> a) {
                     c = dij >= max(dik, djk) ? cir(a[i], a[j]) : dik >= djk ? cir(a[i], a[k]) : cir(a[j], a[k]);
                 } else {
                     auto o = circumcenter(a[i], a[j], a[k]);
-                    p2 oc = {o[0], o[1]};
-                    c = {oc, dis(oc - a[k])};
+                    c.o = {o[0], o[1]}, c.r = dis(c.o - a[k]);
                 }
             }
         }

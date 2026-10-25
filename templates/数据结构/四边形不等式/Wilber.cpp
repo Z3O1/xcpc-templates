@@ -6,7 +6,7 @@ template <typename T, int B = 16, typename Q>
 pair<vector<T>, vector<int>> Wilber(int n, Q &&que, const T Z = numeric_limits<T>::max()) {
     vector<T> f(n + 1, Z);
     f[0] = 0;
-    vector<int> fp(n + 1, 0);
+    vector<int> fp(n + 1);
     int c = 0;
     while(c < n) {
         int r = fp[c], p = min(n, c + (c - r + 1));

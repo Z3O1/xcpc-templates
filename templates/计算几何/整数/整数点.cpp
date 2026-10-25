@@ -6,8 +6,7 @@ namespace IGeo {
 
 struct p2i {
     ll x, y;
-    bool operator==(const p2i &b) const { return x == b.x && y == b.y; }
-    bool operator<(const p2i &b) const { return x != b.x ? x < b.x : y < b.y; }
+    auto operator<=>(const p2i &) const = default;
 };
 i128 cross(p2i a, p2i b, p2i c) {
     return (i128(b.x) - a.x) * (i128(c.y) - a.y) - (i128(b.y) - a.y) * (i128(c.x) - a.x);

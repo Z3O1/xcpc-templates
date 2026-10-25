@@ -7,7 +7,7 @@ using poly = vector<int>;
 // 缓存 1..n 的模逆元。
 static const poly &_ln_inv_num(int n) {
     static poly iv{0, 1};
-    if((int) iv.size() <= n) {
+    if(ssize(iv) <= n) {
         int m = iv.size();
         iv.resize(n + 1);
         For(i, m, n) iv[i] = M - 1ll * (M / i) * iv[M % i] % M;
@@ -16,9 +16,9 @@ static const poly &_ln_inv_num(int n) {
 }
 // 返回 ln f mod x^n 的 n 项（常数项 0）；f 非空且 f[0]=1；n<=0 返回空。
 poly poly_ln(const poly &f, int n) {
-    if(n <= 0) return poly();
+    if(n <= 0) return {};
     poly d(n - 1);
-    For(i, 1, min((int) f.size(), n) - 1) d[i - 1] = 1ll * f[i] * i % M;
+    For(i, 1, min<int>(f.size(), n) - 1) d[i - 1] = 1ll * f[i] * i % M;
     d = mul(d, poly_inv(f, n));
     d.resize(n - 1);
     const poly &iv = _ln_inv_num(n);

@@ -16,8 +16,7 @@ template <class T> vector<pii> duval(const T &s) {
 
 struct run_t {
     int l, r, p;
-    bool operator==(const run_t &b) const { return l == b.l && r == b.r && p == b.p; }
-    bool operator<(const run_t &b) const { return tie(l, r, p) < tie(b.l, b.r, b.p); }
+    auto operator<=>(const run_t &) const = default;
 };
 // 返回 0-based 全部极大周期子串 [l, r] 及最小周期 p（r-l+1 >= 2p），按 (l,r,p) 升序。
 template <class T> vector<run_t> get_runs(const T &s) {
@@ -53,7 +52,7 @@ template <class T> vector<run_t> get_runs(const T &s) {
     }
     auto common = [&](int x, int y, int lim) {
         int ans = 0;
-        rFor(k, (int) h.size() - 1, 0) {
+        rFor(k, ssize(h) - 1, 0) {
             int len = 1 << k;
             if(len <= lim - ans && h[k][x + ans] == h[k][y + ans]) ans += len;
         }
@@ -77,6 +76,6 @@ template <class T> vector<run_t> get_runs(const T &s) {
         }
     }
     sort(all(ans));
-    ans.erase(unique(all(ans), [](run_t a, run_t b) { return a.l == b.l && a.r == b.r; }), ans.end());
+    ans.erase(unique(all(ans), [](run_t a, run_t b) { return tie(a.l, a.r) == tie(b.l, b.r); }), ans.end());
     return ans;
 }

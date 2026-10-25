@@ -6,7 +6,7 @@ struct sequence_dsu_t {
     vector<u64> s;
     vector<int> fa, rk, r;
     void init(int m) {
-        n = m, w = n ? __lg(n) + 1 : 1;
+        n = m, w = max(1, bit_width(unsigned(n)));
         int k = n ? (n - 1) / w + 1 : 0;
         s.resize(k), fa.resize(k), rk.assign(k, 0), r.resize(k);
         For(i, 0, k - 1) {
@@ -35,8 +35,8 @@ struct sequence_dsu_t {
     int find(int x) {
         int b = x / w;
         u64 z = s[b] & (~0ULL << (x % w));
-        if(z) return b * w + __builtin_ctzll(z);
+        if(z) return b * w + countr_zero(z);
         b = r[get(b + 1)];
-        return b * w + __builtin_ctzll(s[b]);
+        return b * w + countr_zero(s[b]);
     }
 };

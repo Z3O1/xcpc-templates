@@ -16,11 +16,11 @@ vector<p2> hpi(vector<seg> vs) {
     struct key { db angle, offset; int id; };
     vector<key> order;
     order.reserve(vs.size());
-    for(int i = 0; i < (int) vs.size(); ++i) {
+    for(int i = 0; i < ssize(vs); ++i) {
         p2 d = vs[i].dir();
         order.push_back({d.alpha(), unit(d).det(vs[i].x), i});
     }
-    sort(order.begin(), order.end(), [](const key &a, const key &b) {
+    sort(all(order), [](const key &a, const key &b) {
         return a.angle != b.angle ? a.angle < b.angle : a.offset > b.offset;
     });
     vector<seg> ls;
@@ -49,14 +49,16 @@ vector<p2> hpi(vector<seg> vs) {
     while(t - h >= 2 && crossop(ls[q[h]], isll(ls[q[t - 2]], ls[q[t - 1]])) < 0) --t;
     while(t - h >= 2 && crossop(ls[q[t - 1]], isll(ls[q[h]], ls[q[h + 1]])) < 0) ++h;
     if(t - h < 3) return {};
-    vector<p2> ret, qs;
-    for(int i = h; i < t; ++i) ret.push_back(isll(ls[q[i]], ls[q[i + 1 < t ? i + 1 : h]]));
-    for(auto &x : ret) if(qs.empty() || !(qs.back() == x)) qs.push_back(x);
+    vector<p2> qs;
+    for(int i = h; i < t; ++i) {
+        p2 x = isll(ls[q[i]], ls[q[i + 1 < t ? i + 1 : h]]);
+        if(qs.empty() || !(qs.back() == x)) qs.push_back(x);
+    }
     while(qs.size() > 1 && qs.front() == qs.back()) qs.pop_back();
     if(qs.size() < 3) return {};
     db s = 0, p = 0;
-    for(int i = 1; i + 1 < (int) qs.size(); ++i) s += (qs[i] - qs[0]).det(qs[i + 1] - qs[0]);
-    for(int i = 0; i < (int) qs.size(); ++i) p += dis(qs[(i + 1) % qs.size()] - qs[i]);
+    for(int i = 1; i + 1 < ssize(qs); ++i) s += (qs[i] - qs[0]).det(qs[i + 1] - qs[0]);
+    For(i, 0, ssize(qs) - 1) p += dis(qs[(i + 1) % qs.size()] - qs[i]);
     return sign(s / p) <= 0 ? vector<p2>{} : qs;
 }
 }  // namespace Geo

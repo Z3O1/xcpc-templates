@@ -8,7 +8,7 @@ void fft(vector<cp> &a, int k) {
     int n = a.size();
     if(n <= 1) return;
     static vector<int> r;
-    if((int) r.size() != n) {
+    if(r.size() != n) {
         int l = __lg(n);
         r.resize(n);
         For(i, 0, n - 1) r[i] = (r[i >> 1] >> 1) | ((i & 1) << (l - 1));
@@ -30,15 +30,14 @@ void fft(vector<cp> &a, int k) {
 vector<db> fft_conv(const vector<db> &a, const vector<db> &b) {
     int n = a.size(), m = b.size();
     if(!n || !m) return {};
-    int l = 1;
-    while(l < n + m - 1) l <<= 1;
+    int l = bit_ceil(unsigned(n + m - 1));
     vector<cp> fa(l), fb(l);
     For(i, 0, n - 1) fa[i] = a[i];
     For(i, 0, m - 1) fb[i] = b[i];
     fft(fa, 1), fft(fb, 1);
     For(i, 0, l - 1) fa[i] *= fb[i];
     fft(fa, -1);
-    vector<db> res(n + m - 1, 0);
+    vector<db> res(n + m - 1);
     For(i, 0, n + m - 2) res[i] = fa[i].real();
     return res;
 }

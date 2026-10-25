@@ -9,14 +9,14 @@ static poly _interp_rec(const poly *t, int k, int l, int r, const poly &w) {
     int mid = (l + r) >> 1;
     poly a = mul(_interp_rec(t, k + k, l, mid, w), t[k + k + 1]);
     poly b = mul(_interp_rec(t, k + k + 1, mid + 1, r, w), t[k + k]);
-    a.resize(max(a.size(), b.size()), 0);
-    For(i, 0, (int) b.size() - 1) a[i] = (a[i] + b[i]) % M;
+    a.resize(max(a.size(), b.size()));
+    For(i, 0, ssize(b) - 1) a[i] = (a[i] + b[i]) % M;
     return a;
 }
 // 返回过各 (xs[i],ys[i]) 的唯一 deg<m 多项式（恰好 m 项）；xs、ys 等长且 xs 互异，空输入返回空。
 poly poly_interp(const poly &xs, const poly &ys) {
     int m = xs.size();
-    if(!m) return poly();
+    if(!m) return {};
     vector<poly> t(4 * m);
     _eval_build(t.data(), 1, 0, m - 1, xs);
     poly dM(m);

@@ -22,7 +22,7 @@ vector<p2> cir_line(const c2 &c, const seg &l) {
 }
 vector<p2> cir_seg(const c2 &c, const seg &l) {
     auto r = cir_line(c, l);
-    r.erase(remove_if(r.begin(), r.end(), [&](p2 p) { return !ons(l, p); }), r.end());
+    erase_if(r, [&](p2 p) { return !ons(l, p); });
     return r;
 }
 // 两圆交点（按相对 c1.o 极角递增；同心或重合返回空，两点圆重合取 c1.o）。
@@ -45,8 +45,8 @@ vector<p2> cir_cir(const c2 &c1, const c2 &other) {
         db e = eps + db(1e-10) * max(c1.r, other.r);
         return abs(dis(p - c1.o) - c1.r) <= e && abs(dis(p - other.o) - other.r) <= e;
     };
-    r.erase(remove_if(r.begin(), r.end(), [&](p2 p) { return !good(p); }), r.end());
-    sort(r.begin(), r.end(), [&](const p2 &a, const p2 &b) { return (a - c1.o).alpha() < (b - c1.o).alpha(); });
+    erase_if(r, [&](p2 p) { return !good(p); });
+    sort(all(r), [&](const p2 &a, const p2 &b) { return (a - c1.o).alpha() < (b - c1.o).alpha(); });
     return r;
 }
 db cir_cir_area(const c2 &c1, const c2 &other) {

@@ -7,8 +7,8 @@ namespace IGeo {
 // a 原地排序去重，返回逆时针凸包，不重复首点；nos=1 保留边上共线点，默认只留端点。
 // O(n log n)；空/单点照常返回；全共线默认留两端点，nos=1 按字典序各输出一次。
 vector<p2i> convex_hull(vector<p2i> &a, bool nos = false) {
-    sort(a.begin(), a.end());
-    a.erase(unique(a.begin(), a.end()), a.end());
+    sort(all(a));
+    a.erase(unique(all(a)), a.end());
     int n = a.size();
     if(n <= 1) return a;
     if(nos) {
@@ -21,7 +21,7 @@ vector<p2i> convex_hull(vector<p2i> &a, bool nos = false) {
         while(b.size() > 1 && crossop(b[b.size() - 2], b.back(), p) <= -nos) b.pop_back();
         b.push_back(p);
     }
-    size_t t = b.size();
+    int t = b.size();
     rFor(i, n - 2, 0) {
         while(b.size() > t && crossop(b[b.size() - 2], b.back(), a[i]) <= -nos) b.pop_back();
         if(i) b.push_back(a[i]);

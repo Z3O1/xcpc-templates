@@ -7,10 +7,7 @@ namespace IGeo {
 vector<p2i> minkowski_sum(vector<p2i> a, vector<p2i> b) {
     if(a.empty() || b.empty()) return {};
     auto start = [](vector<p2i> &p) {
-        int k = 0;
-        For(i, 1, (int) p.size() - 1)
-            if(p[i].y < p[k].y || (p[i].y == p[k].y && p[i].x < p[k].x)) k = i;
-        rotate(p.begin(), p.begin() + k, p.end());
+        rotate(p.begin(), min_element(all(p), [](p2i a, p2i b) { return tie(a.y, a.x) < tie(b.y, b.x); }), p.end());
     };
     start(a), start(b);
     auto add = [](p2i u, p2i v) -> p2i { return {ll(i128(u.x) + v.x), ll(i128(u.y) + v.y)}; };
