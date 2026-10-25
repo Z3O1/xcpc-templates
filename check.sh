@@ -153,7 +153,7 @@ run_check() {
     local src=$1 log=$2 bin t0 t1 rc r line output="$2.out" body=''
     bin="$log.bin"
     t0=$(now)
-    if ! "${CXX:-g++}" -std=c++17 -O2 -o "$bin" "$src" > "$output" 2>&1; then
+    if ! "${CXX:-g++}" -std=c++20 -O2 -o "$bin" "$src" > "$output" 2>&1; then
         line="COMPILE FAIL  $src"
         body=$(head -15 "$output")
         rc=2

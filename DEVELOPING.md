@@ -2,13 +2,17 @@
 
 按需查阅的调试与连接命令；项目约束见 [AGENTS.md](AGENTS.md)。以下命令均从仓库根目录运行。
 
+## 编译标准与规模约定
+
+模板与自测使用 C++20。竞赛合法输入下，单个 `vector` 的元素数不超过 `1e8`，长度与下标使用 `int`；这是输入前提，不添加运行时容量检查。算法自身的规模上限、总内存、数组容量与中间运算范围仍须分别满足，权值和答案不受此约定限制。
+
 ## 内存与整数检查
 
 内存或整数计算有疑点时，用 ASAN+UBSAN 编译相应自测。产物放 `tmp/`，运行时切到 check 所在目录；以下以支配树为例：
 
 ```bash
 mkdir -p tmp
-g++ -std=c++17 -O1 -g -fsanitize=address,undefined \
+g++ -std=c++20 -O1 -g -fsanitize=address,undefined \
   -o "$PWD/tmp/asan_x" templates/图论/支配树.check.cpp
 (cd templates/图论 && timeout 60s ../../tmp/asan_x)
 ```
