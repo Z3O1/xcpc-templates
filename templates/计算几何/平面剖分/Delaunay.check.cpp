@@ -25,7 +25,7 @@
 // ================= 工具 =================
 static mt19937_64 grng(20240915);
 // 生成 [l, r] 闭区间随机整数(固定种子,可复现)。
-static ll frnd(ll l, ll r) { return l + (ll) (grng() % (u64) (r - l + 1)); }
+static ll frnd(ll l, ll r) { return l + (ll) (grng() % (ull) (r - l + 1)); }
 // 整数坐标转 p2。
 static p2 ip(ll x, ll y) { return p2{(db) x, (db) y}; }
 // 三角形带号面积。

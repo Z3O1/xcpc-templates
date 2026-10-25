@@ -9,7 +9,7 @@
 // —— check 通用小工具 ——
 mt19937_64 rng(chrono::steady_clock::now().time_since_epoch().count());
 // 返回闭区间 [l,r] 内的伪随机整数；要求 0 < r-l+1 <= LLONG_MAX，不保证无偏。
-inline ll rnd(ll l, ll r) { return l + (ll) (rng() % (u64) (r - l + 1)); }
+inline ll rnd(ll l, ll r) { return l + (ll) (rng() % (ull) (r - l + 1)); }
 // 输出该项断言通过的信息；what 须指向有效的零结尾字符串。
 inline void ok(const char *what) { printf("  [ok] %s\n", what); }
 #define CHECK(cond, name)                                                      \

@@ -24,7 +24,7 @@ void need(bool good, const char *what, const vector<p2i> &a = {}) {
 // 精确整数取符号。
 int sign(i128 x) { return (x > 0) - (x < 0); }
 // 闭区间随机整数；测试 lim <= 2^62-1。
-ll coord(ll lim) { return ll(rng() % (u64(lim) * 2 + 1)) - lim; }
+ll coord(ll lim) { return ll(rng() % (ull(lim) * 2 + 1)) - lim; }
 // 生成小整数、±1e18 或接近安全上界的点。
 p2i point(int mode = 0) {
     ll lim = mode == 0 ? 12 : mode == 1 ? 1000000000000000000LL : (1LL << 62) - 1;

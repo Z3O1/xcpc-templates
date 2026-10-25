@@ -60,7 +60,7 @@ void verify(vector<p2i> a, p2i o = {0, 0}) {
     sort(b.begin(), b.end(), [&](p2i u, p2i v) { return reference_less(u, v, o); });
     need(a == b, "排序结果", a, o);
 }
-ll coord(ll lim) { return ll(rng() % (u64(lim) * 2 + 1)) - lim; }
+ll coord(ll lim) { return ll(rng() % (ull(lim) * 2 + 1)) - lim; }
 int main() {
     rng.seed(2026101605);
     ll B = (1LL << 62) - 1, S = LLONG_MAX;

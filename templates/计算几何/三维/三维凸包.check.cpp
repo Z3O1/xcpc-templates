@@ -25,7 +25,7 @@
 // ===================== check 自写的独立参考实现 =====================
 static mt19937_64 g_rng(20240909);
 // 生成 [l, r] 闭区间随机整数(固定种子,可复现)。
-static ll grnd(ll l, ll r) { return l + (ll) (g_rng() % (u64) (r - l + 1)); }
+static ll grnd(ll l, ll r) { return l + (ll) (g_rng() % (ull) (r - l + 1)); }
 // 生成 [0, 1) 均匀随机 db。
 static db urnd() { return (db) (g_rng() >> 11) / (db) (1ull << 53); }
 

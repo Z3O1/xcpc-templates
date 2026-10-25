@@ -59,8 +59,8 @@ static void check_small(const vector<int> &a) {
 // 独立双基哈希,只在大串上验证相邻后缀的公共前缀和有序性。
 struct rh_t {
     static constexpr int K = 2;
-    const u64 B[K]{0x9E3779B97F4A7C15ull, 0xC2B2AE3D27D4EB4Full};
-    vector<u64> f[K], pw[K];
+    const ull B[K]{0x9E3779B97F4A7C15ull, 0xC2B2AE3D27D4EB4Full};
+    vector<ull> f[K], pw[K];
     // 构建 1-indexed 双基前缀哈希；要求 a[1..n] 为待测串；覆盖内部数组。
     void build(const vector<int> &a) {
         For(k, 0, K - 1) {

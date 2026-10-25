@@ -4,7 +4,7 @@
 struct tree_dsu_t {
     int rt, w;
     vector<int> bel, id, st, a, up, mp, fa, rk, top;
-    vector<u64> mask, live;
+    vector<ull> mask, live;
     void init(const vector<int> &p) {
         int n = p.size(), lg = max(1, bit_width(unsigned(n)));
         rt = -1, w = (lg + 1) / 2;
@@ -43,14 +43,14 @@ struct tree_dsu_t {
     }
     int get(int x) { return fa[x] == x ? x : fa[x] = get(fa[x]); }
     bool merge_parent(int v) {
-        u64 s = 1ULL << id[v];
+        ull s = 1ULL << id[v];
         return v != rt && (live[bel[v]] & s) ? (live[bel[v]] ^= s, true) : false;
     }
     int find(int v) {
-        if(u64 s = mask[v] & live[bel[v]]) return a[st[bel[v]] + bit_width(s) - 1];
+        if(ull s = mask[v] & live[bel[v]]) return a[st[bel[v]] + bit_width(s) - 1];
         for(int x = get(mp[up[bel[v]]]);;) {
             int u = top[x];
-            if(u64 s = mask[u] & live[bel[u]]) return a[st[bel[u]] + bit_width(s) - 1];
+            if(ull s = mask[u] & live[bel[u]]) return a[st[bel[u]] + bit_width(s) - 1];
             int y = get(mp[up[bel[u]]]), t = top[y];
             if(rk[x] < rk[y]) swap(x, y);
             fa[y] = x, top[x] = t, rk[x] += (rk[x] == rk[y]);

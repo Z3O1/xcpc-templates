@@ -87,9 +87,9 @@ static void check_exact(const vector<string> &strs) {
 }
 
 struct Hash {
-    vector<u64> h[2], pw[2];
+    vector<ull> h[2], pw[2];
     explicit Hash(const string &s) {
-        const u64 base[] = {0x9E3779B97F4A7C15ull, 0xC2B2AE3D27D4EB4Full};
+        const ull base[] = {0x9E3779B97F4A7C15ull, 0xC2B2AE3D27D4EB4Full};
         For(k, 0, 1) {
             h[k].assign(s.size() + 1, 0), pw[k].assign(s.size() + 1, 1);
             For(i, 1, (int)s.size()) {
@@ -98,12 +98,12 @@ struct Hash {
             }
         }
     }
-    pair<u64, u64> get(int l, int r) const {
+    pair<ull, ull> get(int l, int r) const {
         return {h[0][r] - h[0][l] * pw[0][r - l], h[1][r] - h[1][l] * pw[1][r - l]};
     }
 };
 static int brute_count_hash(const vector<string> &strs) {
-    vector<pair<u64, u64>> hs;
+    vector<pair<ull, ull>> hs;
     for(const auto &s : strs) {
         Hash h(s);
         For(c, 0, 2 * (int)s.size() - 2) {

@@ -51,7 +51,7 @@ static void reset(tree_dsu_t &ds, const vector<int> &p, bool small = true) {
     For(v, 0, n - 1) {
         require(ds.find(v) == v, "reset singleton");
         require(ds.a[ds.st[ds.bel[v]] + ds.id[v]] == v, "local index inverse");
-        u64 want = 0;
+        ull want = 0;
         int x = v;
         while(x != -1 && ds.bel[x] == ds.bel[v]) {
             want |= 1ULL << ds.id[x];

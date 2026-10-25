@@ -35,7 +35,7 @@ static int a[N];
 // ———————— 固定种子的随机数(_check_base 的 rnd 用 steady_clock 播种,不可复现)————————
 static mt19937_64 f_rng(0x20240911ULL);
 // 生成闭区间 [l,r] 内的可复现随机数；要求 l <= r。
-static ll frnd(ll l, ll r) { return l + (ll) (f_rng() % (u64) (r - l + 1)); }
+static ll frnd(ll l, ll r) { return l + (ll) (f_rng() % (ull) (r - l + 1)); }
 
 struct case_t {
     int n = 1;

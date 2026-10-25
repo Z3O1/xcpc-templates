@@ -1,17 +1,17 @@
 // quadres(): 数论 · 二次剩余 (欧拉判别法 + 模素数开根)
 
 // 判二次剩余 + Cipolla 开根；要求 p 为奇素数，0 <= a, x < p，非剩余返回 -1。
-bool quadres(u64 a, u64 p) {
+bool quadres(ull a, ull p) {
     if(!a) return 1;
-    u64 r = 1, x = a % p, e = (p - 1) >> 1;
+    ull r = 1, x = a % p, e = (p - 1) >> 1;
     for(; e; e >>= 1, x = (u128) x * x % p) if(e & 1) r = (u128) r * x % p;
     return r == 1;
 }
 ll sqrtp(ll x, ll p) {
     if(x <= 1) return x;
     if(!quadres(x, p)) return -1;
-    auto mul = [p](ll a, ll b) { return (ll) ((u128) a * b % (u64) p); };
-    auto add = [p](ll a, ll b) { return (ll) (((u64) a + (u64) b) % (u64) p); };
+    auto mul = [p](ll a, ll b) { return (ll) ((u128) a * b % (ull) p); };
+    auto add = [p](ll a, ll b) { return (ll) (((ull) a + (ull) b) % (ull) p); };
     if(p % 4 == 3) {
         ll r = 1, a = x % p, e = (p + 1) >> 2;
         for(; e; e >>= 1, a = mul(a, a)) if(e & 1) r = mul(r, a);

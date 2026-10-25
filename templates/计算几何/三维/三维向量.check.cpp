@@ -21,7 +21,7 @@
 // ===================== check 自写的独立参考实现 =====================
 static mt19937_64 g_rng(20240906);
 // 生成 [l, r] 闭区间随机整数(固定种子,可复现)。
-static ll grnd(ll l, ll r) { return l + (ll) (g_rng() % (u64) (r - l + 1)); }
+static ll grnd(ll l, ll r) { return l + (ll) (g_rng() % (ull) (r - l + 1)); }
 
 // 构造 p3;用工厂函数是因为 CHECK 宏参数里不能出现花括号。
 p3 pt3(db x, db y, db z) { return {x, y, z}; }

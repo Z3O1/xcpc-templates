@@ -19,7 +19,7 @@
 // ===================== check 自写的独立参考实现 =====================
 static mt19937_64 g_rng(20240910);
 // 生成 [l, r] 闭区间随机整数(固定种子,可复现)。
-static ll grnd(ll l, ll r) { return l + (ll) (g_rng() % (u64) (r - l + 1)); }
+static ll grnd(ll l, ll r) { return l + (ll) (g_rng() % (ull) (r - l + 1)); }
 
 // p3 转字符串(诊断打印用)。
 string ps(p3 a) {

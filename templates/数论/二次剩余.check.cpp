@@ -1,4 +1,4 @@
-// 二次剩余 自测:小域暴力、完整u64判别与独立欧拉参考、大signed模数开根及平方构造
+// 二次剩余 自测:小域暴力、完整ull判别与独立欧拉参考、大signed模数开根及平方构造
 #include "../_check_base.hpp"
 #include "二次剩余.cpp"
 
@@ -17,10 +17,10 @@ bool euler_ref(ll x, ll p) {
     return r == 1;
 }
 
-// 用完整 u64 模乘参考二次剩余；要求 p 为奇素数；返回是否为剩余。
-bool euler_ref_u64(u64 x, u64 p) {
+// 用完整 ull 模乘参考二次剩余；要求 p 为奇素数；返回是否为剩余。
+bool euler_ref_u64(ull x, ull p) {
     if(!x) return true;
-    u64 r = 1, e = (p - 1) / 2;
+    ull r = 1, e = (p - 1) / 2;
     // 从高位向低位扫描,不调用被测模乘/幂。
     for(int bit = 63; bit >= 0; --bit) {
         r = (u128) r * r % p;
@@ -29,7 +29,7 @@ bool euler_ref_u64(u64 x, u64 p) {
     return r == 1;
 }
 
-// 运行二次剩余契约自测；覆盖判别、开根和完整 u64 模数；失败返回 1。
+// 运行二次剩余契约自测；覆盖判别、开根和完整 ull 模数；失败返回 1。
 int main() {
     // 小素数全量:quadres 与暴力一致、sqrtp 结果验证
     for(ll p : {3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 97, 101, 103, 107, 109, 113, 127, 131, 193}) {
@@ -76,16 +76,16 @@ int main() {
     }
     ok("8 个大素数 × 400 组(含近 LLONG_MAX 两条分支及 y^2 构造)");
 
-    const u64 p = 18446744073709551557ULL;
-    for(u64 x : {0ULL, 1ULL, 4ULL, p - 1, p - 2, 1ULL << 63})
-        CHECK(quadres(x, p) == euler_ref_u64(x, p), "u64 上半区判别回归");
+    const ull p = 18446744073709551557ULL;
+    for(ull x : {0ULL, 1ULL, 4ULL, p - 1, p - 2, 1ULL << 63})
+        CHECK(quadres(x, p) == euler_ref_u64(x, p), "ull 上半区判别回归");
     For(t, 1, 1000) {
-        u64 x = rng() % p, y = rng() % p;
+        ull x = rng() % p, y = rng() % p;
         if(quadres(x, p) != euler_ref_u64(x, p))
-            return printf("  [FAIL] u64 p=%llu x=%llu\n", (u64) p, (u64) x), 1;
-        u64 square = (u128) y * y % p;
-        CHECK(quadres(square, p), "完整 u64 的平方数必须为二次剩余");
+            return printf("  [FAIL] ull p=%llu x=%llu\n", (ull) p, (ull) x), 1;
+        ull square = (u128) y * y % p;
+        CHECK(quadres(square, p), "完整 ull 的平方数必须为二次剩余");
     }
-    ok("1000 组完整 u64 判别与平方性质,不缩窄公开接口");
+    ok("1000 组完整 ull 判别与平方性质,不缩窄公开接口");
     PASSED("二次剩余");
 }

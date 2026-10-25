@@ -11,7 +11,7 @@ int rounds;
 void work() { ++rounds; }
 
 static_assert(is_same_v<pii, array<int, 2>> && is_same_v<pll, array<ll, 2>>);
-static_assert(sizeof(ll) == 8 && sizeof(u64) == 8);
+static_assert(sizeof(ll) == 8 && sizeof(ull) == 8);
 static_assert(numeric_limits<db>::digits > numeric_limits<double>::digits);
 #if __SIZEOF_POINTER__ == 8
 static_assert(sizeof(i128) == 16 && sizeof(u128) == 16);
@@ -103,7 +103,7 @@ int main() {
 
 #if __SIZEOF_POINTER__ == 8
     u128 u = (u128) ULLONG_MAX * 2 + 1;
-    CHECK((u >> 64) == 1 && (u64) u == ULLONG_MAX, "u128 越过 64 位");
+    CHECK((u >> 64) == 1 && (ull) u == ULLONG_MAX, "u128 越过 64 位");
     i128 n = -((i128) 1 << 100);
     CHECK(n < 0 && (-n >> 100) == 1, "i128 负数与移位");
 #endif

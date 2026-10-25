@@ -1,21 +1,21 @@
 // Miller-Rabin 素性检验
 
-// 确定性判定 u64 素数，7 个底覆盖全 u64；O(log p)。
+// 确定性判定 ull 素数，7 个底覆盖全 ull；O(log p)。
 
-constexpr bool chkp(u64 p) {
+constexpr bool chkp(ull p) {
     if(p < 2) return 0;
-    auto mul = [](u64 a, u64 b, u64 p) { return (u128) a * b % p; };
-    auto pw = [&](u64 a, u64 x, u64 p, u64 r = 1) {
+    auto mul = [](ull a, ull b, ull p) { return (u128) a * b % p; };
+    auto pw = [&](ull a, ull x, ull p, ull r = 1) {
         for(; x; x >>= 1, a = mul(a, a, p))
             if(x & 1) r = mul(r, a, p);
         return r;
     };
-    constexpr u64 B[] = {2, 325, 9375, 28178, 450775, 9780504, 1795265022};
+    constexpr ull B[] = {2, 325, 9375, 28178, 450775, 9780504, 1795265022};
     int s = countr_zero(p - 1);
-    u64 d = (p - 1) >> s;
-    for(u64 a : B) {
+    ull d = (p - 1) >> s;
+    for(ull a : B) {
         if(a % p == 0) continue;
-        u64 x = pw(a % p, d, p);
+        ull x = pw(a % p, d, p);
         if(x == 1 || x == p - 1) continue;
         for(int i = 1; i < s && x != p - 1; ++i) x = mul(x, x, p);
         if(x != p - 1) return 0;

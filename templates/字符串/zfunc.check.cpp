@@ -31,18 +31,18 @@ static void setup(int n, const char *t, int sentinel = 0) {   // t 1-indexed 的
 // 双基哈希:给 1e6 规模做"前缀是否匹配"的 O(1) 校验
 struct rh_t {
     static const int K = 2;
-    u64 B[K];
-    vector<u64> f[K], pw[K];
+    ull B[K];
+    vector<ull> f[K], pw[K];
     // 构建 1-indexed 双基前缀哈希；要求 s[1..n] 已填好；覆盖内部数组。
     void build(const int *s, int n) {
         B[0] = 0x9E3779B97F4A7C15ull, B[1] = 0xC2B2AE3D27D4EB4Full;
         For(k, 0, K - 1) {
             f[k].assign(n + 2, 0), pw[k].assign(n + 2, 1);
-            For(i, 1, n) f[k][i] = f[k][i - 1] * B[k] + (u64) (unsigned) s[i], pw[k][i] = pw[k][i - 1] * B[k];
+            For(i, 1, n) f[k][i] = f[k][i - 1] * B[k] + (ull) (unsigned) s[i], pw[k][i] = pw[k][i - 1] * B[k];
         }
     }
     // 取单个基的闭区间哈希；要求先 build 且 1 <= l <= r <= n；返回自然溢出值。
-    u64 get(int k, int l, int r) { return f[k][r] - f[k][l - 1] * pw[k][r - l + 1]; }
+    ull get(int k, int l, int r) { return f[k][r] - f[k][l - 1] * pw[k][r - l + 1]; }
     // 比较两个闭区间是否哈希相同；要求区间长度一致且不越界；返回双基结果。
     bool same(int l1, int r1, int l2, int r2) {
         if(r1 - l1 != r2 - l2) return false;

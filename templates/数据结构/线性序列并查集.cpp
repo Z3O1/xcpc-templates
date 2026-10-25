@@ -3,7 +3,7 @@
 // 长度 n 的序列只支持向右收缩：merge_right(i) 并掉原边 i->i+1，find(x) 返回分量右端；总 O(n+q)。
 struct sequence_dsu_t {
     int n, w;
-    vector<u64> s;
+    vector<ull> s;
     vector<int> fa, rk, r;
     void init(int m) {
         n = m, w = max(1, bit_width(unsigned(n)));
@@ -25,7 +25,7 @@ struct sequence_dsu_t {
     // 0<=i<n-1；重复收缩返回 false。
     bool merge_right(int i) {
         int b = i / w;
-        u64 z = 1ULL << (i % w);
+        ull z = 1ULL << (i % w);
         if(!(s[b] & z)) return false;
         s[b] ^= z;
         if(!s[b]) join(b, b + 1);
@@ -34,7 +34,7 @@ struct sequence_dsu_t {
     // 0<=x<n；最后一点不删除。
     int find(int x) {
         int b = x / w;
-        u64 z = s[b] & (~0ULL << (x % w));
+        ull z = s[b] & (~0ULL << (x % w));
         if(z) return b * w + countr_zero(z);
         b = r[get(b + 1)];
         return b * w + countr_zero(s[b]);

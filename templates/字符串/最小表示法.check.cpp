@@ -74,8 +74,8 @@ static int booth(const vector<int> &s) {
 struct rot_cmp {
     int n;
     vector<int> a;              // 原始串(比较两个起点的下一个元素时要用值,不是下标)
-    u64 B[2];
-    vector<u64> f[2], pw[2];
+    ull B[2];
+    vector<ull> f[2], pw[2];
     // 构建双倍串哈希；要求 s 非空；覆盖 n/a/f/pw。
     void build(const vector<int> &s) {
         n = (int) s.size(), a = s;
@@ -84,7 +84,7 @@ struct rot_cmp {
             f[k].assign(2 * n + 2, 0), pw[k].assign(2 * n + 2, 1);
             For(i, 1, 2 * n) {
                 int v = s[(i - 1) % n];
-                f[k][i] = f[k][i - 1] * B[k] + (u64) (unsigned) v, pw[k][i] = pw[k][i - 1] * B[k];
+                f[k][i] = f[k][i - 1] * B[k] + (ull) (unsigned) v, pw[k][i] = pw[k][i - 1] * B[k];
             }
         }
     }
@@ -92,8 +92,8 @@ struct rot_cmp {
     bool same(int a, int b, int L) {   // ss[a..a+L-1] == ss[b..b+L-1](1-indexed 起点)
         if(L <= 0) return true;
         For(k, 0, 1) {
-            u64 x = f[k][a + L - 1] - f[k][a - 1] * pw[k][L];
-            u64 y = f[k][b + L - 1] - f[k][b - 1] * pw[k][L];
+            ull x = f[k][a + L - 1] - f[k][a - 1] * pw[k][L];
+            ull y = f[k][b + L - 1] - f[k][b - 1] * pw[k][L];
             if(x != y) return false;
         }
         return true;

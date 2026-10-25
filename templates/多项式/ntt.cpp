@@ -7,7 +7,7 @@ using poly = vector<int>;
 void NTT(poly &a, int k) {
     static poly rev;
     static poly roots{0, 1};
-    static vector<u64> tmp;
+    static vector<ull> tmp;
     int n = a.size();
     if(n == 1) return;
     if(rev.size() != n) {

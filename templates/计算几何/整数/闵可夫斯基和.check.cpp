@@ -96,7 +96,7 @@ points translated(points a, p2i shift) {
     for(auto &p : a) p = sum(p, shift);
     return a;
 }
-ll coord(ll lim) { return ll(rng() % (u64(lim) * 2 + 1)) - lim; }
+ll coord(ll lim) { return ll(rng() % (ull(lim) * 2 + 1)) - lim; }
 points random_hull(int n, ll lim) {
     points a;
     for(int i = 0; i < n; ++i) a.push_back({coord(lim), coord(lim)});

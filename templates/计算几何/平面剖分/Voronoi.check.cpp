@@ -24,7 +24,7 @@
 // ================= 工具 =================
 static mt19937_64 vrng(19980831);
 // 生成 [l, r] 闭区间随机整数(固定种子,可复现)。
-static ll vrnd(ll l, ll r) { return l + (ll) (vrng() % (u64) (r - l + 1)); }
+static ll vrnd(ll l, ll r) { return l + (ll) (vrng() % (ull) (r - l + 1)); }
 // 整数坐标转 p2。
 static p2 vip(ll x, ll y) { return p2{(db) x, (db) y}; }
 static db my_area(const vector<p2> &p) {  // 自己的 shoelace(不用模板的 area)

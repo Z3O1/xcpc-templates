@@ -4,22 +4,22 @@
 
 // 独立求 Σ_{i=0}^{n-1} floor((a*i+b)/m)，返回 u128。
 // 要求 m>0，所有中间乘积与累计和不溢出 u128。
-static u128 ref_floor_sum(u64 n, u64 m, u64 a, u64 b) {
+static u128 ref_floor_sum(ull n, ull m, ull a, ull b) {
     u128 ans = 0;
     for(;;) {
         if(a >= m) ans += (u128) n * (n - 1) / 2 * (a / m), a %= m;
         if(b >= m) ans += (u128) n * (b / m), b %= m;
         u128 y = (u128) a * n + b;
         if(y < m) break;
-        n = (u64) (y / m), b = (u64) (y % m);
-        u64 t = m;
+        n = (ull) (y / m), b = (ull) (y % m);
+        ull t = m;
         m = a, a = t;
     }
     return ans;
 }
-// 求 Σ_{i=0}^{n} floor((a*i+b)/c) mod M；要求 c>0，n+1 不溢出 u64。
+// 求 Σ_{i=0}^{n} floor((a*i+b)/c) mod M；要求 c>0，n+1 不溢出 ull。
 // 复用上述 u128 参考求和，要求所有中间乘积与累计和不溢出。
-static int ref_sum(u64 n, u64 a, u64 b, u64 c) {
+static int ref_sum(ull n, ull a, ull b, ull c) {
     u128 s = ref_floor_sum(n + 1, c, a, b);
     return (int) (s % (u128) M);
 }
